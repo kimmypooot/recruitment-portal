@@ -33,9 +33,10 @@ Route::prefix('admin')->group(function () {
     Route::get('/applications',fn () => Inertia::render('Admin/Applications'));
     Route::get('/users',       fn () => Inertia::render('Admin/Users'));
     Route::get('/audit-logs',  fn () => Inertia::render('Admin/AuditLogs'));
-    Route::get('/hrmpsb',      fn () => Inertia::render('Admin/Hrmpsb'));
-    Route::get('/reports',     fn () => Inertia::render('Admin/Reports'));
-    Route::get('/compliance',  fn () => Inertia::render('Admin/Compliance'));
+    Route::get('/hrmpsb',               fn () => Inertia::render('Admin/Hrmpsb'));
+    Route::get('/reports',              fn () => Inertia::render('Admin/Reports'));
+    Route::get('/compliance',           fn () => Inertia::render('Admin/Compliance'));
+    Route::get('/vacancy-competencies', fn () => Inertia::render('Admin/VacancyCompetencies'));
 });
 
 // HRMPSB evaluation pages

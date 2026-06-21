@@ -39,9 +39,12 @@ class VacancyController extends Controller
             });
         }
 
-        // Status filter (HR side)
+        // Status filter — supports single value or comma-separated list (e.g. "published,closed")
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $statuses = is_array($request->status)
+                ? $request->status
+                : array_filter(explode(',', $request->status));
+            $query->whereIn('status', $statuses);
         }
 
         // Salary Grade filter
@@ -63,9 +66,11 @@ class VacancyController extends Controller
             default         => $query->orderBy('created_at', 'desc'),
         };
 
+        $perPage = min((int) ($request->per_page ?? 15), 100);
+
         $vacancies = $query
             ->with('postedBy:id,name')
-            ->paginate(15)
+            ->paginate($perPage)
             ->withQueryString();
 
         return VacancyResource::collection($vacancies)
@@ -77,7 +82,36 @@ class VacancyController extends Controller
      */
     public function show(Vacancy $vacancy): JsonResponse
     {
-        return (new VacancyResource($vacancy->load('postedBy')))
+        return (new VacancyResource($vacancy->load('postedBy', 'competencies')))
+            ->response();
+    }
+
+    /**
+     * Update vacancy
+     */
+    public function update(Request $request, Vacancy $vacancy): JsonResponse
+    {
+        $data = $request->validate([
+            'position_title'         => 'sometimes|required|string|max:255',
+            'item_number'            => 'sometimes|required|string|max:100',
+            'plantilla_number'       => 'nullable|string|max:100',
+            'salary_grade'           => 'sometimes|required|integer|between:1,33',
+            'monthly_salary'         => 'nullable|numeric|min:0',
+            'position_level'         => 'nullable|string|max:100',
+            'is_anticipated_vacancy' => 'boolean',
+            'place_of_assignment'    => 'sometimes|required|string|max:255',
+            'education_req'          => 'sometimes|required|string',
+            'experience_req'         => 'sometimes|required|string',
+            'training_req'           => 'sometimes|required|string',
+            'eligibility_req'        => 'sometimes|required|string',
+            'deadline_at'            => 'nullable|date',
+        ]);
+
+        $vacancy->update($data);
+
+        AuditLog::record('updated', $vacancy);
+
+        return (new VacancyResource($vacancy->fresh()))
             ->response();
     }
 

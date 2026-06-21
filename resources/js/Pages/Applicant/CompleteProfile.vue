@@ -275,7 +275,7 @@
                     <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 w-1/3">Agency / Office</th>
                     <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Period</th>
                     <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Gov't</th>
-                    <th class="pb-2.5 w-8"></th>
+                    <th class="pb-2.5 w-16"></th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -287,12 +287,20 @@
                     </td>
                     <td class="py-3 pr-4 text-gray-500">{{ exp.government_service ? 'Yes' : 'No' }}</td>
                     <td class="py-3 text-right">
-                      <button @click="deleteExperience(exp.id)"
-                        class="p-1 rounded text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                      </button>
+                      <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button @click="openExpModal(exp)"
+                          class="p-1 rounded text-gray-400 hover:text-[#2a338f] transition-colors">
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                          </svg>
+                        </button>
+                        <button @click="deleteExperience(exp.id)"
+                          class="p-1 rounded text-gray-400 hover:text-red-500 transition-colors">
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -340,7 +348,7 @@
                     <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Degree / Course</th>
                     <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Period</th>
                     <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Graduated</th>
-                    <th class="pb-2.5 w-8"></th>
+                    <th class="pb-2.5 w-16"></th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -351,12 +359,20 @@
                     <td class="py-3 pr-4 text-gray-500 whitespace-nowrap">{{ edu.period_from ?? '—' }} – {{ edu.period_to ?? '—' }}</td>
                     <td class="py-3 pr-4 text-gray-500">{{ edu.year_graduated ?? '—' }}</td>
                     <td class="py-3 text-right">
-                      <button @click="deleteEducation(edu.id)"
-                        class="p-1 rounded text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                      </button>
+                      <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button @click="openEduModal(edu)"
+                          class="p-1 rounded text-gray-400 hover:text-[#2a338f] transition-colors">
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                          </svg>
+                        </button>
+                        <button @click="deleteEducation(edu.id)"
+                          class="p-1 rounded text-gray-400 hover:text-red-500 transition-colors">
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -404,7 +420,7 @@
                     <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Hours</th>
                     <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Type</th>
                     <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Conducted by</th>
-                    <th class="pb-2.5 w-8"></th>
+                    <th class="pb-2.5 w-16"></th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -415,12 +431,20 @@
                     <td class="py-3 pr-4 text-gray-500">{{ t.ld_type ?? '—' }}</td>
                     <td class="py-3 pr-4 text-gray-500">{{ t.conducted_by ?? '—' }}</td>
                     <td class="py-3 text-right">
-                      <button @click="deleteTraining(t.id)"
-                        class="p-1 rounded text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                      </button>
+                      <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button @click="openTrainingModal(t)"
+                          class="p-1 rounded text-gray-400 hover:text-[#2a338f] transition-colors">
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                          </svg>
+                        </button>
+                        <button @click="deleteTraining(t.id)"
+                          class="p-1 rounded text-gray-400 hover:text-red-500 transition-colors">
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -658,7 +682,7 @@
           <!-- Header -->
           <div class="flex items-center justify-between px-7 py-5 border-b border-gray-100 flex-shrink-0">
             <div>
-              <h3 class="text-base font-semibold text-gray-900">Add Work Experience</h3>
+              <h3 class="text-base font-semibold text-gray-900">{{ expModal.editingId ? 'Edit Work Experience' : 'Add Work Experience' }}</h3>
               <p class="text-xs text-gray-500 mt-0.5">Fields marked <span class="text-red-500">*</span> are required</p>
             </div>
             <button @click="expModal.open = false"
@@ -751,7 +775,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
               </svg>
-              {{ expModal.saving ? 'Saving…' : 'Add Experience' }}
+              {{ expModal.saving ? 'Saving…' : expModal.editingId ? 'Save Changes' : 'Add Experience' }}
             </button>
           </div>
 
@@ -771,7 +795,7 @@
           <!-- Header -->
           <div class="flex items-center justify-between px-7 py-5 border-b border-gray-100 flex-shrink-0">
             <div>
-              <h3 class="text-base font-semibold text-gray-900">Add Educational Attainment</h3>
+              <h3 class="text-base font-semibold text-gray-900">{{ eduModal.editingId ? 'Edit Educational Attainment' : 'Add Educational Attainment' }}</h3>
               <p class="text-xs text-gray-500 mt-0.5">Fields marked <span class="text-red-500">*</span> are required</p>
             </div>
             <button @click="eduModal.open = false"
@@ -833,7 +857,15 @@
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Period To (Year)</label>
                 <input v-model="eduForm.period_to" type="text" placeholder="e.g. 2019"
+                  :disabled="eduForm.period_to_present"
+                  :class="eduForm.period_to_present ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : ''"
                   class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                <label class="inline-flex items-center gap-2 mt-2 cursor-pointer select-none">
+                  <input type="checkbox" v-model="eduForm.period_to_present"
+                    @change="eduForm.period_to_present ? (eduForm.period_to = '') : null"
+                    class="w-4 h-4 rounded border-gray-300 text-[#2a338f] accent-[#2a338f] cursor-pointer" />
+                  <span class="text-xs text-gray-600 font-medium">Present</span>
+                </label>
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Units Earned</label>
@@ -865,7 +897,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
               </svg>
-              {{ eduModal.saving ? 'Saving…' : 'Add Education' }}
+              {{ eduModal.saving ? 'Saving…' : eduModal.editingId ? 'Save Changes' : 'Add Education' }}
             </button>
           </div>
 
@@ -885,7 +917,7 @@
           <!-- Header -->
           <div class="flex items-center justify-between px-7 py-5 border-b border-gray-100 flex-shrink-0">
             <div>
-              <h3 class="text-base font-semibold text-gray-900">Add Training / Learning &amp; Development</h3>
+              <h3 class="text-base font-semibold text-gray-900">{{ trainingModal.editingId ? 'Edit Training' : 'Add Training / Learning &amp; Development' }}</h3>
               <p class="text-xs text-gray-500 mt-0.5">Fields marked <span class="text-red-500">*</span> are required</p>
             </div>
             <button @click="trainingModal.open = false"
@@ -960,7 +992,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
               </svg>
-              {{ trainingModal.saving ? 'Saving…' : 'Add Training' }}
+              {{ trainingModal.saving ? 'Saving…' : trainingModal.editingId ? 'Save Changes' : 'Add Training' }}
             </button>
           </div>
 
@@ -1202,9 +1234,9 @@ const docFields = [
 
 // ─── Modal state ─────────────────────────────────────────────────────────────
 
-const expModal     = reactive({ open: false, saving: false, error: '' })
-const eduModal     = reactive({ open: false, saving: false, error: '' })
-const trainingModal = reactive({ open: false, saving: false, error: '' })
+const expModal      = reactive({ open: false, saving: false, error: '', editingId: null })
+const eduModal      = reactive({ open: false, saving: false, error: '', editingId: null })
+const trainingModal = reactive({ open: false, saving: false, error: '', editingId: null })
 
 const expForm = reactive({
   position_title: '', department_agency: '',
@@ -1214,7 +1246,8 @@ const expForm = reactive({
 
 const eduForm = reactive({
   level: '', school_name: '', degree_course: '',
-  period_from: '', period_to: '', units_earned: '', year_graduated: '', honors: '',
+  period_from: '', period_to: '', period_to_present: false,
+  units_earned: '', year_graduated: '', honors: '',
 })
 
 const trainingForm = reactive({
@@ -1235,6 +1268,9 @@ onMounted(async () => {
     if (data.profile) {
       const p = data.profile
       Object.keys(personal).forEach(k => { if (p[k] !== null && p[k] !== undefined) personal[k] = p[k] })
+      // Laravel's 'date' cast serializes as ISO 8601 (e.g. "1990-05-15T00:00:00.000000Z"),
+      // but <input type="date"> only accepts YYYY-MM-DD — truncate to the date portion.
+      if (personal.birthday) personal.birthday = String(personal.birthday).substring(0, 10)
       if (p.photo_path) photoPath.value = p.photo_path
       experiences.value = p.work_experiences ?? []
       education.value   = p.educational_attainments ?? []
@@ -1311,14 +1347,16 @@ async function uploadDocuments() {
 
 // ─── Experience ───────────────────────────────────────────────────────────────
 
-function openExpModal() {
+function openExpModal(exp = null) {
   Object.assign(expForm, {
-    position_title: '', department_agency: '',
-    salary_grade: '', appointment_status: '', government_service: false,
-    date_from: '', date_to: '', is_present: false,
+    position_title: exp?.position_title ?? '', department_agency: exp?.department_agency ?? '',
+    salary_grade: exp?.salary_grade ?? '', appointment_status: exp?.appointment_status ?? '',
+    government_service: exp?.government_service ?? false,
+    date_from: exp?.date_from ?? '', date_to: exp?.date_to ?? '', is_present: exp?.is_present ?? false,
   })
-  expModal.error = ''
-  expModal.open  = true
+  expModal.editingId = exp?.id ?? null
+  expModal.error     = ''
+  expModal.open      = true
 }
 
 async function saveExperience() {
@@ -1329,8 +1367,14 @@ async function saveExperience() {
   expModal.saving = true
   expModal.error  = ''
   try {
-    const { data } = await profileApi.addExperience({ ...expForm })
-    experiences.value.push(data)
+    if (expModal.editingId) {
+      const { data } = await profileApi.updateExperience(expModal.editingId, { ...expForm })
+      const idx = experiences.value.findIndex(e => e.id === expModal.editingId)
+      if (idx >= 0) experiences.value[idx] = data
+    } else {
+      const { data } = await profileApi.addExperience({ ...expForm })
+      experiences.value.push(data)
+    }
     expModal.open = false
   } catch (e) {
     expModal.error = e.response?.data?.message ?? 'Failed to save.'
@@ -1347,10 +1391,20 @@ async function deleteExperience(id) {
 
 // ─── Education ────────────────────────────────────────────────────────────────
 
-function openEduModal() {
-  Object.assign(eduForm, { level: '', school_name: '', degree_course: '', period_from: '', period_to: '', units_earned: '', year_graduated: '', honors: '' })
-  eduModal.error = ''
-  eduModal.open  = true
+function openEduModal(edu = null) {
+  const isPresent = edu?.period_to === 'Present'
+  Object.assign(eduForm, {
+    level: edu?.level ?? '', school_name: edu?.school_name ?? '',
+    degree_course: edu?.degree_course ?? '',
+    period_from: edu?.period_from ?? '',
+    period_to: isPresent ? '' : (edu?.period_to ?? ''),
+    period_to_present: isPresent,
+    units_earned: edu?.units_earned ?? '', year_graduated: edu?.year_graduated ?? '',
+    honors: edu?.honors ?? '',
+  })
+  eduModal.editingId = edu?.id ?? null
+  eduModal.error     = ''
+  eduModal.open      = true
 }
 
 async function saveEducation() {
@@ -1361,8 +1415,17 @@ async function saveEducation() {
   eduModal.saving = true
   eduModal.error  = ''
   try {
-    const { data } = await profileApi.addEducation({ ...eduForm })
-    education.value.push(data)
+    const payload = { ...eduForm }
+    if (payload.period_to_present) payload.period_to = 'Present'
+    delete payload.period_to_present
+    if (eduModal.editingId) {
+      const { data } = await profileApi.updateEducation(eduModal.editingId, payload)
+      const idx = education.value.findIndex(e => e.id === eduModal.editingId)
+      if (idx >= 0) education.value[idx] = data
+    } else {
+      const { data } = await profileApi.addEducation(payload)
+      education.value.push(data)
+    }
     eduModal.open = false
   } catch (e) {
     eduModal.error = e.response?.data?.message ?? 'Failed to save.'
@@ -1379,10 +1442,14 @@ async function deleteEducation(id) {
 
 // ─── Training ─────────────────────────────────────────────────────────────────
 
-function openTrainingModal() {
-  Object.assign(trainingForm, { title: '', date_from: '', date_to: '', hours: '', ld_type: '', conducted_by: '' })
-  trainingModal.error = ''
-  trainingModal.open  = true
+function openTrainingModal(t = null) {
+  Object.assign(trainingForm, {
+    title: t?.title ?? '', date_from: t?.date_from ?? '', date_to: t?.date_to ?? '',
+    hours: t?.hours ?? '', ld_type: t?.ld_type ?? '', conducted_by: t?.conducted_by ?? '',
+  })
+  trainingModal.editingId = t?.id ?? null
+  trainingModal.error     = ''
+  trainingModal.open      = true
 }
 
 async function saveTraining() {
@@ -1393,8 +1460,14 @@ async function saveTraining() {
   trainingModal.saving = true
   trainingModal.error  = ''
   try {
-    const { data } = await profileApi.addTraining({ ...trainingForm })
-    trainings.value.push(data)
+    if (trainingModal.editingId) {
+      const { data } = await profileApi.updateTraining(trainingModal.editingId, { ...trainingForm })
+      const idx = trainings.value.findIndex(t => t.id === trainingModal.editingId)
+      if (idx >= 0) trainings.value[idx] = data
+    } else {
+      const { data } = await profileApi.addTraining({ ...trainingForm })
+      trainings.value.push(data)
+    }
     trainingModal.open = false
   } catch (e) {
     trainingModal.error = e.response?.data?.message ?? 'Failed to save.'

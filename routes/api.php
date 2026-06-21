@@ -18,10 +18,12 @@ use App\Http\Controllers\ExamResultController;
 use App\Http\Controllers\BeiRatingController;
 use App\Http\Controllers\DeliberationController;
 use App\Http\Controllers\CsFormController;
+use App\Http\Controllers\VacancyCompetencyController;
 
 // Public routes
 Route::get('/vacancies', [VacancyController::class, 'index']);
 Route::get('/vacancies/{vacancy}', [VacancyController::class, 'show']);
+Route::get('/competencies', [VacancyCompetencyController::class, 'index']);
 
 // Authentication
 Route::post('/login', [AuthController::class, 'login']);
@@ -47,14 +49,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Work Experience
     Route::post('/profile/experiences', [ProfileController::class, 'storeExperience']);
+    Route::put('/profile/experiences/{id}', [ProfileController::class, 'updateExperience']);
     Route::delete('/profile/experiences/{id}', [ProfileController::class, 'deleteExperience']);
 
     // Education
     Route::post('/profile/education', [ProfileController::class, 'storeEducation']);
+    Route::put('/profile/education/{id}', [ProfileController::class, 'updateEducation']);
     Route::delete('/profile/education/{id}', [ProfileController::class, 'deleteEducation']);
 
     // Trainings
     Route::post('/profile/trainings', [ProfileController::class, 'storeTraining']);
+    Route::put('/profile/trainings/{id}', [ProfileController::class, 'updateTraining']);
     Route::delete('/profile/trainings/{id}', [ProfileController::class, 'deleteTraining']);
 });
 
@@ -83,6 +88,11 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::apiResource('users', UserController::class);
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
     Route::get('/dashboard-stats', [DashboardController::class, 'adminStats']);
+
+    // Vacancy competency management (admin)
+    Route::get('/competencies/vacancy/{vacancy}', [VacancyCompetencyController::class, 'byVacancy']);
+    Route::post('/competencies/vacancy/{vacancy}/sync', [VacancyCompetencyController::class, 'sync']);
+    Route::delete('/competencies/vacancy/{vacancy}/{competencyKey}', [VacancyCompetencyController::class, 'remove']);
 
     // HRMPSB fixed board composition management
     Route::get('/hrmpsb/compositions', [HrmbsboardController::class, 'compositions']);

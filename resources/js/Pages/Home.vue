@@ -17,8 +17,8 @@
             <span class="text-white/70">Online Recruitment Portal</span>
           </h1>
           <p class="text-white/80 text-base sm:text-lg leading-relaxed mb-8 max-w-xl">
-            Browse open positions at the Civil Service Commission Regional Office
-            and apply for a career in government service.
+            Browse open positions at the Civil Service Commission Regional Office.
+            Sign in or create a free account to apply for a career in government service.
           </p>
 
           <!-- Inline search -->
@@ -248,6 +248,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { debounce } from 'lodash-es'
+import { router } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import VacancyCard from '@/Components/Vacancy/VacancyCard.vue'
 
@@ -345,6 +346,17 @@ function clearFilters() {
 }
 
 onMounted(() => {
+  const token = localStorage.getItem('auth_token')
+  if (token) {
+    const user = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+    const role = user?.role ?? ''
+    if (role === 'applicant') {
+      router.visit('/applicant/dashboard')
+    } else if (role) {
+      router.visit('/admin/dashboard')
+    }
+    return
+  }
   // Only fetch if Inertia didn't already pass initial data
   if (!props.initialVacancies.data?.length) fetchVacancies()
 })

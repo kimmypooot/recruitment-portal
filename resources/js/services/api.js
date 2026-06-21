@@ -62,12 +62,15 @@ export const profileApi = {
   uploadDocuments: (formData) =>
     api.post('/profile/documents', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 
-  addExperience:    (data) => api.post('/profile/experiences', data),
-  deleteExperience: (id)   => api.delete(`/profile/experiences/${id}`),
+  addExperience:    (data)     => api.post('/profile/experiences', data),
+  updateExperience: (id, data) => api.put(`/profile/experiences/${id}`, data),
+  deleteExperience: (id)       => api.delete(`/profile/experiences/${id}`),
 
-  addEducation:    (data) => api.post('/profile/education', data),
-  deleteEducation: (id)   => api.delete(`/profile/education/${id}`),
+  addEducation:    (data)     => api.post('/profile/education', data),
+  updateEducation: (id, data) => api.put(`/profile/education/${id}`, data),
+  deleteEducation: (id)       => api.delete(`/profile/education/${id}`),
 
-  addTraining:    (data) => api.post('/profile/trainings', data),
-  deleteTraining: (id)   => api.delete(`/profile/trainings/${id}`),
+  addTraining:    (data)     => api.post('/profile/trainings', data),
+  updateTraining: (id, data) => api.put(`/profile/trainings/${id}`, data),
+  deleteTraining: (id)       => api.delete(`/profile/trainings/${id}`),
 };

@@ -34,7 +34,7 @@
         {{ vacancy.place_of_assignment }}
       </p>
 
-      <!-- Key requirements (collapsed) -->
+      <!-- Key requirements -->
       <dl class="space-y-1.5">
         <div class="flex gap-2 text-xs">
           <dt class="w-24 flex-shrink-0 text-gray-400 font-medium">Education</dt>
@@ -59,7 +59,26 @@
           {{ formatDate(vacancy.deadline_at) }}
         </p>
       </div>
-      <Link
+
+      <!-- Logged in + showDetailFirst: fetch detail then show modal -->
+      <button v-if="isLoggedIn && showDetailFirst"
+        @click="openDetail"
+        :disabled="loadingDetail"
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] disabled:opacity-60 rounded-lg transition-colors shadow-sm">
+        <svg v-if="loadingDetail" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+        </svg>
+        <template v-else>
+          View & Apply
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+          </svg>
+        </template>
+      </button>
+
+      <!-- Logged in + direct: go directly to apply page -->
+      <Link v-else-if="isLoggedIn"
         :href="`/vacancies/${vacancy.id}/apply`"
         class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors shadow-sm">
         View & Apply
@@ -67,19 +86,99 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
         </svg>
       </Link>
+
+      <!-- Not logged in: prompt to sign in -->
+      <button v-else @click="promptLogin"
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors shadow-sm">
+        View & Apply
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+        </svg>
+      </button>
     </div>
+
+    <!-- Vacancy detail modal -->
+    <VacancyDetailModal
+      v-if="showDetailModal && detailVacancy"
+      :vacancy="detailVacancy"
+      @close="showDetailModal = false"
+    />
+
+    <!-- Auth gate modal -->
+    <Teleport to="body">
+      <div v-if="showAuthModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" @click="showAuthModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
+          <div class="w-14 h-14 rounded-full bg-[#2a338f]/10 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-7 h-7 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-gray-900 mb-1">Sign in to apply</h3>
+          <p class="text-sm text-gray-500 mb-1 font-medium line-clamp-2">{{ vacancy.position_title }}</p>
+          <p class="text-xs text-gray-400 mb-6">You need an account to apply for this position. It only takes a minute to register.</p>
+          <div class="flex flex-col gap-2">
+            <Link :href="`/login?next=/vacancies/${vacancy.id}/apply`"
+              class="w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors">
+              Sign in
+            </Link>
+            <Link :href="`/register?next=/vacancies/${vacancy.id}/apply`"
+              class="w-full py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-semibold rounded-lg transition-colors">
+              Create an Account
+            </Link>
+          </div>
+          <button @click="showAuthModal = false" class="mt-4 text-xs text-gray-400 hover:text-gray-600 transition-colors">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </Teleport>
 
   </article>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
+import VacancyDetailModal from '@/Components/Vacancy/VacancyDetailModal.vue'
 
 const props = defineProps({
-  vacancy: { type: Object, required: true }
+  vacancy:         { type: Object,  required: true },
+  authenticated:   { type: Boolean, default: false },
+  showDetailFirst: { type: Boolean, default: false },
 })
+
+const showAuthModal    = ref(false)
+const showDetailModal  = ref(false)
+const detailVacancy    = ref(null)
+const loadingDetail    = ref(false)
+
+const isLoggedIn = props.authenticated || !!localStorage.getItem('auth_token')
+
+function promptLogin() {
+  showAuthModal.value = true
+}
+
+async function openDetail() {
+  if (loadingDetail.value) return
+  loadingDetail.value = true
+  try {
+    const token = localStorage.getItem('auth_token')
+    const res = await fetch(`/api/vacancies/${props.vacancy.id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    const json = await res.json()
+    detailVacancy.value = json.data ?? json
+    showDetailModal.value = true
+  } catch {
+    // Fallback: use the card's partial data
+    detailVacancy.value = props.vacancy
+    showDetailModal.value = true
+  } finally {
+    loadingDetail.value = false
+  }
+}
 
 const daysRemaining = computed(() => {
   if (!props.vacancy.deadline_at) return null

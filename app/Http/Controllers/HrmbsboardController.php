@@ -89,13 +89,15 @@ class HrmbsboardController extends Controller
 
     public function myRole(Request $request): JsonResponse
     {
-        $composition = HrmbsboardComposition::where('user_id', $request->user()->id)
+        $composition = HrmbsboardComposition::with('user:id,name,email')
+            ->where('user_id', $request->user()->id)
             ->where('is_active', true)
             ->first();
 
         return response()->json([
             'composition' => $composition,
             'roles'       => HrmbsboardComposition::ROLES,
+            'user'        => $request->user()->only('id', 'name', 'email', 'role'),
         ]);
     }
 }

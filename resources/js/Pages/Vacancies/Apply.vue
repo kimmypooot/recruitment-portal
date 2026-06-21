@@ -13,7 +13,7 @@
 
         <!-- Breadcrumb -->
         <nav class="flex items-center gap-2 text-xs text-gray-400 mb-6">
-          <Link href="/" class="hover:text-[#2a338f] transition-colors">Vacancies</Link>
+          <Link href="/applicant/dashboard?tab=vacancies" class="hover:text-[#2a338f] transition-colors">Vacancies</Link>
           <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
           </svg>

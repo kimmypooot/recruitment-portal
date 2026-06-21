@@ -12,11 +12,13 @@ class Vacancy extends Model
 {
     use HasFactory, SoftDeletes;
 
-    // Every column that is safe to mass-assign (Vacancy::create([...]))
     protected $fillable = [
         'position_title',
         'item_number',
         'salary_grade',
+        'monthly_salary',
+        'position_level',
+        'is_anticipated_vacancy',
         'plantilla_number',
         'place_of_assignment',
         'education_req',
@@ -29,12 +31,13 @@ class Vacancy extends Model
         'deadline_at',
     ];
 
-    // Tell Laravel which columns to auto-cast to PHP types
     protected $casts = [
-        'salary_grade' => 'integer',
-        'published_at' => 'datetime',
-        'deadline_at'  => 'datetime',
-        'deleted_at'   => 'datetime',
+        'salary_grade'           => 'integer',
+        'monthly_salary'         => 'decimal:2',
+        'is_anticipated_vacancy' => 'boolean',
+        'published_at'           => 'datetime',
+        'deadline_at'            => 'datetime',
+        'deleted_at'             => 'datetime',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────
@@ -61,6 +64,11 @@ class Vacancy extends Model
     public function deliberationResults(): HasMany
     {
         return $this->hasMany(DeliberationResult::class);
+    }
+
+    public function competencies(): HasMany
+    {
+        return $this->hasMany(VacancyCompetency::class)->with('competency');
     }
 
     // ── Query Scopes (reusable filters) ───────────────────────────────────

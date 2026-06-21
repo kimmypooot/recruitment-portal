@@ -81,19 +81,28 @@ class ApplicationController extends Controller
 
     public function hrIndex(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Application::class);
+        $query = Application::with(['vacancy:id,position_title,place_of_assignment,salary_grade', 'applicant.user:id,name,email']);
 
-        $applications = Application::with(['vacancy', 'applicant'])
-            ->latest()
-            ->paginate(20);
+        if ($request->filled('search')) {
+            $q = $request->search;
+            $query->where(function ($sub) use ($q) {
+                $sub->whereHas('vacancy', fn ($v) => $v->where('position_title', 'like', "%{$q}%"))
+                    ->orWhereHas('applicant.user', fn ($u) => $u->where('name', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%"));
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $applications = $query->latest()->paginate(20);
 
         return response()->json($applications);
     }
 
     public function updateStatus(Request $request, Application $application): JsonResponse
     {
-        $this->authorize('updateStatus', $application);
-
         $request->validate([
             'status'  => 'required|in:under_review,screened,qualified,disqualified,exam_scheduled,interviewed,shortlisted,for_interview,recommended,appointed,completed,withdrawn',
             'remarks' => 'nullable|string|max:1000',

@@ -160,6 +160,25 @@ class ProfileController extends Controller
         return response()->json($exp, 201);
     }
 
+    public function updateExperience(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'position_title'     => 'required|string|max:200',
+            'department_agency'  => 'required|string|max:200',
+            'monthly_salary'     => 'nullable|numeric|min:0',
+            'salary_grade'       => 'nullable|string|max:10',
+            'appointment_status' => 'nullable|string|max:50',
+            'government_service' => 'nullable|boolean',
+            'date_from'          => 'required|string|max:20',
+            'date_to'            => 'nullable|string|max:20',
+            'is_present'         => 'nullable|boolean',
+        ]);
+
+        $exp = $this->getOrCreateProfile()->workExperiences()->findOrFail($id);
+        $exp->update($data);
+        return response()->json($exp);
+    }
+
     public function deleteExperience(int $id): JsonResponse
     {
         $this->getOrCreateProfile()->workExperiences()->findOrFail($id)->delete();
@@ -186,6 +205,24 @@ class ProfileController extends Controller
         return response()->json($edu, 201);
     }
 
+    public function updateEducation(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'level'          => 'required|string|max:50',
+            'school_name'    => 'required|string|max:200',
+            'degree_course'  => 'nullable|string|max:200',
+            'period_from'    => 'nullable|string|max:10',
+            'period_to'      => 'nullable|string|max:10',
+            'units_earned'   => 'nullable|string|max:20',
+            'year_graduated' => 'nullable|string|max:4',
+            'honors'         => 'nullable|string|max:200',
+        ]);
+
+        $edu = $this->getOrCreateProfile()->educationalAttainments()->findOrFail($id);
+        $edu->update($data);
+        return response()->json($edu);
+    }
+
     public function deleteEducation(int $id): JsonResponse
     {
         $this->getOrCreateProfile()->educationalAttainments()->findOrFail($id)->delete();
@@ -208,6 +245,22 @@ class ProfileController extends Controller
         $training = $this->getOrCreateProfile()->trainings()->create($data);
 
         return response()->json($training, 201);
+    }
+
+    public function updateTraining(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'title'        => 'required|string|max:200',
+            'date_from'    => 'required|string|max:20',
+            'date_to'      => 'nullable|string|max:20',
+            'hours'        => 'nullable|numeric|min:0',
+            'ld_type'      => 'nullable|string|max:50',
+            'conducted_by' => 'nullable|string|max:200',
+        ]);
+
+        $training = $this->getOrCreateProfile()->trainings()->findOrFail($id);
+        $training->update($data);
+        return response()->json($training);
     }
 
     public function deleteTraining(int $id): JsonResponse
