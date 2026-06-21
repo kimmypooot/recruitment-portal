@@ -21,10 +21,29 @@
       </div>
     </section>
 
-    <!-- Mission / Vision / Mandate -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div v-for="card in mvg" :key="card.label" class="p-6 rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <!-- Mandate / Core Purpose / Vision -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-6">
+
+      <!-- Mandate — full width -->
+      <div class="p-6 rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="flex items-start gap-5">
+          <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" :d="mandate.icon"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1">{{ mandate.label }}</p>
+            <h3 class="text-base font-bold text-gray-900 mb-2">{{ mandate.title }}</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">{{ mandate.text }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Core Purpose + Vision — two columns -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div v-for="card in corePurposeVision" :key="card.label"
+          class="p-6 rounded-2xl border border-gray-200 bg-white shadow-sm">
           <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-4">
             <svg class="w-5 h-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" :d="card.icon"/>
@@ -35,6 +54,7 @@
           <p class="text-sm text-gray-600 leading-relaxed">{{ card.text }}</p>
         </div>
       </div>
+
     </section>
 
     <!-- About the portal -->
@@ -58,8 +78,8 @@
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
       <h2 class="text-2xl font-bold text-gray-900 mb-2 text-center">Core Values</h2>
       <p class="text-gray-500 text-sm text-center mb-10">Principles that guide the Civil Service Commission</p>
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
-        <div v-for="value in values" :key="value.label" class="text-center p-5 rounded-2xl bg-blue-50 border border-blue-100">
+      <div class="flex flex-wrap justify-center gap-5">
+        <div v-for="value in values" :key="value.label" class="text-center p-5 rounded-2xl bg-blue-50 border border-blue-100 w-36">
           <p class="text-2xl mb-2">{{ value.emoji }}</p>
           <p class="text-xs font-semibold text-blue-800">{{ value.label }}</p>
         </div>
@@ -93,32 +113,32 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 
-const mvg = [
+const mandate = {
+  label: 'Mandate',
+  title: 'Constitutional Authority',
+  text: 'The Civil Service Commission (CSC), as the central personnel agency of the Government, shall establish a career service and adopt measures to promote morale, efficiency, integrity, responsiveness, progressiveness, and courtesy in the civil service. It shall strengthen the merit and rewards system, integrate all human resources development programs for all levels and ranks, and institutionalize a management climate conducive to public accountability. It shall submit to the President and the Congress an annual report on its personnel programs.',
+  icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+}
+
+const corePurposeVision = [
   {
-    label: 'Mission',
+    label: 'Core Purpose',
     title: 'Serving the Filipino People',
-    text: 'To promote integrity, professionalism, and excellence in the civil service and ensure that government personnel are selected based on merit and fitness.',
+    text: 'Gawing Lingkod Bayani ang Bawat Kawani (To make every civil servant a servant hero).',
     icon: 'M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9',
   },
   {
     label: 'Vision',
     title: 'A Competent Civil Service',
-    text: 'A civil service characterized by patriotism, professionalism, and integrity — imbued with a sense of public accountability and dedication to a democratic way of life.',
+    text: 'By 2030, the CSC shall be the leader in empowering people and organizations in HR and OD, and in serving the public through streamlined and digitalized services.',
     icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z',
-  },
-  {
-    label: 'Mandate',
-    title: 'Constitutional Authority',
-    text: 'As the central personnel agency, the CSC establishes and administers a career service system, ensuring appointments based on merit and fitness as determined by competitive examinations.',
-    icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
   },
 ]
 
 const values = [
-  { label: 'Integrity', emoji: '⚖️' },
+  { label: 'Patriotism', emoji: '⚖️' },
   { label: 'Excellence', emoji: '🌟' },
-  { label: 'Accountability', emoji: '📋' },
-  { label: 'Fairness', emoji: '🤝' },
-  { label: 'Service', emoji: '🇵🇭' },
+  { label: 'Integrity', emoji: '📋' },
+  { label: 'Excellence', emoji: '🤝' },
 ]
 </script>

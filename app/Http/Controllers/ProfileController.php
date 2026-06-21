@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class ProfileController extends Controller
 {
@@ -175,6 +176,31 @@ class ProfileController extends Controller
     {
         $this->getOrCreateProfile()->trainings()->findOrFail($id)->delete();
         return response()->json(null, 204);
+    }
+
+    // Document serving ────────────────────────────────────────────────────────
+
+    public function serveDocument(Request $request, string $path): \Symfony\Component\HttpFoundation\Response
+    {
+        $token = $request->query('token');
+        $accessToken = PersonalAccessToken::findToken($token);
+
+        if (! $accessToken) {
+            abort(403, 'Unauthorized');
+        }
+
+        $user = $accessToken->tokenable;
+
+        // Ownership check: path must be profile-documents/{userId}/...
+        if (! str_starts_with($path, "profile-documents/{$user->id}/")) {
+            abort(403, 'Access denied');
+        }
+
+        if (! Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
+        return Storage::disk('public')->response($path);
     }
 
     // Helpers ─────────────────────────────────────────────────────────────────

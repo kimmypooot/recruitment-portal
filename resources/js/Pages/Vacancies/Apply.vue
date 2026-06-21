@@ -205,7 +205,7 @@
                   class="flex items-start justify-between gap-4 py-2.5 px-3 rounded-lg bg-gray-50">
                   <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-900 truncate">{{ exp.position_title }}</p>
-                    <p class="text-xs text-gray-500 mt-0.5">{{ exp.department_agency }} · {{ exp.date_from }} – {{ exp.is_present ? 'Present' : (exp.date_to ?? '—') }}</p>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ exp.department_agency }} · {{ formatDateRange(exp.date_from, exp.is_present ? null : exp.date_to, exp.is_present) }}</p>
                   </div>
                   <span v-if="exp.government_service"
                     class="flex-shrink-0 text-xs font-medium px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">Gov't</span>
@@ -262,12 +262,23 @@
                 <path v-if="doc.uploaded" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                 <path v-else stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
               </svg>
-              <div class="min-w-0">
+              <div class="min-w-0 flex-1">
                 <p class="text-xs font-semibold" :class="doc.uploaded ? 'text-green-800' : 'text-red-700'">{{ doc.label }}</p>
                 <p class="text-xs mt-0.5" :class="doc.uploaded ? 'text-green-600' : 'text-red-500'">
                   {{ doc.uploaded ? 'Uploaded' : (doc.required ? 'Required — not uploaded' : 'Optional — not uploaded') }}
                 </p>
               </div>
+              <a v-if="doc.uploaded && doc.url"
+                :href="doc.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-green-700 bg-white border border-green-200 rounded-lg hover:bg-green-100 transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                View
+              </a>
             </div>
           </div>
         </div>
@@ -387,12 +398,14 @@ const addressLine = computed(() => {
 
 const docList = computed(() => {
   const p = profile.value ?? {}
+  const token = localStorage.getItem('auth_token') ?? ''
+  const url = (path) => path ? `/profile/documents/${path}?token=${token}` : null
   return [
-    { key: 'pds',        label: 'Personal Data Sheet (PDS)', required: true,  uploaded: !!p.pds_path },
-    { key: 'app_letter', label: 'Application Letter',        required: true,  uploaded: !!p.app_letter_path },
-    { key: 'coe',        label: 'Certificate of Eligibility',required: true,  uploaded: !!p.coe_path },
-    { key: 'tor',        label: 'Transcript of Records',     required: true,  uploaded: !!p.tor_path },
-    { key: 'ipcr',       label: 'IPCR',                     required: false, uploaded: !!p.ipcr_path },
+    { key: 'pds',        label: 'Personal Data Sheet (PDS)', required: true,  uploaded: !!p.pds_path,        url: url(p.pds_path) },
+    { key: 'app_letter', label: 'Application Letter',        required: true,  uploaded: !!p.app_letter_path, url: url(p.app_letter_path) },
+    { key: 'coe',        label: 'Certificate of Eligibility',required: true,  uploaded: !!p.coe_path,        url: url(p.coe_path) },
+    { key: 'tor',        label: 'Transcript of Records',     required: true,  uploaded: !!p.tor_path,        url: url(p.tor_path) },
+    { key: 'ipcr',       label: 'IPCR',                     required: false, uploaded: !!p.ipcr_path,       url: url(p.ipcr_path) },
   ]
 })
 
@@ -463,5 +476,39 @@ function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-PH', {
     year: 'numeric', month: 'long', day: 'numeric',
   })
+}
+
+function formatDateRange(from, to, isPresent = false) {
+  if (!from) return '—'
+
+  const MONTHS = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.',
+                  'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.']
+
+  const parse = (str) => {
+    const [y, m, d] = str.split('-').map(Number)
+    return { y, m: m - 1, d }
+  }
+
+  const f = parse(from)
+  const fromStr = `${MONTHS[f.m]} ${f.d}`
+
+  if (isPresent) return `${fromStr}, ${f.y} – Present`
+  if (!to)       return `${fromStr}, ${f.y}`
+
+  const t = parse(to)
+
+  // Same month & year: "Jan. 1-3, 2020"
+  if (f.m === t.m && f.y === t.y) {
+    if (f.d === t.d) return `${fromStr}, ${f.y}`
+    return `${MONTHS[f.m]} ${f.d}-${t.d}, ${f.y}`
+  }
+
+  // Different month, same year: "Jan. 30 - Feb. 2, 2020"
+  if (f.y === t.y) {
+    return `${fromStr} - ${MONTHS[t.m]} ${t.d}, ${f.y}`
+  }
+
+  // Different years: "Jan. 1, 2020 - Feb. 3, 2021"
+  return `${fromStr}, ${f.y} - ${MONTHS[t.m]} ${t.d}, ${t.y}`
 }
 </script>

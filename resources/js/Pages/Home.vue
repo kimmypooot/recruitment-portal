@@ -9,9 +9,9 @@
             <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
             {{ stats.published }} open position{{ stats.published !== 1 ? 's' : '' }} available
           </div>
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-4">
-            Serve the public.<br>
-            <span class="text-blue-300">Build your career.</span>
+          <h1 class="text-2xl sm:text-3xl lg:text-5xl font-bold leading-tight mb-4">
+            CSC RO VIII<br>
+            <span class="text-blue-300">Online Recruitment Portal</span>
           </h1>
           <p class="text-blue-100 text-base sm:text-lg leading-relaxed mb-8 max-w-xl">
             Browse open positions at the Civil Service Commission Regional Office
