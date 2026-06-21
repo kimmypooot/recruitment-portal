@@ -1,6 +1,7 @@
-import { createApp, h } from 'vue'
+import { createApp, h, defineComponent } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
+import DataPrivacyModal from './Components/DataPrivacyModal.vue'
 
 createInertiaApp({
   title: (title) => `${title} — CSC Recruitment`,
@@ -12,7 +13,11 @@ createInertiaApp({
     ),
 
   setup({ el, App, props, plugin }) {
-    createApp({ render: () => h(App, props) })
+    const Root = defineComponent({
+      render: () => [h(App, props), h(DataPrivacyModal)],
+    })
+
+    createApp(Root)
       .use(plugin)
       .mount(el)
   },

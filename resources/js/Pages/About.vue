@@ -89,27 +89,6 @@
       </div>
     </section>
 
-    <!-- Contact -->
-    <section class="text-white" style="background-color: #2a338f;">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <h2 class="text-2xl font-bold mb-8 text-center">Contact Us</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
-          <div>
-            <p class="text-white/60 text-xs uppercase tracking-wider mb-1">Address</p>
-            <p class="text-sm">Eastern Visayas Regional Office<br>CSC Regional Office</p>
-          </div>
-          <div>
-            <p class="text-white/60 text-xs uppercase tracking-wider mb-1">Email</p>
-            <p class="text-sm">recruitment@csc-ro.gov.ph</p>
-          </div>
-          <div>
-            <p class="text-white/60 text-xs uppercase tracking-wider mb-1">Phone</p>
-            <p class="text-sm">(055) 123-4567</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
   </PublicLayout>
 </template>
 
