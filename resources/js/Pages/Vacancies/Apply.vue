@@ -3,9 +3,12 @@
 
     <!-- Navbar -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+      <div class="h-1 w-full bg-[#ec1c2d]"></div>
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-blue-700 flex items-center justify-center flex-shrink-0">
+          <img src="/images/csc-logo.png" alt="CSC Logo" class="h-9 w-9 object-contain flex-shrink-0"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+          <div class="w-9 h-9 rounded-lg bg-[#2a338f] items-center justify-center flex-shrink-0 hidden">
             <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
             </svg>
@@ -36,7 +39,7 @@
 
         <!-- Breadcrumb -->
         <nav class="flex items-center gap-2 text-xs text-gray-400 mb-6">
-          <Link href="/" class="hover:text-blue-700 transition-colors">Vacancies</Link>
+          <Link href="/" class="hover:text-[#2a338f] transition-colors">Vacancies</Link>
           <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
           </svg>
@@ -52,18 +55,18 @@
           <h1 class="text-2xl font-bold text-gray-900">Review Your Application</h1>
           <p class="text-sm text-gray-500 mt-1">
             Confirm your details below. To make changes,
-            <Link href="/applicant/complete-profile" class="text-blue-700 hover:underline font-medium">update your profile</Link>
+            <Link href="/applicant/complete-profile" class="text-[#2a338f] hover:underline font-medium">update your profile</Link>
             first.
           </p>
         </div>
 
         <!-- ── Vacancy Summary Card ─────────────────────────────────── -->
-        <div class="bg-blue-700 text-white rounded-xl p-6 mb-6">
+        <div class="bg-[#2a338f] text-white rounded-xl p-6 mb-6">
           <div class="flex items-start justify-between gap-4">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-wider text-blue-200 mb-1">Applying for</p>
+              <p class="text-xs font-semibold uppercase tracking-wider text-white/70 mb-1">Applying for</p>
               <h2 class="text-xl font-bold leading-snug">{{ vacancy.position_title }}</h2>
-              <p class="text-blue-200 text-sm mt-1 flex items-center gap-1.5">
+              <p class="text-white/70 text-sm mt-1 flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
@@ -74,23 +77,23 @@
               <span class="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-bold bg-white/20 text-white">
                 SG-{{ vacancy.salary_grade }}
               </span>
-              <p class="text-xs text-blue-200 mt-2">
+              <p class="text-xs text-white/70 mt-2">
                 Deadline: <span class="font-semibold text-white">{{ formatDate(vacancy.deadline_at) }}</span>
               </p>
             </div>
           </div>
 
-          <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-5 border-t border-blue-600">
+          <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-5 border-t border-white/20">
             <div>
-              <p class="text-xs text-blue-300 font-medium">Education Req.</p>
+              <p class="text-xs text-white/60 font-medium">Education Req.</p>
               <p class="text-sm text-white mt-0.5">{{ vacancy.education_req ?? '—' }}</p>
             </div>
             <div>
-              <p class="text-xs text-blue-300 font-medium">Experience Req.</p>
+              <p class="text-xs text-white/60 font-medium">Experience Req.</p>
               <p class="text-sm text-white mt-0.5">{{ vacancy.experience_req ?? '—' }}</p>
             </div>
             <div>
-              <p class="text-xs text-blue-300 font-medium">Eligibility Req.</p>
+              <p class="text-xs text-white/60 font-medium">Eligibility Req.</p>
               <p class="text-sm text-white mt-0.5">{{ vacancy.eligibility_req ?? '—' }}</p>
             </div>
           </div>
@@ -123,15 +126,15 @@
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <div class="w-8 h-8 rounded-lg bg-[#2a338f]/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
               </div>
               <p class="text-sm font-semibold text-gray-900">Personal Information</p>
             </div>
             <Link href="/applicant/complete-profile?tab=personal"
-              class="text-xs text-blue-700 hover:underline font-medium flex items-center gap-1">
+              class="text-xs text-[#2a338f] hover:underline font-medium flex items-center gap-1">
               Edit
               <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
@@ -182,7 +185,7 @@
               <p class="text-sm font-semibold text-gray-900">Qualifications</p>
             </div>
             <Link href="/applicant/complete-profile?tab=qualifications"
-              class="text-xs text-blue-700 hover:underline font-medium flex items-center gap-1">
+              class="text-xs text-[#2a338f] hover:underline font-medium flex items-center gap-1">
               Edit
               <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
@@ -208,7 +211,7 @@
                     <p class="text-xs text-gray-500 mt-0.5">{{ exp.department_agency }} · {{ formatDateRange(exp.date_from, exp.is_present ? null : exp.date_to, exp.is_present) }}</p>
                   </div>
                   <span v-if="exp.government_service"
-                    class="flex-shrink-0 text-xs font-medium px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">Gov't</span>
+                    class="flex-shrink-0 text-xs font-medium px-2 py-0.5 bg-[#2a338f]/10 text-[#2a338f] rounded-full">Gov't</span>
                 </div>
                 <p v-if="(profile.work_experiences ?? []).length > 3"
                   class="text-xs text-gray-400 pl-3">
@@ -246,7 +249,7 @@
               <p class="text-sm font-semibold text-gray-900">Uploaded Documents</p>
             </div>
             <Link href="/applicant/complete-profile?tab=documents"
-              class="text-xs text-blue-700 hover:underline font-medium flex items-center gap-1">
+              class="text-xs text-[#2a338f] hover:underline font-medium flex items-center gap-1">
               Edit
               <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
@@ -323,7 +326,7 @@
               <button
                 @click="submitApplication"
                 :disabled="isSubmitting || missingRequiredDocs.length > 0"
-                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-2.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg v-if="isSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -339,7 +342,7 @@
       <!-- Error state -->
       <div v-else-if="!loading" class="text-center py-24">
         <p class="text-gray-500 text-sm">Unable to load vacancy details. Please try again.</p>
-        <Link href="/" class="mt-4 inline-block text-blue-700 hover:underline text-sm font-medium">Back to vacancies</Link>
+        <Link href="/" class="mt-4 inline-block text-[#2a338f] hover:underline text-sm font-medium">Back to vacancies</Link>
       </div>
 
     </main>
@@ -359,7 +362,7 @@
             Your application for <span class="font-semibold text-gray-700">{{ vacancy?.position_title }}</span> has been received. We'll notify you of any updates.
           </p>
           <Link href="/applicant/dashboard"
-            class="block w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg transition-colors">
+            class="block w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors">
             Go to Dashboard
           </Link>
         </div>

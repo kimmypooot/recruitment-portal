@@ -3,9 +3,12 @@
 
     <!-- Navbar -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+      <div class="h-1 w-full bg-[#ec1c2d]"></div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-blue-700 flex items-center justify-center">
+          <img src="/images/csc-logo.png" alt="CSC Logo" class="h-9 w-9 object-contain flex-shrink-0"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+          <div class="w-9 h-9 rounded-lg bg-[#2a338f] items-center justify-center flex-shrink-0 hidden">
             <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
             </svg>
@@ -32,7 +35,7 @@
           <p class="text-sm text-gray-500 mt-1">Track the status of all your submitted applications.</p>
         </div>
         <Link href="/"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
+          class="inline-flex items-center gap-2 px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
@@ -46,7 +49,7 @@
           @click="activeStatus = tab.value"
           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           :class="activeStatus === tab.value
-            ? 'bg-blue-700 text-white shadow-sm'
+            ? 'bg-[#2a338f] text-white shadow-sm'
             : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'">
           {{ tab.label }}
           <span v-if="tab.count !== null"
@@ -65,7 +68,7 @@
       <!-- Applications list -->
       <div v-else-if="filteredApplications.length" class="space-y-3">
         <div v-for="app in filteredApplications" :key="app.id"
-          class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex items-start gap-5 hover:border-blue-200 transition-colors">
+          class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex items-start gap-5 hover:border-[#2a338f]/30 transition-colors">
 
           <!-- Status indicator -->
           <div :class="statusColor(app.status).bg"
@@ -85,7 +88,7 @@
                 </p>
                 <p class="text-sm text-gray-500 mt-0.5">
                   {{ app.vacancy?.place_of_assignment ?? '' }}
-                  <span v-if="app.vacancy?.salary_grade" class="ml-2 text-xs font-medium px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded">
+                  <span v-if="app.vacancy?.salary_grade" class="ml-2 text-xs font-medium px-1.5 py-0.5 bg-[#2a338f]/10 text-[#2a338f] rounded">
                     SG-{{ app.vacancy.salary_grade }}
                   </span>
                 </p>
@@ -124,7 +127,7 @@
         </p>
         <p class="text-xs text-gray-400 mt-1">Browse open vacancies and submit your first application.</p>
         <Link href="/"
-          class="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg transition-colors">
+          class="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors">
           Browse Vacancies
         </Link>
       </div>
@@ -178,7 +181,7 @@ function statusColor(status) {
     exam_scheduled: { bg: 'bg-purple-50', icon: 'text-purple-500', path: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
     passed:         { bg: 'bg-green-50',  icon: 'text-green-500',  path: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
     failed:         { bg: 'bg-red-50',    icon: 'text-red-400',    path: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z' },
-    appointed:      { bg: 'bg-blue-50',   icon: 'text-blue-500',   path: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z' },
+    appointed:      { bg: 'bg-[#2a338f]/10', icon: 'text-[#2a338f]', path: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z' },
   }
   return map[status] ?? { bg: 'bg-gray-50', icon: 'text-gray-400', path: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' }
 }

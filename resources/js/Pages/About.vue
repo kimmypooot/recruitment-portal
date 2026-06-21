@@ -2,19 +2,22 @@
   <PublicLayout>
 
     <!-- Hero -->
-    <section class="bg-gradient-to-br from-blue-800 via-blue-700 to-blue-900 text-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <section class="relative text-white overflow-hidden"
+      style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
+      <!-- Brand gradient overlay -->
+      <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(30,37,112,0.88) 0%, rgba(42,51,143,0.85) 50%, rgba(26,31,94,0.90) 100%);"></div>
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div class="max-w-2xl">
-          <p class="text-blue-300 text-sm font-medium uppercase tracking-wider mb-3">Who We Are</p>
+          <p class="text-white/60 text-sm font-medium uppercase tracking-wider mb-3">Who We Are</p>
           <h1 class="text-3xl sm:text-4xl font-bold leading-tight mb-4">About the CSC Regional Office</h1>
-          <p class="text-blue-100 text-base leading-relaxed">
+          <p class="text-white/80 text-base leading-relaxed">
             The Civil Service Commission is the central personnel agency of the Philippine government,
             mandated to establish a career service and promote morale, efficiency, integrity, responsiveness,
             and courtesy in the civil service.
           </p>
         </div>
       </div>
-      <div class="relative h-10 overflow-hidden">
+      <div class="relative h-10 overflow-hidden z-10">
         <svg viewBox="0 0 1440 40" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB">
           <path d="M0 40L60 33.3C120 26.7 240 13.3 360 10C480 6.7 600 13.3 720 20C840 26.7 960 33.3 1080 33.3C1200 33.3 1320 26.7 1380 23.3L1440 20V40H0Z"/>
         </svg>
@@ -27,13 +30,13 @@
       <!-- Mandate — full width -->
       <div class="p-6 rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="flex items-start gap-5">
-          <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <div class="w-10 h-10 rounded-xl bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" :d="mandate.icon"/>
             </svg>
           </div>
           <div>
-            <p class="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1">{{ mandate.label }}</p>
+            <p class="text-xs font-semibold text-[#2a338f] uppercase tracking-wider mb-1">{{ mandate.label }}</p>
             <h3 class="text-base font-bold text-gray-900 mb-2">{{ mandate.title }}</h3>
             <p class="text-sm text-gray-600 leading-relaxed">{{ mandate.text }}</p>
           </div>
@@ -44,12 +47,12 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div v-for="card in corePurposeVision" :key="card.label"
           class="p-6 rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-4">
-            <svg class="w-5 h-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <div class="w-10 h-10 rounded-xl bg-[#2a338f]/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" :d="card.icon"/>
             </svg>
           </div>
-          <p class="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1">{{ card.label }}</p>
+          <p class="text-xs font-semibold text-[#2a338f] uppercase tracking-wider mb-1">{{ card.label }}</p>
           <h3 class="text-base font-bold text-gray-900 mb-2">{{ card.title }}</h3>
           <p class="text-sm text-gray-600 leading-relaxed">{{ card.text }}</p>
         </div>
@@ -79,28 +82,28 @@
       <h2 class="text-2xl font-bold text-gray-900 mb-2 text-center">Core Values</h2>
       <p class="text-gray-500 text-sm text-center mb-10">Principles that guide the Civil Service Commission</p>
       <div class="flex flex-wrap justify-center gap-5">
-        <div v-for="value in values" :key="value.label" class="text-center p-5 rounded-2xl bg-blue-50 border border-blue-100 w-36">
+        <div v-for="value in values" :key="value.label" class="text-center p-5 rounded-2xl bg-[#2a338f]/5 border border-[#2a338f]/15 w-36">
           <p class="text-2xl mb-2">{{ value.emoji }}</p>
-          <p class="text-xs font-semibold text-blue-800">{{ value.label }}</p>
+          <p class="text-xs font-semibold text-[#2a338f]">{{ value.label }}</p>
         </div>
       </div>
     </section>
 
     <!-- Contact -->
-    <section class="bg-blue-800 text-white">
+    <section class="text-white" style="background-color: #2a338f;">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <h2 class="text-2xl font-bold mb-8 text-center">Contact Us</h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
           <div>
-            <p class="text-blue-300 text-xs uppercase tracking-wider mb-1">Address</p>
+            <p class="text-white/60 text-xs uppercase tracking-wider mb-1">Address</p>
             <p class="text-sm">Eastern Visayas Regional Office<br>CSC Regional Office</p>
           </div>
           <div>
-            <p class="text-blue-300 text-xs uppercase tracking-wider mb-1">Email</p>
+            <p class="text-white/60 text-xs uppercase tracking-wider mb-1">Email</p>
             <p class="text-sm">recruitment@csc-ro.gov.ph</p>
           </div>
           <div>
-            <p class="text-blue-300 text-xs uppercase tracking-wider mb-1">Phone</p>
+            <p class="text-white/60 text-xs uppercase tracking-wider mb-1">Phone</p>
             <p class="text-sm">(055) 123-4567</p>
           </div>
         </div>

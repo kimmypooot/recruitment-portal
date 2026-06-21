@@ -8,11 +8,11 @@
         @input="onSearch"
         type="text"
         placeholder="Search applicant or position..."
-        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none w-60" />
+        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none w-60" />
       <select
         v-model="filters.status"
         @change="fetchApplications"
-        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
         <option value="">All Status</option>
         <option value="submitted">Submitted</option>
         <option value="under_review">Under Review</option>
@@ -49,7 +49,7 @@
             <td class="px-5 py-3.5"><StatusBadge :status="app.status" /></td>
             <td class="px-5 py-3.5 text-gray-400 whitespace-nowrap">{{ formatDate(app.submitted_at) }}</td>
             <td class="px-5 py-3.5 text-right">
-              <button @click="openUpdate(app)" class="text-xs font-medium text-blue-700 hover:underline">
+              <button @click="openUpdate(app)" class="text-xs font-medium text-[#2a338f] hover:underline">
                 Update Status
               </button>
             </td>
@@ -84,7 +84,7 @@
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">New Status</label>
-            <select v-model="statusForm.status" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+            <select v-model="statusForm.status" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
               <option value="under_review">Under Review</option>
               <option value="screened">Screened</option>
               <option value="qualified">Qualified</option>
@@ -99,12 +99,12 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Remarks <span class="text-gray-400 font-normal">(optional)</span></label>
             <textarea v-model="statusForm.remarks" rows="3" placeholder="Add notes or feedback for the applicant..."
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"></textarea>
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none resize-none"></textarea>
           </div>
         </div>
         <div class="flex justify-end gap-3 mt-6">
           <button @click="updateTarget = null" class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
-          <button @click="doUpdateStatus" :disabled="saving" class="px-4 py-2 text-sm bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-800 disabled:opacity-60">
+          <button @click="doUpdateStatus" :disabled="saving" class="px-4 py-2 text-sm bg-[#2a338f] text-white font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-60">
             {{ saving ? 'Saving…' : 'Save Status' }}
           </button>
         </div>

@@ -8,7 +8,7 @@
         @input="onSearch"
         type="text"
         placeholder="Search action or model..."
-        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none w-60" />
+        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none w-60" />
     </div>
 
     <!-- Table -->
@@ -109,7 +109,7 @@ function shortModel(type) {
 function actionClass(action) {
   return {
     created:   'bg-green-100 text-green-700',
-    updated:   'bg-blue-100 text-blue-700',
+    updated:   'bg-[#2a338f]/10 text-[#2a338f]',
     deleted:   'bg-red-100 text-red-700',
     published: 'bg-teal-100 text-teal-700',
     archived:  'bg-yellow-100 text-yellow-700',

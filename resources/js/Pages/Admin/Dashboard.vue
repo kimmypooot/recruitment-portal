@@ -32,7 +32,7 @@
             <span class="w-28 text-xs text-gray-500 truncate capitalize">{{ item.status.replace('_', ' ') }}</span>
             <div class="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
               <div
-                class="h-2 rounded-full bg-blue-600 transition-all duration-500"
+                class="h-2 rounded-full bg-[#2a338f] transition-all duration-500"
                 :style="{ width: pipelineMax ? (item.count / pipelineMax * 100) + '%' : '0%' }">
               </div>
             </div>
@@ -46,7 +46,7 @@
       <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-sm font-semibold text-gray-900">Recent Applications</h2>
-          <Link href="/admin/applications" class="text-xs text-blue-700 hover:underline font-medium">View all</Link>
+          <Link href="/admin/applications" class="text-xs text-[#2a338f] hover:underline font-medium">View all</Link>
         </div>
         <div v-if="loading" class="space-y-3">
           <div v-for="n in 5" :key="n" class="h-10 bg-gray-100 rounded animate-pulse"></div>
@@ -100,7 +100,7 @@ const statCards = computed(() => [
     value: stats.value.vacancies?.total ?? 0,
     sub: `${stats.value.vacancies?.published ?? 0} published`,
     icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-    iconBg: 'bg-blue-100', iconColor: 'text-blue-700',
+    iconBg: 'bg-[#2a338f]/10', iconColor: 'text-[#2a338f]',
   },
   {
     label: 'Closing Soon',

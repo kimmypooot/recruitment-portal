@@ -15,7 +15,7 @@ const map = {
   draft:        { label: 'Draft',        cls: 'bg-gray-100 text-gray-600' },
   published:    { label: 'Published',    cls: 'bg-green-100 text-green-700' },
   archived:     { label: 'Archived',     cls: 'bg-yellow-100 text-yellow-700' },
-  submitted:    { label: 'Submitted',    cls: 'bg-blue-100 text-blue-700' },
+  submitted:    { label: 'Submitted',    cls: 'bg-[#2a338f]/10 text-[#2a338f]' },
   under_review: { label: 'Under Review', cls: 'bg-purple-100 text-purple-700' },
   qualified:    { label: 'Qualified',    cls: 'bg-teal-100 text-teal-700' },
   disqualified: { label: 'Disqualified', cls: 'bg-red-100 text-red-700' },

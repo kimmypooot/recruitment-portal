@@ -3,9 +3,12 @@
 
     <!-- Navbar -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+      <div class="h-1 w-full bg-[#ec1c2d]"></div>
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-blue-700 flex items-center justify-center flex-shrink-0">
+          <img src="/images/csc-logo.png" alt="CSC Logo" class="h-9 w-9 object-contain flex-shrink-0"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+          <div class="w-9 h-9 rounded-lg bg-[#2a338f] items-center justify-center flex-shrink-0 hidden">
             <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
             </svg>
@@ -40,7 +43,7 @@
             @click="activeTab = tab.key"
             class="flex flex-1 items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors min-w-0"
             :class="activeTab === tab.key
-              ? 'bg-blue-700 text-white shadow-sm'
+              ? 'bg-[#2a338f] text-white shadow-sm'
               : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'">
             <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" :d="tab.icon"/>
@@ -62,8 +65,8 @@
         <!-- Personal details card -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
-            <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div class="w-9 h-9 rounded-lg bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
               </svg>
             </div>
@@ -79,7 +82,7 @@
                 Gender <span class="text-red-500 normal-case">*</span>
               </label>
               <select v-model="personal.gender"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition">
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
                 <option value="">— Select —</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -91,7 +94,7 @@
                 Civil Status <span class="text-red-500 normal-case">*</span>
               </label>
               <select v-model="personal.civil_status"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition">
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
                 <option value="">— Select —</option>
                 <option value="Single">Single</option>
                 <option value="Married">Married</option>
@@ -106,13 +109,13 @@
                 Date of Birth <span class="text-red-500 normal-case">*</span>
               </label>
               <input v-model="personal.birthday" type="date"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Religion</label>
               <input v-model="personal.religion" type="text" placeholder="e.g. Roman Catholic"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
           </div>
@@ -139,7 +142,7 @@
                 Region <span class="text-red-500 normal-case">*</span>
               </label>
               <select v-model="personal.region"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition">
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
                 <option value="">— Select Region —</option>
                 <option v-for="r in regions" :key="r" :value="r">{{ r }}</option>
               </select>
@@ -150,7 +153,7 @@
                 Province <span class="text-red-500 normal-case">*</span>
               </label>
               <input v-model="personal.province" type="text" placeholder="e.g. Cebu"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
             <div>
@@ -158,7 +161,7 @@
                 City / Municipality <span class="text-red-500 normal-case">*</span>
               </label>
               <input v-model="personal.city_municipality" type="text" placeholder="e.g. Cebu City"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
             <div class="sm:col-span-2">
@@ -166,7 +169,7 @@
                 Barangay <span class="text-red-500 normal-case">*</span>
               </label>
               <input v-model="personal.barangay" type="text" placeholder="e.g. Lahug"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
           </div>
@@ -192,7 +195,7 @@
                 Mobile Number <span class="text-red-500 normal-case">*</span>
               </label>
               <input v-model="personal.mobile_number" type="tel" placeholder="09XX XXX XXXX"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
             <div>
@@ -208,7 +211,7 @@
         <!-- Tab 1 save footer -->
         <div class="flex items-center justify-end pt-1">
           <button @click="savePersonal" :disabled="savingPersonal"
-            class="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+            class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
             <svg v-if="savingPersonal" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -237,7 +240,7 @@
               <p class="text-xs text-amber-600 font-medium mt-0.5">Enter experience relevant to the applied position</p>
             </div>
             <button @click="openExpModal()"
-              class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold rounded-lg transition-colors">
+              class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-xs font-semibold rounded-lg transition-colors">
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
               </svg>
@@ -301,7 +304,7 @@
               <p class="text-xs text-gray-500 mt-0.5">List all levels from highest to lowest</p>
             </div>
             <button @click="openEduModal()"
-              class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold rounded-lg transition-colors">
+              class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-xs font-semibold rounded-lg transition-colors">
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
               </svg>
@@ -365,7 +368,7 @@
               <p class="text-xs text-amber-600 font-medium mt-0.5">Enter trainings relevant to the applied position</p>
             </div>
             <button @click="openTrainingModal()"
-              class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold rounded-lg transition-colors">
+              class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-xs font-semibold rounded-lg transition-colors">
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
               </svg>
@@ -419,8 +422,8 @@
         <!-- Eligibility & Other Info -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
-            <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div class="w-9 h-9 rounded-lg bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
               </svg>
             </div>
@@ -437,7 +440,7 @@
                 Eligibility <span class="text-red-500 normal-case">*</span>
               </label>
               <select v-model="personal.eligibility"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition">
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
                 <option value="">— Select —</option>
                 <option value="N/A">N/A</option>
                 <option value="Career Service Professional Eligibility">Career Service Professional Eligibility</option>
@@ -448,7 +451,7 @@
               </select>
               <div v-if="personal.eligibility === 'Others'" class="mt-2">
                 <input v-model="personal.eligibility_other" type="text" placeholder="Specify eligibility"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition uppercase" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition uppercase" />
               </div>
             </div>
 
@@ -496,7 +499,7 @@
         <!-- Tab 2 save footer -->
         <div class="flex items-center justify-end pt-1">
           <button @click="savePersonal" :disabled="savingPersonal"
-            class="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+            class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
             <svg v-if="savingPersonal" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -528,7 +531,7 @@
           <div class="px-6 py-6">
 
             <!-- Info banner -->
-            <div class="flex items-start gap-2.5 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700 mb-6">
+            <div class="flex items-start gap-2.5 rounded-lg border border-[#2a338f]/20 bg-[#2a338f]/5 px-4 py-3 text-xs text-[#2a338f] mb-6">
               <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
@@ -550,12 +553,12 @@
                   class="flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl px-4 py-5 cursor-pointer transition-colors group"
                   :class="docFiles[doc.key] || docPaths[doc.key]
                     ? 'border-green-400 bg-green-50'
-                    : 'border-gray-200 hover:border-blue-400 hover:bg-blue-50'">
+                    : 'border-gray-200 hover:border-[#2a338f]/40 hover:bg-[#2a338f]/5'">
                   <input type="file" :name="doc.key" accept=".pdf" class="sr-only"
                     @change="handleFileSelect($event, doc.key)" />
 
                   <svg v-if="!(docFiles[doc.key] || docPaths[doc.key])"
-                    class="w-7 h-7 text-gray-300 group-hover:text-blue-500 transition-colors"
+                    class="w-7 h-7 text-gray-300 group-hover:text-[#2a338f] transition-colors"
                     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                   </svg>
@@ -564,12 +567,24 @@
                   </svg>
 
                   <p class="text-sm font-medium text-center leading-snug"
-                    :class="docFiles[doc.key] || docPaths[doc.key] ? 'text-green-700' : 'text-gray-500 group-hover:text-blue-700'">
+                    :class="docFiles[doc.key] || docPaths[doc.key] ? 'text-green-700' : 'text-gray-500 group-hover:text-[#2a338f]'">
                     {{ docFiles[doc.key]?.name ?? (docPaths[doc.key] ? 'Uploaded — click to replace' : 'Click to browse or drag & drop') }}
                   </p>
                   <p v-if="!(docFiles[doc.key] || docPaths[doc.key])"
                     class="text-xs text-gray-400">PDF format only</p>
                 </label>
+
+                <!-- View button for already-uploaded files -->
+                <div v-if="docPaths[doc.key] && !docFiles[doc.key]" class="mt-1.5 flex justify-end">
+                  <a :href="`/profile/documents/${docPaths[doc.key]}?token=${authToken}`"
+                    target="_blank"
+                    class="inline-flex items-center gap-1 text-xs font-medium text-[#2a338f] hover:underline">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    View document
+                  </a>
+                </div>
 
               </div>
             </div>
@@ -577,7 +592,7 @@
             <!-- Upload button -->
             <div class="mt-6 pt-5 border-t border-gray-100 flex items-center justify-end">
               <button @click="uploadDocuments" :disabled="savingDocs"
-                class="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
                 <svg v-if="savingDocs" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -643,7 +658,7 @@
                 Position Title <span class="text-red-500 normal-case">*</span>
               </label>
               <input v-model="expForm.position_title" type="text" placeholder="e.g. Administrative Officer II"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
             <div>
@@ -651,7 +666,7 @@
                 Department / Agency / Office <span class="text-red-500 normal-case">*</span>
               </label>
               <input v-model="expForm.department_agency" type="text" placeholder="e.g. Civil Service Commission Regional Office"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-5">
@@ -659,13 +674,13 @@
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Salary Grade</label>
                 <input v-model="expForm.salary_grade" type="text" placeholder="e.g. 15-1"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
               </div>
 
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Status of Appointment</label>
                 <select v-model="expForm.appointment_status"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition">
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
                   <option value="">— Select —</option>
                   <option value="Permanent">Permanent</option>
                   <option value="Temporary">Temporary</option>
@@ -680,13 +695,13 @@
                   Date From <span class="text-red-500 normal-case">*</span>
                 </label>
                 <input v-model="expForm.date_from" type="date"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
               </div>
 
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Date To</label>
                 <input v-model="expForm.date_to" type="date" :disabled="expForm.is_present"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition disabled:opacity-40 disabled:cursor-not-allowed" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition disabled:opacity-40 disabled:cursor-not-allowed" />
                 <label class="flex items-center gap-2 mt-2 cursor-pointer">
                   <input type="checkbox" v-model="expForm.is_present" class="w-4 h-4 accent-blue-700 rounded" />
                   <span class="text-xs text-gray-600 select-none">Currently employed here (present)</span>
@@ -712,7 +727,7 @@
               Cancel
             </button>
             <button @click="saveExperience" :disabled="expModal.saving"
-              class="inline-flex items-center gap-2 px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
+              class="inline-flex items-center gap-2 px-5 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
               <svg v-if="expModal.saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -757,7 +772,7 @@
                   Level <span class="text-red-500 normal-case">*</span>
                 </label>
                 <select v-model="eduForm.level"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition">
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
                   <option value="">— Select —</option>
                   <option value="Elementary">Elementary</option>
                   <option value="Secondary">Secondary / High School</option>
@@ -772,7 +787,7 @@
                   Year Graduated
                 </label>
                 <input v-model="eduForm.year_graduated" type="text" placeholder="e.g. 2019"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
               </div>
             </div>
 
@@ -781,37 +796,37 @@
                 School / University Name <span class="text-red-500 normal-case">*</span>
               </label>
               <input v-model="eduForm.school_name" type="text" placeholder="e.g. University of the Philippines Cebu"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Degree / Course</label>
               <input v-model="eduForm.degree_course" type="text" placeholder="e.g. Bachelor of Science in Computer Science"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-5 gap-y-5">
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Period From (Year)</label>
                 <input v-model="eduForm.period_from" type="text" placeholder="e.g. 2015"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Period To (Year)</label>
                 <input v-model="eduForm.period_to" type="text" placeholder="e.g. 2019"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Units Earned</label>
                 <input v-model="eduForm.units_earned" type="text" placeholder="e.g. 140 or N/A"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
               </div>
             </div>
 
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Scholarship / Academic Honors</label>
               <input v-model="eduForm.honors" type="text" placeholder="e.g. Cum Laude, Magna Cum Laude"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
             <p v-if="eduModal.error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
@@ -826,7 +841,7 @@
               Cancel
             </button>
             <button @click="saveEducation" :disabled="eduModal.saving"
-              class="inline-flex items-center gap-2 px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
+              class="inline-flex items-center gap-2 px-5 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
               <svg v-if="eduModal.saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -870,7 +885,7 @@
                 Title of L&D Intervention <span class="text-red-500 normal-case">*</span>
               </label>
               <input v-model="trainingForm.title" type="text" placeholder="e.g. Leadership and Management Seminar"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-5">
@@ -879,22 +894,22 @@
                   Date From <span class="text-red-500 normal-case">*</span>
                 </label>
                 <input v-model="trainingForm.date_from" type="date"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Date To</label>
                 <input v-model="trainingForm.date_to" type="date"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">No. of Hours</label>
                 <input v-model="trainingForm.hours" type="number" min="0" step="0.5" placeholder="e.g. 8"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Type of L&D</label>
                 <select v-model="trainingForm.ld_type"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition">
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
                   <option value="">— Select —</option>
                   <option value="Managerial">Managerial</option>
                   <option value="Supervisory">Supervisory</option>
@@ -906,7 +921,7 @@
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Conducted / Sponsored by</label>
               <input v-model="trainingForm.conducted_by" type="text" placeholder="e.g. Civil Service Commission"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
             </div>
 
             <p v-if="trainingModal.error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
@@ -921,7 +936,7 @@
               Cancel
             </button>
             <button @click="saveTraining" :disabled="trainingModal.saving"
-              class="inline-flex items-center gap-2 px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
+              class="inline-flex items-center gap-2 px-5 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
               <svg v-if="trainingModal.saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -968,7 +983,8 @@ const trainings   = ref([])
 const docFiles = reactive({})
 const docPaths = reactive({})
 
-const authUser = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+const authUser  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+const authToken = localStorage.getItem('auth_token') ?? ''
 
 const personal = reactive({
   gender: '', civil_status: '', birthday: '', religion: '',

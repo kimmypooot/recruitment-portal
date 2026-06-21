@@ -3,9 +3,12 @@
 
     <!-- Navbar -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+      <div class="h-1 w-full bg-[#ec1c2d]"></div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-blue-700 flex items-center justify-center">
+          <img src="/images/csc-logo.png" alt="CSC Logo" class="h-9 w-9 object-contain flex-shrink-0"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+          <div class="w-9 h-9 rounded-lg bg-[#2a338f] items-center justify-center flex-shrink-0 hidden">
             <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
             </svg>
@@ -18,6 +21,7 @@
 
         <nav class="flex items-center gap-6">
           <Link href="/" class="text-sm text-gray-600 hover:text-gray-900 font-medium">Browse Vacancies</Link>
+          <Link href="/applicant/applications" class="text-sm text-gray-600 hover:text-gray-900 font-medium">My Applications</Link>
           <Link href="/applicant/complete-profile" class="text-sm text-gray-600 hover:text-gray-900 font-medium">My Profile</Link>
           <button @click="logout"
             class="text-sm text-red-600 hover:text-red-700 font-medium">
@@ -74,7 +78,7 @@
         <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-semibold text-gray-900">My Applications</h2>
-            <Link href="/" class="text-xs text-blue-700 hover:underline font-medium">Browse vacancies</Link>
+            <Link href="/" class="text-xs text-[#2a338f] hover:underline font-medium">Browse vacancies</Link>
           </div>
 
           <div v-if="loadingApps" class="space-y-3">
@@ -102,7 +106,7 @@
             </svg>
             <p class="text-sm text-gray-400 font-medium">No applications yet</p>
             <Link href="/"
-              class="mt-3 inline-block px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold rounded-lg transition-colors">
+              class="mt-3 inline-block px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-xs font-semibold rounded-lg transition-colors">
               Browse Open Vacancies
             </Link>
           </div>
@@ -136,14 +140,14 @@
               <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   class="h-2 rounded-full transition-all duration-500"
-                  :class="completionPct === 100 ? 'bg-green-500' : 'bg-blue-600'"
+                  :class="completionPct === 100 ? 'bg-green-500' : 'bg-[#2a338f]'"
                   :style="{ width: completionPct + '%' }">
                 </div>
               </div>
             </div>
 
             <Link v-if="!isComplete" href="/applicant/complete-profile"
-              class="mt-4 flex items-center justify-center gap-1.5 w-full py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg transition-colors">
+              class="mt-4 flex items-center justify-center gap-1.5 w-full py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
               </svg>
@@ -160,7 +164,7 @@
             <h2 class="text-sm font-semibold text-gray-900 mb-3">Quick Actions</h2>
             <div class="space-y-2">
               <Link href="/"
-                class="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-blue-50 text-sm text-blue-700 font-medium transition-colors">
+                class="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-[#2a338f]/5 text-sm text-[#2a338f] font-medium transition-colors">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
@@ -214,7 +218,7 @@ const statCards = computed(() => [
   {
     label: 'Total Applications', value: appCounts.value.total,
     icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-    iconBg: 'bg-blue-50', iconColor: 'text-blue-600',
+    iconBg: 'bg-[#2a338f]/10', iconColor: 'text-[#2a338f]',
   },
   {
     label: 'Pending Review', value: appCounts.value.pending,

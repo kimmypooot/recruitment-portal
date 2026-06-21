@@ -16,11 +16,11 @@
     <div v-if="isOpen" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
       <div class="p-3 border-b border-gray-100 flex justify-between items-center">
         <h3 class="font-semibold text-gray-900">Notifications</h3>
-        <button @click="markAllRead" class="text-xs text-blue-600 hover:underline">Mark all read</button>
+        <button @click="markAllRead" class="text-xs text-[#2a338f] hover:underline">Mark all read</button>
       </div>
       <ul class="divide-y divide-gray-100 max-h-72 overflow-y-auto">
         <li v-for="notif in notifications" :key="notif.id"
-            :class="['p-3 hover:bg-gray-50', !notif.read_at ? 'bg-blue-50' : '']">
+            :class="['p-3 hover:bg-gray-50', !notif.read_at ? 'bg-[#2a338f]/5' : '']">
           <p class="text-sm text-gray-800">{{ notif.data.message }}</p>
           <p class="text-xs text-gray-400 mt-1">{{ formatDate(notif.created_at) }}</p>
         </li>

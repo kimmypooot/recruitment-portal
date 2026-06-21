@@ -8,8 +8,8 @@
         @input="onSearch"
         type="text"
         placeholder="Search users..."
-        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none w-56" />
-      <button @click="openCreate" class="flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
+        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none w-56" />
+      <button @click="openCreate" class="flex items-center gap-2 px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
         </svg>
@@ -37,7 +37,7 @@
           <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50 transition-colors">
             <td class="px-5 py-3.5">
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-bold flex-shrink-0">
+                <div class="w-8 h-8 rounded-full bg-[#2a338f]/10 flex items-center justify-center text-[#2a338f] text-xs font-bold flex-shrink-0">
                   {{ initials(user.name) }}
                 </div>
                 <span class="font-medium text-gray-900">{{ user.name }}</span>
@@ -52,7 +52,7 @@
             <td class="px-5 py-3.5 text-gray-400 whitespace-nowrap">{{ formatDate(user.created_at) }}</td>
             <td class="px-5 py-3.5 text-right">
               <div class="flex items-center justify-end gap-2">
-                <button @click="openEdit(user)" class="px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors">Edit</button>
+                <button @click="openEdit(user)" class="px-2.5 py-1 text-xs font-medium text-[#2a338f] bg-[#2a338f]/10 hover:bg-[#2a338f]/20 rounded-md transition-colors">Edit</button>
                 <button @click="confirmDelete(user)" class="px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors">Delete</button>
               </div>
             </td>
@@ -72,15 +72,15 @@
         <form @submit.prevent="submitUser" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
-            <input v-model="form.name" required type="text" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            <input v-model="form.name" required type="text" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
-            <input v-model="form.email" required type="email" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            <input v-model="form.email" required type="email" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Role <span class="text-red-500">*</span></label>
-            <select v-model="form.role" required class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+            <select v-model="form.role" required class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
               <option value="applicant">Applicant</option>
               <option value="hr-officer">HR Officer</option>
               <option value="hr-manager">HR Manager</option>
@@ -89,11 +89,11 @@
           </div>
           <div v-if="!editTarget">
             <label class="block text-sm font-medium text-gray-700 mb-1">Password <span class="text-red-500">*</span></label>
-            <input v-model="form.password" required type="password" placeholder="Min. 8 characters" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            <input v-model="form.password" required type="password" placeholder="Min. 8 characters" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
           </div>
           <div class="flex justify-end gap-3 pt-2">
             <button type="button" @click="showModal = false" class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
-            <button type="submit" :disabled="saving" class="px-4 py-2 text-sm bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-800 disabled:opacity-60">
+            <button type="submit" :disabled="saving" class="px-4 py-2 text-sm bg-[#2a338f] text-white font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-60 transition-colors">
               {{ saving ? 'Saving…' : (editTarget ? 'Save Changes' : 'Create User') }}
             </button>
           </div>
@@ -210,7 +210,7 @@ function roleLabel(role) {
 function roleClass(role) {
   return {
     admin:        'bg-purple-100 text-purple-700',
-    'hr-manager': 'bg-blue-100 text-blue-700',
+    'hr-manager': 'bg-[#2a338f]/10 text-[#2a338f]',
     'hr-officer': 'bg-teal-100 text-teal-700',
     applicant:    'bg-gray-100 text-gray-600',
   }[role] ?? 'bg-gray-100 text-gray-600'

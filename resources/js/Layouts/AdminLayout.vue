@@ -4,24 +4,26 @@
     <!-- Sidebar -->
     <aside
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-      class="fixed inset-y-0 left-0 z-50 w-64 bg-blue-900 text-white flex flex-col transition-transform duration-200 lg:relative lg:translate-x-0 lg:flex-shrink-0">
+      class="fixed inset-y-0 left-0 z-50 w-64 text-white flex flex-col transition-transform duration-200 lg:relative lg:translate-x-0 lg:flex-shrink-0" style="background-color: #2a338f;">
 
       <!-- Logo -->
-      <div class="flex items-center gap-3 px-5 py-5 border-b border-blue-800">
-        <div class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+      <div class="flex items-center gap-3 px-5 py-5 border-b border-white/10">
+        <img src="/images/csc-logo.png" alt="CSC Logo" class="h-9 w-9 object-contain flex-shrink-0"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+        <div class="w-9 h-9 rounded-lg bg-white/15 items-center justify-center flex-shrink-0 hidden">
           <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
           </svg>
         </div>
         <div class="leading-tight">
           <p class="text-sm font-bold text-white">CSC Regional Office</p>
-          <p class="text-xs text-blue-300">Admin Portal</p>
+          <p class="text-xs text-white/60">Admin Portal</p>
         </div>
       </div>
 
       <!-- Navigation -->
       <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <p class="text-xs font-semibold text-blue-400 uppercase tracking-wider px-3 mb-2 mt-1">Main</p>
+        <p class="text-xs font-semibold text-white/50 uppercase tracking-wider px-3 mb-2 mt-1">Main</p>
 
         <Link
           v-for="item in navItems" :key="item.href"
@@ -29,7 +31,7 @@
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
           :class="isActive(item.href)
             ? 'bg-white/15 text-white'
-            : 'text-blue-200 hover:bg-white/10 hover:text-white'">
+            : 'text-white/80 hover:bg-white/10 hover:text-white'">
           <svg class="w-4.5 h-4.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon"/>
           </svg>
@@ -38,14 +40,14 @@
       </nav>
 
       <!-- Footer -->
-      <div class="px-3 py-4 border-t border-blue-800">
-        <Link href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-blue-200 hover:bg-white/10 hover:text-white transition-colors">
+      <div class="px-3 py-4 border-t border-white/10">
+        <Link href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors">
           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
           </svg>
           View Public Site
         </Link>
-        <button @click="logout" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-blue-200 hover:bg-white/10 hover:text-white transition-colors mt-0.5">
+        <button @click="logout" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors mt-0.5">
           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
           </svg>
@@ -75,7 +77,7 @@
           <h1 class="text-base font-semibold text-gray-900">{{ title }}</h1>
         </div>
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-blue-700 flex items-center justify-center text-white text-xs font-bold">
+          <div class="w-8 h-8 rounded-full bg-[#2a338f] flex items-center justify-center text-white text-xs font-bold">
             A
           </div>
         </div>

@@ -2,20 +2,27 @@
   <div class="min-h-screen flex flex-col bg-gray-50">
 
     <!-- ── Navbar ─────────────────────────────────────────────────────── -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header class="bg-white sticky top-0 z-50 shadow-sm">
+      <!-- CSC red brand stripe -->
+      <div class="h-1 w-full bg-[#ec1c2d]"></div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
 
           <!-- Logo + wordmark -->
+          <!-- LOGO: Replace /images/csc-logo.png with your actual logo file.
+               Place the file at: public/images/csc-logo.png -->
           <Link href="/" class="flex items-center gap-3 group">
-            <div class="w-9 h-9 rounded-lg bg-blue-700 flex items-center justify-center flex-shrink-0">
+            <img src="/images/csc-logo.png" alt="CSC Logo"
+              class="h-10 w-10 object-contain flex-shrink-0"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="w-10 h-10 rounded-lg bg-[#2a338f] items-center justify-center flex-shrink-0 hidden">
               <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
               </svg>
             </div>
             <div class="leading-tight">
-              <p class="text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors">CSC Regional Office VIII</p>
+              <p class="text-sm font-bold text-gray-900 group-hover:text-[#2a338f] transition-colors">CSC Regional Office VIII</p>
               <p class="text-xs text-gray-500">Recruitment Portal</p>
             </div>
           </Link>
@@ -24,7 +31,7 @@
           <nav class="hidden md:flex items-center gap-1">
             <Link href="/"
               class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              :class="$page.url === '/' ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'">
+              :class="$page.url === '/' ? 'bg-[#2a338f]/10 text-[#2a338f]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'">
               Vacancies
             </Link>
             <Link href="/how-to-apply"
@@ -47,7 +54,7 @@
                 Sign in
               </Link>
               <Link href="/register"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors shadow-sm">
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors shadow-sm">
                 Create Account
               </Link>
             </template>
@@ -57,7 +64,7 @@
               <button
                 @click="dropdownOpen = !dropdownOpen"
                 class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-                <div class="w-7 h-7 rounded-full bg-blue-700 flex items-center justify-center flex-shrink-0">
+                <div class="w-7 h-7 rounded-full bg-[#2a338f] flex items-center justify-center flex-shrink-0">
                   <span class="text-xs font-bold text-white">{{ userInitial }}</span>
                 </div>
                 <span class="hidden sm:block text-sm font-medium text-gray-700 max-w-[120px] truncate">{{ userName }}</span>
@@ -136,7 +143,10 @@
           <!-- Col 1: Brand -->
           <div>
             <div class="flex items-center gap-2 mb-3">
-              <div class="w-7 h-7 rounded bg-blue-700 flex items-center justify-center">
+              <!-- LOGO (footer): same file as navbar — public/images/csc-logo.png -->
+              <img src="/images/csc-logo.png" alt="CSC Logo" class="h-7 w-7 object-contain"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+              <div class="w-7 h-7 rounded bg-[#2a338f] items-center justify-center hidden">
                 <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
                 </svg>
@@ -153,10 +163,10 @@
           <div>
             <h3 class="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Quick Links</h3>
             <ul class="space-y-2">
-              <li><Link href="/" class="text-sm text-gray-500 hover:text-blue-700 transition-colors">Open Vacancies</Link></li>
-              <li><Link href="/how-to-apply" class="text-sm text-gray-500 hover:text-blue-700 transition-colors">How to Apply</Link></li>
-              <li><Link href="/register" class="text-sm text-gray-500 hover:text-blue-700 transition-colors">Register as Applicant</Link></li>
-              <li><Link href="/login" class="text-sm text-gray-500 hover:text-blue-700 transition-colors">Track My Application</Link></li>
+              <li><Link href="/" class="text-sm text-gray-500 hover:text-[#2a338f] transition-colors">Open Vacancies</Link></li>
+              <li><Link href="/how-to-apply" class="text-sm text-gray-500 hover:text-[#2a338f] transition-colors">How to Apply</Link></li>
+              <li><Link href="/register" class="text-sm text-gray-500 hover:text-[#2a338f] transition-colors">Register as Applicant</Link></li>
+              <li><Link href="/login" class="text-sm text-gray-500 hover:text-[#2a338f] transition-colors">Track My Application</Link></li>
             </ul>
           </div>
 

@@ -2,18 +2,21 @@
   <PublicLayout>
 
     <!-- ── Hero ─────────────────────────────────────────────────────────── -->
-    <section class="bg-gradient-to-br from-blue-800 via-blue-700 to-blue-900 text-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+    <section class="relative text-white overflow-hidden"
+      style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
+      <!-- Brand gradient overlay -->
+      <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(30,37,112,0.88) 0%, rgba(42,51,143,0.85) 50%, rgba(26,31,94,0.90) 100%);"></div>
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
         <div class="max-w-2xl">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/50 text-blue-100 text-xs font-medium mb-5 border border-blue-500/40">
-            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-5 border border-white/20 bg-white/10 text-white/90">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#ec1c2d]"></span>
             {{ stats.published }} open position{{ stats.published !== 1 ? 's' : '' }} available
           </div>
           <h1 class="text-2xl sm:text-3xl lg:text-5xl font-bold leading-tight mb-4">
             CSC RO VIII<br>
-            <span class="text-blue-300">Online Recruitment Portal</span>
+            <span class="text-white/70">Online Recruitment Portal</span>
           </h1>
-          <p class="text-blue-100 text-base sm:text-lg leading-relaxed mb-8 max-w-xl">
+          <p class="text-white/80 text-base sm:text-lg leading-relaxed mb-8 max-w-xl">
             Browse open positions at the Civil Service Commission Regional Office
             and apply for a career in government service.
           </p>
@@ -29,11 +32,11 @@
                 @input="onSearchInput"
                 type="text"
                 placeholder="Search position title..."
-                class="w-full pl-9 pr-4 py-3 rounded-lg text-sm text-gray-900 bg-white placeholder-gray-400 border-0 shadow focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+                class="w-full pl-9 pr-4 py-3 rounded-lg text-sm text-gray-900 bg-white placeholder-gray-400 border-0 shadow focus:ring-2 focus:ring-white/50 focus:outline-none" />
             </div>
             <button
               @click="fetchVacancies"
-              class="px-5 py-3 bg-white text-blue-800 font-semibold text-sm rounded-lg shadow hover:bg-blue-50 transition-colors">
+              class="px-5 py-3 bg-[#ec1c2d] hover:bg-[#c9111f] text-white font-semibold text-sm rounded-lg shadow transition-colors">
               Search
             </button>
           </div>
@@ -41,7 +44,7 @@
       </div>
 
       <!-- Wave divider -->
-      <div class="relative h-10 overflow-hidden">
+      <div class="relative h-10 overflow-hidden z-10">
         <svg viewBox="0 0 1440 40" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB">
           <path d="M0 40L60 33.3C120 26.7 240 13.3 360 10C480 6.7 600 13.3 720 20C840 26.7 960 33.3 1080 33.3C1200 33.3 1320 26.7 1380 23.3L1440 20V40H0Z"/>
         </svg>
@@ -57,7 +60,7 @@
           <select
             v-model="filters.salary_grade"
             @change="fetchVacancies"
-            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
             <option value="">All Salary Grades</option>
             <option v-for="sg in salaryGrades" :key="sg" :value="sg">SG-{{ sg }}</option>
           </select>
@@ -66,7 +69,7 @@
           <select
             v-model="filters.place"
             @change="fetchVacancies"
-            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
             <option value="">All Offices</option>
             <option v-for="place in uniquePlaces" :key="place" :value="place">{{ place }}</option>
           </select>
@@ -75,7 +78,7 @@
           <select
             v-model="filters.sort"
             @change="fetchVacancies"
-            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
             <option value="deadline_asc">Deadline: Soonest First</option>
             <option value="deadline_desc">Deadline: Latest First</option>
             <option value="sg_desc">Salary Grade: Highest First</option>
@@ -159,7 +162,7 @@
         <button
           v-if="hasActiveFilters"
           @click="clearFilters"
-          class="px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors">
+          class="px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors">
           Clear filters
         </button>
       </div>
@@ -197,7 +200,7 @@
               :class="[
                 'w-9 h-9 rounded-lg text-sm font-medium transition-colors',
                 page === pagination.current_page
-                  ? 'bg-blue-700 text-white shadow-sm'
+                  ? 'bg-[#2a338f] text-white shadow-sm'
                   : 'text-gray-700 hover:bg-gray-100'
               ]">
               {{ page }}
@@ -219,20 +222,20 @@
     </section>
 
     <!-- ── Info strip ────────────────────────────────────────────────── -->
-    <section class="bg-blue-800 text-white">
+    <section class="text-white" style="background-color: #2a338f;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
-          <div>
-            <p class="text-3xl font-bold text-white">{{ stats.published }}</p>
-            <p class="text-blue-200 text-sm mt-1">Open Positions</p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center divide-y sm:divide-y-0 sm:divide-x divide-white/20">
+          <div class="pb-6 sm:pb-0">
+            <p class="text-4xl font-bold text-white">{{ stats.published }}</p>
+            <p class="text-white/60 text-sm mt-1 uppercase tracking-wide font-medium">Open Positions</p>
           </div>
-          <div>
-            <p class="text-3xl font-bold text-white">{{ stats.total_applications }}</p>
-            <p class="text-blue-200 text-sm mt-1">Applications This Year</p>
+          <div class="py-6 sm:py-0 sm:px-8">
+            <p class="text-4xl font-bold text-white">{{ stats.total_applications }}</p>
+            <p class="text-white/60 text-sm mt-1 uppercase tracking-wide font-medium">Applications This Year</p>
           </div>
-          <div>
-            <p class="text-3xl font-bold text-white">{{ stats.appointed }}</p>
-            <p class="text-blue-200 text-sm mt-1">Appointments Made</p>
+          <div class="pt-6 sm:pt-0 sm:px-8">
+            <p class="text-4xl font-bold text-white">{{ stats.appointed }}</p>
+            <p class="text-white/60 text-sm mt-1 uppercase tracking-wide font-medium">Appointments Made</p>
           </div>
         </div>
       </div>

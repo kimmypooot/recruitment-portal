@@ -3,19 +3,22 @@
 
     <!-- Navbar (minimal) -->
     <header class="bg-white border-b border-gray-200">
+      <div class="h-1 w-full bg-[#ec1c2d]"></div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" class="flex items-center gap-3 group">
-          <div class="w-9 h-9 rounded-lg bg-blue-700 flex items-center justify-center">
+          <img src="/images/csc-logo.png" alt="CSC Logo" class="h-9 w-9 object-contain flex-shrink-0"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+          <div class="w-9 h-9 rounded-lg bg-[#2a338f] items-center justify-center flex-shrink-0 hidden">
             <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
             </svg>
           </div>
           <div class="leading-tight">
-            <p class="text-sm font-bold text-gray-900">CSC Regional Office</p>
+            <p class="text-sm font-bold text-gray-900">CSC Regional Office VIII</p>
             <p class="text-xs text-gray-500">Recruitment Portal</p>
           </div>
         </Link>
-        <Link href="/login" class="text-sm text-blue-700 font-medium hover:underline">Sign in</Link>
+        <Link href="/login" class="text-sm text-[#2a338f] font-medium hover:underline">Sign in</Link>
       </div>
     </header>
 
@@ -72,7 +75,7 @@
                   type="text"
                   required
                   placeholder="Dela Cruz"
-                  class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition"
+                  class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
                   :class="errors.last_name ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
                 <p v-if="errors.last_name" class="mt-1 text-xs text-red-600">{{ errors.last_name }}</p>
               </div>
@@ -83,7 +86,7 @@
                   type="text"
                   required
                   placeholder="Juan"
-                  class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition"
+                  class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
                   :class="errors.first_name ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
                 <p v-if="errors.first_name" class="mt-1 text-xs text-red-600">{{ errors.first_name }}</p>
               </div>
@@ -97,13 +100,13 @@
                   v-model="form.middle_name"
                   type="text"
                   placeholder="Santos (optional)"
-                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition" />
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Suffix</label>
                 <select
                   v-model="form.suffix"
-                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition bg-white">
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition bg-white">
                   <option value="">None</option>
                   <option>Jr.</option>
                   <option>Sr.</option>
@@ -123,7 +126,7 @@
                 autocomplete="email"
                 required
                 placeholder="you@example.com"
-                class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition"
+                class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
                 :class="errors.email ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
               <p v-if="errors.email" class="mt-1 text-xs text-red-600">{{ errors.email }}</p>
             </div>
@@ -137,7 +140,7 @@
                 autocomplete="new-password"
                 required
                 placeholder="At least 8 characters"
-                class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition"
+                class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
                 :class="errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
               <p v-if="errors.password" class="mt-1 text-xs text-red-600">{{ errors.password }}</p>
             </div>
@@ -151,7 +154,7 @@
                 autocomplete="new-password"
                 required
                 placeholder="Repeat your password"
-                class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition"
+                class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
                 :class="errors.password_confirmation ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
               <p v-if="errors.password_confirmation" class="mt-1 text-xs text-red-600">{{ errors.password_confirmation }}</p>
             </div>
@@ -159,7 +162,7 @@
             <button
               type="submit"
               :disabled="loading"
-              class="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+              class="w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white font-semibold text-sm rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
               {{ loading ? 'Creating account…' : 'Create account' }}
             </button>
 
@@ -167,7 +170,7 @@
 
           <p class="mt-6 text-center text-sm text-gray-500">
             Already have an account?
-            <Link href="/login" class="text-blue-700 font-medium hover:underline">Sign in</Link>
+            <Link href="/login" class="text-[#2a338f] font-medium hover:underline">Sign in</Link>
           </p>
 
         </div>
