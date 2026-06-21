@@ -12,15 +12,14 @@ use Illuminate\Http\Request;
 
 class ExamResultController extends Controller
 {
-    private function canEncode(int $vacancyId, int $userId, string $role): bool
+    private function canEncode(int $userId, string $role): bool
     {
         if (in_array($role, ['admin', 'hr-manager'])) {
             return true;
         }
-        return HrmbsboardComposition::where('vacancy_id', $vacancyId)
-            ->where('user_id', $userId)
+        return HrmbsboardComposition::where('user_id', $userId)
+            ->where('hrmpsb_role', 'secretariat')
             ->where('is_active', true)
-            ->whereIn('hrmpsb_role', ['secretariat'])
             ->exists();
     }
 
@@ -28,10 +27,8 @@ class ExamResultController extends Controller
     {
         $user = $request->user();
 
-        if (!$this->canEncode($vacancy->id, $user->id, $user->role)) {
-            // Regular HRMPSB members can view results (anonymized)
-            $isAssigned = HrmbsboardComposition::where('vacancy_id', $vacancy->id)
-                ->where('user_id', $user->id)
+        if (!$this->canEncode($user->id, $user->role)) {
+            $isAssigned = HrmbsboardComposition::where('user_id', $user->id)
                 ->where('is_active', true)
                 ->exists();
 
@@ -81,7 +78,7 @@ class ExamResultController extends Controller
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
 
-        if (!$this->canEncode($application->vacancy_id, $user->id, $user->role)) {
+        if (!$this->canEncode($user->id, $user->role)) {
             return response()->json(['message' => 'Only HRMPSB Secretariat can encode exam results.'], 403);
         }
 
@@ -105,7 +102,7 @@ class ExamResultController extends Controller
         $application = Application::with('vacancy')->findOrFail($examResult->application_id);
         $user = $request->user();
 
-        if (!$this->canEncode($application->vacancy_id, $user->id, $user->role)) {
+        if (!$this->canEncode($user->id, $user->role)) {
             return response()->json(['message' => 'Access denied.'], 403);
         }
 

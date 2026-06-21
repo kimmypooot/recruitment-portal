@@ -10,7 +10,7 @@ class HrmbsboardComposition extends Model
     protected $table = 'hrmpsb_compositions';
 
     protected $fillable = [
-        'vacancy_id', 'user_id', 'hrmpsb_role', 'member_type',
+        'user_id', 'hrmpsb_role', 'member_type',
         'is_active', 'assigned_by', 'assigned_at',
     ];
 
@@ -20,20 +20,15 @@ class HrmbsboardComposition extends Model
     ];
 
     public const ROLES = [
-        'chairperson'                  => 'Chairperson',
-        'secretariat'                  => 'HRMPSB Secretariat',
-        'director-representative'      => 'Director II Representative',
-        'division-chief-representative'=> 'Division Chief Representative',
-        'hr-chief'                     => 'Chief of HR Division',
-        'head-of-unit'                 => 'Head of Unit',
-        'pintig-representative-1st'    => 'PINTIG Representative (1st Level)',
-        'pintig-representative-2nd'    => 'PINTIG Representative (2nd Level)',
+        'chairperson'                   => 'Chairperson',
+        'secretariat'                   => 'HRMPSB Secretariat',
+        'director-representative'       => 'Director II Representative',
+        'division-chief-representative' => 'Division Chief Representative',
+        'hr-chief'                      => 'Chief of HR Division',
+        'head-of-unit'                  => 'Head of Unit',
+        'pintig-representative-1st'     => 'PINTIG Representative (1st Level)',
+        'pintig-representative-2nd'     => 'PINTIG Representative (2nd Level)',
     ];
-
-    public function vacancy(): BelongsTo
-    {
-        return $this->belongsTo(Vacancy::class);
-    }
 
     public function user(): BelongsTo
     {

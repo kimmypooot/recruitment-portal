@@ -84,17 +84,17 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
     Route::get('/dashboard-stats', [DashboardController::class, 'adminStats']);
 
-    // HRMPSB composition management (admin assigns members per vacancy)
-    Route::get('/hrmpsb/vacancies', [HrmbsboardController::class, 'vacanciesWithCompositions']);
-    Route::get('/hrmpsb/{vacancy}/compositions', [HrmbsboardController::class, 'compositions']);
-    Route::post('/hrmpsb/{vacancy}/compositions', [HrmbsboardController::class, 'assign']);
+    // HRMPSB fixed board composition management
+    Route::get('/hrmpsb/compositions', [HrmbsboardController::class, 'compositions']);
+    Route::post('/hrmpsb/compositions', [HrmbsboardController::class, 'assign']);
     Route::delete('/hrmpsb/compositions/{composition}', [HrmbsboardController::class, 'remove']);
     Route::patch('/hrmpsb/compositions/{composition}/toggle-type', [HrmbsboardController::class, 'toggleType']);
+    Route::patch('/hrmpsb/compositions/{composition}/toggle-active', [HrmbsboardController::class, 'toggleActive']);
 });
 
 // HRMPSB evaluation routes (members + secretariat + admin)
 Route::middleware(['auth:sanctum', 'role:hrmpsb-member,hrmpsb-secretariat,admin,hr-manager,appointing-authority'])->group(function () {
-    Route::get('/hrmpsb/my-assignments', [HrmbsboardController::class, 'myAssignments']);
+    Route::get('/hrmpsb/my-role', [HrmbsboardController::class, 'myRole']);
     // QS Evaluation
     Route::get('/qs-evaluations/{vacancy}', [QsEvaluationController::class, 'index']);
     Route::post('/qs-evaluations', [QsEvaluationController::class, 'store']);

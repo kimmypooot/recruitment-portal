@@ -12,18 +12,16 @@ use Illuminate\Http\Request;
 
 class BeiRatingController extends Controller
 {
-    private function getComposition(int $vacancyId, int $userId): ?HrmbsboardComposition
+    private function getComposition(int $userId): ?HrmbsboardComposition
     {
-        return HrmbsboardComposition::where('vacancy_id', $vacancyId)
-            ->where('user_id', $userId)
+        return HrmbsboardComposition::where('user_id', $userId)
             ->where('is_active', true)
             ->first();
     }
 
-    private function isSecretariat(int $vacancyId, int $userId): bool
+    private function isSecretariat(int $userId): bool
     {
-        return HrmbsboardComposition::where('vacancy_id', $vacancyId)
-            ->where('user_id', $userId)
+        return HrmbsboardComposition::where('user_id', $userId)
             ->where('hrmpsb_role', 'secretariat')
             ->where('is_active', true)
             ->exists();
@@ -34,11 +32,11 @@ class BeiRatingController extends Controller
         $user = $request->user();
 
         $canAdmin = in_array($user->role, ['admin', 'hr-manager']);
-        $isSecretariat = $canAdmin || $this->isSecretariat($vacancy->id, $user->id);
-        $composition = $this->getComposition($vacancy->id, $user->id);
+        $isSecretariat = $canAdmin || $this->isSecretariat($user->id);
+        $composition = $this->getComposition($user->id);
 
         if (!$isSecretariat && !$composition) {
-            return response()->json(['message' => 'You are not assigned to this vacancy\'s HRMPSB.'], 403);
+            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
         }
 
         $applications = Application::where('vacancy_id', $vacancy->id)
@@ -97,9 +95,9 @@ class BeiRatingController extends Controller
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
 
-        $composition = $this->getComposition($application->vacancy_id, $user->id);
+        $composition = $this->getComposition($user->id);
         if (!$composition && !in_array($user->role, ['admin', 'hr-manager'])) {
-            return response()->json(['message' => 'You are not assigned to this vacancy\'s HRMPSB.'], 403);
+            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
         }
 
         $existing = BeiRating::where('application_id', $data['application_id'])
@@ -131,7 +129,7 @@ class BeiRatingController extends Controller
     {
         $user = $request->user();
 
-        if (!$this->isSecretariat($vacancy->id, $user->id) && !in_array($user->role, ['admin', 'hr-manager'])) {
+        if (!$this->isSecretariat($user->id) && !in_array($user->role, ['admin', 'hr-manager'])) {
             return response()->json(['message' => 'Only the HRMPSB Secretariat can lock BEI ratings.'], 403);
         }
 

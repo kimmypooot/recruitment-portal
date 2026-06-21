@@ -13,18 +13,16 @@ use Illuminate\Http\Request;
 
 class QsEvaluationController extends Controller
 {
-    private function getComposition(int $vacancyId, int $userId): ?HrmbsboardComposition
+    private function getComposition(int $userId): ?HrmbsboardComposition
     {
-        return HrmbsboardComposition::where('vacancy_id', $vacancyId)
-            ->where('user_id', $userId)
+        return HrmbsboardComposition::where('user_id', $userId)
             ->where('is_active', true)
             ->first();
     }
 
-    private function isSecretariat(int $vacancyId, int $userId): bool
+    private function isSecretariat(int $userId): bool
     {
-        return HrmbsboardComposition::where('vacancy_id', $vacancyId)
-            ->where('user_id', $userId)
+        return HrmbsboardComposition::where('user_id', $userId)
             ->where('hrmpsb_role', 'secretariat')
             ->where('is_active', true)
             ->exists();
@@ -34,15 +32,14 @@ class QsEvaluationController extends Controller
     {
         $user = $request->user();
 
-        // Admin or admin can always view
         if (!in_array($user->role, ['admin', 'hr-manager', 'hrmpsb-secretariat'])) {
-            $composition = $this->getComposition($vacancy->id, $user->id);
+            $composition = $this->getComposition($user->id);
             if (!$composition) {
-                return response()->json(['message' => 'You are not assigned to this vacancy\'s HRMPSB.'], 403);
+                return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
             }
         }
 
-        $isSecretariat = $this->isSecretariat($vacancy->id, $user->id)
+        $isSecretariat = $this->isSecretariat($user->id)
             || in_array($user->role, ['admin', 'hr-manager']);
 
         $applications = Application::where('vacancy_id', $vacancy->id)
@@ -97,9 +94,9 @@ class QsEvaluationController extends Controller
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
 
-        $composition = $this->getComposition($application->vacancy_id, $user->id);
+        $composition = $this->getComposition($user->id);
         if (!$composition && !in_array($user->role, ['admin', 'hr-manager'])) {
-            return response()->json(['message' => 'You are not assigned to this vacancy\'s HRMPSB.'], 403);
+            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
         }
 
         // Prevent re-evaluation if already locked
@@ -168,7 +165,7 @@ class QsEvaluationController extends Controller
     {
         $user = $request->user();
 
-        if (!$this->isSecretariat($vacancy->id, $user->id) && !in_array($user->role, ['admin', 'hr-manager'])) {
+        if (!$this->isSecretariat($user->id) && !in_array($user->role, ['admin', 'hr-manager'])) {
             return response()->json(['message' => 'Only the HRMPSB Secretariat can lock QS evaluations.'], 403);
         }
 

@@ -51,12 +51,6 @@ class Vacancy extends Model
         return $this->hasMany(Application::class);
     }
 
-    // HRMPSB members assigned to evaluate this vacancy
-    public function hrmbsboardCompositions(): HasMany
-    {
-        return $this->hasMany(HrmbsboardComposition::class);
-    }
-
     // Compliance deadlines tracked for this vacancy
     public function complianceDeadlines(): HasMany
     {

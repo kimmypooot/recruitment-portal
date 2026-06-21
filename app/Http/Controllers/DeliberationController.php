@@ -21,8 +21,7 @@ class DeliberationController extends Controller
         $user = $request->user();
 
         $isChairOrAbove = in_array($user->role, ['admin', 'hr-manager', 'appointing-authority'])
-            || HrmbsboardComposition::where('vacancy_id', $vacancy->id)
-                ->where('user_id', $user->id)
+            || HrmbsboardComposition::where('user_id', $user->id)
                 ->whereIn('hrmpsb_role', ['chairperson', 'secretariat'])
                 ->where('is_active', true)
                 ->exists();
@@ -104,8 +103,7 @@ class DeliberationController extends Controller
         $user = $request->user();
 
         $isChairOrAbove = in_array($user->role, ['admin', 'hr-manager', 'appointing-authority'])
-            || HrmbsboardComposition::where('vacancy_id', $vacancy->id)
-                ->where('user_id', $user->id)
+            || HrmbsboardComposition::where('user_id', $user->id)
                 ->whereIn('hrmpsb_role', ['chairperson'])
                 ->where('is_active', true)
                 ->exists();

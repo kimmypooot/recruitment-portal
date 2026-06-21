@@ -171,10 +171,12 @@ Phase 4 adds:
 
 Enhancements are incremental. Each phase produces deployable, production-safe output.
 
-**Phase 1** — Stabilize existing system (Weeks 1–3) ✅ IN PROGRESS
-**Phase 2** — HRMPSB + QS workflow (Weeks 4–8)
-**Phase 3** — Evaluation, BEI, anonymization (Weeks 9–14)
-**Phase 4** — CS Forms, compliance tracking, digital signatures (Weeks 15–20)
+**Phase 1** — Stabilize existing system (Weeks 1–3) ✅ COMPLETE
+**Phase 2** — HRMPSB + QS workflow (Weeks 4–8) ✅ COMPLETE (global board model)
+**Phase 3** — Evaluation, BEI, anonymization (Weeks 9–14) ✅ COMPLETE
+**Phase 4** — CS Forms, compliance tracking, digital signatures (Weeks 15–20) ✅ COMPLETE
+
+> ⚠️ **One outstanding gap across all phases:** `app/Policies/HrmbsboardPolicy.php` was specified in Section 8 but has not been created. All other policy classes (Vacancy, Application, Document, Evaluation) are present.
 
 ---
 
@@ -187,10 +189,14 @@ hrmpsb-chairperson | hrmpsb-member | hrmpsb-secretariat | appointing-authority (
 ```
 
 ### HRMPSB composition model
-- `hrmpsb_compositions` table links `vacancy_id → user_id` with `hrmpsb_role` and `member_type` (principal/alternate)
-- Admin assigns HRMPSB members per vacancy cycle through a dedicated UI
+- `hrmpsb_compositions` is a **global fixed board** — no `vacancy_id`; composition applies to all vacancies until reconstituted
+- Admin manages the board through a single UI; members are not re-assigned per vacancy
+- Unique constraint is `(user_id, hrmpsb_role)` — one entry per person per role
+- Members can be toggled active/inactive without removing them (supports temporary suspension during reconstitution)
 - Switching principal ↔ alternate is an admin action, fully audited
-- A user can hold different HRMPSB roles across different vacancies
+- **Rationale:** HRMPSB reconstitutes infrequently; per-vacancy assignment was unnecessary overhead
+
+> ⚠️ This supersedes the original per-vacancy design. Migration `2026_06_21_120000_make_hrmpsb_compositions_global.php` dropped `vacancy_id` and updated the unique constraint.
 
 ### Permission enforcement layers
 1. **Route level** — `EnsureRole` middleware registered in `bootstrap/app.php` using `withMiddleware()`
@@ -226,8 +232,11 @@ Schema::table('applicant_profiles', function (Blueprint $table) {
 
 ### Phase 2 migrations
 ```php
-hrmpsb_compositions: vacancy_id (FK), user_id (FK), hrmpsb_role (string), member_type (enum: principal|alternate), is_active (boolean), assigned_at, assigned_by
-qs_evaluations: application_id (FK), evaluator_id (FK→users), education_score, experience_score, training_score, eligibility_score, total_score (computed), remarks, evaluated_at, locked_at
+// Global board — vacancy_id removed by 2026_06_21_120000_make_hrmpsb_compositions_global.php
+hrmpsb_compositions: user_id (FK), hrmpsb_role (string), member_type (enum: principal|alternate), is_active (boolean), assigned_at, assigned_by
+// unique: (user_id, hrmpsb_role)
+
+qs_evaluations: application_id (FK), evaluator_id (FK→users), education_meets, experience_meets, training_meets, eligibility_meets, overall_qualified (boolean), remarks, evaluated_at, locked_at
 compliance_deadlines: vacancy_id (FK), deadline_type (string), due_at, completed_at, notified_at
 ```
 
@@ -351,7 +360,7 @@ Use installed `maatwebsite/excel` for:
 
 ## 14. Implementation Phases
 
-### Phase 1 — Compliance-Critical Fixes (Weeks 1–3) ✅ IN PROGRESS
+### Phase 1 — Compliance-Critical Fixes (Weeks 1–3) ✅ COMPLETE
 
 **Goal:** Make the existing system safe and production-stable.
 
@@ -374,63 +383,65 @@ Use installed `maatwebsite/excel` for:
 
 ---
 
-### Phase 2 — HRMPSB + QS Workflow (Weeks 4–8)
+### Phase 2 — HRMPSB + QS Workflow (Weeks 4–8) ✅ COMPLETE
 
 **Goal:** Full HRMPSB configurability and qualification screening matrix.
 
 **Deliverables:**
-- `database/migrations/..._create_hrmpsb_compositions_table.php`
-- `database/migrations/..._create_qs_evaluations_table.php`
-- `database/migrations/..._create_compliance_deadlines_table.php`
-- `app/Models/HrmbsboardComposition.php`
-- `app/Models/QsEvaluation.php`
-- `app/Models/ComplianceDeadline.php`
-- `app/Http/Controllers/HrmbsboardController.php`
-- `app/Http/Controllers/QsEvaluationController.php`
-- `app/Console/Commands/CloseExpiredVacancies.php`
-- `resources/js/Pages/Admin/Hrmpsb.vue`
-- `resources/js/Pages/Hrmpsb/QsEvaluation.vue`
-- Route additions (web + api)
+- `database/migrations/..._create_hrmpsb_compositions_table.php` ✅
+- `database/migrations/..._make_hrmpsb_compositions_global.php` ✅ *(added — removes vacancy_id)*
+- `database/migrations/..._create_qs_evaluations_table.php` ✅
+- `database/migrations/..._create_compliance_deadlines_table.php` ✅
+- `app/Models/HrmbsboardComposition.php` ✅
+- `app/Models/QsEvaluation.php` ✅
+- `app/Models/ComplianceDeadline.php` ✅
+- `app/Http/Controllers/HrmbsboardController.php` ✅
+- `app/Http/Controllers/QsEvaluationController.php` ✅
+- `app/Console/Commands/CloseExpiredVacancies.php` ✅
+- `resources/js/Pages/Admin/Hrmpsb.vue` ✅
+- `resources/js/Pages/Hrmpsb/QsEvaluation.vue` ✅
+- Route additions (web + api) ✅
+- `app/Policies/HrmbsboardPolicy.php` ❌ **NOT YET CREATED**
 
 ---
 
-### Phase 3 — Evaluation, BEI, Anonymization (Weeks 9–14)
+### Phase 3 — Evaluation, BEI, Anonymization (Weeks 9–14) ✅ COMPLETE
 
 **Goal:** Complete evaluation pipeline with blind scoring.
 
 **Deliverables:**
-- `database/migrations/..._create_anonymization_tokens_table.php`
-- `database/migrations/..._create_exam_results_table.php`
-- `database/migrations/..._create_bei_ratings_table.php`
-- `app/Services/AnonymizationService.php`
-- `app/Http/Controllers/ExamResultController.php`
-- `app/Http/Controllers/BeiRatingController.php`
-- `app/Http/Controllers/DeliberationController.php`
-- `app/Policies/EvaluationPolicy.php`
-- `resources/js/Pages/Hrmpsb/BeiRating.vue`
-- `resources/js/Pages/Hrmpsb/Deliberation.vue`
-- `resources/js/Pages/Hrmpsb/ExamResults.vue`
-- `resources/js/stores/evaluation.js`
-- `resources/js/stores/auth.js`
+- `database/migrations/..._create_anonymization_tokens_table.php` ✅
+- `database/migrations/..._create_exam_results_table.php` ✅
+- `database/migrations/..._create_bei_ratings_table.php` ✅
+- `app/Services/AnonymizationService.php` ✅
+- `app/Http/Controllers/ExamResultController.php` ✅
+- `app/Http/Controllers/BeiRatingController.php` ✅
+- `app/Http/Controllers/DeliberationController.php` ✅
+- `app/Policies/EvaluationPolicy.php` ✅
+- `resources/js/Pages/Hrmpsb/BeiRating.vue` ✅
+- `resources/js/Pages/Hrmpsb/Deliberation.vue` ✅
+- `resources/js/Pages/Hrmpsb/ExamResults.vue` ✅
+- `resources/js/stores/evaluation.js` ✅
+- `resources/js/stores/auth.js` ✅
 
 ---
 
-### Phase 4 — CS Forms, Compliance Tracking, Digital Signatures (Weeks 15–20)
+### Phase 4 — CS Forms, Compliance Tracking, Digital Signatures (Weeks 15–20) ✅ COMPLETE
 
 **Goal:** Document generation, CSC submission tracking, PNPKI readiness.
 
 **Deliverables:**
-- `composer.json` (add barryvdh/laravel-dompdf)
-- `database/migrations/..._create_cs_forms_table.php`
-- `database/migrations/..._create_submission_tracking_table.php`
-- `app/Services/FormGeneratorService.php`
-- `app/Services/PnpkiService.php`
-- `app/Http/Controllers/ReportController.php` (implement)
-- `app/Console/Commands/AlertOverdueSubmissions.php`
-- `resources/views/forms/cs-form-33a.blade.php`
-- `resources/views/forms/cs-form-33b.blade.php`
-- `resources/views/forms/cs-form-1-2025.blade.php`
-- `resources/js/Pages/Admin/ComplianceDashboard.vue`
+- `composer.json` (add barryvdh/laravel-dompdf) ✅
+- `database/migrations/..._create_cs_forms_table.php` ✅
+- `database/migrations/..._create_submission_tracking_table.php` ✅
+- `app/Services/FormGeneratorService.php` ✅
+- `app/Services/PnpkiService.php` ✅
+- `app/Http/Controllers/ReportController.php` ✅ (fully implemented — 5 report types)
+- `app/Console/Commands/AlertOverdueSubmissions.php` ✅
+- `resources/views/forms/cs-form-33a.blade.php` ✅
+- `resources/views/forms/cs-form-33b.blade.php` ✅
+- `resources/views/forms/cs-form-1-2025.blade.php` ✅
+- `resources/js/Pages/Admin/ComplianceDashboard.vue` → created as `Admin/Compliance.vue` ✅
 
 ---
 
