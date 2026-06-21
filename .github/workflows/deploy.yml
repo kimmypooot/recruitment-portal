@@ -19,15 +19,15 @@ jobs:
           extensions: mbstring, xml, bcmath, mysql
 
       - name: Install dependencies
-        run: composer install --no-dev
+        run: composer install --prefer-dist --no-interaction
 
-      - name: Setup test environment
+      - name: Setup environment
         run: |
-          cp .env.example .env.testing
-          php artisan key:generate --env=testing
+          cp .env.example .env
+          php artisan key:generate
 
       - name: Run PHPUnit tests
-        run: php artisan test --env=testing
+        run: php artisan test
 
   deploy:
     needs: test   # Only deploy if tests pass
