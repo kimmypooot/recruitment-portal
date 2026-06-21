@@ -2,16 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ApplicantProfile extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'user_id', 'photo_path', 'first_name', 'last_name', 'middle_name',
         'gender', 'civil_status', 'birthday', 'religion',
-        'birthdate', 'contact_number', 'address',
+        'contact_number', 'address',
         'region', 'province', 'city_municipality', 'barangay',
         'mobile_number', 'eligibility', 'eligibility_other',
         'indigenous_group', 'pwd', 'solo_parent',
@@ -20,7 +22,6 @@ class ApplicantProfile extends Model
     ];
 
     protected $casts = [
-        'birthdate'            => 'date',
         'birthday'             => 'date',
         'profile_completed_at' => 'datetime',
     ];

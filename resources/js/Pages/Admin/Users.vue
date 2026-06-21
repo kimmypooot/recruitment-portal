@@ -81,10 +81,19 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Role <span class="text-red-500">*</span></label>
             <select v-model="form.role" required class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
-              <option value="applicant">Applicant</option>
-              <option value="hr-officer">HR Officer</option>
-              <option value="hr-manager">HR Manager</option>
-              <option value="admin">Admin</option>
+              <optgroup label="Applicant">
+                <option value="applicant">Applicant</option>
+              </optgroup>
+              <optgroup label="HR Staff">
+                <option value="hr-officer">HR Officer</option>
+                <option value="hr-manager">HR Manager</option>
+                <option value="admin">Admin</option>
+              </optgroup>
+              <optgroup label="HRMPSB">
+                <option value="hrmpsb-member">HRMPSB Member</option>
+                <option value="hrmpsb-secretariat">HRMPSB Secretariat</option>
+                <option value="appointing-authority">Appointing Authority</option>
+              </optgroup>
             </select>
           </div>
           <div v-if="!editTarget">
@@ -204,15 +213,26 @@ function initials(name) {
 }
 
 function roleLabel(role) {
-  return { applicant: 'Applicant', 'hr-officer': 'HR Officer', 'hr-manager': 'HR Manager', admin: 'Admin' }[role] ?? role
+  return {
+    applicant:              'Applicant',
+    'hr-officer':           'HR Officer',
+    'hr-manager':           'HR Manager',
+    admin:                  'Admin',
+    'hrmpsb-member':        'HRMPSB Member',
+    'hrmpsb-secretariat':   'HRMPSB Secretariat',
+    'appointing-authority': 'Appointing Authority',
+  }[role] ?? role
 }
 
 function roleClass(role) {
   return {
-    admin:        'bg-purple-100 text-purple-700',
-    'hr-manager': 'bg-[#2a338f]/10 text-[#2a338f]',
-    'hr-officer': 'bg-teal-100 text-teal-700',
-    applicant:    'bg-gray-100 text-gray-600',
+    admin:                  'bg-purple-100 text-purple-700',
+    'hr-manager':           'bg-[#2a338f]/10 text-[#2a338f]',
+    'hr-officer':           'bg-teal-100 text-teal-700',
+    applicant:              'bg-gray-100 text-gray-600',
+    'hrmpsb-member':        'bg-amber-100 text-amber-700',
+    'hrmpsb-secretariat':   'bg-orange-100 text-orange-700',
+    'appointing-authority': 'bg-rose-100 text-rose-700',
   }[role] ?? 'bg-gray-100 text-gray-600'
 }
 

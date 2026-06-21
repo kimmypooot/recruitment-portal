@@ -52,6 +52,8 @@ export const applicationApi = {
     }),
 };
 
+export default api;
+
 export const profileApi = {
   show:   ()     => api.get('/profile'),
   update: (data) => api.put('/profile', data),

@@ -11,10 +11,13 @@
           </span>
           <StatusBadge :status="vacancy.status" />
         </div>
-        <!-- Deadline urgency indicator -->
-        <span v-if="isUrgent" class="inline-flex items-center gap-1 text-xs font-medium text-red-600">
-          <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-          Closing soon
+        <!-- Deadline countdown -->
+        <span v-if="daysRemaining !== null && daysRemaining <= 5 && daysRemaining >= 0"
+          :class="daysRemaining <= 2 ? 'text-red-600' : 'text-amber-600'"
+          class="inline-flex items-center gap-1 text-xs font-semibold">
+          <span class="w-1.5 h-1.5 rounded-full animate-pulse"
+            :class="daysRemaining <= 2 ? 'bg-red-500' : 'bg-amber-400'"></span>
+          {{ daysRemaining === 0 ? 'Closes today' : `${daysRemaining}d left` }}
         </span>
       </div>
 
@@ -78,11 +81,13 @@ const props = defineProps({
   vacancy: { type: Object, required: true }
 })
 
-const isUrgent = computed(() => {
-  if (!props.vacancy.deadline_at) return false
-  const days = (new Date(props.vacancy.deadline_at) - new Date()) / (1000 * 60 * 60 * 24)
-  return days >= 0 && days <= 7
+const daysRemaining = computed(() => {
+  if (!props.vacancy.deadline_at) return null
+  const ms = new Date(props.vacancy.deadline_at) - new Date()
+  return ms < 0 ? -1 : Math.ceil(ms / (1000 * 60 * 60 * 24))
 })
+
+const isUrgent = computed(() => daysRemaining.value !== null && daysRemaining.value >= 0 && daysRemaining.value <= 5)
 
 function formatDate(dateStr) {
   if (!dateStr) return 'No deadline set'

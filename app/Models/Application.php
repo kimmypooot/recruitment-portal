@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Application extends Model
@@ -59,6 +60,41 @@ class Application extends Model
     public function interviewSchedule(): HasMany
     {
         return $this->hasMany(InterviewSchedule::class);
+    }
+
+    public function anonymizationToken(): HasOne
+    {
+        return $this->hasOne(AnonymizationToken::class);
+    }
+
+    public function examResults(): HasMany
+    {
+        return $this->hasMany(ExamResult::class);
+    }
+
+    public function beiRatings(): HasMany
+    {
+        return $this->hasMany(BeiRating::class);
+    }
+
+    public function deliberationResults(): HasMany
+    {
+        return $this->hasMany(DeliberationResult::class);
+    }
+
+    public function qsEvaluations(): HasMany
+    {
+        return $this->hasMany(QsEvaluation::class);
+    }
+
+    public function csforms(): HasMany
+    {
+        return $this->hasMany(CsForm::class);
+    }
+
+    public function submissionTracking(): HasOne
+    {
+        return $this->hasOne(SubmissionTracking::class);
     }
 
     // ── Query Scopes (reusable filters) ───────────────────────────────────

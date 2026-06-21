@@ -32,7 +32,8 @@ class ApplicationStatusUpdated extends Notification implements ShouldQueue
   // The email content
   public function toMail(object $notifiable): MailMessage
   {
-    $applicantName = $this->application->applicant->full_name;
+    $profile = $this->application->applicant;
+    $applicantName = trim("{$profile->first_name} {$profile->last_name}");
     $positionTitle = $this->application->vacancy->position_title;
     $statusLabel   = ucfirst(str_replace('_', ' ', $this->newStatus));
 

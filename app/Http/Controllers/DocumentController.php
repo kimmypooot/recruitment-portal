@@ -37,7 +37,10 @@ class DocumentController extends Controller
 
     public function verify(Document $document): JsonResponse
     {
+        $this->authorize('verify', $document);
+
         $document->update(['verified_at' => now()]);
+
         return response()->json(['message' => 'Document verified.']);
     }
 }

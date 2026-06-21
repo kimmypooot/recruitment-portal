@@ -3,7 +3,8 @@
     "allow": [
       "Bash(dir C:\\\\xampp\\\\htdocs\\\\recruitment-system /b)",
       "Bash(npm install *)",
-      "Bash(php artisan *)"
+      "Bash(php artisan *)",
+      "Bash(composer run *)"
     ]
   }
 }

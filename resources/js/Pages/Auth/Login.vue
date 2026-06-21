@@ -130,10 +130,13 @@ async function submit() {
     localStorage.setItem('auth_token', data.token)
     localStorage.setItem('auth_user', JSON.stringify(data.user))
     const role = data.user?.role
-    if (role === 'admin' || role === 'hr-manager' || role === 'hr-officer') {
+
+    if (['admin', 'hr-manager', 'hr-officer'].includes(role)) {
       router.visit('/admin/dashboard')
+    } else if (['hrmpsb-member', 'hrmpsb-secretariat', 'appointing-authority'].includes(role)) {
+      router.visit('/hrmpsb/dashboard')
     } else {
-      // Check profile completion for applicants
+      // Applicant: check profile completion
       try {
         const { data: profileData } = await axios.get('/api/profile', {
           headers: { Authorization: `Bearer ${data.token}` }
