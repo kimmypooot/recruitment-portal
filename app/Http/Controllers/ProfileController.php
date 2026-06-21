@@ -62,6 +62,44 @@ class ProfileController extends Controller
         ]);
     }
 
+    public function uploadPhoto(Request $request): JsonResponse
+    {
+        $request->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg|max:3072',
+        ]);
+
+        $profile = $this->getOrCreateProfile();
+        $userId  = Auth::id();
+
+        if ($profile->photo_path) {
+            Storage::disk('public')->delete($profile->photo_path);
+        }
+
+        $profile->photo_path = $request->file('photo')->store("profile-photos/{$userId}", 'public');
+        $profile->save();
+
+        return response()->json(['photo_path' => $profile->photo_path]);
+    }
+
+    public function servePhoto(Request $request): \Symfony\Component\HttpFoundation\Response
+    {
+        $token       = $request->query('token');
+        $accessToken = PersonalAccessToken::findToken($token);
+
+        if (! $accessToken) {
+            abort(403, 'Unauthorized');
+        }
+
+        $user    = $accessToken->tokenable;
+        $profile = ApplicantProfile::where('user_id', $user->id)->first();
+
+        if (! $profile?->photo_path || ! Storage::disk('public')->exists($profile->photo_path)) {
+            abort(404);
+        }
+
+        return Storage::disk('public')->response($profile->photo_path);
+    }
+
     public function uploadDocuments(Request $request): JsonResponse
     {
         $request->validate([

@@ -64,8 +64,13 @@
               <button
                 @click="dropdownOpen = !dropdownOpen"
                 class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-                <div class="w-7 h-7 rounded-full bg-[#2a338f] flex items-center justify-center flex-shrink-0">
+                <div class="relative w-7 h-7 rounded-full bg-[#2a338f] flex items-center justify-center flex-shrink-0 overflow-hidden">
                   <span class="text-xs font-bold text-white">{{ userInitial }}</span>
+                  <img
+                    :src="`/profile/photo?token=${authToken}`"
+                    class="absolute inset-0 w-full h-full object-cover"
+                    @error="e => e.target.style.display = 'none'"
+                    alt="Profile photo" />
                 </div>
                 <span class="hidden sm:block text-sm font-medium text-gray-700 max-w-[120px] truncate">{{ userName }}</span>
                 <svg class="w-4 h-4 text-gray-400 transition-transform" :class="dropdownOpen ? 'rotate-180' : ''"
@@ -215,12 +220,14 @@ const dropdownOpen = ref(false)
 const dropdownRef  = ref(null)
 
 const authUser   = ref({})
+const authToken  = ref('')
 const isLoggedIn = ref(false)
 
 onMounted(() => {
   const token = localStorage.getItem('auth_token')
   const user  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
   isLoggedIn.value = !!token
+  authToken.value  = token ?? ''
   authUser.value   = user
 
   document.addEventListener('click', handleClickOutside)

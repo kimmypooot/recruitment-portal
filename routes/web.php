@@ -14,6 +14,7 @@ Route::get('/vacancies/{id}/apply', fn ($id) => Inertia::render('Vacancies/Apply
 
 Route::get('/profile/documents/{path}', [App\Http\Controllers\ProfileController::class, 'serveDocument'])
     ->where('path', '.*');
+Route::get('/profile/photo', [App\Http\Controllers\ProfileController::class, 'servePhoto']);
 
 Route::get('/auth/google', [AuthController::class, 'googleRedirect']);
 Route::get('/auth/google/callback', [AuthController::class, 'googleCallback']);

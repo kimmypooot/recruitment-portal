@@ -1,32 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
-
-    <!-- Navbar -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
-      <div class="h-1 w-full bg-[#ec1c2d]"></div>
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link href="/" class="flex items-center gap-3">
-          <img src="/images/csc-logo.png" alt="CSC Logo" class="h-9 w-9 object-contain flex-shrink-0"
-            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-          <div class="w-9 h-9 rounded-lg bg-[#2a338f] items-center justify-center flex-shrink-0 hidden">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-            </svg>
-          </div>
-          <div class="leading-tight">
-            <p class="text-sm font-bold text-gray-900">CSC Regional Office</p>
-            <p class="text-xs text-gray-500">Recruitment Portal</p>
-          </div>
-        </Link>
-        <nav class="flex items-center gap-6">
-          <Link href="/" class="text-sm text-gray-600 hover:text-gray-900 font-medium">Browse Vacancies</Link>
-          <Link href="/applicant/dashboard" class="text-sm text-gray-600 hover:text-gray-900 font-medium">Dashboard</Link>
-          <button @click="logout" class="text-sm text-red-500 hover:text-red-700 font-medium">Sign out</button>
-        </nav>
-      </div>
-    </header>
-
-    <main class="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+  <ApplicantLayout>
+    <div class="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
 
       <!-- Page header -->
       <div class="flex items-center justify-between mb-8">
@@ -132,8 +106,8 @@
         </Link>
       </div>
 
-    </main>
-  </div>
+    </div>
+  </ApplicantLayout>
 </template>
 
 <script setup>
@@ -141,6 +115,7 @@ import { ref, computed, onMounted } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { applicationApi } from '@/services/api'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
+import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 
 const applications  = ref([])
 const loading       = ref(true)
@@ -191,9 +166,4 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
-function logout() {
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('auth_user')
-  router.visit('/login')
-}
 </script>

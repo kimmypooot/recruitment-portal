@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ApplicantProfile extends Model
 {
     protected $fillable = [
-        'user_id', 'first_name', 'last_name', 'middle_name',
+        'user_id', 'photo_path', 'first_name', 'last_name', 'middle_name',
         'gender', 'civil_status', 'birthday', 'religion',
         'birthdate', 'contact_number', 'address',
         'region', 'province', 'city_municipality', 'barangay',

@@ -55,6 +55,8 @@ export const applicationApi = {
 export const profileApi = {
   show:   ()     => api.get('/profile'),
   update: (data) => api.put('/profile', data),
+  uploadPhoto: (formData) =>
+    api.post('/profile/photo', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   uploadDocuments: (formData) =>
     api.post('/profile/documents', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 

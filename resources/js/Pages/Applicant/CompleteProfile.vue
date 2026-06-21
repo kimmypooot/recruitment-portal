@@ -1,31 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
-
-    <!-- Navbar -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
-      <div class="h-1 w-full bg-[#ec1c2d]"></div>
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link href="/" class="flex items-center gap-3">
-          <img src="/images/csc-logo.png" alt="CSC Logo" class="h-9 w-9 object-contain flex-shrink-0"
-            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-          <div class="w-9 h-9 rounded-lg bg-[#2a338f] items-center justify-center flex-shrink-0 hidden">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-            </svg>
-          </div>
-          <div class="leading-tight">
-            <p class="text-sm font-bold text-gray-900">CSC Regional Office</p>
-            <p class="text-xs text-gray-500">Recruitment Portal</p>
-          </div>
-        </Link>
-        <div class="flex items-center gap-6">
-          <Link href="/applicant/dashboard" class="text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors">Dashboard</Link>
-          <button @click="logout" class="text-sm text-red-500 hover:text-red-700 font-medium transition-colors">Sign out</button>
-        </div>
-      </div>
-    </header>
-
-    <main class="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+  <ApplicantLayout>
+    <div class="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
 
       <!-- Page header -->
       <div class="mb-8">
@@ -61,6 +36,50 @@
            TAB 1 — Personal Info
       ══════════════════════════════════════════════════════════════ -->
       <div v-show="activeTab === 'personal'" class="space-y-5">
+
+        <!-- Profile Photo Card -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
+            <div class="w-9 h-9 rounded-lg bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-900">Profile Photo</p>
+              <p class="text-xs text-gray-500 mt-0.5">Passport-size, professional photo for your application</p>
+            </div>
+          </div>
+          <div class="px-6 py-5 flex items-center gap-6">
+            <!-- Photo preview -->
+            <div class="flex-shrink-0">
+              <div class="w-28 h-28 rounded-full border-2 overflow-hidden flex items-center justify-center bg-gray-50"
+                :class="photoPath ? 'border-[#2a338f]/30' : 'border-dashed border-gray-300'">
+                <img v-if="photoPath" :src="photoUrl" class="w-full h-full object-cover" alt="Profile photo" />
+                <svg v-else class="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+                </svg>
+              </div>
+            </div>
+            <!-- Info + button -->
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-800">
+                {{ photoPath ? 'Photo uploaded' : 'No photo yet' }}
+              </p>
+              <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+                Use a recent photo with a plain background. Face the camera directly,
+                no sunglasses or hats. Good lighting is essential.
+              </p>
+              <button @click="openPhotoModal"
+                class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-xs font-semibold rounded-lg transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                </svg>
+                {{ photoPath ? 'Change Photo' : 'Upload Photo' }}
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- Personal details card -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -264,7 +283,7 @@
                     <td class="py-3 pr-4 font-medium text-gray-900">{{ exp.position_title }}</td>
                     <td class="py-3 pr-4 text-gray-600">{{ exp.department_agency }}</td>
                     <td class="py-3 pr-4 text-gray-500 whitespace-nowrap">
-                      {{ exp.date_from }} – {{ exp.is_present ? 'Present' : (exp.date_to ?? '—') }}
+                      {{ formatDateRange(exp.date_from, exp.is_present ? null : exp.date_to, exp.is_present) }}
                     </td>
                     <td class="py-3 pr-4 text-gray-500">{{ exp.government_service ? 'Yes' : 'No' }}</td>
                     <td class="py-3 text-right">
@@ -391,7 +410,7 @@
                 <tbody class="divide-y divide-gray-50">
                   <tr v-for="t in trainings" :key="t.id" class="group">
                     <td class="py-3 pr-4 font-medium text-gray-900">{{ t.title }}</td>
-                    <td class="py-3 pr-4 text-gray-500 whitespace-nowrap">{{ t.date_from }} – {{ t.date_to ?? '—' }}</td>
+                    <td class="py-3 pr-4 text-gray-500 whitespace-nowrap">{{ formatDateRange(t.date_from, t.date_to) }}</td>
                     <td class="py-3 pr-4 text-gray-500">{{ t.hours ?? '—' }}</td>
                     <td class="py-3 pr-4 text-gray-500">{{ t.ld_type ?? '—' }}</td>
                     <td class="py-3 pr-4 text-gray-500">{{ t.conducted_by ?? '—' }}</td>
@@ -625,7 +644,7 @@
 
       </div>
 
-    </main>
+    </div>
 
     <!-- ══════════════════════════════════════════════════════════════
          MODAL — Add Work Experience
@@ -949,6 +968,119 @@
       </div>
     </Teleport>
 
+    <!-- ══════════════════════════════════════════════════════════════
+         MODAL — Upload Profile Photo
+    ══════════════════════════════════════════════════════════════ -->
+    <Teleport to="body">
+      <div v-if="photoModal.open"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        @mousedown.self="closePhotoModal">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between px-7 py-5 border-b border-gray-100 flex-shrink-0">
+            <div>
+              <h3 class="text-base font-semibold text-gray-900">
+                {{ photoModal.step === 'select' ? 'Upload Profile Photo' : 'Crop Your Photo' }}
+              </h3>
+              <p class="text-xs text-gray-500 mt-0.5">
+                {{ photoModal.step === 'select'
+                  ? 'Choose a clear, professional passport-size photo'
+                  : 'Drag to move · Handles to resize · Scroll to zoom' }}
+              </p>
+            </div>
+            <button @click="closePhotoModal"
+              class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Body -->
+          <div class="overflow-y-auto flex-1">
+
+            <!-- STEP: Select -->
+            <div v-if="photoModal.step === 'select'" class="px-7 py-6 space-y-5">
+
+              <!-- Requirements -->
+              <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 space-y-2">
+                <p class="text-xs font-semibold text-amber-800 uppercase tracking-wide">Photo Requirements</p>
+                <ul class="space-y-1.5">
+                  <li v-for="req in photoRequirements" :key="req" class="flex items-start gap-2 text-xs text-amber-700">
+                    <svg class="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ req }}
+                  </li>
+                </ul>
+              </div>
+
+              <!-- File pick zone -->
+              <label
+                class="flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-xl px-6 py-10 cursor-pointer transition-colors hover:border-[#2a338f]/50 hover:bg-[#2a338f]/5 group"
+                :class="photoModal.error ? 'border-red-300 bg-red-50' : 'border-gray-200'">
+                <input type="file" accept="image/jpeg,image/png,image/jpg" class="sr-only" @change="onPhotoFileSelect" />
+                <div class="w-14 h-14 rounded-full bg-gray-100 group-hover:bg-[#2a338f]/10 flex items-center justify-center transition-colors">
+                  <svg class="w-7 h-7 text-gray-400 group-hover:text-[#2a338f] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v13.5A1.5 1.5 0 003.75 21zm10.5-11.25h.008v.008h-.008V9.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+                  </svg>
+                </div>
+                <div class="text-center">
+                  <p class="text-sm font-medium text-gray-700 group-hover:text-[#2a338f] transition-colors">Click to browse or drag & drop</p>
+                  <p class="text-xs text-gray-400 mt-0.5">JPG or PNG · Max 3 MB</p>
+                </div>
+              </label>
+
+              <p v-if="photoModal.error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                {{ photoModal.error }}
+              </p>
+            </div>
+
+            <!-- STEP: Crop -->
+            <div v-else class="px-7 py-5 space-y-4">
+              <!-- Cropper container -->
+              <div class="rounded-xl overflow-hidden bg-gray-900" style="height: 360px;">
+                <img ref="cropperImgRef" :src="photoModal.imgSrc" class="block max-w-full" alt="Crop preview" />
+              </div>
+
+              <!-- Crop controls hint -->
+              <div class="flex items-center justify-between">
+                <p class="text-xs text-gray-400">Crop box is freely resizable — no fixed aspect ratio enforced.</p>
+                <button @click="photoModal.step = 'select'; destroyCropper()"
+                  class="text-xs text-[#2a338f] hover:underline font-medium">
+                  ← Choose different photo
+                </button>
+              </div>
+
+              <p v-if="photoModal.error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                {{ photoModal.error }}
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div v-if="photoModal.step === 'crop'"
+            class="flex items-center justify-end gap-3 px-7 py-4 border-t border-gray-100 flex-shrink-0">
+            <button @click="closePhotoModal"
+              class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">
+              Cancel
+            </button>
+            <button @click="savePhoto" :disabled="photoModal.saving"
+              class="inline-flex items-center gap-2 px-5 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
+              <svg v-if="photoModal.saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+              </svg>
+              {{ photoModal.saving ? 'Saving…' : 'Save Photo' }}
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </Teleport>
+
     <!-- Global save toast -->
     <transition name="fade">
       <div v-if="savedPersonal"
@@ -960,13 +1092,16 @@
       </div>
     </transition>
 
-  </div>
+  </ApplicantLayout>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { profileApi } from '@/services/api'
+import Cropper from 'cropperjs'
+import 'cropperjs/dist/cropper.css'
+import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
@@ -975,6 +1110,26 @@ const isComplete    = ref(false)
 const savingPersonal = ref(false)
 const savedPersonal  = ref(false)
 const savingDocs     = ref(false)
+
+const photoPath = ref('')
+const photoUrl  = computed(() =>
+  photoPath.value ? `/profile/photo?token=${authToken}&_=${photoPath.value}` : null
+)
+
+const photoModal = reactive({ open: false, saving: false, error: '', step: 'select', imgSrc: '' })
+const cropperImgRef = ref(null)
+let cropperInstance = null
+
+const photoRequirements = [
+  'Recent photo taken within the last 6 months',
+  'Plain white or light-colored background',
+  'Face the camera directly with eyes open and clearly visible',
+  'Neutral expression or a natural, slight smile',
+  'No hats, caps, or head coverings (unless for religious reasons)',
+  'No sunglasses or tinted eyeglasses',
+  'Good, even lighting — avoid shadows on the face',
+  'Passport-size or 2×2 inch equivalent is preferred',
+]
 
 const experiences = ref([])
 const education   = ref([])
@@ -1080,6 +1235,7 @@ onMounted(async () => {
     if (data.profile) {
       const p = data.profile
       Object.keys(personal).forEach(k => { if (p[k] !== null && p[k] !== undefined) personal[k] = p[k] })
+      if (p.photo_path) photoPath.value = p.photo_path
       experiences.value = p.work_experiences ?? []
       education.value   = p.educational_attainments ?? []
       trainings.value   = p.trainings ?? []
@@ -1255,15 +1411,118 @@ async function deleteTraining(id) {
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
+// ─── Photo ────────────────────────────────────────────────────────────────────
+
+function openPhotoModal() {
+  photoModal.open  = true
+  photoModal.step  = 'select'
+  photoModal.error = ''
+  photoModal.imgSrc = ''
+  destroyCropper()
+}
+
+function closePhotoModal() {
+  photoModal.open = false
+  destroyCropper()
+}
+
+function destroyCropper() {
+  if (cropperInstance) {
+    cropperInstance.destroy()
+    cropperInstance = null
+  }
+}
+
+async function onPhotoFileSelect(e) {
+  const file = e.target.files[0]
+  e.target.value = ''
+  if (!file) return
+
+  if (!file.type.startsWith('image/')) {
+    photoModal.error = 'Please select a JPG or PNG image.'
+    return
+  }
+  if (file.size > 3 * 1024 * 1024) {
+    photoModal.error = 'Image must be under 3 MB.'
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = async (ev) => {
+    photoModal.imgSrc = ev.target.result
+    photoModal.step   = 'crop'
+    photoModal.error  = ''
+    destroyCropper()
+    await nextTick()
+    if (cropperImgRef.value) {
+      cropperInstance = new Cropper(cropperImgRef.value, {
+        viewMode: 1,
+        dragMode: 'move',
+        autoCropArea: 0.85,
+        guides: true,
+        center: true,
+        highlight: false,
+        background: true,
+        cropBoxMovable: true,
+        cropBoxResizable: true,
+        toggleDragModeOnDblclick: false,
+      })
+    }
+  }
+  reader.readAsDataURL(file)
+}
+
+async function savePhoto() {
+  if (!cropperInstance) return
+  photoModal.saving = true
+  photoModal.error  = ''
+
+  try {
+    const canvas = cropperInstance.getCroppedCanvas({
+      maxWidth: 800,
+      maxHeight: 800,
+      imageSmoothingEnabled: true,
+      imageSmoothingQuality: 'high',
+    })
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92))
+    const fd = new FormData()
+    fd.append('photo', blob, 'profile-photo.jpg')
+
+    const { data } = await profileApi.uploadPhoto(fd)
+    photoPath.value = data.photo_path
+    photoModal.open = false
+    destroyCropper()
+    showSavedToast()
+  } catch (e) {
+    photoModal.error = e.response?.data?.message ?? 'Upload failed. Please try again.'
+  } finally {
+    photoModal.saving = false
+  }
+}
+
+function formatDateRange(from, to, isPresent = false) {
+  if (!from) return '—'
+  const MONTHS = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.',
+                  'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.']
+  const parse = (str) => { const [y, m, d] = str.split('-').map(Number); return { y, m: m - 1, d } }
+  const f = parse(from)
+  const fromStr = `${MONTHS[f.m]} ${f.d}`
+  if (isPresent) return `${fromStr}, ${f.y} – Present`
+  if (!to)       return `${fromStr}, ${f.y}`
+  const t = parse(to)
+  if (f.m === t.m && f.y === t.y) {
+    if (f.d === t.d) return `${fromStr}, ${f.y}`
+    return `${MONTHS[f.m]} ${f.d}-${t.d}, ${f.y}`
+  }
+  if (f.y === t.y) return `${fromStr} - ${MONTHS[t.m]} ${t.d}, ${f.y}`
+  return `${fromStr}, ${f.y} - ${MONTHS[t.m]} ${t.d}, ${t.y}`
+}
+
 function formatLevel(level) {
   return level?.replace(/_/g, ' ') ?? level
 }
 
-function logout() {
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('auth_user')
-  router.visit('/login')
-}
 </script>
 
 <style scoped>

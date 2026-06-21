@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir C:\\\\xampp\\\\htdocs\\\\recruitment-system /b)"
+      "Bash(dir C:\\\\xampp\\\\htdocs\\\\recruitment-system /b)",
+      "Bash(npm install *)",
+      "Bash(php artisan *)"
     ]
   }
 }
