@@ -1,0 +1,280 @@
+<template>
+  <div class="min-h-screen bg-gray-50 flex flex-col">
+
+    <!-- Navbar -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <Link href="/" class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-blue-700 flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+            </svg>
+          </div>
+          <div class="leading-tight">
+            <p class="text-sm font-bold text-gray-900">CSC Regional Office</p>
+            <p class="text-xs text-gray-500">Recruitment Portal</p>
+          </div>
+        </Link>
+
+        <nav class="flex items-center gap-6">
+          <Link href="/" class="text-sm text-gray-600 hover:text-gray-900 font-medium">Browse Vacancies</Link>
+          <Link href="/applicant/complete-profile" class="text-sm text-gray-600 hover:text-gray-900 font-medium">My Profile</Link>
+          <button @click="logout"
+            class="text-sm text-red-600 hover:text-red-700 font-medium">
+            Sign out
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+
+      <!-- Profile incomplete banner -->
+      <div v-if="!isComplete"
+        class="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+        <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+        <div class="flex-1">
+          <p class="text-sm font-semibold text-amber-800">Complete your profile before applying</p>
+          <p class="text-xs text-amber-700 mt-0.5">You need to fill out your personal details, address, experience, and upload required documents before submitting an application.</p>
+        </div>
+        <Link href="/applicant/complete-profile"
+          class="flex-shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors">
+          Complete Now
+        </Link>
+      </div>
+
+      <!-- Greeting -->
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Welcome back, {{ firstName }}!</h1>
+        <p class="text-sm text-gray-500 mt-1">Here's a summary of your recruitment activity.</p>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        <div v-for="card in statCards" :key="card.label"
+          class="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4 shadow-sm">
+          <div :class="card.iconBg" class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" :class="card.iconColor" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" :d="card.icon"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 font-medium">{{ card.label }}</p>
+            <p v-if="!loadingApps" class="text-2xl font-bold text-gray-900 mt-0.5">{{ card.value }}</p>
+            <div v-else class="h-7 w-10 bg-gray-200 rounded animate-pulse mt-0.5"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- My Applications -->
+        <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold text-gray-900">My Applications</h2>
+            <Link href="/" class="text-xs text-blue-700 hover:underline font-medium">Browse vacancies</Link>
+          </div>
+
+          <div v-if="loadingApps" class="space-y-3">
+            <div v-for="n in 3" :key="n" class="h-14 bg-gray-100 rounded-lg animate-pulse"></div>
+          </div>
+
+          <div v-else-if="applications.length" class="divide-y divide-gray-100">
+            <div v-for="app in applications" :key="app.id"
+              class="py-3 flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">
+                  {{ app.vacancy?.position_title ?? 'Unknown Position' }}
+                </p>
+                <p class="text-xs text-gray-500 mt-0.5">
+                  {{ app.vacancy?.office ?? '' }} · Applied {{ formatDate(app.created_at) }}
+                </p>
+              </div>
+              <StatusBadge :status="app.status" />
+            </div>
+          </div>
+
+          <div v-else class="text-center py-10">
+            <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p class="text-sm text-gray-400 font-medium">No applications yet</p>
+            <Link href="/"
+              class="mt-3 inline-block px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold rounded-lg transition-colors">
+              Browse Open Vacancies
+            </Link>
+          </div>
+        </div>
+
+        <!-- Profile status sidebar -->
+        <div class="space-y-4">
+
+          <!-- Profile card -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-gray-900 mb-4">Profile Status</h2>
+
+            <div class="space-y-3">
+              <div v-for="step in profileSteps" :key="step.label" class="flex items-center gap-3">
+                <div :class="step.done ? 'bg-green-100' : 'bg-gray-100'"
+                  class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg v-if="step.done" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <span v-else class="w-2 h-2 rounded-full bg-gray-300 block"></span>
+                </div>
+                <span class="text-sm" :class="step.done ? 'text-gray-700 font-medium' : 'text-gray-400'">{{ step.label }}</span>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-gray-100">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs text-gray-500">Completion</span>
+                <span class="text-xs font-semibold text-gray-700">{{ completionPct }}%</span>
+              </div>
+              <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  class="h-2 rounded-full transition-all duration-500"
+                  :class="completionPct === 100 ? 'bg-green-500' : 'bg-blue-600'"
+                  :style="{ width: completionPct + '%' }">
+                </div>
+              </div>
+            </div>
+
+            <Link v-if="!isComplete" href="/applicant/complete-profile"
+              class="mt-4 flex items-center justify-center gap-1.5 w-full py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg transition-colors">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+              </svg>
+              Update Profile
+            </Link>
+            <Link v-else href="/applicant/complete-profile"
+              class="mt-4 flex items-center justify-center gap-1.5 w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg transition-colors">
+              View / Edit Profile
+            </Link>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-gray-900 mb-3">Quick Actions</h2>
+            <div class="space-y-2">
+              <Link href="/"
+                class="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-blue-50 text-sm text-blue-700 font-medium transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Browse open vacancies
+              </Link>
+              <Link href="/applicant/complete-profile"
+                class="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-gray-50 text-sm text-gray-700 font-medium transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                Update my profile
+              </Link>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { Link, router } from '@inertiajs/vue3'
+import { applicationApi, profileApi } from '@/services/api'
+import StatusBadge from '@/Components/UI/StatusBadge.vue'
+
+const applications = ref([])
+const profile      = ref(null)
+const loadingApps  = ref(true)
+const isComplete   = ref(false)
+
+const authUser = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+const firstName = computed(() => {
+  const name = authUser?.name ?? 'there'
+  return name.split(' ')[0]
+})
+
+const appCounts = computed(() => {
+  const list = applications.value
+  return {
+    total:   list.length,
+    pending: list.filter(a => a.status === 'submitted').length,
+    exam:    list.filter(a => a.status === 'exam_scheduled').length,
+    passed:  list.filter(a => a.status === 'passed').length,
+  }
+})
+
+const statCards = computed(() => [
+  {
+    label: 'Total Applications', value: appCounts.value.total,
+    icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    iconBg: 'bg-blue-50', iconColor: 'text-blue-600',
+  },
+  {
+    label: 'Pending Review', value: appCounts.value.pending,
+    icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+    iconBg: 'bg-yellow-50', iconColor: 'text-yellow-600',
+  },
+  {
+    label: 'Exam Scheduled', value: appCounts.value.exam,
+    icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+    iconBg: 'bg-purple-50', iconColor: 'text-purple-600',
+  },
+  {
+    label: 'Passed', value: appCounts.value.passed,
+    icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+    iconBg: 'bg-green-50', iconColor: 'text-green-600',
+  },
+])
+
+const profileSteps = computed(() => {
+  const p = profile.value
+  return [
+    { label: 'Personal details',          done: !!(p?.gender && p?.civil_status && p?.birthday) },
+    { label: 'Address information',       done: !!(p?.region && p?.province) },
+    { label: 'Contact details',           done: !!(p?.mobile_number) },
+    { label: 'Experience & education',    done: !!(p?.work_experiences?.length || p?.educational_attainments?.length) },
+    { label: 'Eligibility & other info',  done: !!(p?.eligibility) },
+    { label: 'Documents uploaded',        done: !!(p?.pds_path && p?.app_letter_path) },
+  ]
+})
+
+const completionPct = computed(() => {
+  const steps = profileSteps.value
+  const done  = steps.filter(s => s.done).length
+  return Math.round((done / steps.length) * 100)
+})
+
+function formatDate(iso) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+async function logout() {
+  localStorage.removeItem('auth_token')
+  localStorage.removeItem('auth_user')
+  router.visit('/login')
+}
+
+onMounted(async () => {
+  try {
+    const [appsRes, profileRes] = await Promise.all([
+      applicationApi.myApplications(),
+      profileApi.show(),
+    ])
+    applications.value = appsRes.data
+    profile.value      = profileRes.data.profile
+    isComplete.value   = profileRes.data.is_complete
+  } catch (e) {
+    // handled by api.js interceptor (401 → /login)
+  } finally {
+    loadingApps.value = false
+  }
+})
+</script>

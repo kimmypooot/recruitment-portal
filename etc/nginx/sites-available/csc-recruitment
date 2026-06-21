@@ -1,0 +1,38 @@
+# /etc/nginx/sites-available/csc-recruitment
+
+server {
+  listen 80;
+  server_name recruitment.csc-ro.gov.ph;
+  return 301 https://$host$request_uri;  # Force HTTPS
+}
+
+server {
+  listen 443 ssl http2;
+  server_name recruitment.csc-ro.gov.ph;
+  root /var/www/csc-recruitment/public;  # IMPORTANT: points to /public
+
+  ssl_certificate /etc/letsencrypt/live/recruitment.csc-ro.gov.ph/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/recruitment.csc-ro.gov.ph/privkey.pem;
+
+  add_header X-Frame-Options "SAMEORIGIN";         # Clickjacking protection
+  add_header X-Content-Type-Options "nosniff";     # MIME sniffing protection
+  add_header X-XSS-Protection "1; mode=block";
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
+
+  index index.php;
+  charset utf-8;
+
+  location / {
+    try_files $uri $uri/ /index.php?$query_string;
+  }
+
+  location ~ \.php$ {
+    fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
+    fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+    include fastcgi_params;
+  }
+
+  # Security: deny access to sensitive files
+  location ~ /\.(?!well-known).* { deny all; }
+  location ~* /(storage|bootstrap/cache) { deny all; }
+}
