@@ -5,6 +5,17 @@
       "Bash(npm install *)",
       "Bash(php artisan *)",
       "Bash(composer run *)",
+<<<<<<< HEAD
+=======
+      "Bash(php -m)",
+      "Bash(findstr /i \"mbstring dom json xml\")",
+      "Bash(php --ini)",
+      "Bash(dir \"C:\\\\xampp\\\\php\\\\ext\")",
+      "Bash(findstr mbstring *)",
+      "Bash(Select-String -Path \"C:\\\\xampp\\\\php\\\\php.ini\" -Pattern \"mbstring\")",
+      "Bash(Select-Object LineNumber, Line)",
+      "Bash(Head -10)",
+>>>>>>> 86e08a04bdb260391972e300f3ac2c64d56dd98b
       "Bash(npm run *)"
     ]
   }

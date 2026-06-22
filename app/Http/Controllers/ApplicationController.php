@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\Vacancy;
 use App\Notifications\ApplicationStatusUpdated;
+use Illuminate\Support\Facades\DB;
 use App\Services\AuditLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -83,12 +84,15 @@ class ApplicationController extends Controller
     {
         $query = Application::with(['vacancy:id,position_title,place_of_assignment,salary_grade', 'applicant.user:id,name,email']);
 
+        if ($request->filled('vacancy_id')) {
+            $query->where('vacancy_id', $request->vacancy_id);
+        }
+
         if ($request->filled('search')) {
             $q = $request->search;
             $query->where(function ($sub) use ($q) {
-                $sub->whereHas('vacancy', fn ($v) => $v->where('position_title', 'like', "%{$q}%"))
-                    ->orWhereHas('applicant.user', fn ($u) => $u->where('name', 'like', "%{$q}%")
-                        ->orWhere('email', 'like', "%{$q}%"));
+                $sub->whereHas('applicant.user', fn ($u) => $u->where('name', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%"));
             });
         }
 
@@ -99,6 +103,28 @@ class ApplicationController extends Controller
         $applications = $query->latest()->paginate(20);
 
         return response()->json($applications);
+    }
+
+    public function vacancySummary(): JsonResponse
+    {
+        $vacancies = Vacancy::withCount('applications')
+            ->with(['applications:id,vacancy_id,status'])
+            ->orderByRaw("FIELD(status, 'published', 'draft', 'closed', 'filled', 'archived')")
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn (Vacancy $v) => [
+                'id'                  => $v->id,
+                'position_title'      => $v->position_title,
+                'salary_grade'        => $v->salary_grade,
+                'place_of_assignment' => $v->place_of_assignment,
+                'item_number'         => $v->item_number,
+                'status'              => $v->status,
+                'deadline_at'         => $v->deadline_at,
+                'applications_count'  => $v->applications_count,
+                'status_breakdown'    => $v->applications->groupBy('status')->map->count(),
+            ]);
+
+        return response()->json($vacancies);
     }
 
     public function updateStatus(Request $request, Application $application): JsonResponse

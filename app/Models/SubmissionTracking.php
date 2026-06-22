@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SubmissionTracking extends Model
 {
+    protected $table = 'submission_tracking';
+
     protected $fillable = [
         'vacancy_id', 'application_id', 'deadline_type',
         'due_at', 'submitted_at', 'status', 'last_notified_at',
