@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\ExamSchedule;
+use App\Models\InterviewSchedule;
 use App\Models\Vacancy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -32,7 +34,11 @@ class DashboardController extends Controller
 
     public function recentApplications(): JsonResponse
     {
-        $applications = Application::with(['vacancy', 'applicant'])
+        $applications = Application::with([
+            'vacancy:id,position_title,place_of_assignment',
+            'applicant:id,user_id,first_name,last_name,middle_name',
+            'applicant.user:id,name',
+        ])
             ->latest()
             ->limit(10)
             ->get();
@@ -47,6 +53,32 @@ class DashboardController extends Controller
             ->get();
 
         return response()->json($pipeline);
+    }
+
+    public function upcoming(): JsonResponse
+    {
+        $exams = ExamSchedule::with([
+            'application.vacancy:id,position_title,place_of_assignment',
+            'application.applicant.user:id,name',
+        ])
+        ->where('scheduled_at', '>=', now())
+        ->orderBy('scheduled_at')
+        ->limit(5)
+        ->get();
+
+        $interviews = InterviewSchedule::with([
+            'application.vacancy:id,position_title,place_of_assignment',
+            'application.applicant.user:id,name',
+        ])
+        ->where('scheduled_at', '>=', now())
+        ->orderBy('scheduled_at')
+        ->limit(5)
+        ->get();
+
+        return response()->json([
+            'exams'      => $exams,
+            'interviews' => $interviews,
+        ]);
     }
 
     public function adminStats(): JsonResponse

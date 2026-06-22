@@ -65,6 +65,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 // HR Officer routes
 Route::middleware(['auth:sanctum', 'role:hr-officer,hr-manager,admin'])->group(function () {
+    Route::get('/dashboard/upcoming', [DashboardController::class, 'upcoming']);
     Route::apiResource('vacancies', VacancyController::class)->except(['index', 'show']);
     Route::patch('/vacancies/{vacancy}/publish', [VacancyController::class, 'publish']);
     Route::patch('/vacancies/{vacancy}/archive', [VacancyController::class, 'archive']);
@@ -77,6 +78,9 @@ Route::middleware(['auth:sanctum', 'role:hr-officer,hr-manager,admin'])->group(f
     Route::get('/reports/{type}', [ReportController::class, 'generate']);
 
     // CS Forms
+    Route::get('/applications/{application}/applicant-profile', [ApplicationController::class, 'applicantProfile']);
+    Route::get('/applications/{application}/applicant-documents/{type}', [ApplicationController::class, 'serveApplicantDocument']);
+
     Route::get('/applications/{application}/forms', [CsFormController::class, 'index']);
     Route::post('/applications/{application}/forms', [CsFormController::class, 'generate']);
     Route::get('/forms/{csForm}/download', [CsFormController::class, 'download']);

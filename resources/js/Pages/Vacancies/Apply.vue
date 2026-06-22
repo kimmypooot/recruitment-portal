@@ -51,7 +51,10 @@
               <span class="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-bold bg-white/20 text-white">
                 SG-{{ vacancy.salary_grade }}
               </span>
-              <p class="text-xs text-white/70 mt-2">
+              <p v-if="vacancy.published_at" class="text-xs text-white/70 mt-1">
+                Published: <span class="font-semibold text-white">{{ formatDate(vacancy.published_at) }}</span>
+              </p>
+              <p class="text-xs text-white/70 mt-1">
                 Deadline: <span class="font-semibold text-white">{{ formatDate(vacancy.deadline_at) }}</span>
               </p>
             </div>

@@ -53,11 +53,17 @@
 
     <!-- Card footer -->
     <div class="px-5 py-3.5 border-t border-gray-100 flex items-center justify-between gap-3 bg-gray-50 rounded-b-xl">
-      <div>
-        <p class="text-xs text-gray-400">Deadline</p>
-        <p class="text-xs font-semibold" :class="isUrgent ? 'text-red-600' : 'text-gray-700'">
-          {{ formatDate(vacancy.deadline_at) }}
-        </p>
+      <div class="flex items-center gap-4">
+        <div v-if="vacancy.published_at">
+          <p class="text-xs text-gray-400">Published</p>
+          <p class="text-xs font-semibold text-gray-700">{{ formatDate(vacancy.published_at) }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Deadline</p>
+          <p class="text-xs font-semibold" :class="isUrgent ? 'text-red-600' : 'text-gray-700'">
+            {{ formatDate(vacancy.deadline_at) }}
+          </p>
+        </div>
       </div>
 
       <!-- Logged in + showDetailFirst: fetch detail then show modal -->

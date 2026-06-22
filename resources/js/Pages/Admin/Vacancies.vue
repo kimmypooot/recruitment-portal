@@ -37,6 +37,8 @@
             <th class="px-5 py-3">SG</th>
             <th class="px-5 py-3">Office</th>
             <th class="px-5 py-3">Status</th>
+            <th class="px-5 py-3">Applicants</th>
+            <th class="px-5 py-3">Published</th>
             <th class="px-5 py-3">Deadline</th>
             <th class="px-5 py-3 text-right">Actions</th>
           </tr>
@@ -47,6 +49,11 @@
             <td class="px-5 py-3.5 text-gray-600">SG-{{ v.salary_grade }}</td>
             <td class="px-5 py-3.5 text-gray-600 max-w-[160px] truncate">{{ v.place_of_assignment }}</td>
             <td class="px-5 py-3.5"><StatusBadge :status="v.status" /></td>
+            <td class="px-5 py-3.5 text-gray-700 font-medium">
+              {{ v.applications_count ?? 0 }}
+              <span class="font-normal text-gray-400 text-xs">{{ (v.applications_count ?? 0) === 1 ? 'applicant' : 'applicants' }}</span>
+            </td>
+            <td class="px-5 py-3.5 text-gray-500 whitespace-nowrap">{{ formatDate(v.published_at) }}</td>
             <td class="px-5 py-3.5 text-gray-500 whitespace-nowrap">{{ formatDate(v.deadline_at) }}</td>
             <td class="px-5 py-3.5">
               <div class="flex items-center justify-end gap-2">
@@ -70,7 +77,7 @@
             </td>
           </tr>
           <tr v-if="!vacancies.length">
-            <td colspan="6" class="px-5 py-12 text-center text-sm text-gray-400">No vacancies found.</td>
+            <td colspan="8" class="px-5 py-12 text-center text-sm text-gray-400">No vacancies found.</td>
           </tr>
         </tbody>
       </table>

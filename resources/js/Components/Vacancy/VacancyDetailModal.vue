@@ -64,6 +64,10 @@
                     <dd class="text-sm text-gray-800">{{ vacancy.place_of_assignment }}</dd>
                   </div>
                   <div class="flex gap-3">
+                    <dt class="w-36 flex-shrink-0 text-xs text-gray-400 font-medium pt-0.5">Date of Publication</dt>
+                    <dd class="text-sm text-gray-800">{{ formatDate(vacancy.published_at) }}</dd>
+                  </div>
+                  <div class="flex gap-3">
                     <dt class="w-36 flex-shrink-0 text-xs text-gray-400 font-medium pt-0.5">Application Deadline</dt>
                     <dd class="text-sm font-semibold" :class="isUrgent ? 'text-red-600' : 'text-gray-800'">
                       {{ formatDate(vacancy.deadline_at) }}

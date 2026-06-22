@@ -6,9 +6,11 @@ use App\Models\Application;
 use App\Models\Vacancy;
 use App\Notifications\ApplicationStatusUpdated;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Services\AuditLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ApplicationController extends Controller
 {
@@ -82,7 +84,11 @@ class ApplicationController extends Controller
 
     public function hrIndex(Request $request): JsonResponse
     {
-        $query = Application::with(['vacancy:id,position_title,place_of_assignment,salary_grade', 'applicant.user:id,name,email']);
+        $query = Application::with([
+            'vacancy:id,position_title,place_of_assignment,salary_grade',
+            'applicant:id,user_id,first_name,last_name,middle_name,mobile_number,gender,civil_status,birthday',
+            'applicant.user:id,name,email',
+        ]);
 
         if ($request->filled('vacancy_id')) {
             $query->where('vacancy_id', $request->vacancy_id);
@@ -116,15 +122,52 @@ class ApplicationController extends Controller
                 'id'                  => $v->id,
                 'position_title'      => $v->position_title,
                 'salary_grade'        => $v->salary_grade,
+                'monthly_salary'      => $v->monthly_salary,
                 'place_of_assignment' => $v->place_of_assignment,
                 'item_number'         => $v->item_number,
                 'status'              => $v->status,
+                'published_at'        => $v->published_at,
                 'deadline_at'         => $v->deadline_at,
                 'applications_count'  => $v->applications_count,
                 'status_breakdown'    => $v->applications->groupBy('status')->map->count(),
             ]);
 
         return response()->json($vacancies);
+    }
+
+    public function applicantProfile(Application $application): JsonResponse
+    {
+        $applicant = $application->applicant->load([
+            'workExperiences',
+            'educationalAttainments',
+            'trainings',
+        ]);
+
+        return response()->json($applicant);
+    }
+
+    public function serveApplicantDocument(Request $request, Application $application, string $type): StreamedResponse
+    {
+        $map = [
+            'pds'        => 'pds_path',
+            'app_letter' => 'app_letter_path',
+            'ipcr'       => 'ipcr_path',
+            'coe'        => 'coe_path',
+            'tor'        => 'tor_path',
+        ];
+
+        abort_if(!isset($map[$type]), 404);
+
+        $profile = $application->applicant;
+        $path    = $profile?->{$map[$type]};
+
+        abort_if(!$path || !Storage::disk('public')->exists($path), 404);
+
+        if ($request->boolean('download')) {
+            return Storage::disk('public')->download($path);
+        }
+
+        return Storage::disk('public')->response($path);
     }
 
     public function updateStatus(Request $request, Application $application): JsonResponse

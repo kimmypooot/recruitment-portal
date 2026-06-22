@@ -1,232 +1,411 @@
 <template>
   <AdminLayout title="Applications">
 
-    <div class="flex gap-5 items-start">
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <!-- PAGE 1 — Vacant Positions                                               -->
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <template v-if="view === 'list'">
 
-      <!-- ── Left panel: Vacancy list ──────────────────────────────────────── -->
-      <div
-        :class="selectedVacancy ? 'hidden lg:flex' : 'flex'"
-        class="flex-col w-full lg:w-72 lg:flex-shrink-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <!-- Toolbar -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+        <div class="relative flex-1">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input v-model="vacancySearch" type="text" placeholder="Search vacant positions…"
+            class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none shadow-sm" />
+        </div>
+        <select v-model="vacancyStatusFilter"
+          class="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-[#2a338f] focus:outline-none shadow-sm">
+          <option value="">All Statuses</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+          <option value="closed">Closed</option>
+          <option value="filled">Filled</option>
+        </select>
+      </div>
 
-        <!-- Header -->
-        <div class="px-4 py-3.5 border-b border-gray-100">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5">Positions</p>
-          <div class="relative">
-            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"
-              fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-            <input v-model="vacancySearch" type="text" placeholder="Search positions…"
-              class="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" />
+      <!-- Table card -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+
+        <!-- Loading skeleton -->
+        <div v-if="vacanciesLoading" class="p-6 space-y-3">
+          <div v-for="n in 6" :key="n" class="flex items-center gap-4 h-12">
+            <div class="h-3 bg-gray-100 rounded w-6 animate-pulse flex-shrink-0"></div>
+            <div class="flex-1 h-3 bg-gray-100 rounded animate-pulse"></div>
+            <div class="h-3 bg-gray-100 rounded w-20 animate-pulse"></div>
+            <div class="h-3 bg-gray-100 rounded w-16 animate-pulse hidden md:block"></div>
+            <div class="h-3 bg-gray-100 rounded w-24 animate-pulse hidden lg:block"></div>
+            <div class="h-3 bg-gray-100 rounded w-20 animate-pulse hidden lg:block"></div>
+            <div class="h-3 bg-gray-100 rounded w-16 animate-pulse"></div>
+            <div class="h-7 bg-gray-100 rounded-lg w-28 animate-pulse"></div>
           </div>
         </div>
 
-        <!-- Loading skeleton -->
-        <div v-if="vacanciesLoading" class="p-3 space-y-2">
-          <div v-for="n in 5" :key="n" class="h-[72px] bg-gray-100 rounded-lg animate-pulse"></div>
-        </div>
-
-        <!-- Fetch error -->
-        <div v-else-if="vacancyError" class="px-4 py-6 text-center">
-          <p class="text-xs font-semibold text-red-600 mb-1">Failed to load positions</p>
-          <p class="text-[11px] text-gray-400 mb-3">{{ vacancyError }}</p>
+        <!-- Error state -->
+        <div v-else-if="vacancyError" class="py-20 text-center px-6">
+          <div class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+            </svg>
+          </div>
+          <p class="text-sm font-semibold text-gray-700 mb-1">Failed to load positions</p>
+          <p class="text-xs text-gray-400 mb-4">{{ vacancyError }}</p>
           <button @click="fetchVacancies"
-            class="text-xs text-[#2a338f] font-medium hover:underline">Retry</button>
+            class="text-sm font-medium text-[#2a338f] hover:underline">Try again</button>
         </div>
 
-        <!-- Vacancy cards -->
-        <div v-else class="overflow-y-auto divide-y divide-gray-50">
-          <button v-for="v in filteredVacancies" :key="v.id"
-            @click="selectVacancy(v)"
-            :class="[
-              'w-full text-left px-4 py-3.5 transition-colors border-l-2',
-              selectedVacancy?.id === v.id
-                ? 'bg-[#2a338f]/5 border-[#2a338f]'
-                : 'hover:bg-gray-50 border-transparent'
-            ]">
-            <div class="flex items-start justify-between gap-2 mb-1">
-              <p class="text-sm font-semibold text-gray-900 leading-snug">{{ v.position_title }}</p>
-              <span :class="vacancyStatusClass(v.status)"
-                class="flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full capitalize mt-0.5">
-                {{ v.status }}
-              </span>
-            </div>
-            <p class="text-xs text-gray-400 mb-2 truncate">
-              SG-{{ v.salary_grade }}<span v-if="v.place_of_assignment"> · {{ v.place_of_assignment }}</span>
-            </p>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-semibold text-gray-700">
-                {{ v.applications_count }}
-                <span class="font-normal text-gray-400">{{ v.applications_count === 1 ? 'applicant' : 'applicants' }}</span>
-              </span>
-              <span v-if="pendingCount(v) > 0"
-                class="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full">
-                {{ pendingCount(v) }} pending
-              </span>
-            </div>
-          </button>
+        <!-- Table -->
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-sm" style="min-width: 900px;">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr class="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider">
+                <th class="px-5 py-3.5 w-10">#</th>
+                <th class="px-5 py-3.5 min-w-[200px]">Vacant Position</th>
+                <th class="px-5 py-3.5 min-w-[140px]">Plantilla Item No.</th>
+                <th class="px-5 py-3.5 min-w-[100px]">Salary Grade</th>
+                <th class="px-5 py-3.5 min-w-[140px]">Monthly Salary</th>
+                <th class="px-5 py-3.5 min-w-[130px]">Date of Publication</th>
+                <th class="px-5 py-3.5 min-w-[130px]">Date of Deadline</th>
+                <th class="px-5 py-3.5 min-w-[120px]">No. of Applicants</th>
+                <th class="px-5 py-3.5 text-right min-w-[140px]">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr v-for="(v, idx) in filteredVacancies" :key="v.id"
+                class="hover:bg-gray-50/70 transition-colors">
 
-          <div v-if="!filteredVacancies.length" class="px-4 py-14 text-center">
-            <p class="text-sm text-gray-400">No positions found</p>
+                <!-- # -->
+                <td class="px-5 py-4 text-xs text-gray-400 font-medium">{{ idx + 1 }}</td>
+
+                <!-- Vacant Position -->
+                <td class="px-5 py-4">
+                  <p class="font-semibold text-gray-900 leading-snug">{{ v.position_title }}</p>
+                  <p v-if="v.place_of_assignment" class="text-xs text-gray-400 mt-0.5">{{ v.place_of_assignment }}</p>
+                  <span :class="vacancyStatusClass(v.status)"
+                    class="inline-block mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full capitalize">
+                    {{ v.status }}
+                  </span>
+                </td>
+
+                <!-- Plantilla Item No. -->
+                <td class="px-5 py-4 text-sm text-gray-600">{{ v.item_number ?? '—' }}</td>
+
+                <!-- Salary Grade -->
+                <td class="px-5 py-4 text-sm text-gray-700 font-medium whitespace-nowrap">
+                  SG-{{ v.salary_grade ?? '—' }}
+                </td>
+
+                <!-- Monthly Salary -->
+                <td class="px-5 py-4 text-sm text-gray-700 whitespace-nowrap">
+                  {{ formatMoney(v.monthly_salary) }}
+                </td>
+
+                <!-- Date of Publication -->
+                <td class="px-5 py-4 text-sm text-gray-600 whitespace-nowrap">
+                  {{ formatDate(v.published_at) }}
+                </td>
+
+                <!-- Date of Deadline -->
+                <td class="px-5 py-4 text-sm text-gray-600 whitespace-nowrap">
+                  {{ formatDate(v.deadline_at) }}
+                </td>
+
+                <!-- No. of Applicants -->
+                <td class="px-5 py-4">
+                  <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-800">
+                    {{ v.applications_count }}
+                    <span class="text-xs font-normal text-gray-400">
+                      {{ v.applications_count === 1 ? 'applicant' : 'applicants' }}
+                    </span>
+                  </span>
+                  <div v-if="pendingCount(v) > 0" class="mt-0.5">
+                    <span class="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                      {{ pendingCount(v) }} pending
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Action -->
+                <td class="px-5 py-4 text-right">
+                  <button @click="viewApplicants(v)"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#2a338f] bg-[#2a338f]/8 hover:bg-[#2a338f]/15 rounded-lg transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                    </svg>
+                    View Applicants
+                  </button>
+                </td>
+
+              </tr>
+
+              <tr v-if="!filteredVacancies.length">
+                <td colspan="9" class="px-5 py-20 text-center">
+                  <div class="flex flex-col items-center gap-2">
+                    <svg class="w-10 h-10 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <p class="text-sm font-medium text-gray-400">No vacant positions found</p>
+                    <button v-if="vacancySearch || vacancyStatusFilter" @click="vacancySearch = ''; vacancyStatusFilter = ''"
+                      class="text-xs text-[#2a338f] hover:underline">Clear filters</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </template>
+
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <!-- PAGE 2 — Applicants for Selected Vacancy                                -->
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <template v-else>
+
+      <!-- Breadcrumb + back -->
+      <div class="flex items-center gap-2 mb-4">
+        <button @click="backToList"
+          class="flex items-center gap-1.5 text-sm text-[#2a338f] font-medium hover:underline">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Back to Vacant Positions
+        </button>
+        <svg class="w-3.5 h-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+        </svg>
+        <span class="text-sm text-gray-500 truncate max-w-xs">{{ selectedVacancy?.position_title }}</span>
+        <svg class="w-3.5 h-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+        </svg>
+        <span class="text-sm font-semibold text-gray-800">Applicants</span>
+      </div>
+
+      <!-- Position Information Header -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-5 mb-5">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Position Information</p>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+          <div>
+            <p class="text-[11px] text-gray-400 font-medium mb-1">Vacant Position</p>
+            <p class="text-sm font-semibold text-gray-900 leading-snug">{{ selectedVacancy?.position_title ?? '—' }}</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-gray-400 font-medium mb-1">Plantilla Item No.</p>
+            <p class="text-sm text-gray-700">{{ selectedVacancy?.item_number ?? '—' }}</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-gray-400 font-medium mb-1">Salary Grade</p>
+            <p class="text-sm text-gray-700 font-semibold">SG-{{ selectedVacancy?.salary_grade ?? '—' }}</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-gray-400 font-medium mb-1">Place of Assignment</p>
+            <p class="text-sm text-gray-700">{{ selectedVacancy?.place_of_assignment ?? '—' }}</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-gray-400 font-medium mb-1">Publication Period</p>
+            <p class="text-sm text-gray-700 whitespace-nowrap">
+              {{ formatDate(selectedVacancy?.published_at) }}
+              <span class="text-gray-400 mx-1">–</span>
+              {{ formatDate(selectedVacancy?.deadline_at) }}
+            </p>
           </div>
         </div>
       </div>
 
-      <!-- ── Right panel: Applicants ────────────────────────────────────────── -->
-      <div
-        :class="!selectedVacancy ? 'hidden lg:flex' : 'flex'"
-        class="flex-col flex-1 min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <!-- Applicants table card -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
-        <!-- Empty state (desktop only, nothing selected) -->
-        <div v-if="!selectedVacancy" class="flex-1 flex flex-col items-center justify-center py-28 text-center px-6">
-          <div class="w-14 h-14 rounded-2xl bg-[#2a338f]/8 flex items-center justify-center mb-4">
-            <svg class="w-7 h-7 text-[#2a338f]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/>
-            </svg>
+        <!-- Toolbar -->
+        <div class="px-5 py-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3">
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="text-sm font-semibold text-gray-900">Applicants</span>
+            <span class="text-xs bg-gray-100 text-gray-600 font-semibold px-2 py-0.5 rounded-full">
+              {{ meta.total ?? selectedVacancy?.applications_count ?? 0 }}
+            </span>
           </div>
-          <p class="text-sm font-medium text-gray-500">Select a position</p>
-          <p class="text-xs text-gray-400 mt-1">Choose from the list to view its applicants</p>
+          <div class="flex gap-2 sm:ml-auto">
+            <div class="relative flex-1 sm:flex-none">
+              <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <input v-model="filters.search" @input="onSearch" type="text"
+                placeholder="Search applicant…"
+                class="w-full sm:w-56 pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" />
+            </div>
+            <select v-model="filters.status" @change="resetAndFetch"
+              class="px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              <option value="">All Statuses</option>
+              <optgroup label="Initial">
+                <option value="submitted">Submitted</option>
+                <option value="under_review">Under Review</option>
+              </optgroup>
+              <optgroup label="Screening">
+                <option value="screened">Screened</option>
+                <option value="qualified">Qualified</option>
+                <option value="disqualified">Disqualified</option>
+              </optgroup>
+              <optgroup label="Selection">
+                <option value="exam_scheduled">Exam Scheduled</option>
+                <option value="shortlisted">Shortlisted</option>
+                <option value="for_interview">For Interview</option>
+                <option value="recommended">Recommended</option>
+              </optgroup>
+              <optgroup label="Final">
+                <option value="appointed">Appointed</option>
+                <option value="completed">Completed</option>
+                <option value="withdrawn">Withdrawn</option>
+              </optgroup>
+            </select>
+          </div>
         </div>
 
-        <template v-else>
-
-          <!-- Applicant panel header -->
-          <div class="px-5 py-4 border-b border-gray-100 flex-shrink-0">
-
-            <!-- Mobile back button -->
-            <button class="lg:hidden flex items-center gap-1.5 text-xs text-[#2a338f] font-semibold mb-3"
-              @click="selectedVacancy = null">
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        <!-- Selection bar -->
+        <div v-if="!loading && selectedIds.size > 0"
+          class="px-5 py-2.5 bg-[#2a338f]/5 border-b border-[#2a338f]/10 flex items-center gap-3 flex-shrink-0">
+          <span class="text-xs font-semibold text-[#2a338f]">
+            {{ selectedIds.size }} applicant{{ selectedIds.size !== 1 ? 's' : '' }} selected
+          </span>
+          <div class="flex items-center gap-2 ml-auto">
+            <button @click="openBatchUpdate"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
               </svg>
-              All Positions
+              Update Status
             </button>
-
-            <!-- Title row -->
-            <div class="flex flex-col sm:flex-row sm:items-start gap-3 mb-3">
-              <div class="flex-1 min-w-0">
-                <p class="text-base font-bold text-gray-900">{{ selectedVacancy.position_title }}</p>
-                <p class="text-xs text-gray-400 mt-0.5">
-                  SG-{{ selectedVacancy.salary_grade }}
-                  <span v-if="selectedVacancy.place_of_assignment"> · {{ selectedVacancy.place_of_assignment }}</span>
-                  <span v-if="selectedVacancy.deadline_at"> · Deadline {{ formatDate(selectedVacancy.deadline_at) }}</span>
-                </p>
-              </div>
-              <div class="flex items-center gap-2 flex-shrink-0">
-                <span class="text-xs bg-gray-100 text-gray-700 font-semibold px-2.5 py-1 rounded-full">
-                  {{ meta.total ?? selectedVacancy.applications_count }} total
-                </span>
-                <span v-if="pendingCount(selectedVacancy) > 0"
-                  class="text-xs bg-amber-50 text-amber-700 font-semibold px-2.5 py-1 rounded-full">
-                  {{ pendingCount(selectedVacancy) }} pending
-                </span>
-              </div>
-            </div>
-
-            <!-- Toolbar -->
-            <div class="flex gap-2">
-              <div class="relative flex-1">
-                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                <input v-model="filters.search" @input="onSearch" type="text"
-                  placeholder="Search applicant…"
-                  class="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" />
-              </div>
-              <select v-model="filters.status" @change="resetAndFetch"
-                class="px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
-                <option value="">All Statuses</option>
-                <optgroup label="Initial">
-                  <option value="submitted">Submitted</option>
-                  <option value="under_review">Under Review</option>
-                </optgroup>
-                <optgroup label="Screening">
-                  <option value="screened">Screened</option>
-                  <option value="qualified">Qualified</option>
-                  <option value="disqualified">Disqualified</option>
-                </optgroup>
-                <optgroup label="Selection">
-                  <option value="exam_scheduled">Exam Scheduled</option>
-                  <option value="shortlisted">Shortlisted</option>
-                  <option value="for_interview">For Interview</option>
-                  <option value="recommended">Recommended</option>
-                </optgroup>
-                <optgroup label="Final">
-                  <option value="appointed">Appointed</option>
-                  <option value="completed">Completed</option>
-                  <option value="withdrawn">Withdrawn</option>
-                </optgroup>
-              </select>
-            </div>
+            <button @click="clearSelection"
+              class="text-xs text-gray-500 hover:text-gray-800 font-medium transition-colors">
+              Clear
+            </button>
           </div>
+        </div>
 
-          <!-- Loading skeleton -->
-          <div v-if="loading" class="p-5 space-y-3">
-            <div v-for="n in 6" :key="n" class="flex items-center gap-4 h-12">
-              <div class="w-8 h-8 rounded-full bg-gray-100 animate-pulse flex-shrink-0"></div>
-              <div class="flex-1 space-y-1.5">
-                <div class="h-3 bg-gray-100 rounded w-1/3 animate-pulse"></div>
-                <div class="h-2.5 bg-gray-100 rounded w-1/4 animate-pulse"></div>
-              </div>
-              <div class="h-5 w-20 bg-gray-100 rounded-full animate-pulse"></div>
-              <div class="h-7 w-20 bg-gray-100 rounded animate-pulse"></div>
+        <!-- Loading skeleton -->
+        <div v-if="loading" class="p-5 space-y-3">
+          <div v-for="n in 6" :key="n" class="flex items-center gap-4 h-11">
+            <div class="w-4 h-4 bg-gray-100 rounded animate-pulse flex-shrink-0 ml-5"></div>
+            <div class="w-8 h-8 rounded-full bg-gray-100 animate-pulse flex-shrink-0"></div>
+            <div class="flex-1 space-y-1.5">
+              <div class="h-3 bg-gray-100 rounded w-1/3 animate-pulse"></div>
+              <div class="h-2.5 bg-gray-100 rounded w-1/4 animate-pulse"></div>
             </div>
+            <div class="h-2.5 bg-gray-100 rounded w-20 animate-pulse hidden sm:block"></div>
+            <div class="h-2.5 bg-gray-100 rounded w-20 animate-pulse hidden md:block"></div>
+            <div class="h-5 w-20 bg-gray-100 rounded-full animate-pulse"></div>
+            <div class="h-7 w-36 bg-gray-100 rounded animate-pulse"></div>
           </div>
+        </div>
 
-          <!-- Applicants table -->
-          <table v-else class="w-full text-sm">
+        <!-- Table -->
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-sm" style="min-width: 1050px;">
             <thead class="bg-gray-50 border-b border-gray-200">
               <tr class="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider">
-                <th class="px-5 py-3">Applicant</th>
-                <th class="px-5 py-3">Status</th>
-                <th class="px-5 py-3 hidden md:table-cell">Submitted</th>
-                <th class="px-5 py-3 text-right">Actions</th>
+                <th class="pl-5 pr-2 py-3.5 w-10">
+                  <input type="checkbox" ref="headerCheckbox"
+                    :checked="allOnPageSelected"
+                    @change="toggleSelectAll"
+                    class="rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f] cursor-pointer" />
+                </th>
+                <th class="px-4 py-3.5 min-w-[200px]">Applicant Name</th>
+                <th class="px-4 py-3.5 min-w-[90px]">Gender</th>
+                <th class="px-4 py-3.5 min-w-[110px]">Civil Status</th>
+                <th class="px-4 py-3.5 min-w-[110px]">Birthday</th>
+                <th class="px-4 py-3.5 min-w-[130px]">Mobile Number</th>
+                <th class="px-4 py-3.5 min-w-[180px]">Email Address</th>
+                <th class="px-4 py-3.5 min-w-[120px]">Status</th>
+                <th class="px-4 py-3.5 text-right min-w-[200px]">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr v-for="app in applications" :key="app.id"
-                class="hover:bg-gray-50/80 transition-colors group">
-                <td class="px-5 py-3.5">
-                  <div class="flex items-center gap-3">
+              <tr v-for="(app, idx) in applications" :key="app.id"
+                :class="['hover:bg-gray-50/80 transition-colors', selectedIds.has(app.id) ? 'bg-[#2a338f]/3' : '']">
+
+                <!-- Checkbox -->
+                <td class="pl-5 pr-2 py-4 w-10">
+                  <input type="checkbox"
+                    :checked="selectedIds.has(app.id)"
+                    @click.stop="handleRowCheck($event, app, idx)"
+                    class="rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f] cursor-pointer" />
+                </td>
+
+                <!-- Applicant Name (Last, First Middle) -->
+                <td class="px-4 py-4">
+                  <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-full bg-[#2a338f]/10 flex items-center justify-center text-[#2a338f] text-xs font-bold flex-shrink-0">
                       {{ initials(app.applicant?.user?.name) }}
                     </div>
-                    <div class="min-w-0">
-                      <p class="font-medium text-gray-900 truncate">{{ app.applicant?.user?.name ?? '—' }}</p>
-                      <p class="text-xs text-gray-400 truncate">{{ app.applicant?.user?.email ?? '' }}</p>
-                    </div>
+                    <p class="font-semibold text-gray-900 leading-snug">{{ formatApplicantName(app) }}</p>
                   </div>
                 </td>
-                <td class="px-5 py-3.5">
+
+                <!-- Gender -->
+                <td class="px-4 py-4 text-xs text-gray-600 capitalize">
+                  {{ app.applicant?.gender ?? '—' }}
+                </td>
+
+                <!-- Civil Status -->
+                <td class="px-4 py-4 text-xs text-gray-600 capitalize">
+                  {{ app.applicant?.civil_status ?? '—' }}
+                </td>
+
+                <!-- Birthday -->
+                <td class="px-4 py-4 text-xs text-gray-500 whitespace-nowrap">
+                  {{ formatDate(app.applicant?.birthday) }}
+                </td>
+
+                <!-- Mobile Number -->
+                <td class="px-4 py-4 text-xs text-gray-600 whitespace-nowrap">
+                  {{ app.applicant?.mobile_number ?? '—' }}
+                </td>
+
+                <!-- Email Address -->
+                <td class="px-4 py-4 text-xs text-gray-600 truncate max-w-[180px]">
+                  {{ app.applicant?.user?.email ?? '—' }}
+                </td>
+
+                <!-- Status -->
+                <td class="px-4 py-4">
                   <StatusBadge :status="app.status" />
                 </td>
-                <td class="px-5 py-3.5 text-xs text-gray-400 hidden md:table-cell whitespace-nowrap">
-                  {{ formatDate(app.submitted_at ?? app.created_at) }}
-                </td>
-                <td class="px-5 py-3.5">
-                  <div class="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button @click="openDetail(app)"
-                      class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
-                      <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+
+                <!-- Actions -->
+                <td class="px-4 py-4">
+                  <div class="flex items-center justify-end gap-1">
+                    <button @click="openAttachments(app)" title="View Attachments"
+                      class="p-1.5 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-md transition-colors">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                      </svg>
+                    </button>
+                    <button @click="openCredentials(app)" title="View Applicant Credentials"
+                      class="p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-md transition-colors">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                    </button>
+                    <button @click="openDetail(app)" title="View Details"
+                      class="p-1.5 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                       </svg>
-                      View
                     </button>
-                    <button @click="openUpdate(app)"
-                      class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#2a338f] bg-[#2a338f]/8 hover:bg-[#2a338f]/15 rounded-md transition-colors">
-                      <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <button @click="openUpdate(app)" title="Update Status"
+                      class="p-1.5 text-[#2a338f] bg-[#2a338f]/8 hover:bg-[#2a338f]/15 rounded-md transition-colors">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                       </svg>
-                      Status
                     </button>
                   </div>
                 </td>
               </tr>
 
               <tr v-if="!applications.length">
-                <td colspan="4" class="px-5 py-14 text-center">
+                <td colspan="9" class="px-5 py-20 text-center">
                   <div class="flex flex-col items-center gap-2">
                     <svg class="w-9 h-9 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
@@ -239,36 +418,36 @@
               </tr>
             </tbody>
           </table>
+        </div>
 
-          <!-- Pagination -->
-          <div v-if="!loading && meta.last_page > 1"
-            class="px-5 py-3 border-t border-gray-100 flex items-center justify-between">
-            <span class="text-xs text-gray-500">
-              Showing <strong class="text-gray-700">{{ meta.from }}</strong>–<strong class="text-gray-700">{{ meta.to }}</strong>
-              of <strong class="text-gray-700">{{ meta.total }}</strong>
+        <!-- Pagination -->
+        <div v-if="!loading && meta.last_page > 1"
+          class="px-5 py-3 border-t border-gray-100 flex items-center justify-between">
+          <span class="text-xs text-gray-500">
+            Showing <strong class="text-gray-700">{{ meta.from }}</strong>–<strong class="text-gray-700">{{ meta.to }}</strong>
+            of <strong class="text-gray-700">{{ meta.total }}</strong>
+          </span>
+          <div class="flex items-center gap-1">
+            <button :disabled="meta.current_page === 1" @click="goPage(meta.current_page - 1)"
+              class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
+              </svg>
+            </button>
+            <span class="px-3 py-1 text-xs font-medium text-gray-700">
+              {{ meta.current_page }} / {{ meta.last_page }}
             </span>
-            <div class="flex items-center gap-1">
-              <button :disabled="meta.current_page === 1" @click="goPage(meta.current_page - 1)"
-                class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
-                </svg>
-              </button>
-              <span class="px-3 py-1 text-xs font-medium text-gray-700">
-                {{ meta.current_page }} / {{ meta.last_page }}
-              </span>
-              <button :disabled="meta.current_page === meta.last_page" @click="goPage(meta.current_page + 1)"
-                class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-                </svg>
-              </button>
-            </div>
+            <button :disabled="meta.current_page === meta.last_page" @click="goPage(meta.current_page + 1)"
+              class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+              </svg>
+            </button>
           </div>
+        </div>
 
-        </template>
       </div>
-    </div>
+    </template>
 
     <!-- ── Detail Drawer ──────────────────────────────────────────────────────── -->
     <Teleport to="body">
@@ -282,7 +461,7 @@
               {{ initials(detailTarget.applicant?.user?.name) }}
             </div>
             <div>
-              <p class="text-sm font-semibold text-gray-900">{{ detailTarget.applicant?.user?.name ?? '—' }}</p>
+              <p class="text-sm font-semibold text-gray-900">{{ formatApplicantName(detailTarget) }}</p>
               <p class="text-xs text-gray-400">{{ detailTarget.applicant?.user?.email ?? '' }}</p>
             </div>
           </div>
@@ -435,6 +614,245 @@
     </div>
     </Teleport>
 
+    <!-- ── Attachments Modal ─────────────────────────────────────────────────── -->
+    <Teleport to="body">
+    <div v-if="attachmentsTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/60" @click="attachmentsTarget = null"></div>
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col" style="max-height: 90vh;">
+
+        <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
+          <div>
+            <h3 class="text-base font-semibold text-gray-900">Application Attachments</h3>
+            <p class="text-xs text-gray-400 mt-0.5">{{ formatApplicantName(attachmentsTarget) }}</p>
+          </div>
+          <button @click="attachmentsTarget = null" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-6 py-5">
+          <div v-if="profileLoading" class="space-y-3">
+            <div v-for="n in 5" :key="n" class="h-16 bg-gray-100 rounded-xl animate-pulse"></div>
+          </div>
+          <div v-else class="space-y-3">
+            <div v-for="doc in attachmentDocs" :key="doc.type"
+              class="flex items-center justify-between gap-3 p-4 rounded-xl border transition-colors"
+              :class="doc.path ? 'border-gray-200 bg-white hover:bg-gray-50' : 'border-dashed border-gray-200 bg-gray-50'">
+
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                  :class="doc.path ? 'bg-red-50' : 'bg-gray-100'">
+                  <svg class="w-4.5 h-4.5" :class="doc.path ? 'text-red-500' : 'text-gray-300'"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-gray-900 leading-tight">{{ doc.label }}</p>
+                  <p class="text-xs mt-0.5" :class="doc.path ? 'text-green-600' : 'text-gray-400'">
+                    {{ doc.path ? 'Uploaded' : 'Not uploaded' }}
+                    <span v-if="doc.optional && !doc.path" class="ml-1 text-gray-300">(optional)</span>
+                  </p>
+                </div>
+              </div>
+
+              <div v-if="doc.path" class="flex items-center gap-1.5 flex-shrink-0">
+                <button @click="viewDoc(attachmentsTarget.id, doc.type)"
+                  :disabled="docAction === doc.type + '-view'"
+                  class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-[#2a338f] bg-[#2a338f]/8 hover:bg-[#2a338f]/15 rounded-lg transition-colors disabled:opacity-50">
+                  <svg v-if="docAction === doc.type + '-view'" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                  </svg>
+                  <svg v-else class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                  View
+                </button>
+                <button @click="downloadDoc(attachmentsTarget.id, doc.type, doc.label)"
+                  :disabled="docAction === doc.type + '-dl'"
+                  class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50">
+                  <svg v-if="docAction === doc.type + '-dl'" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                  </svg>
+                  <svg v-else class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                  </svg>
+                  Download
+                </button>
+              </div>
+              <span v-else class="text-xs text-gray-300 flex-shrink-0">—</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    </Teleport>
+
+    <!-- ── Credentials Drawer ──────────────────────────────────────────────────── -->
+    <Teleport to="body">
+    <div v-if="credentialsTarget" class="fixed inset-0 z-50 flex justify-end">
+      <div class="absolute inset-0 bg-black/40" @click="credentialsTarget = null"></div>
+      <div class="relative bg-white w-full max-w-lg h-full flex flex-col shadow-2xl overflow-hidden">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 text-sm font-bold flex-shrink-0">
+              {{ initials(credentialsTarget.applicant?.user?.name) }}
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-900">{{ formatApplicantName(credentialsTarget) }}</p>
+              <p class="text-xs text-gray-400">Applicant Credentials</p>
+            </div>
+          </div>
+          <button @click="credentialsTarget = null" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+
+          <div v-if="profileLoading" class="space-y-4">
+            <div v-for="n in 6" :key="n" class="h-16 bg-gray-100 rounded-xl animate-pulse"></div>
+          </div>
+
+          <template v-else-if="credentialsData">
+
+            <!-- Work Experience -->
+            <section>
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 rounded-md bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                  </svg>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-900">Work Experience</h3>
+                <span class="text-xs text-gray-400">({{ credentialsData.work_experiences?.length ?? 0 }})</span>
+              </div>
+              <div v-if="credentialsData.work_experiences?.length" class="space-y-2.5">
+                <div v-for="exp in credentialsData.work_experiences" :key="exp.id"
+                  class="rounded-xl border border-gray-200 p-3.5 bg-white hover:bg-gray-50 transition-colors">
+                  <div class="flex items-start justify-between gap-2 mb-1">
+                    <p class="text-sm font-semibold text-gray-900 leading-snug">{{ exp.position_title }}</p>
+                    <span :class="exp.government_service ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-500'"
+                      class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 mt-0.5">
+                      {{ exp.government_service ? 'Gov\'t' : 'Private' }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-gray-600 font-medium">{{ exp.department_agency }}</p>
+                  <p class="text-xs text-gray-400 mt-1">
+                    {{ exp.date_from }} – {{ exp.is_present ? 'Present' : (exp.date_to ?? '—') }}
+                    <span v-if="exp.appointment_status" class="mx-1.5 text-gray-200">·</span>
+                    <span v-if="exp.appointment_status">{{ exp.appointment_status }}</span>
+                  </p>
+                </div>
+              </div>
+              <p v-else class="text-sm text-gray-400 italic">No work experience recorded.</p>
+            </section>
+
+            <!-- Education -->
+            <section>
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 rounded-md bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M12 14l9-5-9-5-9 5 9 5z"/>
+                    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/>
+                  </svg>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-900">Education</h3>
+                <span class="text-xs text-gray-400">({{ credentialsData.educational_attainments?.length ?? 0 }})</span>
+              </div>
+              <div v-if="credentialsData.educational_attainments?.length" class="space-y-2.5">
+                <div v-for="edu in credentialsData.educational_attainments" :key="edu.id"
+                  class="rounded-xl border border-gray-200 p-3.5 bg-white hover:bg-gray-50 transition-colors">
+                  <div class="flex items-start justify-between gap-2 mb-1">
+                    <p class="text-sm font-semibold text-gray-900 leading-snug">
+                      {{ edu.degree_course ?? edu.level }}
+                    </p>
+                    <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-700 flex-shrink-0 mt-0.5 capitalize">
+                      {{ edu.level?.replace('_', ' ') }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-gray-600 font-medium">{{ edu.school_name }}</p>
+                  <p class="text-xs text-gray-400 mt-1">
+                    <span v-if="edu.period_from">{{ edu.period_from }}{{ edu.period_to ? ' – ' + edu.period_to : '' }}</span>
+                    <span v-if="edu.year_graduated" class="ml-1">· Graduated {{ edu.year_graduated }}</span>
+                    <span v-if="edu.honors" class="ml-1">· {{ edu.honors }}</span>
+                  </p>
+                </div>
+              </div>
+              <p v-else class="text-sm text-gray-400 italic">No educational attainment recorded.</p>
+            </section>
+
+            <!-- Trainings -->
+            <section>
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 rounded-md bg-orange-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                  </svg>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-900">Trainings & Seminars</h3>
+                <span class="text-xs text-gray-400">({{ credentialsData.trainings?.length ?? 0 }})</span>
+              </div>
+              <div v-if="credentialsData.trainings?.length" class="space-y-2.5">
+                <div v-for="tr in credentialsData.trainings" :key="tr.id"
+                  class="rounded-xl border border-gray-200 p-3.5 bg-white hover:bg-gray-50 transition-colors">
+                  <p class="text-sm font-semibold text-gray-900 leading-snug mb-1">{{ tr.title }}</p>
+                  <p v-if="tr.conducted_by" class="text-xs text-gray-600 font-medium">{{ tr.conducted_by }}</p>
+                  <div class="flex items-center gap-3 mt-1">
+                    <p class="text-xs text-gray-400">
+                      {{ tr.date_from }}{{ tr.date_to ? ' – ' + tr.date_to : '' }}
+                    </p>
+                    <span v-if="tr.hours" class="text-xs font-semibold text-orange-700 bg-orange-50 px-1.5 py-0.5 rounded-full">
+                      {{ tr.hours }}h
+                    </span>
+                    <span v-if="tr.ld_type" class="text-xs text-gray-400">· {{ tr.ld_type }}</span>
+                  </div>
+                </div>
+              </div>
+              <p v-else class="text-sm text-gray-400 italic">No training records.</p>
+            </section>
+
+            <!-- Eligibility -->
+            <section>
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 rounded-md bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                  </svg>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-900">Eligibility</h3>
+              </div>
+              <div v-if="credentialsData.eligibility" class="rounded-xl border border-green-200 bg-green-50 p-4">
+                <p class="text-sm font-semibold text-green-900">{{ credentialsData.eligibility }}</p>
+                <p v-if="credentialsData.eligibility_other" class="text-xs text-green-700 mt-1">
+                  Additional: {{ credentialsData.eligibility_other }}
+                </p>
+              </div>
+              <p v-else class="text-sm text-gray-400 italic">No eligibility recorded.</p>
+            </section>
+
+          </template>
+
+          <div v-else class="flex flex-col items-center justify-center py-16 text-center">
+            <p class="text-sm text-gray-400">No credentials data available.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    </Teleport>
+
     <!-- ── Update Status Modal ────────────────────────────────────────────────── -->
     <Teleport to="body">
     <div v-if="updateTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -444,7 +862,7 @@
         <div class="px-6 py-5 border-b border-gray-100 flex-shrink-0">
           <h3 class="text-base font-semibold text-gray-900">Update Application Status</h3>
           <p class="text-xs text-gray-400 mt-1">
-            {{ updateTarget.applicant?.user?.name ?? 'Applicant' }}
+            {{ formatApplicantName(updateTarget) }}
             <span class="mx-1 text-gray-300">·</span>
             {{ updateTarget.vacancy?.position_title ?? 'Position' }}
           </p>
@@ -482,6 +900,35 @@
             </select>
           </div>
 
+          <!-- Schedule form: shown when exam or interview status is selected -->
+          <div v-if="statusForm.status === 'exam_scheduled' || statusForm.status === 'for_interview'"
+            class="rounded-xl border p-4 space-y-3"
+            :class="statusForm.status === 'exam_scheduled' ? 'bg-orange-50 border-orange-200' : 'bg-violet-50 border-violet-200'">
+            <p class="text-xs font-semibold uppercase tracking-wide"
+              :class="statusForm.status === 'exam_scheduled' ? 'text-orange-800' : 'text-violet-800'">
+              {{ statusForm.status === 'exam_scheduled' ? 'Exam Schedule' : 'Interview Schedule' }}
+              <span class="font-normal text-gray-400 ml-1 normal-case">(optional — create now or schedule later)</span>
+            </p>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Date &amp; Time</label>
+              <input type="datetime-local" v-model="scheduleForm.scheduled_at"
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
+              <input type="text" v-model="scheduleForm.venue" placeholder="e.g. CSC Regional Office, Room 201"
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Notes <span class="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <textarea v-model="scheduleForm.notes" rows="2"
+                placeholder="Additional instructions or reminders…"
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none resize-none"></textarea>
+            </div>
+          </div>
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">
               Remarks <span class="text-gray-400 font-normal">(optional — visible to applicant)</span>
@@ -514,42 +961,251 @@
     </div>
     </Teleport>
 
+    <!-- ── Batch Update Status Modal ────────────────────────────────────────── -->
+    <Teleport to="body">
+    <div v-if="batchUpdateOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/60" @click="batchUpdateOpen = false"></div>
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col">
+
+        <div class="px-6 py-5 border-b border-gray-100">
+          <h3 class="text-base font-semibold text-gray-900">Batch Update Status</h3>
+          <p class="text-xs text-gray-400 mt-1">
+            Applying to
+            <span class="font-semibold text-gray-700">{{ selectedIds.size }}</span>
+            applicant{{ selectedIds.size !== 1 ? 's' : '' }}
+          </p>
+        </div>
+
+        <div class="px-6 py-5 space-y-4">
+          <!-- Progress bar (shown while saving) -->
+          <div v-if="batchSaving" class="space-y-2">
+            <div class="flex items-center justify-between text-xs text-gray-500">
+              <span>Updating… {{ batchProgress }}/{{ batchTotal }}</span>
+              <span>{{ Math.round((batchProgress / batchTotal) * 100) }}%</span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-1.5">
+              <div class="bg-[#2a338f] h-1.5 rounded-full transition-all duration-300"
+                :style="{ width: `${(batchProgress / batchTotal) * 100}%` }"></div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">New Status <span class="text-red-500">*</span></label>
+            <select v-model="batchForm.status" :disabled="batchSaving"
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white disabled:opacity-60">
+              <option value="" disabled>Select a status…</option>
+              <optgroup label="Initial">
+                <option value="under_review">Under Review</option>
+              </optgroup>
+              <optgroup label="Screening">
+                <option value="screened">Screened</option>
+                <option value="qualified">Qualified</option>
+                <option value="disqualified">Disqualified</option>
+              </optgroup>
+              <optgroup label="Selection">
+                <option value="exam_scheduled">Exam Scheduled</option>
+                <option value="shortlisted">Shortlisted</option>
+                <option value="for_interview">For Interview</option>
+                <option value="recommended">Recommended</option>
+              </optgroup>
+              <optgroup label="Final">
+                <option value="appointed">Appointed</option>
+                <option value="completed">Completed</option>
+                <option value="withdrawn">Withdrawn</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+              Remarks <span class="text-gray-400 font-normal">(optional — will be applied to all selected)</span>
+            </label>
+            <textarea v-model="batchForm.remarks" rows="3" :disabled="batchSaving"
+              placeholder="Add notes or feedback…"
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none resize-none disabled:opacity-60"></textarea>
+          </div>
+
+          <p v-if="batchError" class="text-xs text-red-600">{{ batchError }}</p>
+        </div>
+
+        <div class="flex justify-between gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl">
+          <button @click="batchUpdateOpen = false" :disabled="batchSaving"
+            class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50">
+            Cancel
+          </button>
+          <button @click="doBatchUpdate" :disabled="batchSaving || !batchForm.status"
+            class="px-4 py-2 text-sm bg-[#2a338f] text-white font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-60 transition-colors">
+            <span v-if="batchSaving" class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+              </svg>
+              Updating…
+            </span>
+            <span v-else>Apply to {{ selectedIds.size }} Applicant{{ selectedIds.size !== 1 ? 's' : '' }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+    </Teleport>
+
   </AdminLayout>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watchEffect, onMounted } from 'vue'
 import { debounce } from 'lodash-es'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 
 // ── State ─────────────────────────────────────────────────────────────────────
-const vacanciesLoading = ref(true)
-const vacancyError     = ref('')
-const loading          = ref(false)
-const saving           = ref(false)
-const vacancies        = ref([])
-const applications     = ref([])
-const meta             = ref({})
-const selectedVacancy  = ref(null)
-const vacancySearch    = ref('')
-const updateTarget     = ref(null)
-const detailTarget     = ref(null)
+const view               = ref('list')
+const vacanciesLoading   = ref(true)
+const vacancyError       = ref('')
+const loading            = ref(false)
+const saving             = ref(false)
+const vacancies          = ref([])
+const applications       = ref([])
+const meta               = ref({})
+const selectedVacancy    = ref(null)
+const vacancySearch      = ref('')
+const vacancyStatusFilter = ref('')
+const updateTarget       = ref(null)
+const detailTarget       = ref(null)
+const attachmentsTarget  = ref(null)
+const credentialsTarget  = ref(null)
+const profileCache       = ref({})
+const profileLoading     = ref(false)
+const docAction          = ref('')
+const selectedIds        = ref(new Set())
+const lastSelectedIndex  = ref(-1)
+const headerCheckbox     = ref(null)
+const batchUpdateOpen    = ref(false)
+const batchSaving        = ref(false)
+const batchProgress      = ref(0)
+const batchTotal         = ref(0)
+const batchError         = ref('')
 
-const filters    = reactive({ search: '', status: '', page: 1 })
-const statusForm = reactive({ status: '', remarks: '' })
-const csForm     = reactive({ type: '33A', forms: [], loading: false, generating: false, actionId: null, pnpkiReady: false, error: '' })
+const filters      = reactive({ search: '', status: '', page: 1 })
+const statusForm   = reactive({ status: '', remarks: '' })
+const scheduleForm = reactive({ scheduled_at: '', venue: '', notes: '' })
+const batchForm    = reactive({ status: '', remarks: '' })
+const csForm       = reactive({ type: '33A', forms: [], loading: false, generating: false, actionId: null, pnpkiReady: false, error: '' })
 
 // ── Computed ───────────────────────────────────────────────────────────────────
-const filteredVacancies = computed(() => {
-  const q = vacancySearch.value.trim().toLowerCase()
-  if (!q) return vacancies.value
-  return vacancies.value.filter(v =>
-    v.position_title.toLowerCase().includes(q) ||
-    (v.place_of_assignment ?? '').toLowerCase().includes(q)
-  )
+const allOnPageSelected = computed(() =>
+  applications.value.length > 0 && applications.value.every(a => selectedIds.value.has(a.id))
+)
+const someOnPageSelected = computed(() =>
+  applications.value.some(a => selectedIds.value.has(a.id)) && !allOnPageSelected.value
+)
+
+watchEffect(() => {
+  if (headerCheckbox.value) {
+    headerCheckbox.value.indeterminate = someOnPageSelected.value
+  }
 })
+
+const filteredVacancies = computed(() => {
+  let list = vacancies.value
+  const q = vacancySearch.value.trim().toLowerCase()
+  if (q) {
+    list = list.filter(v =>
+      v.position_title.toLowerCase().includes(q) ||
+      (v.place_of_assignment ?? '').toLowerCase().includes(q) ||
+      (v.item_number ?? '').toLowerCase().includes(q)
+    )
+  }
+  if (vacancyStatusFilter.value) {
+    list = list.filter(v => v.status === vacancyStatusFilter.value)
+  }
+  return list
+})
+
+// ── Attachments & credentials ─────────────────────────────────────────────────
+const DOCS = [
+  { type: 'pds',        label: 'Personal Data Sheet (PDS) with Work Experience Sheet', optional: false },
+  { type: 'app_letter', label: 'Application Letter',                                   optional: false },
+  { type: 'ipcr',       label: 'IPCR (Individual Performance Commitment & Review)',     optional: true  },
+  { type: 'coe',        label: 'Certificate of Eligibility',                            optional: false },
+  { type: 'tor',        label: 'Transcript of Records (TOR)',                           optional: false },
+]
+
+const PATH_KEY = {
+  pds: 'pds_path', app_letter: 'app_letter_path',
+  ipcr: 'ipcr_path', coe: 'coe_path', tor: 'tor_path',
+}
+
+const attachmentDocs = computed(() => {
+  const p = attachmentsTarget.value ? profileCache.value[attachmentsTarget.value.id] : null
+  return DOCS.map(d => ({ ...d, path: p?.[PATH_KEY[d.type]] ?? null }))
+})
+
+const credentialsData = computed(() =>
+  credentialsTarget.value ? profileCache.value[credentialsTarget.value.id] : null
+)
+
+async function loadApplicantProfile(appId) {
+  if (profileCache.value[appId]) return
+  profileLoading.value = true
+  try {
+    const { data } = await axios.get(`/api/applications/${appId}/applicant-profile`, { headers: authHeaders() })
+    profileCache.value[appId] = data
+  } catch {
+    profileCache.value[appId] = null
+  } finally {
+    profileLoading.value = false
+  }
+}
+
+async function openAttachments(app) {
+  attachmentsTarget.value = app
+  await loadApplicantProfile(app.id)
+}
+
+async function openCredentials(app) {
+  credentialsTarget.value = app
+  await loadApplicantProfile(app.id)
+}
+
+async function viewDoc(appId, type) {
+  docAction.value = type + '-view'
+  try {
+    const { data } = await axios.get(`/api/applications/${appId}/applicant-documents/${type}`, {
+      headers: { ...authHeaders() },
+      responseType: 'blob',
+    })
+    const url = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
+    window.open(url, '_blank')
+    setTimeout(() => URL.revokeObjectURL(url), 60000)
+  } catch {
+    alert('Unable to load document.')
+  } finally {
+    docAction.value = ''
+  }
+}
+
+async function downloadDoc(appId, type, label) {
+  docAction.value = type + '-dl'
+  try {
+    const { data } = await axios.get(`/api/applications/${appId}/applicant-documents/${type}?download=1`, {
+      headers: { ...authHeaders() },
+      responseType: 'blob',
+    })
+    const url = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${label}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    alert('Unable to download document.')
+  } finally {
+    docAction.value = ''
+  }
+}
 
 // ── Status pipeline ────────────────────────────────────────────────────────────
 const statusPipeline = [
@@ -599,6 +1255,22 @@ function formatDate(str) {
   return new Date(str).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+function formatMoney(amount) {
+  if (!amount && amount !== 0) return '—'
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency', currency: 'PHP', minimumFractionDigits: 2,
+  }).format(amount)
+}
+
+function formatApplicantName(app) {
+  const p = app?.applicant
+  if (p?.last_name && p?.first_name) {
+    const middle = p.middle_name ? ' ' + p.middle_name : ''
+    return `${p.last_name}, ${p.first_name}${middle}`
+  }
+  return p?.user?.name ?? '—'
+}
+
 // ── Data fetching ──────────────────────────────────────────────────────────────
 async function fetchVacancies() {
   vacanciesLoading.value = true
@@ -636,12 +1308,96 @@ async function fetchApplications() {
   }
 }
 
-function selectVacancy(v) {
+// ── Row selection ──────────────────────────────────────────────────────────────
+function clearSelection() {
+  selectedIds.value = new Set()
+  lastSelectedIndex.value = -1
+}
+
+function toggleSelectAll() {
+  const s = new Set(selectedIds.value)
+  if (allOnPageSelected.value) {
+    applications.value.forEach(a => s.delete(a.id))
+  } else {
+    applications.value.forEach(a => s.add(a.id))
+  }
+  selectedIds.value = s
+}
+
+function handleRowCheck(event, app, idx) {
+  const s = new Set(selectedIds.value)
+  if (event.shiftKey && lastSelectedIndex.value !== -1) {
+    const from = Math.min(lastSelectedIndex.value, idx)
+    const to   = Math.max(lastSelectedIndex.value, idx)
+    for (let i = from; i <= to; i++) {
+      const a = applications.value[i]
+      if (a) s.add(a.id)
+    }
+    selectedIds.value = s
+  } else {
+    if (s.has(app.id)) s.delete(app.id)
+    else s.add(app.id)
+    selectedIds.value = s
+  }
+  lastSelectedIndex.value = idx
+}
+
+// ── Batch Update ───────────────────────────────────────────────────────────────
+function openBatchUpdate() {
+  batchForm.status  = ''
+  batchForm.remarks = ''
+  batchError.value  = ''
+  batchProgress.value = 0
+  batchUpdateOpen.value = true
+}
+
+async function doBatchUpdate() {
+  if (!batchForm.status) return
+  const ids = [...selectedIds.value]
+  batchSaving.value   = true
+  batchTotal.value    = ids.length
+  batchProgress.value = 0
+  batchError.value    = ''
+  let failed = 0
+  for (const id of ids) {
+    try {
+      await axios.patch(`/api/applications/${id}/status`, {
+        status:  batchForm.status,
+        remarks: batchForm.remarks || undefined,
+      }, { headers: authHeaders() })
+    } catch {
+      failed++
+    }
+    batchProgress.value++
+  }
+  batchSaving.value = false
+  if (failed > 0) {
+    batchError.value = `${failed} application${failed !== 1 ? 's' : ''} could not be updated.`
+    return
+  }
+  batchUpdateOpen.value = false
+  clearSelection()
+  await fetchApplications()
+  await fetchVacancies()
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────────
+function viewApplicants(v) {
   selectedVacancy.value = v
   filters.search = ''
   filters.status = ''
   filters.page   = 1
+  clearSelection()
+  view.value = 'applicants'
   fetchApplications()
+}
+
+function backToList() {
+  view.value = 'list'
+  selectedVacancy.value = null
+  applications.value = []
+  meta.value = {}
+  clearSelection()
 }
 
 const onSearch = debounce(() => resetAndFetch(), 350)
@@ -728,15 +1484,31 @@ async function markSubmitted(form) {
 
 // ── Update Status modal ────────────────────────────────────────────────────────
 function openUpdate(app) {
-  updateTarget.value = app
-  statusForm.status  = app.status
-  statusForm.remarks = app.remarks ?? ''
+  updateTarget.value        = app
+  statusForm.status         = app.status
+  statusForm.remarks        = app.remarks ?? ''
+  scheduleForm.scheduled_at = ''
+  scheduleForm.venue        = ''
+  scheduleForm.notes        = ''
 }
 
 async function doUpdateStatus() {
   saving.value = true
   try {
     await axios.patch(`/api/applications/${updateTarget.value.id}/status`, statusForm, { headers: authHeaders() })
+
+    if (scheduleForm.scheduled_at && scheduleForm.venue) {
+      const endpoint = statusForm.status === 'exam_scheduled' ? '/api/examinations' : '/api/interviews'
+      if (statusForm.status === 'exam_scheduled' || statusForm.status === 'for_interview') {
+        await axios.post(endpoint, {
+          application_id: updateTarget.value.id,
+          scheduled_at:   scheduleForm.scheduled_at,
+          venue:          scheduleForm.venue,
+          notes:          scheduleForm.notes || undefined,
+        }, { headers: authHeaders() }).catch(() => {})
+      }
+    }
+
     updateTarget.value = null
     await fetchApplications()
     await fetchVacancies()

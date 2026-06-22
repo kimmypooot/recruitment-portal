@@ -70,6 +70,7 @@ class VacancyController extends Controller
 
         $vacancies = $query
             ->with('postedBy:id,name')
+            ->withCount('applications')
             ->paginate($perPage)
             ->withQueryString();
 
