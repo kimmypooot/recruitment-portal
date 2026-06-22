@@ -77,8 +77,52 @@
           <h1 class="text-base font-semibold text-gray-900">{{ title }}</h1>
         </div>
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-[#2a338f] flex items-center justify-center text-white text-xs font-bold">
-            A
+          <div class="relative" ref="dropdownRef">
+            <button @click="dropdownOpen = !dropdownOpen"
+              class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+              <div class="w-8 h-8 rounded-full bg-[#2a338f] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                {{ userInitial }}
+              </div>
+              <div class="hidden sm:block text-left">
+                <p class="text-sm font-semibold text-gray-800 leading-none max-w-[120px] truncate">{{ userName }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">Admin</p>
+              </div>
+              <svg class="w-4 h-4 text-gray-400 hidden sm:block transition-transform flex-shrink-0"
+                :class="dropdownOpen ? 'rotate-180' : ''"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+              </svg>
+            </button>
+
+            <Transition
+              enter-active-class="transition ease-out duration-100"
+              enter-from-class="opacity-0 scale-95"
+              enter-to-class="opacity-100 scale-100"
+              leave-active-class="transition ease-in duration-75"
+              leave-from-class="opacity-100 scale-100"
+              leave-to-class="opacity-0 scale-95">
+              <div v-if="dropdownOpen"
+                class="absolute right-0 mt-1 w-56 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
+                <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+                  <div class="w-9 h-9 rounded-full bg-[#2a338f] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                    {{ userInitial }}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-sm font-semibold text-gray-900 truncate">{{ userName }}</p>
+                    <p class="text-xs text-gray-400 truncate">{{ userEmail }}</p>
+                  </div>
+                </div>
+                <div class="py-1">
+                  <button @click="logout"
+                    class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            </Transition>
           </div>
         </div>
       </header>
@@ -93,13 +137,35 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 
 defineProps({ title: { type: String, default: 'Dashboard' } })
 
-const sidebarOpen = ref(false)
-const page = usePage()
+const sidebarOpen  = ref(false)
+const dropdownOpen = ref(false)
+const dropdownRef  = ref(null)
+const page         = usePage()
+const authUser     = ref({})
+
+const userName    = computed(() => authUser.value?.name ?? 'Admin')
+const userEmail   = computed(() => authUser.value?.email ?? '')
+const userInitial = computed(() => (authUser.value?.name ?? 'A')[0].toUpperCase())
+
+function handleClickOutside(e) {
+  if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
+    dropdownOpen.value = false
+  }
+}
+
+onMounted(() => {
+  authUser.value = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+  document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
 const navItems = [
   {

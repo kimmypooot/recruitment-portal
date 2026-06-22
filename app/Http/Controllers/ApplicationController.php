@@ -20,7 +20,7 @@ class ApplicationController extends Controller
         }
 
         $applications = Application::where('applicant_id', $profile->id)
-            ->with('vacancy')
+            ->with(['vacancy', 'examSchedule', 'interviewSchedule'])
             ->latest()
             ->get();
 

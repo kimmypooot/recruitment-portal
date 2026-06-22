@@ -120,29 +120,65 @@
             </div>
           </div>
 
+          <!-- Exam schedule banner -->
+          <div v-if="app.status === 'exam_scheduled' && app.exam_schedule?.length"
+            class="mx-5 mb-4 px-4 py-3 bg-orange-50 border border-orange-200 rounded-lg flex items-start gap-2.5">
+            <svg class="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <div>
+              <p class="text-xs font-semibold text-orange-800 mb-0.5">Exam Scheduled</p>
+              <p class="text-xs text-orange-700">{{ formatDateTime(app.exam_schedule[0].scheduled_at) }}</p>
+              <p v-if="app.exam_schedule[0].venue" class="text-xs text-orange-600 mt-0.5">Venue: {{ app.exam_schedule[0].venue }}</p>
+              <p v-if="app.exam_schedule[0].notes" class="text-xs text-orange-500 mt-0.5 italic">{{ app.exam_schedule[0].notes }}</p>
+            </div>
+          </div>
+
+          <!-- Interview schedule banner -->
+          <div v-if="app.status === 'for_interview' && app.interview_schedule?.length"
+            class="mx-5 mb-4 px-4 py-3 bg-violet-50 border border-violet-200 rounded-lg flex items-start gap-2.5">
+            <svg class="w-4 h-4 text-violet-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <div>
+              <p class="text-xs font-semibold text-violet-800 mb-0.5">Interview Scheduled</p>
+              <p class="text-xs text-violet-700">{{ formatDateTime(app.interview_schedule[0].scheduled_at) }}</p>
+              <p v-if="app.interview_schedule[0].venue" class="text-xs text-violet-600 mt-0.5">Venue: {{ app.interview_schedule[0].venue }}</p>
+              <p v-if="app.interview_schedule[0].notes" class="text-xs text-violet-500 mt-0.5 italic">{{ app.interview_schedule[0].notes }}</p>
+            </div>
+          </div>
+
           <!-- Pipeline progress -->
           <div class="px-5 pb-5">
-            <div class="flex items-center gap-0">
-              <template v-for="(step, idx) in pipeline" :key="step.key">
-                <!-- Node -->
-                <div class="flex flex-col items-center" style="min-width: 0; flex: 0 0 auto;">
+            <div class="flex items-start gap-0">
+              <div v-for="(step, idx) in pipeline" :key="step.key" class="flex-1 flex flex-col items-center min-w-0">
+                <!-- Dot row with half-connectors -->
+                <div class="flex items-center w-full">
+                  <div class="flex-1 h-0.5 transition-colors"
+                    :class="idx === 0 ? 'invisible' :
+                      isPipelinePast(step.key, app.status) || app.status === step.key ? 'bg-[#2a338f]' : 'bg-gray-200'">
+                  </div>
                   <div :class="[
-                      'w-2.5 h-2.5 rounded-full transition-colors',
-                      isPipelinePast(step.key, app.status)   ? 'bg-[#2a338f]' :
-                      app.status === step.key                 ? 'bg-[#2a338f] ring-2 ring-[#2a338f]/30' :
-                      isTerminal(app.status)                  ? 'bg-gray-100' : 'bg-gray-200'
-                    ]">
+                    'rounded-full transition-all flex-shrink-0',
+                    app.status === step.key
+                      ? 'w-3 h-3 bg-[#2a338f] ring-2 ring-[#2a338f]/30 ring-offset-1'
+                      : isPipelinePast(step.key, app.status)
+                        ? 'w-2.5 h-2.5 bg-[#2a338f]'
+                        : isTerminal(app.status)
+                          ? 'w-2.5 h-2.5 bg-gray-100'
+                          : 'w-2.5 h-2.5 bg-gray-200'
+                  ]"></div>
+                  <div class="flex-1 h-0.5 transition-colors"
+                    :class="idx === pipeline.length - 1 ? 'invisible' :
+                      isPipelinePast(pipeline[idx + 1].key, app.status) || app.status === pipeline[idx + 1].key ? 'bg-[#2a338f]' : 'bg-gray-200'">
                   </div>
                 </div>
-                <!-- Connector (between nodes) -->
-                <div v-if="idx < pipeline.length - 1"
-                  :class="[
-                    'flex-1 h-0.5 transition-colors',
-                    isPipelinePast(pipeline[idx + 1].key, app.status) || app.status === pipeline[idx + 1].key
-                      ? 'bg-[#2a338f]' : 'bg-gray-200'
-                  ]">
-                </div>
-              </template>
+                <!-- Short label (desktop only) -->
+                <span class="mt-1 text-[8px] leading-tight text-center w-full hidden sm:block"
+                  :class="app.status === step.key ? 'text-[#2a338f] font-semibold' : 'text-gray-400'">
+                  {{ step.short }}
+                </span>
+              </div>
             </div>
 
             <!-- Current stage label -->
@@ -256,14 +292,14 @@ onMounted(async () => {
 
 // ── Pipeline definition (ordered) ────────────────────────────────────────────
 const pipeline = [
-  { key: 'submitted',      label: 'Submitted' },
-  { key: 'under_review',   label: 'Review' },
-  { key: 'screened',       label: 'Screened' },
-  { key: 'qualified',      label: 'Qualified' },
-  { key: 'shortlisted',    label: 'Shortlisted' },
-  { key: 'for_interview',  label: 'Interview' },
-  { key: 'recommended',    label: 'Recommended' },
-  { key: 'appointed',      label: 'Appointed' },
+  { key: 'submitted',      label: 'Submitted',   short: 'Submit' },
+  { key: 'under_review',   label: 'Review',      short: 'Review' },
+  { key: 'screened',       label: 'Screened',    short: 'Screen' },
+  { key: 'qualified',      label: 'Qualified',   short: 'Qualify' },
+  { key: 'shortlisted',    label: 'Shortlisted', short: 'List' },
+  { key: 'for_interview',  label: 'Interview',   short: 'Intv.' },
+  { key: 'recommended',    label: 'Recommended', short: 'Rec.' },
+  { key: 'appointed',      label: 'Appointed',   short: 'Appoint' },
 ]
 
 const pipelineOrder = pipeline.map(s => s.key)
@@ -359,6 +395,14 @@ function statusIcon(status) {
 function formatDate(iso) {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+function formatDateTime(iso) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleString('en-PH', {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+  })
 }
 
 // ── Withdraw ──────────────────────────────────────────────────────────────────

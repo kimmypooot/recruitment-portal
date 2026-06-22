@@ -61,7 +61,10 @@
       <div v-show="activeTab === 'applications'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h2 class="text-sm font-semibold text-gray-900 mb-4">My Applications</h2>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold text-gray-900">My Applications</h2>
+            <Link href="/applicant/applications" class="text-xs font-medium text-[#2a338f] hover:underline flex-shrink-0">View all →</Link>
+          </div>
 
           <div v-if="loadingApps" class="space-y-3">
             <div v-for="n in 3" :key="n" class="h-14 bg-gray-100 rounded-lg animate-pulse"></div>

@@ -547,7 +547,7 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
             </svg>
-            {{ savingPersonal ? 'Saving…' : 'Save Eligibility Info' }}
+            {{ savingPersonal ? 'Saving…' : 'Save Eligibility & Classifications' }}
           </button>
         </div>
 
@@ -660,7 +660,7 @@
               <p class="text-xs text-green-700 mt-0.5">You can now apply to open vacancies.</p>
             </div>
           </div>
-          <Link href="/"
+          <Link href="/applicant/dashboard?tab=vacancies"
             class="flex-shrink-0 self-start sm:self-center px-4 py-2 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold rounded-lg transition-colors">
             Browse Vacancies
           </Link>
@@ -1117,10 +1117,14 @@
     <transition name="fade">
       <div v-if="savedPersonal"
         class="fixed bottom-6 right-6 bg-green-600 text-white text-sm font-medium px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 z-50">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
         </svg>
         Saved successfully!
+        <button v-if="savedFromTab !== 'documents'" @click="goToNextTab"
+          class="ml-1 pl-3 border-l border-green-400 text-green-100 hover:text-white font-semibold whitespace-nowrap transition-colors">
+          {{ savedFromTab === 'personal' ? 'Next: Qualifications' : 'Next: Documents' }} →
+        </button>
       </div>
     </transition>
 
@@ -1137,10 +1141,11 @@ import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
-const activeTab     = ref('personal')
-const isComplete    = ref(false)
+const activeTab      = ref('personal')
+const isComplete     = ref(false)
 const savingPersonal = ref(false)
 const savedPersonal  = ref(false)
+const savedFromTab   = ref('')
 const savingDocs     = ref(false)
 
 const photoPath = ref('')
@@ -1302,8 +1307,15 @@ async function savePersonal() {
 }
 
 function showSavedToast() {
-  savedPersonal.value = true
-  setTimeout(() => { savedPersonal.value = false }, 2500)
+  savedFromTab.value   = activeTab.value
+  savedPersonal.value  = true
+  setTimeout(() => { savedPersonal.value = false }, 3000)
+}
+
+function goToNextTab() {
+  if (activeTab.value === 'personal') activeTab.value = 'qualifications'
+  else if (activeTab.value === 'qualifications') activeTab.value = 'documents'
+  savedPersonal.value = false
 }
 
 // ─── Documents ───────────────────────────────────────────────────────────────
