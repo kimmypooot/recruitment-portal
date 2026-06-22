@@ -69,6 +69,7 @@ Route::middleware(['auth:sanctum', 'role:hr-officer,hr-manager,admin'])->group(f
     Route::patch('/vacancies/{vacancy}/publish', [VacancyController::class, 'publish']);
     Route::patch('/vacancies/{vacancy}/archive', [VacancyController::class, 'archive']);
     Route::get('/applications', [ApplicationController::class, 'hrIndex']);
+    Route::get('/vacancy-application-summary', [ApplicationController::class, 'vacancySummary']);
     Route::patch('/applications/{application}/status', [ApplicationController::class, 'updateStatus']);
     Route::apiResource('examinations', ExaminationController::class);
     Route::apiResource('interviews', InterviewController::class);
