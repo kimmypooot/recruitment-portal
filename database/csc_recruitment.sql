@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 22, 2026 at 03:25 PM
+-- Generation Time: Jun 23, 2026 at 11:09 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.4.22
 
@@ -30,12 +30,23 @@ SET time_zone = "+00:00";
 CREATE TABLE `anonymization_tokens` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `application_id` bigint(20) UNSIGNED NOT NULL,
-  `token` varchar(12) NOT NULL,
+  `token` varchar(30) NOT NULL,
   `unmasked_at` timestamp NULL DEFAULT NULL,
   `unmasked_by` bigint(20) UNSIGNED DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `anonymization_tokens`
+--
+
+INSERT INTO `anonymization_tokens` (`id`, `application_id`, `token`, `unmasked_at`, `unmasked_by`, `created_at`, `updated_at`) VALUES
+(1, 1, 'CSCRO-06-2026-933', NULL, NULL, '2026-06-22 18:56:55', '2026-06-22 18:56:55'),
+(2, 2, 'CSCRO-06-2026-516', NULL, NULL, '2026-06-22 18:56:55', '2026-06-22 18:56:55'),
+(3, 4, 'CSCRO-06-2026-946', NULL, NULL, '2026-06-22 18:56:55', '2026-06-22 18:56:55'),
+(4, 5, 'CSCRO-04-2026-723', NULL, NULL, '2026-06-22 18:56:55', '2026-06-22 18:56:55'),
+(5, 10, 'AO2-06-2026-315', NULL, NULL, '2026-06-22 19:30:41', '2026-06-22 19:30:41');
 
 -- --------------------------------------------------------
 
@@ -86,7 +97,7 @@ INSERT INTO `applicant_profiles` (`id`, `user_id`, `photo_path`, `first_name`, `
 (4, 7, NULL, 'Ramon', 'Garcia', 'Torres', NULL, NULL, NULL, NULL, '09501234567', '3 Bonifacio St., Cebu City', NULL, NULL, NULL, NULL, '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (5, 8, NULL, 'Patricia', 'Lim', 'Ong', NULL, NULL, NULL, NULL, '09611234567', '21 Mabini St., Makati City', NULL, NULL, NULL, NULL, '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (6, 9, NULL, 'Marco', 'Fernandez', 'dela Vega', NULL, NULL, NULL, NULL, '09721234567', '56 Luna St., Pasig City', NULL, NULL, NULL, NULL, '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(7, 10, NULL, 'Kim Benedick', 'Banoyo', 'Macawile', 'Male', 'Married', '1995-01-05', 'Roman Catholic', '09518159848', NULL, 'Region VIII - Eastern Visayas', 'Leyte', 'Tacloban City', '93', '2026-06-20 23:30:38', '2026-06-22 06:13:23', 'Career Service Professional Eligibility', NULL, 'No', 'No', 'No', 'profile-documents/10/BROJA67yGMX9qhUytkBlh6UiFM3uW412fPWYXvZM.pdf', 'profile-documents/10/jJoalcVtcQ0PxdjwTTcMGH8nw2vRuRMK4dqhYSoa.pdf', 'profile-documents/10/U9DE1KK1pPHKkbnWytqumfwVg52iGm4tXtpOwKAy.pdf', 'profile-documents/10/mtoDhiBRLh5t3zseesTuETGs9W8tztAHOOqKvJJB.pdf', 'profile-documents/10/zbymW3FQxUNcvCOlQlCqm1kU26AptMODLX2wthtw.pdf', '2026-06-20 23:32:30');
+(7, 10, 'profile-photos/10/hwR1EogNpqr3BgSIHMo6Dn7ACHE8Jh5LmrI50suJ.jpg', 'Kim Benedick', 'Banoyo', 'Macawile', 'Male', 'Married', '1995-01-05', 'Roman Catholic', '09518159848', NULL, 'Region VIII - Eastern Visayas', 'Leyte', 'Tacloban City', '93', '2026-06-20 23:30:38', '2026-06-22 20:04:29', 'Career Service Professional Eligibility', NULL, 'No', 'No', 'No', 'profile-documents/10/BROJA67yGMX9qhUytkBlh6UiFM3uW412fPWYXvZM.pdf', 'profile-documents/10/jJoalcVtcQ0PxdjwTTcMGH8nw2vRuRMK4dqhYSoa.pdf', 'profile-documents/10/U9DE1KK1pPHKkbnWytqumfwVg52iGm4tXtpOwKAy.pdf', 'profile-documents/10/mtoDhiBRLh5t3zseesTuETGs9W8tztAHOOqKvJJB.pdf', 'profile-documents/10/zbymW3FQxUNcvCOlQlCqm1kU26AptMODLX2wthtw.pdf', '2026-06-20 23:32:30');
 
 -- --------------------------------------------------------
 
@@ -112,15 +123,16 @@ CREATE TABLE `applications` (
 --
 
 INSERT INTO `applications` (`id`, `vacancy_id`, `applicant_id`, `status`, `submitted_at`, `reviewed_at`, `remarks`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 1, 1, 'under_review', '2026-06-12 08:18:17', '2026-06-22 07:06:33', NULL, '2026-06-20 08:18:17', '2026-06-22 07:06:33', NULL),
+(1, 1, 1, 'qualified', '2026-06-12 08:18:17', '2026-06-22 07:06:33', NULL, '2026-06-20 08:18:17', '2026-06-22 18:22:35', NULL),
 (2, 2, 2, 'exam_scheduled', '2026-06-14 08:18:17', '2026-06-16 08:18:17', NULL, '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL),
 (3, 3, 3, 'submitted', '2026-06-16 08:18:17', NULL, NULL, '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL),
 (4, 4, 4, 'interviewed', '2026-06-18 08:18:17', '2026-06-19 08:18:17', NULL, '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL),
 (5, 5, 5, 'recommended', '2026-04-26 08:18:17', '2026-05-31 08:18:17', 'Applicant met all requirements and passed the interview panel.', '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL),
 (6, 2, 6, 'submitted', '2026-06-15 08:18:17', NULL, NULL, '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL),
 (7, 3, 1, 'disqualified', '2026-05-21 08:18:17', '2026-06-05 08:18:17', 'Did not meet the minimum eligibility requirement.', '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL),
-(8, 1, 4, 'under_review', '2026-06-20 19:40:37', '2026-06-22 07:06:32', NULL, '2026-06-20 19:40:37', '2026-06-22 07:06:32', NULL),
-(9, 1, 7, 'under_review', '2026-06-22 06:13:31', '2026-06-22 07:06:32', NULL, '2026-06-22 06:13:31', '2026-06-22 07:06:32', NULL);
+(8, 1, 4, 'disqualified', '2026-06-20 19:40:37', '2026-06-22 07:06:32', NULL, '2026-06-20 19:40:37', '2026-06-22 18:22:35', NULL),
+(10, 1, 7, 'qualified', '2026-06-22 19:04:52', NULL, NULL, '2026-06-22 19:04:52', '2026-06-22 19:30:41', NULL),
+(11, 2, 7, 'submitted', '2026-06-22 20:23:03', NULL, NULL, '2026-06-22 20:23:03', '2026-06-22 20:23:03', NULL);
 
 -- --------------------------------------------------------
 
@@ -143,48 +155,18 @@ CREATE TABLE `audit_logs` (
 --
 
 INSERT INTO `audit_logs` (`id`, `user_id`, `action`, `auditable_type`, `auditable_id`, `created_at`, `updated_at`) VALUES
-(1, 3, 'created', 'App\\Models\\Vacancy', 1, '2026-06-10 08:18:17', '2026-06-10 08:18:17'),
-(2, 3, 'published', 'App\\Models\\Vacancy', 1, '2026-06-10 08:18:17', '2026-06-10 08:18:17'),
-(3, 3, 'created', 'App\\Models\\Vacancy', 2, '2026-06-13 08:18:17', '2026-06-13 08:18:17'),
-(4, 3, 'published', 'App\\Models\\Vacancy', 2, '2026-06-13 08:18:17', '2026-06-13 08:18:17'),
-(5, 3, 'created', 'App\\Models\\Vacancy', 3, '2026-06-15 08:18:17', '2026-06-15 08:18:17'),
-(6, 3, 'published', 'App\\Models\\Vacancy', 3, '2026-06-15 08:18:17', '2026-06-15 08:18:17'),
-(7, 3, 'created', 'App\\Models\\Vacancy', 4, '2026-06-17 08:18:17', '2026-06-17 08:18:17'),
-(8, 3, 'published', 'App\\Models\\Vacancy', 4, '2026-06-17 08:18:17', '2026-06-17 08:18:17'),
-(9, 2, 'updated', 'App\\Models\\Application', 1, '2026-06-14 08:18:17', '2026-06-14 08:18:17'),
-(10, 2, 'updated', 'App\\Models\\Application', 2, '2026-06-16 08:18:17', '2026-06-16 08:18:17'),
-(11, 1, 'created', 'App\\Models\\User', 3, '2026-06-05 08:18:17', '2026-06-05 08:18:17'),
-(12, 1, 'user_updated', 'App\\Models\\User', 10, '2026-06-21 01:16:53', '2026-06-21 01:16:53'),
-(13, 1, 'hrmpsb_assigned:director-representative', 'App\\Models\\Vacancy', 1, '2026-06-21 01:17:03', '2026-06-21 01:17:03'),
-(14, 10, 'user_updated', 'App\\Models\\User', 10, '2026-06-21 01:17:35', '2026-06-21 01:17:35'),
-(15, 1, 'hrmpsb_type_toggled:director-representative→alternate', 'App\\Models\\Vacancy', 1, '2026-06-21 01:20:18', '2026-06-21 01:20:18'),
-(16, 1, 'hrmpsb_type_toggled:director-representative→principal', 'App\\Models\\Vacancy', 1, '2026-06-21 01:20:19', '2026-06-21 01:20:19'),
-(17, 1, 'user_updated', 'App\\Models\\User', 10, '2026-06-21 01:30:23', '2026-06-21 01:30:23'),
-(18, 1, 'hrmpsb_removed:director-representative', 'App\\Models\\Vacancy', 1, '2026-06-21 01:30:48', '2026-06-21 01:30:48'),
-(19, 1, 'hrmpsb_assigned:director-representative', 'App\\Models\\Vacancy', 1, '2026-06-21 01:31:01', '2026-06-21 01:31:01'),
-(20, 1, 'hrmpsb_removed:director-representative', 'App\\Models\\Vacancy', 1, '2026-06-21 01:34:03', '2026-06-21 01:34:03'),
-(21, 1, 'hrmpsb_assigned:director-representative', 'App\\Models\\Vacancy', 1, '2026-06-21 01:34:10', '2026-06-21 01:34:10'),
-(22, 10, 'qs_evaluation_submitted', 'App\\Models\\Application', 1, '2026-06-21 01:38:27', '2026-06-21 01:38:27'),
-(23, 10, 'qs_evaluation_submitted', 'App\\Models\\Application', 8, '2026-06-21 01:44:24', '2026-06-21 01:44:24'),
-(24, 1, 'user_updated', 'App\\Models\\User', 3, '2026-06-21 01:49:48', '2026-06-21 01:49:48'),
-(25, 1, 'hrmpsb_assigned:secretariat', 'App\\Models\\Vacancy', 1, '2026-06-21 01:51:00', '2026-06-21 01:51:00'),
-(26, 1, 'hrmpsb_type_toggled:director-representative→alternate', 'App\\Models\\HrmbsboardComposition', 3, '2026-06-21 06:09:50', '2026-06-21 06:09:50'),
-(27, 1, 'hrmpsb_type_toggled:director-representative→principal', 'App\\Models\\HrmbsboardComposition', 3, '2026-06-21 06:09:54', '2026-06-21 06:09:54'),
-(28, 1, 'hrmpsb_type_toggled:director-representative→alternate', 'App\\Models\\HrmbsboardComposition', 3, '2026-06-21 06:09:58', '2026-06-21 06:09:58'),
-(29, 1, 'hrmpsb_type_toggled:director-representative→principal', 'App\\Models\\HrmbsboardComposition', 3, '2026-06-21 06:09:59', '2026-06-21 06:09:59'),
-(30, 1, 'updated', 'App\\Models\\Vacancy', 1, '2026-06-21 07:55:09', '2026-06-21 07:55:09'),
-(31, 1, 'updated', 'App\\Models\\Vacancy', 1, '2026-06-21 08:01:18', '2026-06-21 08:01:18'),
-(32, 1, 'hrmpsb_assigned:chairperson', 'App\\Models\\HrmbsboardComposition', 5, '2026-06-21 08:06:45', '2026-06-21 08:06:45'),
-(33, 1, 'user_updated', 'App\\Models\\User', 10, '2026-06-21 08:31:12', '2026-06-21 08:31:12'),
-(34, 1, 'hrmpsb_removed:director-representative', 'App\\Models\\HrmbsboardComposition', 3, '2026-06-21 08:31:24', '2026-06-21 08:31:24'),
-(35, 10, 'user_updated', 'App\\Models\\User', 10, '2026-06-21 08:34:05', '2026-06-21 08:34:05'),
-(36, 1, 'application_status_changed:submitted→under_review', 'App\\Models\\Application', 9, '2026-06-22 07:06:32', '2026-06-22 07:06:32'),
-(37, 1, 'application_status_changed:submitted→under_review', 'App\\Models\\Application', 8, '2026-06-22 07:06:32', '2026-06-22 07:06:32'),
-(38, 1, 'application_status_changed:under_review→under_review', 'App\\Models\\Application', 1, '2026-06-22 07:06:33', '2026-06-22 07:06:33'),
-(39, 1, 'updated', 'App\\Models\\Vacancy', 1, '2026-06-22 07:19:58', '2026-06-22 07:19:58'),
-(40, 1, 'updated', 'App\\Models\\Vacancy', 2, '2026-06-22 07:20:33', '2026-06-22 07:20:33'),
-(41, 1, 'updated', 'App\\Models\\Vacancy', 3, '2026-06-22 07:20:50', '2026-06-22 07:20:50'),
-(42, 1, 'updated', 'App\\Models\\Vacancy', 4, '2026-06-22 07:21:04', '2026-06-22 07:21:04');
+(1, 1, 'hrmpsb_assigned:director-representative', 'App\\Models\\HrmbsboardComposition', 6, '2026-06-22 19:06:04', '2026-06-22 19:06:04'),
+(2, 1, 'hrmpsb_removed:chairperson', 'App\\Models\\HrmbsboardComposition', 5, '2026-06-22 19:06:10', '2026-06-22 19:06:10'),
+(3, 1, 'user_updated', 'App\\Models\\User', 2, '2026-06-22 19:07:02', '2026-06-22 19:07:02'),
+(4, 2, 'qs_evaluation_submitted', 'App\\Models\\Application', 1, '2026-06-22 19:29:26', '2026-06-22 19:29:26'),
+(5, 2, 'qs_evaluation_submitted', 'App\\Models\\Application', 8, '2026-06-22 19:30:01', '2026-06-22 19:30:01'),
+(6, 2, 'qs_evaluation_submitted', 'App\\Models\\Application', 10, '2026-06-22 19:30:21', '2026-06-22 19:30:21'),
+(7, 3, 'qs_evaluations_locked', 'App\\Models\\Vacancy', 1, '2026-06-22 19:30:41', '2026-06-22 19:30:41'),
+(8, 2, 'exam_result_encoded', 'App\\Models\\Application', 1, '2026-06-22 19:36:37', '2026-06-22 19:36:37'),
+(9, 2, 'exam_result_encoded', 'App\\Models\\Application', 1, '2026-06-22 19:36:49', '2026-06-22 19:36:49'),
+(10, 2, 'exam_result_encoded', 'App\\Models\\Application', 10, '2026-06-22 19:37:06', '2026-06-22 19:37:06'),
+(11, 2, 'exam_result_encoded', 'App\\Models\\Application', 10, '2026-06-22 19:37:15', '2026-06-22 19:37:15'),
+(12, 3, 'qs_evaluation_submitted', 'App\\Models\\Application', 11, '2026-06-22 20:26:43', '2026-06-22 20:26:43');
 
 -- --------------------------------------------------------
 
@@ -222,7 +204,7 @@ CREATE TABLE `cache` (
 --
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('csc-recruitment-system-cache-dashboard_stats', 'a:3:{s:9:\"vacancies\";a:3:{s:5:\"total\";i:6;s:9:\"published\";i:4;s:12:\"closing_soon\";i:0;}s:12:\"applications\";a:3:{s:5:\"total\";i:9;s:7:\"pending\";i:4;s:10:\"this_month\";i:9;}s:8:\"pipeline\";O:39:\"Illuminate\\Database\\Eloquent\\Collection\":2:{s:8:\"\0*\0items\";a:6:{i:0;O:22:\"App\\Models\\Application\":34:{s:13:\"\0*\0connection\";s:5:\"mysql\";s:8:\"\0*\0table\";s:12:\"applications\";s:13:\"\0*\0primaryKey\";s:2:\"id\";s:10:\"\0*\0keyType\";s:3:\"int\";s:12:\"incrementing\";b:1;s:7:\"\0*\0with\";a:0:{}s:12:\"\0*\0withCount\";a:0:{}s:19:\"preventsLazyLoading\";b:0;s:10:\"\0*\0perPage\";i:15;s:6:\"exists\";b:1;s:18:\"wasRecentlyCreated\";b:0;s:28:\"\0*\0escapeWhenCastingToString\";b:0;s:13:\"\0*\0attributes\";a:2:{s:6:\"status\";s:9:\"submitted\";s:5:\"count\";i:4;}s:11:\"\0*\0original\";a:2:{s:6:\"status\";s:9:\"submitted\";s:5:\"count\";i:4;}s:10:\"\0*\0changes\";a:0:{}s:11:\"\0*\0previous\";a:0:{}s:8:\"\0*\0casts\";a:3:{s:12:\"submitted_at\";s:8:\"datetime\";s:11:\"reviewed_at\";s:8:\"datetime\";s:10:\"deleted_at\";s:8:\"datetime\";}s:17:\"\0*\0classCastCache\";a:0:{}s:21:\"\0*\0attributeCastCache\";a:0:{}s:13:\"\0*\0dateFormat\";N;s:10:\"\0*\0appends\";a:0:{}s:19:\"\0*\0dispatchesEvents\";a:0:{}s:14:\"\0*\0observables\";a:0:{}s:12:\"\0*\0relations\";a:0:{}s:10:\"\0*\0touches\";a:0:{}s:27:\"\0*\0relationAutoloadCallback\";N;s:26:\"\0*\0relationAutoloadContext\";N;s:10:\"timestamps\";b:1;s:13:\"usesUniqueIds\";b:0;s:9:\"\0*\0hidden\";a:0:{}s:10:\"\0*\0visible\";a:0:{}s:11:\"\0*\0fillable\";a:6:{i:0;s:10:\"vacancy_id\";i:1;s:12:\"applicant_id\";i:2;s:6:\"status\";i:3;s:12:\"submitted_at\";i:4;s:11:\"reviewed_at\";i:5;s:7:\"remarks\";}s:10:\"\0*\0guarded\";a:1:{i:0;s:1:\"*\";}s:16:\"\0*\0forceDeleting\";b:0;}i:1;O:22:\"App\\Models\\Application\":34:{s:13:\"\0*\0connection\";s:5:\"mysql\";s:8:\"\0*\0table\";s:12:\"applications\";s:13:\"\0*\0primaryKey\";s:2:\"id\";s:10:\"\0*\0keyType\";s:3:\"int\";s:12:\"incrementing\";b:1;s:7:\"\0*\0with\";a:0:{}s:12:\"\0*\0withCount\";a:0:{}s:19:\"preventsLazyLoading\";b:0;s:10:\"\0*\0perPage\";i:15;s:6:\"exists\";b:1;s:18:\"wasRecentlyCreated\";b:0;s:28:\"\0*\0escapeWhenCastingToString\";b:0;s:13:\"\0*\0attributes\";a:2:{s:6:\"status\";s:12:\"under_review\";s:5:\"count\";i:1;}s:11:\"\0*\0original\";a:2:{s:6:\"status\";s:12:\"under_review\";s:5:\"count\";i:1;}s:10:\"\0*\0changes\";a:0:{}s:11:\"\0*\0previous\";a:0:{}s:8:\"\0*\0casts\";a:3:{s:12:\"submitted_at\";s:8:\"datetime\";s:11:\"reviewed_at\";s:8:\"datetime\";s:10:\"deleted_at\";s:8:\"datetime\";}s:17:\"\0*\0classCastCache\";a:0:{}s:21:\"\0*\0attributeCastCache\";a:0:{}s:13:\"\0*\0dateFormat\";N;s:10:\"\0*\0appends\";a:0:{}s:19:\"\0*\0dispatchesEvents\";a:0:{}s:14:\"\0*\0observables\";a:0:{}s:12:\"\0*\0relations\";a:0:{}s:10:\"\0*\0touches\";a:0:{}s:27:\"\0*\0relationAutoloadCallback\";N;s:26:\"\0*\0relationAutoloadContext\";N;s:10:\"timestamps\";b:1;s:13:\"usesUniqueIds\";b:0;s:9:\"\0*\0hidden\";a:0:{}s:10:\"\0*\0visible\";a:0:{}s:11:\"\0*\0fillable\";a:6:{i:0;s:10:\"vacancy_id\";i:1;s:12:\"applicant_id\";i:2;s:6:\"status\";i:3;s:12:\"submitted_at\";i:4;s:11:\"reviewed_at\";i:5;s:7:\"remarks\";}s:10:\"\0*\0guarded\";a:1:{i:0;s:1:\"*\";}s:16:\"\0*\0forceDeleting\";b:0;}i:2;O:22:\"App\\Models\\Application\":34:{s:13:\"\0*\0connection\";s:5:\"mysql\";s:8:\"\0*\0table\";s:12:\"applications\";s:13:\"\0*\0primaryKey\";s:2:\"id\";s:10:\"\0*\0keyType\";s:3:\"int\";s:12:\"incrementing\";b:1;s:7:\"\0*\0with\";a:0:{}s:12:\"\0*\0withCount\";a:0:{}s:19:\"preventsLazyLoading\";b:0;s:10:\"\0*\0perPage\";i:15;s:6:\"exists\";b:1;s:18:\"wasRecentlyCreated\";b:0;s:28:\"\0*\0escapeWhenCastingToString\";b:0;s:13:\"\0*\0attributes\";a:2:{s:6:\"status\";s:12:\"disqualified\";s:5:\"count\";i:1;}s:11:\"\0*\0original\";a:2:{s:6:\"status\";s:12:\"disqualified\";s:5:\"count\";i:1;}s:10:\"\0*\0changes\";a:0:{}s:11:\"\0*\0previous\";a:0:{}s:8:\"\0*\0casts\";a:3:{s:12:\"submitted_at\";s:8:\"datetime\";s:11:\"reviewed_at\";s:8:\"datetime\";s:10:\"deleted_at\";s:8:\"datetime\";}s:17:\"\0*\0classCastCache\";a:0:{}s:21:\"\0*\0attributeCastCache\";a:0:{}s:13:\"\0*\0dateFormat\";N;s:10:\"\0*\0appends\";a:0:{}s:19:\"\0*\0dispatchesEvents\";a:0:{}s:14:\"\0*\0observables\";a:0:{}s:12:\"\0*\0relations\";a:0:{}s:10:\"\0*\0touches\";a:0:{}s:27:\"\0*\0relationAutoloadCallback\";N;s:26:\"\0*\0relationAutoloadContext\";N;s:10:\"timestamps\";b:1;s:13:\"usesUniqueIds\";b:0;s:9:\"\0*\0hidden\";a:0:{}s:10:\"\0*\0visible\";a:0:{}s:11:\"\0*\0fillable\";a:6:{i:0;s:10:\"vacancy_id\";i:1;s:12:\"applicant_id\";i:2;s:6:\"status\";i:3;s:12:\"submitted_at\";i:4;s:11:\"reviewed_at\";i:5;s:7:\"remarks\";}s:10:\"\0*\0guarded\";a:1:{i:0;s:1:\"*\";}s:16:\"\0*\0forceDeleting\";b:0;}i:3;O:22:\"App\\Models\\Application\":34:{s:13:\"\0*\0connection\";s:5:\"mysql\";s:8:\"\0*\0table\";s:12:\"applications\";s:13:\"\0*\0primaryKey\";s:2:\"id\";s:10:\"\0*\0keyType\";s:3:\"int\";s:12:\"incrementing\";b:1;s:7:\"\0*\0with\";a:0:{}s:12:\"\0*\0withCount\";a:0:{}s:19:\"preventsLazyLoading\";b:0;s:10:\"\0*\0perPage\";i:15;s:6:\"exists\";b:1;s:18:\"wasRecentlyCreated\";b:0;s:28:\"\0*\0escapeWhenCastingToString\";b:0;s:13:\"\0*\0attributes\";a:2:{s:6:\"status\";s:14:\"exam_scheduled\";s:5:\"count\";i:1;}s:11:\"\0*\0original\";a:2:{s:6:\"status\";s:14:\"exam_scheduled\";s:5:\"count\";i:1;}s:10:\"\0*\0changes\";a:0:{}s:11:\"\0*\0previous\";a:0:{}s:8:\"\0*\0casts\";a:3:{s:12:\"submitted_at\";s:8:\"datetime\";s:11:\"reviewed_at\";s:8:\"datetime\";s:10:\"deleted_at\";s:8:\"datetime\";}s:17:\"\0*\0classCastCache\";a:0:{}s:21:\"\0*\0attributeCastCache\";a:0:{}s:13:\"\0*\0dateFormat\";N;s:10:\"\0*\0appends\";a:0:{}s:19:\"\0*\0dispatchesEvents\";a:0:{}s:14:\"\0*\0observables\";a:0:{}s:12:\"\0*\0relations\";a:0:{}s:10:\"\0*\0touches\";a:0:{}s:27:\"\0*\0relationAutoloadCallback\";N;s:26:\"\0*\0relationAutoloadContext\";N;s:10:\"timestamps\";b:1;s:13:\"usesUniqueIds\";b:0;s:9:\"\0*\0hidden\";a:0:{}s:10:\"\0*\0visible\";a:0:{}s:11:\"\0*\0fillable\";a:6:{i:0;s:10:\"vacancy_id\";i:1;s:12:\"applicant_id\";i:2;s:6:\"status\";i:3;s:12:\"submitted_at\";i:4;s:11:\"reviewed_at\";i:5;s:7:\"remarks\";}s:10:\"\0*\0guarded\";a:1:{i:0;s:1:\"*\";}s:16:\"\0*\0forceDeleting\";b:0;}i:4;O:22:\"App\\Models\\Application\":34:{s:13:\"\0*\0connection\";s:5:\"mysql\";s:8:\"\0*\0table\";s:12:\"applications\";s:13:\"\0*\0primaryKey\";s:2:\"id\";s:10:\"\0*\0keyType\";s:3:\"int\";s:12:\"incrementing\";b:1;s:7:\"\0*\0with\";a:0:{}s:12:\"\0*\0withCount\";a:0:{}s:19:\"preventsLazyLoading\";b:0;s:10:\"\0*\0perPage\";i:15;s:6:\"exists\";b:1;s:18:\"wasRecentlyCreated\";b:0;s:28:\"\0*\0escapeWhenCastingToString\";b:0;s:13:\"\0*\0attributes\";a:2:{s:6:\"status\";s:11:\"interviewed\";s:5:\"count\";i:1;}s:11:\"\0*\0original\";a:2:{s:6:\"status\";s:11:\"interviewed\";s:5:\"count\";i:1;}s:10:\"\0*\0changes\";a:0:{}s:11:\"\0*\0previous\";a:0:{}s:8:\"\0*\0casts\";a:3:{s:12:\"submitted_at\";s:8:\"datetime\";s:11:\"reviewed_at\";s:8:\"datetime\";s:10:\"deleted_at\";s:8:\"datetime\";}s:17:\"\0*\0classCastCache\";a:0:{}s:21:\"\0*\0attributeCastCache\";a:0:{}s:13:\"\0*\0dateFormat\";N;s:10:\"\0*\0appends\";a:0:{}s:19:\"\0*\0dispatchesEvents\";a:0:{}s:14:\"\0*\0observables\";a:0:{}s:12:\"\0*\0relations\";a:0:{}s:10:\"\0*\0touches\";a:0:{}s:27:\"\0*\0relationAutoloadCallback\";N;s:26:\"\0*\0relationAutoloadContext\";N;s:10:\"timestamps\";b:1;s:13:\"usesUniqueIds\";b:0;s:9:\"\0*\0hidden\";a:0:{}s:10:\"\0*\0visible\";a:0:{}s:11:\"\0*\0fillable\";a:6:{i:0;s:10:\"vacancy_id\";i:1;s:12:\"applicant_id\";i:2;s:6:\"status\";i:3;s:12:\"submitted_at\";i:4;s:11:\"reviewed_at\";i:5;s:7:\"remarks\";}s:10:\"\0*\0guarded\";a:1:{i:0;s:1:\"*\";}s:16:\"\0*\0forceDeleting\";b:0;}i:5;O:22:\"App\\Models\\Application\":34:{s:13:\"\0*\0connection\";s:5:\"mysql\";s:8:\"\0*\0table\";s:12:\"applications\";s:13:\"\0*\0primaryKey\";s:2:\"id\";s:10:\"\0*\0keyType\";s:3:\"int\";s:12:\"incrementing\";b:1;s:7:\"\0*\0with\";a:0:{}s:12:\"\0*\0withCount\";a:0:{}s:19:\"preventsLazyLoading\";b:0;s:10:\"\0*\0perPage\";i:15;s:6:\"exists\";b:1;s:18:\"wasRecentlyCreated\";b:0;s:28:\"\0*\0escapeWhenCastingToString\";b:0;s:13:\"\0*\0attributes\";a:2:{s:6:\"status\";s:11:\"recommended\";s:5:\"count\";i:1;}s:11:\"\0*\0original\";a:2:{s:6:\"status\";s:11:\"recommended\";s:5:\"count\";i:1;}s:10:\"\0*\0changes\";a:0:{}s:11:\"\0*\0previous\";a:0:{}s:8:\"\0*\0casts\";a:3:{s:12:\"submitted_at\";s:8:\"datetime\";s:11:\"reviewed_at\";s:8:\"datetime\";s:10:\"deleted_at\";s:8:\"datetime\";}s:17:\"\0*\0classCastCache\";a:0:{}s:21:\"\0*\0attributeCastCache\";a:0:{}s:13:\"\0*\0dateFormat\";N;s:10:\"\0*\0appends\";a:0:{}s:19:\"\0*\0dispatchesEvents\";a:0:{}s:14:\"\0*\0observables\";a:0:{}s:12:\"\0*\0relations\";a:0:{}s:10:\"\0*\0touches\";a:0:{}s:27:\"\0*\0relationAutoloadCallback\";N;s:26:\"\0*\0relationAutoloadContext\";N;s:10:\"timestamps\";b:1;s:13:\"usesUniqueIds\";b:0;s:9:\"\0*\0hidden\";a:0:{}s:10:\"\0*\0visible\";a:0:{}s:11:\"\0*\0fillable\";a:6:{i:0;s:10:\"vacancy_id\";i:1;s:12:\"applicant_id\";i:2;s:6:\"status\";i:3;s:12:\"submitted_at\";i:4;s:11:\"reviewed_at\";i:5;s:7:\"remarks\";}s:10:\"\0*\0guarded\";a:1:{i:0;s:1:\"*\";}s:16:\"\0*\0forceDeleting\";b:0;}}s:28:\"\0*\0escapeWhenCastingToString\";b:0;}}', 1782143839);
+('csc-recruitment-system-cache-dashboard_stats', 'a:3:{s:9:\"vacancies\";a:3:{s:5:\"total\";i:6;s:9:\"published\";i:4;s:12:\"closing_soon\";i:0;}s:12:\"applications\";a:3:{s:5:\"total\";i:10;s:7:\"pending\";i:3;s:10:\"this_month\";i:10;}s:8:\"pipeline\";O:39:\"Illuminate\\Database\\Eloquent\\Collection\":2:{s:8:\"\0*\0items\";a:6:{i:0;O:22:\"App\\Models\\Application\":34:{s:13:\"\0*\0connection\";s:5:\"mysql\";s:8:\"\0*\0table\";s:12:\"applications\";s:13:\"\0*\0primaryKey\";s:2:\"id\";s:10:\"\0*\0keyType\";s:3:\"int\";s:12:\"incrementing\";b:1;s:7:\"\0*\0with\";a:0:{}s:12:\"\0*\0withCount\";a:0:{}s:19:\"preventsLazyLoading\";b:0;s:10:\"\0*\0perPage\";i:15;s:6:\"exists\";b:1;s:18:\"wasRecentlyCreated\";b:0;s:28:\"\0*\0escapeWhenCastingToString\";b:0;s:13:\"\0*\0attributes\";a:2:{s:6:\"status\";s:9:\"submitted\";s:5:\"count\";i:3;}s:11:\"\0*\0original\";a:2:{s:6:\"status\";s:9:\"submitted\";s:5:\"count\";i:3;}s:10:\"\0*\0changes\";a:0:{}s:11:\"\0*\0previous\";a:0:{}s:8:\"\0*\0casts\";a:3:{s:12:\"submitted_at\";s:8:\"datetime\";s:11:\"reviewed_at\";s:8:\"datetime\";s:10:\"deleted_at\";s:8:\"datetime\";}s:17:\"\0*\0classCastCache\";a:0:{}s:21:\"\0*\0attributeCastCache\";a:0:{}s:13:\"\0*\0dateFormat\";N;s:10:\"\0*\0appends\";a:0:{}s:19:\"\0*\0dispatchesEvents\";a:0:{}s:14:\"\0*\0observables\";a:0:{}s:12:\"\0*\0relations\";a:0:{}s:10:\"\0*\0touches\";a:0:{}s:27:\"\0*\0relationAutoloadCallback\";N;s:26:\"\0*\0relationAutoloadContext\";N;s:10:\"timestamps\";b:1;s:13:\"usesUniqueIds\";b:0;s:9:\"\0*\0hidden\";a:0:{}s:10:\"\0*\0visible\";a:0:{}s:11:\"\0*\0fillable\";a:6:{i:0;s:10:\"vacancy_id\";i:1;s:12:\"applicant_id\";i:2;s:6:\"status\";i:3;s:12:\"submitted_at\";i:4;s:11:\"reviewed_at\";i:5;s:7:\"remarks\";}s:10:\"\0*\0guarded\";a:1:{i:0;s:1:\"*\";}s:16:\"\0*\0forceDeleting\";b:0;}i:1;O:22:\"App\\Models\\Application\":34:{s:13:\"\0*\0connection\";s:5:\"mysql\";s:8:\"\0*\0table\";s:12:\"applications\";s:13:\"\0*\0primaryKey\";s:2:\"id\";s:10:\"\0*\0keyType\";s:3:\"int\";s:12:\"incrementing\";b:1;s:7:\"\0*\0with\";a:0:{}s:12:\"\0*\0withCount\";a:0:{}s:19:\"preventsLazyLoading\";b:0;s:10:\"\0*\0perPage\";i:15;s:6:\"exists\";b:1;s:18:\"wasRecentlyCreated\";b:0;s:28:\"\0*\0escapeWhenCastingToString\";b:0;s:13:\"\0*\0attributes\";a:2:{s:6:\"status\";s:9:\"qualified\";s:5:\"count\";i:2;}s:11:\"\0*\0original\";a:2:{s:6:\"status\";s:9:\"qualified\";s:5:\"count\";i:2;}s:10:\"\0*\0changes\";a:0:{}s:11:\"\0*\0previous\";a:0:{}s:8:\"\0*\0casts\";a:3:{s:12:\"submitted_at\";s:8:\"datetime\";s:11:\"reviewed_at\";s:8:\"datetime\";s:10:\"deleted_at\";s:8:\"datetime\";}s:17:\"\0*\0classCastCache\";a:0:{}s:21:\"\0*\0attributeCastCache\";a:0:{}s:13:\"\0*\0dateFormat\";N;s:10:\"\0*\0appends\";a:0:{}s:19:\"\0*\0dispatchesEvents\";a:0:{}s:14:\"\0*\0observables\";a:0:{}s:12:\"\0*\0relations\";a:0:{}s:10:\"\0*\0touches\";a:0:{}s:27:\"\0*\0relationAutoloadCallback\";N;s:26:\"\0*\0relationAutoloadContext\";N;s:10:\"timestamps\";b:1;s:13:\"usesUniqueIds\";b:0;s:9:\"\0*\0hidden\";a:0:{}s:10:\"\0*\0visible\";a:0:{}s:11:\"\0*\0fillable\";a:6:{i:0;s:10:\"vacancy_id\";i:1;s:12:\"applicant_id\";i:2;s:6:\"status\";i:3;s:12:\"submitted_at\";i:4;s:11:\"reviewed_at\";i:5;s:7:\"remarks\";}s:10:\"\0*\0guarded\";a:1:{i:0;s:1:\"*\";}s:16:\"\0*\0forceDeleting\";b:0;}i:2;O:22:\"App\\Models\\Application\":34:{s:13:\"\0*\0connection\";s:5:\"mysql\";s:8:\"\0*\0table\";s:12:\"applications\";s:13:\"\0*\0primaryKey\";s:2:\"id\";s:10:\"\0*\0keyType\";s:3:\"int\";s:12:\"incrementing\";b:1;s:7:\"\0*\0with\";a:0:{}s:12:\"\0*\0withCount\";a:0:{}s:19:\"preventsLazyLoading\";b:0;s:10:\"\0*\0perPage\";i:15;s:6:\"exists\";b:1;s:18:\"wasRecentlyCreated\";b:0;s:28:\"\0*\0escapeWhenCastingToString\";b:0;s:13:\"\0*\0attributes\";a:2:{s:6:\"status\";s:12:\"disqualified\";s:5:\"count\";i:2;}s:11:\"\0*\0original\";a:2:{s:6:\"status\";s:12:\"disqualified\";s:5:\"count\";i:2;}s:10:\"\0*\0changes\";a:0:{}s:11:\"\0*\0previous\";a:0:{}s:8:\"\0*\0casts\";a:3:{s:12:\"submitted_at\";s:8:\"datetime\";s:11:\"reviewed_at\";s:8:\"datetime\";s:10:\"deleted_at\";s:8:\"datetime\";}s:17:\"\0*\0classCastCache\";a:0:{}s:21:\"\0*\0attributeCastCache\";a:0:{}s:13:\"\0*\0dateFormat\";N;s:10:\"\0*\0appends\";a:0:{}s:19:\"\0*\0dispatchesEvents\";a:0:{}s:14:\"\0*\0observables\";a:0:{}s:12:\"\0*\0relations\";a:0:{}s:10:\"\0*\0touches\";a:0:{}s:27:\"\0*\0relationAutoloadCallback\";N;s:26:\"\0*\0relationAutoloadContext\";N;s:10:\"timestamps\";b:1;s:13:\"usesUniqueIds\";b:0;s:9:\"\0*\0hidden\";a:0:{}s:10:\"\0*\0visible\";a:0:{}s:11:\"\0*\0fillable\";a:6:{i:0;s:10:\"vacancy_id\";i:1;s:12:\"applicant_id\";i:2;s:6:\"status\";i:3;s:12:\"submitted_at\";i:4;s:11:\"reviewed_at\";i:5;s:7:\"remarks\";}s:10:\"\0*\0guarded\";a:1:{i:0;s:1:\"*\";}s:16:\"\0*\0forceDeleting\";b:0;}i:3;O:22:\"App\\Models\\Application\":34:{s:13:\"\0*\0connection\";s:5:\"mysql\";s:8:\"\0*\0table\";s:12:\"applications\";s:13:\"\0*\0primaryKey\";s:2:\"id\";s:10:\"\0*\0keyType\";s:3:\"int\";s:12:\"incrementing\";b:1;s:7:\"\0*\0with\";a:0:{}s:12:\"\0*\0withCount\";a:0:{}s:19:\"preventsLazyLoading\";b:0;s:10:\"\0*\0perPage\";i:15;s:6:\"exists\";b:1;s:18:\"wasRecentlyCreated\";b:0;s:28:\"\0*\0escapeWhenCastingToString\";b:0;s:13:\"\0*\0attributes\";a:2:{s:6:\"status\";s:14:\"exam_scheduled\";s:5:\"count\";i:1;}s:11:\"\0*\0original\";a:2:{s:6:\"status\";s:14:\"exam_scheduled\";s:5:\"count\";i:1;}s:10:\"\0*\0changes\";a:0:{}s:11:\"\0*\0previous\";a:0:{}s:8:\"\0*\0casts\";a:3:{s:12:\"submitted_at\";s:8:\"datetime\";s:11:\"reviewed_at\";s:8:\"datetime\";s:10:\"deleted_at\";s:8:\"datetime\";}s:17:\"\0*\0classCastCache\";a:0:{}s:21:\"\0*\0attributeCastCache\";a:0:{}s:13:\"\0*\0dateFormat\";N;s:10:\"\0*\0appends\";a:0:{}s:19:\"\0*\0dispatchesEvents\";a:0:{}s:14:\"\0*\0observables\";a:0:{}s:12:\"\0*\0relations\";a:0:{}s:10:\"\0*\0touches\";a:0:{}s:27:\"\0*\0relationAutoloadCallback\";N;s:26:\"\0*\0relationAutoloadContext\";N;s:10:\"timestamps\";b:1;s:13:\"usesUniqueIds\";b:0;s:9:\"\0*\0hidden\";a:0:{}s:10:\"\0*\0visible\";a:0:{}s:11:\"\0*\0fillable\";a:6:{i:0;s:10:\"vacancy_id\";i:1;s:12:\"applicant_id\";i:2;s:6:\"status\";i:3;s:12:\"submitted_at\";i:4;s:11:\"reviewed_at\";i:5;s:7:\"remarks\";}s:10:\"\0*\0guarded\";a:1:{i:0;s:1:\"*\";}s:16:\"\0*\0forceDeleting\";b:0;}i:4;O:22:\"App\\Models\\Application\":34:{s:13:\"\0*\0connection\";s:5:\"mysql\";s:8:\"\0*\0table\";s:12:\"applications\";s:13:\"\0*\0primaryKey\";s:2:\"id\";s:10:\"\0*\0keyType\";s:3:\"int\";s:12:\"incrementing\";b:1;s:7:\"\0*\0with\";a:0:{}s:12:\"\0*\0withCount\";a:0:{}s:19:\"preventsLazyLoading\";b:0;s:10:\"\0*\0perPage\";i:15;s:6:\"exists\";b:1;s:18:\"wasRecentlyCreated\";b:0;s:28:\"\0*\0escapeWhenCastingToString\";b:0;s:13:\"\0*\0attributes\";a:2:{s:6:\"status\";s:11:\"interviewed\";s:5:\"count\";i:1;}s:11:\"\0*\0original\";a:2:{s:6:\"status\";s:11:\"interviewed\";s:5:\"count\";i:1;}s:10:\"\0*\0changes\";a:0:{}s:11:\"\0*\0previous\";a:0:{}s:8:\"\0*\0casts\";a:3:{s:12:\"submitted_at\";s:8:\"datetime\";s:11:\"reviewed_at\";s:8:\"datetime\";s:10:\"deleted_at\";s:8:\"datetime\";}s:17:\"\0*\0classCastCache\";a:0:{}s:21:\"\0*\0attributeCastCache\";a:0:{}s:13:\"\0*\0dateFormat\";N;s:10:\"\0*\0appends\";a:0:{}s:19:\"\0*\0dispatchesEvents\";a:0:{}s:14:\"\0*\0observables\";a:0:{}s:12:\"\0*\0relations\";a:0:{}s:10:\"\0*\0touches\";a:0:{}s:27:\"\0*\0relationAutoloadCallback\";N;s:26:\"\0*\0relationAutoloadContext\";N;s:10:\"timestamps\";b:1;s:13:\"usesUniqueIds\";b:0;s:9:\"\0*\0hidden\";a:0:{}s:10:\"\0*\0visible\";a:0:{}s:11:\"\0*\0fillable\";a:6:{i:0;s:10:\"vacancy_id\";i:1;s:12:\"applicant_id\";i:2;s:6:\"status\";i:3;s:12:\"submitted_at\";i:4;s:11:\"reviewed_at\";i:5;s:7:\"remarks\";}s:10:\"\0*\0guarded\";a:1:{i:0;s:1:\"*\";}s:16:\"\0*\0forceDeleting\";b:0;}i:5;O:22:\"App\\Models\\Application\":34:{s:13:\"\0*\0connection\";s:5:\"mysql\";s:8:\"\0*\0table\";s:12:\"applications\";s:13:\"\0*\0primaryKey\";s:2:\"id\";s:10:\"\0*\0keyType\";s:3:\"int\";s:12:\"incrementing\";b:1;s:7:\"\0*\0with\";a:0:{}s:12:\"\0*\0withCount\";a:0:{}s:19:\"preventsLazyLoading\";b:0;s:10:\"\0*\0perPage\";i:15;s:6:\"exists\";b:1;s:18:\"wasRecentlyCreated\";b:0;s:28:\"\0*\0escapeWhenCastingToString\";b:0;s:13:\"\0*\0attributes\";a:2:{s:6:\"status\";s:11:\"recommended\";s:5:\"count\";i:1;}s:11:\"\0*\0original\";a:2:{s:6:\"status\";s:11:\"recommended\";s:5:\"count\";i:1;}s:10:\"\0*\0changes\";a:0:{}s:11:\"\0*\0previous\";a:0:{}s:8:\"\0*\0casts\";a:3:{s:12:\"submitted_at\";s:8:\"datetime\";s:11:\"reviewed_at\";s:8:\"datetime\";s:10:\"deleted_at\";s:8:\"datetime\";}s:17:\"\0*\0classCastCache\";a:0:{}s:21:\"\0*\0attributeCastCache\";a:0:{}s:13:\"\0*\0dateFormat\";N;s:10:\"\0*\0appends\";a:0:{}s:19:\"\0*\0dispatchesEvents\";a:0:{}s:14:\"\0*\0observables\";a:0:{}s:12:\"\0*\0relations\";a:0:{}s:10:\"\0*\0touches\";a:0:{}s:27:\"\0*\0relationAutoloadCallback\";N;s:26:\"\0*\0relationAutoloadContext\";N;s:10:\"timestamps\";b:1;s:13:\"usesUniqueIds\";b:0;s:9:\"\0*\0hidden\";a:0:{}s:10:\"\0*\0visible\";a:0:{}s:11:\"\0*\0fillable\";a:6:{i:0;s:10:\"vacancy_id\";i:1;s:12:\"applicant_id\";i:2;s:6:\"status\";i:3;s:12:\"submitted_at\";i:4;s:11:\"reviewed_at\";i:5;s:7:\"remarks\";}s:10:\"\0*\0guarded\";a:1:{i:0;s:1:\"*\";}s:16:\"\0*\0forceDeleting\";b:0;}}s:28:\"\0*\0escapeWhenCastingToString\";b:0;}}', 1782212686);
 
 -- --------------------------------------------------------
 
@@ -413,6 +395,16 @@ CREATE TABLE `exam_results` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `exam_results`
+--
+
+INSERT INTO `exam_results` (`id`, `application_id`, `exam_type`, `raw_score`, `max_score`, `encoded_by`, `encoded_at`, `created_at`, `updated_at`) VALUES
+(1, 1, 'TWE', 83.00, 100.00, 2, '2026-06-22 19:36:37', '2026-06-22 19:36:37', '2026-06-22 19:36:37'),
+(2, 1, 'CBWE', 80.00, 100.00, 2, '2026-06-22 19:36:49', '2026-06-22 19:36:49', '2026-06-22 19:36:49'),
+(3, 10, 'TWE', 60.00, 100.00, 2, '2026-06-22 19:37:06', '2026-06-22 19:37:06', '2026-06-22 19:37:06'),
+(4, 10, 'CBWE', 75.00, 100.00, 2, '2026-06-22 19:37:15', '2026-06-22 19:37:15', '2026-06-22 19:37:15');
+
 -- --------------------------------------------------------
 
 --
@@ -470,7 +462,7 @@ CREATE TABLE `hrmpsb_compositions` (
 
 INSERT INTO `hrmpsb_compositions` (`id`, `user_id`, `hrmpsb_role`, `member_type`, `is_active`, `assigned_by`, `assigned_at`, `created_at`, `updated_at`) VALUES
 (4, 3, 'secretariat', 'principal', 1, 1, '2026-06-21 01:51:00', '2026-06-21 01:51:00', '2026-06-21 01:51:00'),
-(5, 2, 'chairperson', 'principal', 1, 1, '2026-06-21 08:06:45', '2026-06-21 08:06:45', '2026-06-21 08:06:45');
+(6, 2, 'director-representative', 'principal', 1, 1, '2026-06-22 19:06:04', '2026-06-22 19:06:04', '2026-06-22 19:06:04');
 
 -- --------------------------------------------------------
 
@@ -586,7 +578,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (32, '2026_06_21_130000_add_position_fields_to_vacancies', 10),
 (33, '2026_06_21_130001_create_competencies_table', 10),
 (34, '2026_06_21_130002_create_vacancy_competencies_table', 10),
-(35, '2026_06_22_151003_migrate_contact_number_to_mobile_number_on_applicant_profiles', 11);
+(35, '2026_06_22_151003_migrate_contact_number_to_mobile_number_on_applicant_profiles', 11),
+(36, '2026_06_23_000001_expand_anonymization_token_column', 12),
+(37, '2026_06_23_000001_create_pre_assessments_table', 13),
+(38, '2026_06_23_000002_add_remarks_columns_to_pre_assessments', 14);
 
 -- --------------------------------------------------------
 
@@ -721,7 +716,82 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 (78, 'App\\Models\\User', 10, 'api-token', 'fab48f1d0f9afe0505d27cb315e00d5243a75606888de317f27f91352ef6767e', '[\"*\"]', '2026-06-22 06:13:46', NULL, '2026-06-22 06:13:00', '2026-06-22 06:13:46'),
 (79, 'App\\Models\\User', 1, 'api-token', '7d69827361bda344b1e127b182053590ecef753ba150b6d94bee0ec8da4e47f3', '[\"*\"]', '2026-06-22 07:24:03', NULL, '2026-06-22 06:13:54', '2026-06-22 07:24:03'),
 (80, 'App\\Models\\User', 1, 'api-token', 'dc5b093f92c632387b83abbf8c7fa101522076745d3dfad6479dbc3680229f78', '[\"*\"]', '2026-06-22 07:07:18', NULL, '2026-06-22 06:14:42', '2026-06-22 07:07:18'),
-(81, 'App\\Models\\User', 10, 'api-token', 'a2e6d9eace1630b51ec99e97221b6f9810e6de9968fae3faa9ab5ffe1eeec194', '[\"*\"]', '2026-06-22 07:23:37', NULL, '2026-06-22 07:07:29', '2026-06-22 07:23:37');
+(81, 'App\\Models\\User', 10, 'api-token', 'a2e6d9eace1630b51ec99e97221b6f9810e6de9968fae3faa9ab5ffe1eeec194', '[\"*\"]', '2026-06-22 07:23:37', NULL, '2026-06-22 07:07:29', '2026-06-22 07:23:37'),
+(82, 'App\\Models\\User', 1, 'api-token', '096f2327669e9dd1fbb5bdde99c141802be8da00fe2b65c6fb5a8ba33d640b7e', '[\"*\"]', '2026-06-22 18:02:52', NULL, '2026-06-22 18:01:53', '2026-06-22 18:02:52'),
+(83, 'App\\Models\\User', 3, 'api-token', '22b9628618cfd4d52edfecf33497da940b63689075137b12afb7eca8b5d09c22', '[\"*\"]', '2026-06-22 19:00:53', NULL, '2026-06-22 18:03:07', '2026-06-22 19:00:53'),
+(84, 'App\\Models\\User', 3, 'api-token', '3e2bcb306ec704656e08cb82841bebc79532e98277eb64dc34e1a092bae14650', '[\"*\"]', '2026-06-22 20:44:23', NULL, '2026-06-22 18:06:41', '2026-06-22 20:44:23'),
+(85, 'App\\Models\\User', 10, 'api-token', 'b38984a1be96529a9444d5b48890a382bbd63403f08e82136196f4ac72d77d12', '[\"*\"]', '2026-06-22 19:04:56', NULL, '2026-06-22 19:03:22', '2026-06-22 19:04:56'),
+(86, 'App\\Models\\User', 3, 'api-token', '744c846e0e8437e9cc38b3a53266bd59bf95047d7b7f979c71cbb310c69ab380', '[\"*\"]', '2026-06-22 19:05:21', NULL, '2026-06-22 19:05:11', '2026-06-22 19:05:21'),
+(87, 'App\\Models\\User', 1, 'api-token', '4d2d9202a89fe5faf62119b90a042ee9b9ae2e77ec0f02c283a376c01994a798', '[\"*\"]', '2026-06-22 19:06:10', NULL, '2026-06-22 19:05:44', '2026-06-22 19:06:10'),
+(88, 'App\\Models\\User', 2, 'api-token', '079ce6d601ae416f9e06ac00631a0f35e4fc5739d891abcd33af5293a76f48fd', '[\"*\"]', '2026-06-22 19:06:31', NULL, '2026-06-22 19:06:23', '2026-06-22 19:06:31'),
+(89, 'App\\Models\\User', 1, 'api-token', 'ad0efda4e955030394c354fb6c6ede2d40322732cfb8e8c7a7fe4036ca6f38aa', '[\"*\"]', '2026-06-22 19:07:03', NULL, '2026-06-22 19:06:49', '2026-06-22 19:07:03'),
+(90, 'App\\Models\\User', 2, 'api-token', '36a33e9176fab531a1e56348705cae8c7523dfa81a138fc6eea685ed9bb33549', '[\"*\"]', '2026-06-22 19:12:34', NULL, '2026-06-22 19:07:17', '2026-06-22 19:12:34'),
+(91, 'App\\Models\\User', 2, 'api-token', '2d6c6571934227d66658863dcfa31127b2665875048739b88a1b0458d7fb917f', '[\"*\"]', '2026-06-22 19:14:54', NULL, '2026-06-22 19:12:58', '2026-06-22 19:14:54'),
+(92, 'App\\Models\\User', 2, 'api-token', 'f74de5a365f4b3e58a5da83a2a505acdeeb0bde0d532bc79f0fbf158ab80df2b', '[\"*\"]', '2026-06-22 19:54:51', NULL, '2026-06-22 19:17:36', '2026-06-22 19:54:51'),
+(93, 'App\\Models\\User', 3, 'api-token', 'ae2e8e2522c8e9874835788d71b146a6e34d8cace998ae6f4c4710e881eb0eeb', '[\"*\"]', '2026-06-22 19:55:34', NULL, '2026-06-22 19:55:08', '2026-06-22 19:55:34'),
+(94, 'App\\Models\\User', 10, 'api-token', 'a14d241c0b10c5a99aaff31e5cf09ca381387375df67896b40b1cfeb0dda5d06', '[\"*\"]', '2026-06-22 20:08:43', NULL, '2026-06-22 19:55:53', '2026-06-22 20:08:43'),
+(95, 'App\\Models\\User', 2, 'api-token', '6c45a22c25cc729289f85ea3c46d75c549a6287f32419aa2cec43e6ba200a04b', '[\"*\"]', '2026-06-22 20:09:26', NULL, '2026-06-22 20:09:02', '2026-06-22 20:09:26'),
+(96, 'App\\Models\\User', 1, 'api-token', '34127a001bbf1a376b765589936a66f320fac128cefdd2e16a6ca8e51a7fd785', '[\"*\"]', '2026-06-22 20:10:17', NULL, '2026-06-22 20:09:38', '2026-06-22 20:10:17'),
+(97, 'App\\Models\\User', 3, 'api-token', 'd93d06df9c4fbdd07f488cbeabb97fdc86faff28c154c1e3f9e822448d76deb8', '[\"*\"]', '2026-06-22 20:18:01', NULL, '2026-06-22 20:17:52', '2026-06-22 20:18:01'),
+(98, 'App\\Models\\User', 1, 'api-token', '8980a63bd21639c65f840d7bfa575e210e86b644239a527bbf0bb0ee1752aea0', '[\"*\"]', '2026-06-22 20:18:21', NULL, '2026-06-22 20:18:12', '2026-06-22 20:18:21'),
+(99, 'App\\Models\\User', 10, 'api-token', '2833965820d39435d90e107a8719b854e3bb5adb4cc0dc8e4e9c79564434d6fd', '[\"*\"]', '2026-06-22 20:23:15', NULL, '2026-06-22 20:21:38', '2026-06-22 20:23:15'),
+(100, 'App\\Models\\User', 2, 'api-token', '343d3819cc2bd1632a1280d7d586facfe20fa60eccdf53d8e17b2ccc7d8c065e', '[\"*\"]', '2026-06-22 20:24:13', NULL, '2026-06-22 20:24:05', '2026-06-22 20:24:13'),
+(101, 'App\\Models\\User', 3, 'api-token', 'b5e9cf347e651662646aa85526b231a820256940bd21b0fc71868ea462578a4d', '[\"*\"]', '2026-06-22 20:30:54', NULL, '2026-06-22 20:24:36', '2026-06-22 20:30:54'),
+(102, 'App\\Models\\User', 2, 'api-token', 'b85d31cb66b5b42b3034b5fb9c6b6a732af9975249984810e007b5dbdb4714ee', '[\"*\"]', '2026-06-22 21:06:44', NULL, '2026-06-22 20:31:05', '2026-06-22 21:06:44'),
+(103, 'App\\Models\\User', 10, 'api-token', '216cfde2f4d56ebb0f8bfda10d70177ce0560e9a77bd2041b11cd1e6f42f5cbc', '[\"*\"]', '2026-06-22 21:30:46', NULL, '2026-06-22 21:22:54', '2026-06-22 21:30:46'),
+(104, 'App\\Models\\User', 1, 'api-token', '003c2b86c9529c8689f276acb028d54fb624890031bc3b2edc1c6359d5316d2a', '[\"*\"]', '2026-06-22 21:33:49', NULL, '2026-06-22 21:31:08', '2026-06-22 21:33:49'),
+(105, 'App\\Models\\User', 3, 'api-token', '47abcf37834b7bacdaa0f66af71d880f1402b1078e979b54cb1dfde9444e9607', '[\"*\"]', '2026-06-22 22:01:10', NULL, '2026-06-22 21:33:57', '2026-06-22 22:01:10'),
+(106, 'App\\Models\\User', 1, 'api-token', 'd27de51ab98e79f4e1b579536e5a2d7781cac6d32e709cfdfbc8e8aadebe8171', '[\"*\"]', '2026-06-22 22:13:15', NULL, '2026-06-22 22:01:37', '2026-06-22 22:13:15'),
+(107, 'App\\Models\\User', 3, 'api-token', '7db53e22fac0d9ef61c7b975d7b4a1dfdbaa8f39fa7f672734aee046af87da6d', '[\"*\"]', '2026-06-22 22:53:51', NULL, '2026-06-22 22:13:26', '2026-06-22 22:53:51'),
+(108, 'App\\Models\\User', 3, 'api-token', 'ba56fb4dbcea1a93eeb1ff50c2ab800900cefbebc702f64589a55a93e8bc70d5', '[\"*\"]', '2026-06-23 02:42:52', NULL, '2026-06-22 22:24:58', '2026-06-23 02:42:52'),
+(109, 'App\\Models\\User', 2, 'api-token', '34174cabdebd009468193d3f8b0c6a6b63d669236f7bb9e4659fd05809b9704a', '[\"*\"]', '2026-06-23 02:04:35', NULL, '2026-06-22 22:54:37', '2026-06-23 02:04:35'),
+(110, 'App\\Models\\User', 1, 'api-token', '7d75cac8b4854a8e56186599f4cdb4c5cbc97c016d9627885fd48c0a9057487d', '[\"*\"]', '2026-06-23 03:01:20', NULL, '2026-06-22 23:14:51', '2026-06-23 03:01:20'),
+(111, 'App\\Models\\User', 1, 'api-token', '5b6b06048ad66692ab7311752afec747bd4cd4f6a21ec656098afaca5350c8c3', '[\"*\"]', '2026-06-23 02:05:44', NULL, '2026-06-23 02:04:45', '2026-06-23 02:05:44'),
+(112, 'App\\Models\\User', 1, 'api-token', 'f5f46679ae1a03a229490f4e58f55c05668c3191e8cabdbfc69f2de39d1cc9b6', '[\"*\"]', '2026-06-23 02:43:45', NULL, '2026-06-23 02:43:08', '2026-06-23 02:43:45'),
+(113, 'App\\Models\\User', 3, 'api-token', 'b2c1511d67943a1a578a2c72051353dcaf30edbec9ff1cd48819e36638f61a58', '[\"*\"]', '2026-06-23 03:05:23', NULL, '2026-06-23 02:44:57', '2026-06-23 03:05:23'),
+(114, 'App\\Models\\User', 3, 'api-token', 'dc9757ef06e500d4d9384fce7982698c57b4f780aa684434be0e5b1e03a70e9e', '[\"*\"]', '2026-06-23 02:57:05', NULL, '2026-06-23 02:45:52', '2026-06-23 02:57:05');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pre_assessments`
+--
+
+CREATE TABLE `pre_assessments` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `application_id` bigint(20) UNSIGNED NOT NULL,
+  `pds_submitted` tinyint(1) DEFAULT NULL,
+  `ipcr_submitted` tinyint(1) DEFAULT NULL,
+  `tor_submitted` tinyint(1) DEFAULT NULL,
+  `coe_submitted` tinyint(1) DEFAULT NULL,
+  `pds_remarks` text DEFAULT NULL,
+  `ipcr_remarks` text DEFAULT NULL,
+  `tor_remarks` text DEFAULT NULL,
+  `coe_remarks` text DEFAULT NULL,
+  `requirements_complete` tinyint(1) DEFAULT NULL,
+  `requirements_remarks` text DEFAULT NULL,
+  `secretariat_remarks` text DEFAULT NULL,
+  `license_remarks` text DEFAULT NULL,
+  `education_meets` tinyint(1) DEFAULT NULL,
+  `license_meets` tinyint(1) DEFAULT NULL,
+  `experience_meets` tinyint(1) DEFAULT NULL,
+  `training_meets` tinyint(1) DEFAULT NULL,
+  `eligibility_meets` tinyint(1) DEFAULT NULL,
+  `hrd_assessment` tinyint(1) DEFAULT NULL,
+  `hrd_remarks` text DEFAULT NULL,
+  `consensus` tinyint(1) DEFAULT NULL,
+  `assessed_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `assessed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `pre_assessments`
+--
+
+INSERT INTO `pre_assessments` (`id`, `application_id`, `pds_submitted`, `ipcr_submitted`, `tor_submitted`, `coe_submitted`, `pds_remarks`, `ipcr_remarks`, `tor_remarks`, `coe_remarks`, `requirements_complete`, `requirements_remarks`, `secretariat_remarks`, `license_remarks`, `education_meets`, `license_meets`, `experience_meets`, `training_meets`, `eligibility_meets`, `hrd_assessment`, `hrd_remarks`, `consensus`, `assessed_by`, `assessed_at`, `created_at`, `updated_at`) VALUES
+(1, 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'License will be expired on 3 June 2026', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 3, '2026-06-22 22:53:51', '2026-06-22 22:53:51', '2026-06-22 22:53:51');
 
 -- --------------------------------------------------------
 
@@ -750,8 +820,10 @@ CREATE TABLE `qs_evaluations` (
 --
 
 INSERT INTO `qs_evaluations` (`id`, `application_id`, `evaluator_id`, `education_meets`, `experience_meets`, `training_meets`, `eligibility_meets`, `overall_qualified`, `remarks`, `evaluated_at`, `locked_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 10, 1, 1, 1, 1, 1, NULL, '2026-06-21 01:38:27', NULL, '2026-06-21 01:38:27', '2026-06-21 01:38:27'),
-(2, 8, 10, 0, 1, 1, 1, 0, NULL, '2026-06-21 01:44:24', NULL, '2026-06-21 01:44:24', '2026-06-21 01:44:24');
+(1, 1, 2, 1, 1, 1, 1, 1, 'The applicant is qualified for the said position.', '2026-06-22 19:29:26', '2026-06-22 19:30:41', '2026-06-22 19:29:26', '2026-06-22 19:30:41'),
+(2, 8, 2, 0, 1, 1, 1, 0, 'Education is not relevant to the applied vacant position.', '2026-06-22 19:30:01', '2026-06-22 19:30:41', '2026-06-22 19:30:01', '2026-06-22 19:30:41'),
+(3, 10, 2, 1, 1, 1, 1, 1, 'The applicant is qualified for the said position.', '2026-06-22 19:30:21', '2026-06-22 19:30:41', '2026-06-22 19:30:21', '2026-06-22 19:30:41'),
+(4, 11, 3, 1, 1, 1, 1, 1, NULL, '2026-06-22 20:26:43', NULL, '2026-06-22 20:26:43', '2026-06-22 20:26:43');
 
 -- --------------------------------------------------------
 
@@ -773,8 +845,9 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('oxCd2QU5KrVGy2DIZqG76oDFotElODdb626GOJUi', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiIwQ0JzTnRLU1FPaFNYSUhPMHBpNlFDdnZlZXNva2hSQTBEb0c2Qk1vIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdFwvcHJvZmlsZVwvcGhvdG8/dG9rZW49ODElN0NrYkU3a1BVVFphMjNkVUtvOFlGdkdyT1E4Z1NMeHQ1cTV1ZlZUQVNSMDE2ZTg3YmIiLCJyb3V0ZSI6bnVsbH0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfX0=', 1782141817),
-('Yf0qG9odESwzFucYG4AXXghj3dMCw3zE5fhtgRmk', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.125.1 Chrome/148.0.7778.97 Electron/42.2.0 Safari/537.36', 'eyJfdG9rZW4iOiJXVlFsT2RpblcwQ0l4MFBhRlBWRXFBRWVwN0xONG84Y3l4T0FFVmZIIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdFwvYWRtaW5cL2FwcGxpY2F0aW9ucyIsInJvdXRlIjpudWxsfSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==', 1782141818);
+('KOMJtpUfQ41OLHpM0Si5ApQKnbDz3ksFhqBK6CU3', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.125.1 Chrome/148.0.7778.97 Electron/42.2.0 Safari/537.36', 'eyJfdG9rZW4iOiJCYnNmcVRvR3UySTI0TzVvUE5IVFVzd3pqUTFodXI3N0d1MW1CVkFuIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9ocm1wc2JcL3FzLWV2YWx1YXRpb25cLzEiLCJyb3V0ZSI6bnVsbH0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfX0=', 1782212722),
+('l5KH3C9tAM0zouNPHeHYumlYFqusXiD543GsIIAn', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJ2NEVkUkZEZ0kzVDQ5RGVQM0VWVzY1T2RSYnRWNnk5WnVEMXMwU0NNIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2hybXBzYlwvZXhhbS1zY2hlZHVsZVwvMSIsInJvdXRlIjpudWxsfX0=', 1782212224),
+('UKTrLkozK3qEBLpmeE9ZFEY4rcJSUTgly6vAadLI', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJwTjRrMVZrMzdhNGZtMnc4Q3c3MVowMWdMZlZ0MENzRTR3Q1dCOVJRIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9hZG1pblwvZGFzaGJvYXJkIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1782212471);
 
 -- --------------------------------------------------------
 
@@ -820,7 +893,12 @@ CREATE TABLE `trainings` (
 
 INSERT INTO `trainings` (`id`, `applicant_profile_id`, `title`, `date_from`, `date_to`, `hours`, `ld_type`, `conducted_by`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Leadership and Management Seminar', '2020-01-01', '2020-01-01', 8.00, 'Managerial', 'Civil Service Commission', '2026-06-20 19:39:27', '2026-06-20 19:39:27'),
-(2, 7, '2025 Conversations with Local Leaders in Eastern Visayas', '2026-04-15', '2026-04-16', 16.00, 'Managerial', 'Civil Service Commission Regional Office VIII', '2026-06-20 23:32:24', '2026-06-20 23:32:24');
+(2, 7, '2025 Conversations with Local Leaders in Eastern Visayas', '2026-04-15', '2026-04-16', 16.00, 'Managerial', 'Civil Service Commission Regional Office VIII', '2026-06-20 23:32:24', '2026-06-20 23:32:24'),
+(3, 7, 'Capacity Building on Designing and Developing Innovative Microlearning and e-Learning Courses', '2025-02-19', '2025-03-14', 28.00, 'Technical', 'CSI Fulbright Philippines', '2026-06-22 20:06:24', '2026-06-22 20:06:24'),
+(4, 7, 'Briefing and Orientation for the Beneficiaries of the Government Network (GovNet)', '2025-07-30', '2025-07-30', 8.00, 'Technical', 'Department of Information and Communications Technology - Infrastructure Management Bureau', '2026-06-22 20:07:01', '2026-06-22 20:07:01'),
+(5, 7, 'Orientation on the 2024 Implementing Rules and Regulations of E.O. 180 for Public Sector Employees Organizations (PSEOs) in Eastern Visayas', '2025-08-27', '2025-08-27', 8.00, 'Managerial', 'CSC Regional Office VIII', '2026-06-22 20:07:32', '2026-06-22 20:07:32'),
+(6, 7, 'Orientation-Workshop on Strategic Performance Management System (SPMS)', '2025-08-11', '2025-08-11', 8.00, 'Technical', 'CSC Regional Office VIII', '2026-06-22 20:08:09', '2026-06-22 20:08:09'),
+(7, 7, 'Strategic Operations Planning Workshop', '2025-12-18', '2025-12-19', 12.00, 'Technical', 'CSC Regional Office VIII', '2026-06-22 20:08:40', '2026-06-22 20:08:40');
 
 -- --------------------------------------------------------
 
@@ -846,7 +924,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `role`, `remember_token`, `created_at`, `updated_at`) VALUES
 (1, 'Admin User', 'admin@csc.gov.ph', '2026-06-20 08:18:15', '$2y$12$0uhOXB7Rp5n3FjP04CFZHeASJbltRccHWuq1hukQwtR2UjNUfF55u', 'admin', NULL, '2026-06-20 08:18:15', '2026-06-20 08:18:15'),
-(2, 'Maria Santos', 'hr.manager@csc.gov.ph', '2026-06-20 08:18:15', '$2y$12$SxwTYHUrHCRkexVs5ZkGYOGp25lAWcmQcdVaIQSZaTfVjuWgTNH..', 'hr-manager', NULL, '2026-06-20 08:18:15', '2026-06-20 08:18:15'),
+(2, 'Maria Santos', 'hr.manager@csc.gov.ph', '2026-06-20 08:18:15', '$2y$12$SxwTYHUrHCRkexVs5ZkGYOGp25lAWcmQcdVaIQSZaTfVjuWgTNH..', 'hrmpsb-member', NULL, '2026-06-20 08:18:15', '2026-06-22 19:07:02'),
 (3, 'Jose Reyes', 'hr.officer@csc.gov.ph', '2026-06-20 08:18:16', '$2y$12$DRKWTSgi7euJaUs30aH2YOSxA6tQB7GtkldgS0OW6uSftYercEg9u', 'hrmpsb-secretariat', NULL, '2026-06-20 08:18:16', '2026-06-21 01:51:00'),
 (4, 'Ana Dela Cruz', 'ana.delacruz@gmail.com', '2026-06-20 08:18:16', '$2y$12$pA4QY98oQBZTVVnRTC60TObmMKco/GLfA.Jb1DQdCecQ2DbVq6TT6', 'applicant', NULL, '2026-06-20 08:18:16', '2026-06-20 08:18:16'),
 (5, 'Carlo Mendoza', 'carlo.mendoza@gmail.com', '2026-06-20 08:18:16', '$2y$12$7zX4EFncX2.JbdAOPJb2JeydVTd8xiLwMRDTRALyTC4S5WRX.aacC', 'applicant', NULL, '2026-06-20 08:18:16', '2026-06-20 08:18:16'),
@@ -890,12 +968,12 @@ CREATE TABLE `vacancies` (
 --
 
 INSERT INTO `vacancies` (`id`, `position_title`, `item_number`, `salary_grade`, `monthly_salary`, `position_level`, `is_anticipated_vacancy`, `plantilla_number`, `place_of_assignment`, `education_req`, `experience_req`, `training_req`, `eligibility_req`, `status`, `posted_by`, `published_at`, `deadline_at`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Administrative Officer II', 'CSCRO-AO2-001-2026', 11, 31705.00, NULL, 0, 'PNTN-001', 'CSC Regional Office VIII', 'Bachelor\'s Degree relevant to the job', '1 year of relevant experience', '4 hours of relevant training', 'Career Service (Professional) / Second Level Eligibility', 'published', 3, '2026-06-10 08:18:17', '2026-07-09 16:00:00', '2026-06-20 08:18:17', '2026-06-22 07:19:58', NULL),
-(2, 'Information Technology Officer I', 'CSCRO-ITO1-002-2026', 19, 59153.00, NULL, 0, 'PNTN-002', 'CSC Regional Office VIII', 'Bachelor\'s Degree in Information Technology, Computer Science, or related field', '2 years of relevant experience', '8 hours of relevant training', 'Career Service (Professional) / Second Level Eligibility', 'published', 3, '2026-06-13 08:18:17', '2026-07-12 16:00:00', '2026-06-20 08:18:17', '2026-06-22 07:20:33', NULL),
-(3, 'Human Resource Specialist II', 'CSCRO-HRMO3-003-2026', 16, 45694.00, NULL, 0, 'PNTN-003', 'CSC Regional Office VIII', 'Bachelor\'s Degree in Public Administration, Human Resource Management, or related field', '2 years of relevant experience', '8 hours of relevant training', 'Career Service (Professional) / Second Level Eligibility', 'published', 3, '2026-06-15 08:18:17', '2026-07-14 16:00:00', '2026-06-20 08:18:17', '2026-06-22 07:20:50', NULL),
-(4, 'Attorney III', 'CSCRO-ATY3-004-2026', 21, 73303.00, NULL, 0, 'PNTN-004', 'CSC Regional Office VIII', 'Bachelor of Laws', '3 years of relevant experience', '16 hours of relevant training', 'RA 1080 (Bar)', 'published', 3, '2026-06-17 08:18:17', '2026-07-16 16:00:00', '2026-06-20 08:18:17', '2026-06-22 07:21:04', NULL),
-(5, 'Administrative Aide VI', 'CSCRO-AA6-005-2026', 6, NULL, NULL, 0, 'PNTN-005', 'CSC Regional Office VIII', 'Completion of 2 years studies in college', '1 year of relevant experience', '4 hours of relevant training', 'Career Service (Subprofessional) / First Level Eligibility', 'closed', 3, '2026-04-21 08:18:17', '2026-06-15 08:18:17', '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL),
-(6, 'Records Officer II', 'CSCRO-RO2-006-2026', 11, NULL, NULL, 0, 'PNTN-006', 'CSC Regional Office VIII', 'Bachelor\'s Degree relevant to the job', '1 year of relevant experience', '4 hours of relevant training', 'Career Service (Professional) / Second Level Eligibility', 'draft', 3, NULL, NULL, '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL);
+(1, 'Administrative Officer II', 'AO2-001-2026', 11, 31705.00, NULL, 0, 'PNTN-001', 'CSC Regional Office VIII', 'Bachelor\'s Degree relevant to the job', '1 year of relevant experience', '4 hours of relevant training', 'Career Service (Professional) / Second Level Eligibility', 'published', 3, '2026-06-10 08:18:17', '2026-07-09 16:00:00', '2026-06-20 08:18:17', '2026-06-22 07:19:58', NULL),
+(2, 'Information Technology Officer I', 'ITO1-002-2026', 19, 59153.00, NULL, 0, 'PNTN-002', 'CSC Regional Office VIII', 'Bachelor\'s Degree in Information Technology, Computer Science, or related field', '2 years of relevant experience', '8 hours of relevant training', 'Career Service (Professional) / Second Level Eligibility', 'published', 3, '2026-06-13 08:18:17', '2026-07-12 16:00:00', '2026-06-20 08:18:17', '2026-06-22 07:20:33', NULL),
+(3, 'Human Resource Specialist II', 'PS2-003-2026', 16, 45694.00, NULL, 0, 'PNTN-003', 'CSC Regional Office VIII', 'Bachelor\'s Degree in Public Administration, Human Resource Management, or related field', '2 years of relevant experience', '8 hours of relevant training', 'Career Service (Professional) / Second Level Eligibility', 'published', 3, '2026-06-15 08:18:17', '2026-07-14 16:00:00', '2026-06-20 08:18:17', '2026-06-22 07:20:50', NULL),
+(4, 'Attorney III', 'ATY3-004-2026', 21, 73303.00, NULL, 0, 'PNTN-004', 'CSC Regional Office VIII', 'Bachelor of Laws', '3 years of relevant experience', '16 hours of relevant training', 'RA 1080 (Bar)', 'published', 3, '2026-06-17 08:18:17', '2026-07-16 16:00:00', '2026-06-20 08:18:17', '2026-06-22 07:21:04', NULL),
+(5, 'Administrative Aide VI', 'AA6-005-2026', 6, NULL, NULL, 0, 'PNTN-005', 'CSC Regional Office VIII', 'Completion of 2 years studies in college', '1 year of relevant experience', '4 hours of relevant training', 'Career Service (Subprofessional) / First Level Eligibility', 'closed', 3, '2026-04-21 08:18:17', '2026-06-15 08:18:17', '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL),
+(6, 'Records Officer II', 'RO2-006-2026', 11, NULL, NULL, 0, 'PNTN-006', 'CSC Regional Office VIII', 'Bachelor\'s Degree relevant to the job', '1 year of relevant experience', '4 hours of relevant training', 'Career Service (Professional) / Second Level Eligibility', 'draft', 3, NULL, NULL, '2026-06-20 08:18:17', '2026-06-20 08:18:17', NULL);
 
 -- --------------------------------------------------------
 
@@ -921,11 +999,14 @@ INSERT INTO `vacancy_competencies` (`id`, `vacancy_id`, `competency_key`, `compe
 (2, 1, 'delivering_service_excellence', 1, '2026-06-21 07:55:04', '2026-06-21 07:55:04'),
 (3, 1, 'solving_problems_making_decisions', 1, '2026-06-21 07:55:04', '2026-06-21 07:55:04'),
 (4, 1, 'demonstrating_personal_effectiveness_1', 1, '2026-06-21 07:55:04', '2026-06-21 07:55:04'),
-(5, 1, 'speaking_effectively_1', 1, '2026-06-21 07:55:04', '2026-06-21 07:55:04'),
-(6, 1, 'writing_effectively_1', 1, '2026-06-21 07:55:04', '2026-06-21 07:55:04'),
-(7, 1, 'championing_and_applying_innovation', 1, '2026-06-21 07:55:04', '2026-06-21 07:55:04'),
-(8, 1, 'planning_and_delivering', 1, '2026-06-21 07:55:04', '2026-06-21 07:55:04'),
-(9, 1, 'thinking_strategically', 1, '2026-06-21 07:55:04', '2026-06-21 07:55:04');
+(10, 1, 'demonstrating_personal_effectiveness', 2, '2026-06-22 23:22:01', '2026-06-22 23:27:16'),
+(11, 1, 'championing_applying_innovation', 2, '2026-06-22 23:22:01', '2026-06-22 23:27:16'),
+(12, 1, 'speaking_effectively', 2, '2026-06-22 23:22:01', '2026-06-22 23:27:16'),
+(13, 1, 'leading_change', 2, '2026-06-22 23:22:01', '2026-06-22 23:27:16'),
+(14, 1, 'building_collaborative_inclusive', 2, '2026-06-22 23:22:01', '2026-06-22 23:27:16'),
+(15, 1, 'thinking_strategically_creatively', 2, '2026-06-22 23:22:01', '2026-06-22 23:27:16'),
+(16, 1, 'information_technology', 1, '2026-06-22 23:22:01', '2026-06-22 23:22:01'),
+(17, 1, 'learning_delivery_evaluation', 1, '2026-06-22 23:22:01', '2026-06-22 23:22:01');
 
 -- --------------------------------------------------------
 
@@ -1140,6 +1221,14 @@ ALTER TABLE `personal_access_tokens`
   ADD KEY `personal_access_tokens_expires_at_index` (`expires_at`);
 
 --
+-- Indexes for table `pre_assessments`
+--
+ALTER TABLE `pre_assessments`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `pre_assessments_application_id_unique` (`application_id`),
+  ADD KEY `pre_assessments_assessed_by_foreign` (`assessed_by`);
+
+--
 -- Indexes for table `qs_evaluations`
 --
 ALTER TABLE `qs_evaluations`
@@ -1208,7 +1297,7 @@ ALTER TABLE `work_experiences`
 -- AUTO_INCREMENT for table `anonymization_tokens`
 --
 ALTER TABLE `anonymization_tokens`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `applicant_profiles`
@@ -1220,13 +1309,13 @@ ALTER TABLE `applicant_profiles`
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `bei_ratings`
@@ -1274,7 +1363,7 @@ ALTER TABLE `educational_attainments`
 -- AUTO_INCREMENT for table `exam_results`
 --
 ALTER TABLE `exam_results`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `exam_schedules`
@@ -1292,7 +1381,7 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT for table `hrmpsb_compositions`
 --
 ALTER TABLE `hrmpsb_compositions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `interview_schedules`
@@ -1310,19 +1399,25 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
 --
 ALTER TABLE `personal_access_tokens`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
+
+--
+-- AUTO_INCREMENT for table `pre_assessments`
+--
+ALTER TABLE `pre_assessments`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `qs_evaluations`
 --
 ALTER TABLE `qs_evaluations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `submission_tracking`
@@ -1334,7 +1429,7 @@ ALTER TABLE `submission_tracking`
 -- AUTO_INCREMENT for table `trainings`
 --
 ALTER TABLE `trainings`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -1352,7 +1447,7 @@ ALTER TABLE `vacancies`
 -- AUTO_INCREMENT for table `vacancy_competencies`
 --
 ALTER TABLE `vacancy_competencies`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `work_experiences`
@@ -1455,6 +1550,13 @@ ALTER TABLE `hrmpsb_compositions`
 --
 ALTER TABLE `interview_schedules`
   ADD CONSTRAINT `interview_schedules_application_id_foreign` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `pre_assessments`
+--
+ALTER TABLE `pre_assessments`
+  ADD CONSTRAINT `pre_assessments_application_id_foreign` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `pre_assessments_assessed_by_foreign` FOREIGN KEY (`assessed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `qs_evaluations`
