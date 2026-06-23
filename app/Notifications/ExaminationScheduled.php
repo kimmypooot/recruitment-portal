@@ -2,12 +2,16 @@
 
 namespace App\Notifications;
 
+<<<<<<< HEAD
 use App\Models\ExamSchedule;
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+<<<<<<< HEAD
 class ExaminationScheduled extends Notification implements ShouldQueue
 {
     use Queueable;
@@ -64,6 +68,50 @@ class ExaminationScheduled extends Notification implements ShouldQueue
             'scheduled_at' => $this->schedule->scheduled_at->toIso8601String(),
             'venue'        => $this->schedule->venue,
             'position'     => $this->positionTitle,
+=======
+class ExaminationScheduled extends Notification
+{
+    use Queueable;
+
+    /**
+     * Create a new notification instance.
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @return array<int, string>
+     */
+    public function via(object $notifiable): array
+    {
+        return ['mail'];
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail(object $notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->line('The introduction to the notification.')
+            ->action('Notification Action', url('/'))
+            ->line('Thank you for using our application!');
+    }
+
+    /**
+     * Get the array representation of the notification.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(object $notifiable): array
+    {
+        return [
+            //
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
         ];
     }
 }

@@ -19,8 +19,11 @@ use App\Http\Controllers\BeiRatingController;
 use App\Http\Controllers\DeliberationController;
 use App\Http\Controllers\CsFormController;
 use App\Http\Controllers\VacancyCompetencyController;
+<<<<<<< HEAD
 use App\Http\Controllers\CompetencyController;
 use App\Http\Controllers\PreAssessmentController;
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 
 // Public routes
 Route::get('/vacancies', [VacancyController::class, 'index']);
@@ -96,12 +99,15 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
     Route::get('/dashboard-stats', [DashboardController::class, 'adminStats']);
 
+<<<<<<< HEAD
     // Competency library management (admin)
     Route::get('/competencies', [CompetencyController::class, 'index']);
     Route::post('/competencies', [CompetencyController::class, 'store']);
     Route::put('/competencies/{competency}', [CompetencyController::class, 'update']);
     Route::delete('/competencies/{competency}', [CompetencyController::class, 'destroy']);
 
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     // Vacancy competency management (admin)
     Route::get('/competencies/vacancy/{vacancy}', [VacancyCompetencyController::class, 'byVacancy']);
     Route::post('/competencies/vacancy/{vacancy}/sync', [VacancyCompetencyController::class, 'sync']);
@@ -118,15 +124,19 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 // HRMPSB evaluation routes (members + secretariat + admin)
 Route::middleware(['auth:sanctum', 'role:hrmpsb-member,hrmpsb-secretariat,admin,hr-manager,appointing-authority'])->group(function () {
     Route::get('/hrmpsb/my-role', [HrmbsboardController::class, 'myRole']);
+<<<<<<< HEAD
     Route::get('/hrmpsb/pipeline-stages', [HrmbsboardController::class, 'pipelineStages']);
     Route::get('/hrmpsb/applications/{application}/profile', [HrmbsboardController::class, 'applicantProfile']);
     Route::get('/hrmpsb/applications/{application}/documents/{type}', [HrmbsboardController::class, 'serveDocument']);
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     // QS Evaluation
     Route::get('/qs-evaluations/{vacancy}', [QsEvaluationController::class, 'index']);
     Route::post('/qs-evaluations', [QsEvaluationController::class, 'store']);
     Route::put('/qs-evaluations/{qsEvaluation}', [QsEvaluationController::class, 'update']);
     Route::patch('/qs-evaluations/{vacancy}/lock', [QsEvaluationController::class, 'lock']);
 
+<<<<<<< HEAD
     // Exam Scheduler (TWE & CBWE)
     Route::get('/exam-schedules/{vacancy}', [ExaminationController::class, 'vacancySchedules']);
     Route::post('/exam-schedules', [ExaminationController::class, 'storeHrmpsb']);
@@ -143,6 +153,8 @@ Route::middleware(['auth:sanctum', 'role:hrmpsb-member,hrmpsb-secretariat,admin,
     Route::put('/bei-schedules/{interview}', [InterviewController::class, 'update']);
     Route::delete('/bei-schedules/{interview}', [InterviewController::class, 'destroy']);
 
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     // Exam Results
     Route::get('/exam-results/{vacancy}', [ExamResultController::class, 'index']);
     Route::post('/exam-results', [ExamResultController::class, 'store']);
@@ -153,10 +165,13 @@ Route::middleware(['auth:sanctum', 'role:hrmpsb-member,hrmpsb-secretariat,admin,
     Route::post('/bei-ratings', [BeiRatingController::class, 'store']);
     Route::patch('/bei-ratings/{vacancy}/lock', [BeiRatingController::class, 'lock']);
 
+<<<<<<< HEAD
     // Pre-Assessment Matrix
     Route::get('/pre-assessment/{vacancy}', [PreAssessmentController::class, 'index']);
     Route::post('/pre-assessment/{application}', [PreAssessmentController::class, 'upsert']);
 
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     // Deliberation
     Route::get('/deliberation/{vacancy}', [DeliberationController::class, 'index']);
     Route::patch('/deliberation/{vacancy}/unmask', [DeliberationController::class, 'unmask']);

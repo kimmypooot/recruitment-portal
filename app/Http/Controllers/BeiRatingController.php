@@ -6,14 +6,20 @@ use App\Models\Application;
 use App\Models\BeiRating;
 use App\Models\HrmbsboardComposition;
 use App\Models\Vacancy;
+<<<<<<< HEAD
 use App\Models\VacancyCompetency;
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 use App\Services\AuditLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BeiRatingController extends Controller
 {
+<<<<<<< HEAD
     use \App\Traits\FormatsApplicantName;
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     private function getComposition(int $userId): ?HrmbsboardComposition
     {
         return HrmbsboardComposition::where('user_id', $userId)
@@ -53,7 +59,11 @@ class BeiRatingController extends Controller
                     'id'       => $app->id,
                     'token'    => $token?->token ?? 'NO-TOKEN',
                     'unmasked' => $isUnmasked,
+<<<<<<< HEAD
                     'name'     => $isUnmasked ? $this->formatApplicantName($app->applicant) : null,
+=======
+                    'name'     => $isUnmasked ? trim($app->applicant?->first_name . ' ' . $app->applicant?->last_name) : null,
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
                 ];
 
                 if ($isSecretariat) {
@@ -75,6 +85,7 @@ class BeiRatingController extends Controller
                 return $base;
             });
 
+<<<<<<< HEAD
         $vacancyCompetencies = VacancyCompetency::where('vacancy_id', $vacancy->id)
             ->with('competency')
             ->get()
@@ -94,6 +105,11 @@ class BeiRatingController extends Controller
                 'place_of_assignment', 'status', 'published_at'
             ),
             'competencies'   => $vacancyCompetencies,
+=======
+        return response()->json([
+            'vacancy'        => $vacancy->only('id', 'position_title', 'status'),
+            'competencies'   => BeiRating::COMPETENCIES,
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
             'applications'   => $applications,
             'is_secretariat' => $isSecretariat,
         ]);
@@ -101,16 +117,27 @@ class BeiRatingController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+<<<<<<< HEAD
         $data = $request->validate([
             'application_id'      => 'required|exists:applications,id',
             'competency_scores'   => 'required|array',
             'competency_scores.*' => 'required|integer|min:1|max:5',
             'remarks'             => 'nullable|string|max:1000',
+=======
+        $competencyKeys = implode(',', array_keys(BeiRating::COMPETENCIES));
+
+        $data = $request->validate([
+            'application_id'    => 'required|exists:applications,id',
+            'competency_scores' => 'required|array',
+            'competency_scores.*' => 'required|integer|min:1|max:5',
+            'remarks'           => 'nullable|string|max:1000',
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
         ]);
 
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
 
+<<<<<<< HEAD
         // Ensure submitted keys match the vacancy's assigned competencies
         $validKeys = VacancyCompetency::where('vacancy_id', $application->vacancy_id)
             ->pluck('competency_key')
@@ -123,6 +150,8 @@ class BeiRatingController extends Controller
             ], 422);
         }
 
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
         $composition = $this->getComposition($user->id);
         if (!$composition && !in_array($user->role, ['admin', 'hr-manager'])) {
             return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);

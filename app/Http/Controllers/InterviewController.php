@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
 use App\Models\Application;
 use App\Models\ExamResult;
 use App\Models\HrmbsboardComposition;
 use App\Models\InterviewSchedule;
 use App\Models\Vacancy;
 use App\Notifications\InterviewScheduled;
+=======
+use App\Models\InterviewSchedule;
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class InterviewController extends Controller
 {
+<<<<<<< HEAD
     private const PASSING_THRESHOLD = 70.0;
 
     private function isSecretary(Request $request): bool
@@ -39,6 +44,8 @@ class InterviewController extends Controller
 
     // ── HR Officer CRUD ───────────────────────────────────────────────────
 
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     public function index(): JsonResponse
     {
         return response()->json(InterviewSchedule::with('application')->latest()->get());
@@ -82,6 +89,7 @@ class InterviewController extends Controller
 
         return response()->json(['message' => 'Deleted.']);
     }
+<<<<<<< HEAD
 
     // ── HRMPSB Secretariat BEI Scheduler ─────────────────────────────────
 
@@ -212,4 +220,6 @@ class InterviewController extends Controller
             'skipped'  => $skipped,
         ]);
     }
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 }

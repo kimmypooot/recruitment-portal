@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
 use App\Models\Application;
 use App\Models\ExamSchedule;
 use App\Models\HrmbsboardComposition;
 use App\Models\Vacancy;
 use App\Notifications\ExaminationScheduled;
+=======
+use App\Models\ExamSchedule;
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ExaminationController extends Controller
 {
+<<<<<<< HEAD
     private function isSecretary(Request $request): bool
     {
         $user = $request->user();
@@ -26,6 +31,8 @@ class ExaminationController extends Controller
 
     // ── HR Officer CRUD ───────────────────────────────────────────────────
 
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     public function index(): JsonResponse
     {
         return response()->json(ExamSchedule::with('application')->latest()->get());
@@ -35,7 +42,10 @@ class ExaminationController extends Controller
     {
         $data = $request->validate([
             'application_id' => 'required|exists:applications,id',
+<<<<<<< HEAD
             'exam_type'      => 'nullable|in:TWE,CBWE',
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
             'scheduled_at'   => 'required|date|after:now',
             'venue'          => 'required|string|max:255',
             'notes'          => 'nullable|string|max:1000',
@@ -70,6 +80,7 @@ class ExaminationController extends Controller
 
         return response()->json(['message' => 'Deleted.']);
     }
+<<<<<<< HEAD
 
     // ── HRMPSB Secretariat Scheduler ─────────────────────────────────────
 
@@ -196,4 +207,6 @@ class ExaminationController extends Controller
             'exam_type' => $data['exam_type'],
         ]);
     }
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 }

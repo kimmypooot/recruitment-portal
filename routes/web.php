@@ -36,7 +36,11 @@ Route::prefix('admin')->group(function () {
     Route::get('/hrmpsb',               fn () => Inertia::render('Admin/Hrmpsb'));
     Route::get('/reports',              fn () => Inertia::render('Admin/Reports'));
     Route::get('/compliance',           fn () => Inertia::render('Admin/Compliance'));
+<<<<<<< HEAD
     Route::get('/competencies', fn () => Inertia::render('Admin/Competencies'));
+=======
+    Route::get('/vacancy-competencies', fn () => Inertia::render('Admin/VacancyCompetencies'));
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 });
 
 // HRMPSB evaluation pages
@@ -46,8 +50,12 @@ Route::prefix('hrmpsb')->group(function () {
     Route::get('/qs-results/{vacancy}',     fn ($vacancy) => Inertia::render('Hrmpsb/QsResults', ['vacancyId' => (int) $vacancy]));
     Route::get('/exam-results/{vacancy}',   fn ($vacancy) => Inertia::render('Hrmpsb/ExamResults', ['vacancyId' => (int) $vacancy]));
     Route::get('/bei-rating/{vacancy}',     fn ($vacancy) => Inertia::render('Hrmpsb/BeiRating', ['vacancyId' => (int) $vacancy]));
+<<<<<<< HEAD
     Route::get('/deliberation/{vacancy}',   fn ($vacancy) => Inertia::render('Hrmpsb/Deliberation',   ['vacancyId' => (int) $vacancy]));
     Route::get('/pre-assessment/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/PreAssessment', ['vacancyId' => (int) $vacancy]));
     Route::get('/exam-schedule/{vacancy}',  fn ($vacancy) => Inertia::render('Hrmpsb/ExamScheduler', ['vacancyId' => (int) $vacancy]));
     Route::get('/bei-schedule/{vacancy}',   fn ($vacancy) => Inertia::render('Hrmpsb/BeiScheduler',  ['vacancyId' => (int) $vacancy]));
+=======
+    Route::get('/deliberation/{vacancy}',   fn ($vacancy) => Inertia::render('Hrmpsb/Deliberation', ['vacancyId' => (int) $vacancy]));
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 });

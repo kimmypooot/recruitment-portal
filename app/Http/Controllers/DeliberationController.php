@@ -16,7 +16,10 @@ use Illuminate\Http\Request;
 
 class DeliberationController extends Controller
 {
+<<<<<<< HEAD
     use \App\Traits\FormatsApplicantName;
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     public function index(Request $request, Vacancy $vacancy): JsonResponse
     {
         $user = $request->user();
@@ -64,7 +67,11 @@ class DeliberationController extends Controller
                     'id'          => $app->id,
                     'token'       => $token?->token,
                     'unmasked'    => $isUnmasked,
+<<<<<<< HEAD
                     'name'        => $isUnmasked ? $this->formatApplicantName($app->applicant) : null,
+=======
+                    'name'        => $isUnmasked ? trim($app->applicant?->first_name . ' ' . $app->applicant?->last_name) : null,
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
                     'status'      => $app->status,
                     'qs_result'   => $qsResult,
                     'exam_scores' => $exams,
@@ -78,10 +85,14 @@ class DeliberationController extends Controller
             });
 
         return response()->json([
+<<<<<<< HEAD
             'vacancy'      => $vacancy->only(
                 'id', 'position_title', 'item_number', 'salary_grade',
                 'place_of_assignment', 'status', 'published_at'
             ),
+=======
+            'vacancy'      => $vacancy->only('id', 'position_title', 'status'),
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
             'applications' => $applications,
             'can_unmask'   => in_array($user->role, ['admin', 'hr-manager', 'appointing-authority']),
         ]);

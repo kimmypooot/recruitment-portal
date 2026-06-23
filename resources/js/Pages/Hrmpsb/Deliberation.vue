@@ -1,4 +1,5 @@
 <template>
+<<<<<<< HEAD
   <HrmbsboardLayout title="Final Deliberation" :vacancyId="props.vacancyId">
     <div class="space-y-6">
 
@@ -12,6 +13,17 @@
 
       <!-- Actions row -->
       <div class="flex items-center justify-end">
+=======
+  <HrmbsboardLayout title="Final Deliberation">
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Final Deliberation</h1>
+          <p v-if="vacancy" class="text-sm text-gray-500 mt-1">{{ vacancy.position_title }}</p>
+        </div>
+
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
         <!-- Unmask button -->
         <button
           v-if="canUnmask && !allUnmasked"
@@ -139,7 +151,10 @@
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+<<<<<<< HEAD
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
+=======
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 import api from '@/services/api'
 
 const props = defineProps({ vacancyId: Number })

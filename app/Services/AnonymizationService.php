@@ -17,6 +17,7 @@ class AnonymizationService
             ->get();
 
         foreach ($applications as $application) {
+<<<<<<< HEAD
             $this->generateForApplication($application, $vacancy);
         }
     }
@@ -28,6 +29,17 @@ class AnonymizationService
         return AnonymizationToken::firstOrCreate(
             ['application_id' => $application->id],
             ['token' => $this->uniqueToken($resolvedVacancy)]
+=======
+            $this->generateForApplication($application);
+        }
+    }
+
+    public function generateForApplication(Application $application): AnonymizationToken
+    {
+        return AnonymizationToken::firstOrCreate(
+            ['application_id' => $application->id],
+            ['token' => $this->uniqueToken()]
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
         );
     }
 
@@ -49,6 +61,10 @@ class AnonymizationService
         $token = $application->anonymizationToken;
 
         if (!$token || $token->isUnmasked()) {
+<<<<<<< HEAD
+=======
+            // Identity revealed — return full profile data
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
             $profile = $application->applicant;
             return [
                 'token'       => $token?->token,
@@ -65,6 +81,7 @@ class AnonymizationService
         ];
     }
 
+<<<<<<< HEAD
     /**
      * Generate a blind code in the format: {POSITION_CODE}-{MM}-{YYYY}-{NNN}
      *
@@ -101,6 +118,13 @@ class AnonymizationService
             in_array($suffix, $usedInVacancy, true) ||
             AnonymizationToken::where('token', $token)->exists()
         );
+=======
+    private function uniqueToken(): string
+    {
+        do {
+            $token = 'CSC-' . strtoupper(Str::random(6));
+        } while (AnonymizationToken::where('token', $token)->exists());
+>>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 
         return $token;
     }
