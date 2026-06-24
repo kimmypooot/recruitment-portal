@@ -13,12 +13,7 @@
       "Bash(Select-String -Path \"C:\\\\xampp\\\\php\\\\php.ini\" -Pattern \"mbstring\")",
       "Bash(Select-Object LineNumber, Line)",
       "Bash(Head -10)",
-<<<<<<< HEAD
-      "Bash(npm run *)",
-      "Bash(xargs basename -a)"
-=======
       "Bash(npm run *)"
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     ]
   }
 }
