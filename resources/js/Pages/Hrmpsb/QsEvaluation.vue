@@ -1,5 +1,4 @@
 <template>
-<<<<<<< HEAD
   <HrmbsboardLayout :title="`QS Evaluation — ${vacancy?.position_title ?? '…'}`" :vacancyId="props.vacancyId">
 
     <!-- Vacancy Banner -->
@@ -10,9 +9,6 @@
       :loading="loading"
       class="mb-5"
     />
-=======
-  <HrmbsboardLayout :title="`QS Evaluation — ${vacancy?.position_title ?? '…'}`">
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 
     <!-- Lock banner -->
     <div v-if="qsLocked" class="mb-5 flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl px-4 py-3">
@@ -33,7 +29,6 @@
       </button>
     </div>
 
-<<<<<<< HEAD
     <!-- Position Requirements Panel -->
     <div v-if="vacancy" class="mb-5 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <button @click="reqExpanded = !reqExpanded"
@@ -72,8 +67,6 @@
     </div>
 
 
-=======
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     <div v-if="loading" class="space-y-3">
       <div v-for="n in 4" :key="n" class="h-24 bg-white rounded-xl border border-gray-200 animate-pulse"></div>
     </div>
@@ -84,7 +77,6 @@
 
         <!-- Applicant header -->
         <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-<<<<<<< HEAD
           <div class="flex items-center gap-3 min-w-0">
             <span class="font-semibold text-gray-900">
               {{ formatName(app.applicant) }}
@@ -253,97 +245,6 @@
             </div>
           </div>
 
-=======
-          <div>
-            <span class="font-semibold text-gray-900">{{ app.applicant?.first_name }} {{ app.applicant?.last_name }}</span>
-            <span class="ml-2 text-xs text-gray-400">{{ app.documents_count }} document(s) submitted</span>
-          </div>
-          <span :class="statusClass(app.status)" class="px-2 py-0.5 rounded-full text-xs font-medium capitalize">
-            {{ app.status.replace('_', ' ') }}
-          </span>
-        </div>
-
-        <!-- Secretariat: all evaluations -->
-        <div v-if="isSecretariat && app.evaluations?.length" class="px-5 py-4">
-          <table class="w-full text-xs">
-            <thead>
-              <tr class="text-gray-500 font-semibold uppercase tracking-wider border-b border-gray-100">
-                <th class="pb-2 text-left">Evaluator</th>
-                <th class="pb-2 text-center">Education</th>
-                <th class="pb-2 text-center">Experience</th>
-                <th class="pb-2 text-center">Training</th>
-                <th class="pb-2 text-center">Eligibility</th>
-                <th class="pb-2 text-center">Overall</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-              <tr v-for="ev in app.evaluations" :key="ev.id" class="text-gray-700">
-                <td class="py-2 font-medium">{{ ev.evaluator?.name }}</td>
-                <td class="py-2 text-center">{{ ev.education_meets ? '✓' : '✗' }}</td>
-                <td class="py-2 text-center">{{ ev.experience_meets ? '✓' : '✗' }}</td>
-                <td class="py-2 text-center">{{ ev.training_meets ? '✓' : '✗' }}</td>
-                <td class="py-2 text-center">{{ ev.eligibility_meets ? '✓' : '✗' }}</td>
-                <td class="py-2 text-center">
-                  <span :class="ev.overall_qualified ? 'text-green-600 font-semibold' : 'text-red-500 font-semibold'">
-                    {{ ev.overall_qualified ? 'Qualified' : 'Disqualified' }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="mt-2 text-xs text-gray-500">
-            {{ app.evaluation_summary?.qualified }} qualified / {{ app.evaluation_summary?.total }} evaluators
-          </div>
-        </div>
-
-        <!-- Member: own evaluation form -->
-        <div v-else class="px-5 py-4">
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-            <div v-for="criterion in criteria" :key="criterion.key" class="flex flex-col gap-1.5">
-              <span class="text-xs font-semibold text-gray-600">{{ criterion.label }}</span>
-              <div class="flex gap-3">
-                <label class="flex items-center gap-1.5 text-sm cursor-pointer"
-                  :class="{'opacity-50 pointer-events-none': qsLocked}">
-                  <input type="radio" :name="`${app.id}_${criterion.key}`"
-                    :value="true"
-                    v-model="getForm(app.id)[criterion.key]"
-                    class="text-green-600" />
-                  <span class="text-green-700">Meets</span>
-                </label>
-                <label class="flex items-center gap-1.5 text-sm cursor-pointer"
-                  :class="{'opacity-50 pointer-events-none': qsLocked}">
-                  <input type="radio" :name="`${app.id}_${criterion.key}`"
-                    :value="false"
-                    v-model="getForm(app.id)[criterion.key]"
-                    class="text-red-500" />
-                  <span class="text-red-600">Does Not Meet</span>
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="flex flex-col sm:flex-row gap-3 items-start">
-            <textarea
-              v-model="getForm(app.id).remarks"
-              placeholder="Remarks (optional)"
-              :disabled="qsLocked"
-              rows="2"
-              class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1a5276] focus:outline-none resize-none disabled:bg-gray-50 disabled:text-gray-400">
-            </textarea>
-            <button
-              v-if="!qsLocked"
-              @click="submitEvaluation(app)"
-              :disabled="saving[app.id] || !isFormComplete(app.id)"
-              class="px-4 py-2 text-sm bg-[#1a5276] hover:bg-[#154360] text-white font-semibold rounded-lg disabled:opacity-50 transition-colors whitespace-nowrap">
-              {{ saving[app.id] ? 'Saving…' : (app.my_evaluation ? 'Update' : 'Submit') }}
-            </button>
-          </div>
-          <div v-if="app.my_evaluation" class="mt-2 text-xs text-gray-400">
-            Last saved: {{ formatDate(app.my_evaluation.evaluated_at) }} ·
-            <span :class="app.my_evaluation.overall_qualified ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
-              {{ app.my_evaluation.overall_qualified ? 'Qualified' : 'Disqualified' }}
-            </span>
-          </div>
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
         </div>
       </div>
 
@@ -361,12 +262,9 @@
           This will permanently lock all QS evaluations and automatically update application statuses.
           This action <strong>cannot be undone</strong>.
         </p>
-<<<<<<< HEAD
         <p v-if="lockError" class="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
           {{ lockError }}
         </p>
-=======
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
         <div class="flex justify-end gap-3">
           <button @click="showLockConfirm = false"
             class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
@@ -378,31 +276,22 @@
       </div>
     </div>
 
-<<<<<<< HEAD
     <!-- Applicant Profile Drawer -->
     <ApplicantProfileDrawer
       v-model="drawerOpen"
       :application-id="drawerAppId"
       :display-code="drawerDisplayCode" />
 
-=======
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
   </HrmbsboardLayout>
 </template>
 
 <script setup>
-<<<<<<< HEAD
 import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import ApplicantProfileDrawer from '@/Components/Hrmpsb/ApplicantProfileDrawer.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import { formatName } from '@/utils/formatName'
-=======
-import { ref, reactive, onMounted } from 'vue'
-import axios from 'axios'
-import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 
 const props = defineProps({ vacancyId: Number })
 
@@ -414,7 +303,6 @@ const isSecretariat   = ref(false)
 const qsLocked        = ref(false)
 const saving          = reactive({})
 const showLockConfirm = ref(false)
-<<<<<<< HEAD
 const lockError       = ref(null)
 const forms           = reactive({})
 const reqExpanded     = ref(true)
@@ -484,17 +372,6 @@ const requirements = computed(() => {
   ]
 })
 
-=======
-const forms           = reactive({})
-
-const criteria = [
-  { key: 'education_meets',   label: 'Education' },
-  { key: 'experience_meets',  label: 'Experience' },
-  { key: 'training_meets',    label: 'Training' },
-  { key: 'eligibility_meets', label: 'Eligibility' },
-]
-
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 function authHeaders() {
   const token = localStorage.getItem('auth_token')
   return token ? { Authorization: `Bearer ${token}` } : {}
@@ -502,7 +379,6 @@ function authHeaders() {
 
 function getForm(appId) {
   if (!forms[appId]) {
-<<<<<<< HEAD
     forms[appId] = {
       education_meets:   null,
       experience_meets:  null,
@@ -510,14 +386,10 @@ function getForm(appId) {
       eligibility_meets: null,
       remarks:           '',
     }
-=======
-    forms[appId] = { education_meets: null, experience_meets: null, training_meets: null, eligibility_meets: null, remarks: '' }
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
   }
   return forms[appId]
 }
 
-<<<<<<< HEAD
 function remarksRequired(appId) {
   const f = forms[appId]
   if (!f) return false
@@ -537,24 +409,13 @@ function isFormValid(appId) {
   if (!allAnswered) return false
   if (remarksRequired(appId) && !f.remarks?.trim()) return false
   return true
-=======
-function isFormComplete(appId) {
-  const f = forms[appId]
-  return f && f.education_meets !== null && f.experience_meets !== null && f.training_meets !== null && f.eligibility_meets !== null
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 }
 
 function statusClass(status) {
   const map = {
-<<<<<<< HEAD
     qualified:    'bg-green-50 text-green-700',
     disqualified: 'bg-red-50 text-red-600',
     submitted:    'bg-gray-100 text-gray-600',
-=======
-    qualified: 'bg-green-50 text-green-700',
-    disqualified: 'bg-red-50 text-red-600',
-    submitted: 'bg-gray-100 text-gray-600',
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     under_review: 'bg-yellow-50 text-yellow-700',
   }
   return map[status] ?? 'bg-gray-100 text-gray-600'
@@ -565,15 +426,12 @@ function formatDate(str) {
   return new Date(str).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-<<<<<<< HEAD
 function openProfile(app) {
   drawerAppId.value       = app.id
   drawerDisplayCode.value = app.display_code ?? ''
   drawerOpen.value        = true
 }
 
-=======
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 async function loadData() {
   loading.value = true
   try {
@@ -583,10 +441,6 @@ async function loadData() {
     isSecretariat.value = data.is_secretariat
     qsLocked.value      = data.qs_locked
 
-<<<<<<< HEAD
-=======
-    // Pre-fill forms from existing evaluations
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     data.applications.forEach(app => {
       if (app.my_evaluation) {
         forms[app.id] = {
@@ -619,7 +473,6 @@ async function submitEvaluation(app) {
   }
 }
 
-<<<<<<< HEAD
 function confirmLock() {
   lockError.value = null
   showLockConfirm.value = true
@@ -628,21 +481,12 @@ function confirmLock() {
 async function doLock() {
   locking.value  = true
   lockError.value = null
-=======
-function confirmLock() { showLockConfirm.value = true }
-
-async function doLock() {
-  locking.value = true
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
   try {
     await axios.patch(`/api/qs-evaluations/${props.vacancyId}/lock`, {}, { headers: authHeaders() })
     showLockConfirm.value = false
     loadData()
-<<<<<<< HEAD
   } catch (e) {
     lockError.value = e.response?.data?.message ?? 'Failed to lock QS evaluations. Please try again.'
-=======
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
   } finally {
     locking.value = false
   }

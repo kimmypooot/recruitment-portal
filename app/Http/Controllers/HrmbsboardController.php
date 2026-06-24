@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-<<<<<<< HEAD
 use App\Models\Application;
 use App\Models\BeiRating;
 use App\Models\DeliberationResult;
@@ -17,21 +16,11 @@ use App\Services\AuditLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-=======
-use App\Models\HrmbsboardComposition;
-use App\Models\User;
-use App\Services\AuditLog;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 use Illuminate\Validation\Rule;
 
 class HrmbsboardController extends Controller
 {
-<<<<<<< HEAD
     use \App\Traits\FormatsApplicantName;
-=======
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     public function compositions(): JsonResponse
     {
         $compositions = HrmbsboardComposition::with(['user:id,name,email,role', 'assignedBy:id,name'])
@@ -121,7 +110,6 @@ class HrmbsboardController extends Controller
             'user'        => $request->user()->only('id', 'name', 'email', 'role'),
         ]);
     }
-<<<<<<< HEAD
 
     /**
      * Pipeline stage progress for one or more vacancies.
@@ -264,6 +252,4 @@ class HrmbsboardController extends Controller
 
         return Storage::disk('public')->response($path);
     }
-=======
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
 }

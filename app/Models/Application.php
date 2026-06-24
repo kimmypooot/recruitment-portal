@@ -97,14 +97,11 @@ class Application extends Model
         return $this->hasOne(SubmissionTracking::class);
     }
 
-<<<<<<< HEAD
     public function preAssessment(): HasOne
     {
         return $this->hasOne(PreAssessment::class);
     }
 
-=======
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     // ── Query Scopes (reusable filters) ───────────────────────────────────
 
     // Application::status('submitted')->get()

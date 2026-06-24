@@ -42,7 +42,6 @@ class QsEvaluationController extends Controller
         $isSecretariat = $this->isSecretariat($user->id)
             || in_array($user->role, ['admin', 'hr-manager']);
 
-<<<<<<< HEAD
         // Resolve the active secretariat user so members can reference their evaluation
         $secretariatComp = HrmbsboardComposition::where('hrmpsb_role', 'secretariat')
             ->where('is_active', true)
@@ -76,37 +75,14 @@ class QsEvaluationController extends Controller
 
             if ($isSecretariat) {
                 // Secretariat additionally sees all member evaluations consolidated
-=======
-        $applications = Application::where('vacancy_id', $vacancy->id)
-            ->with(['applicant:id,first_name,last_name'])
-            ->withCount('documents')
-            ->get();
-
-        // Attach evaluations to each application
-        $applications->each(function ($app) use ($user, $isSecretariat) {
-            if ($isSecretariat) {
-                // Secretariat sees all evaluations for each application
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
                 $app->evaluations = QsEvaluation::where('application_id', $app->id)
                     ->with('evaluator:id,name')
                     ->get();
                 $app->evaluation_summary = [
-<<<<<<< HEAD
                     'total'        => $app->evaluations->count(),
                     'qualified'    => $app->evaluations->where('overall_qualified', true)->count(),
                     'disqualified' => $app->evaluations->where('overall_qualified', false)->count(),
                 ];
-=======
-                    'total'     => $app->evaluations->count(),
-                    'qualified' => $app->evaluations->where('overall_qualified', true)->count(),
-                    'disqualified' => $app->evaluations->where('overall_qualified', false)->count(),
-                ];
-            } else {
-                // Members see only their own evaluation
-                $app->my_evaluation = QsEvaluation::where('application_id', $app->id)
-                    ->where('evaluator_id', $user->id)
-                    ->first();
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
             }
         });
 
@@ -116,7 +92,6 @@ class QsEvaluationController extends Controller
         )->whereNotNull('locked_at')->exists();
 
         return response()->json([
-<<<<<<< HEAD
             'vacancy'        => array_merge(
                 $vacancy->only(
                     'id', 'position_title', 'item_number', 'salary_grade',
@@ -129,9 +104,6 @@ class QsEvaluationController extends Controller
                     'eligibility_req' => $vacancy->eligibility_req,
                 ]
             ),
-=======
-            'vacancy'        => $vacancy->only('id', 'position_title', 'status', 'deadline_at'),
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
             'applications'   => $applications,
             'is_secretariat' => $isSecretariat,
             'qs_locked'      => $qsLocked,
@@ -157,7 +129,6 @@ class QsEvaluationController extends Controller
             return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
         }
 
-<<<<<<< HEAD
         // Members may only evaluate after the Secretariat has submitted their assessment first
         $isSubmitterSecretariat = $this->isSecretariat($user->id)
             || in_array($user->role, ['admin', 'hr-manager']);
@@ -180,8 +151,6 @@ class QsEvaluationController extends Controller
             }
         }
 
-=======
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
         // Prevent re-evaluation if already locked
         $existing = QsEvaluation::where('application_id', $data['application_id'])
             ->where('evaluator_id', $user->id)

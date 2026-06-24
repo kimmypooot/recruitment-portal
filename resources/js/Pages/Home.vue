@@ -352,11 +352,8 @@ onMounted(() => {
     const role = user?.role ?? ''
     if (role === 'applicant') {
       router.visit('/applicant/dashboard')
-<<<<<<< HEAD
     } else if (['hrmpsb-member', 'hrmpsb-secretariat', 'appointing-authority'].includes(role)) {
       router.visit('/hrmpsb/dashboard')
-=======
->>>>>>> 2ca05292dd7597909b0369c045956779aa52bb03
     } else if (role) {
       router.visit('/admin/dashboard')
     }
