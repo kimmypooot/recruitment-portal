@@ -15,7 +15,7 @@
           </svg>
         </div>
         <p class="text-red-600 text-sm max-w-md">{{ errorMessage }}</p>
-        <a href="/login" class="inline-block text-sm text-[#2a338f] hover:underline font-medium">Back to Sign In</a>
+        <a :href="`${appUrl}/login`" class="inline-block text-sm text-[#2a338f] hover:underline font-medium">Back to Sign In</a>
       </div>
       <div v-else-if="status === 'link_success'" class="space-y-3">
         <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100">
@@ -31,22 +31,24 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { router } from '@inertiajs/vue3'
+import api from '@/services/api'
+
+const appUrl = document.querySelector('meta[name="app-url"]')?.getAttribute('content') ?? ''
 
 const status = ref('processing')
 const statusText = ref('Processing…')
 const errorMessage = ref('')
 
 const errorMap = {
-  email_exists:       'This email is already registered. Please sign in with your password, then link Google in your Profile settings.',
-  auth_failed:        'Google authentication failed. Please try again.',
+  email_exists:        'This email is already registered. Please sign in with your password, then link Google in your Profile settings.',
+  auth_failed:         'Google authentication failed. Please try again.',
   link_user_not_found: 'User not found. Please sign in and try again.',
   link_already_taken:  'This Google account is already linked to another user.',
   link_failed:         'Failed to link your Google account. Please try again.',
   already_linked:      'Your account is already linked to a Google account.',
 }
 
-onMounted(() => {
+onMounted(async () => {
   const params = new URLSearchParams(window.location.search)
   const token = params.get('token')
   const userData = params.get('user')
@@ -69,14 +71,28 @@ onMounted(() => {
   if (linkSuccess) {
     status.value = 'link_success'
     statusText.value = 'Google account linked!'
-    setTimeout(() => router.visit('/applicant/complete-profile'), 1500)
+    setTimeout(() => { window.location.href = `${appUrl}/applicant/complete-profile` }, 1500)
     return
   }
 
   if (token) {
     localStorage.setItem('auth_token', token)
     statusText.value = 'Signing you in…'
-    router.visit('/applicant/dashboard')
+    const user = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+    if (user.role === 'applicant') {
+      try {
+        const { data } = await api.get('/profile', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        window.location.href = data.is_complete
+          ? `${appUrl}/applicant/dashboard`
+          : `${appUrl}/applicant/complete-profile`
+      } catch {
+        window.location.href = `${appUrl}/applicant/dashboard`
+      }
+    } else {
+      window.location.href = `${appUrl}/applicant/dashboard`
+    }
     return
   }
 

@@ -21,6 +21,7 @@ use App\Http\Controllers\CsFormController;
 use App\Http\Controllers\VacancyCompetencyController;
 use App\Http\Controllers\CompetencyController;
 use App\Http\Controllers\PreAssessmentController;
+use App\Http\Controllers\NotificationController;
 
 // Public routes
 Route::get('/vacancies', [VacancyController::class, 'index']);
@@ -72,6 +73,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/profile/trainings', [ProfileController::class, 'storeTraining']);
     Route::put('/profile/trainings/{id}', [ProfileController::class, 'updateTraining']);
     Route::delete('/profile/trainings/{id}', [ProfileController::class, 'deleteTraining']);
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
 });
 
 // HR Officer routes

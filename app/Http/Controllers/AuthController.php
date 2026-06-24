@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PrivacyConsent;
 use App\Models\User;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -81,23 +82,28 @@ class AuthController extends Controller
 
     public function googleRedirect(): RedirectResponse
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')->stateless()->redirect();
     }
 
     public function googleCallback(Request $request): RedirectResponse
     {
         try {
-            // 1. Try linking flow first (initiated by an authenticated user from profile)
+            // 1. Try linking flow first (initiated by an authenticated user from profile).
+            // The link flow passes a custom encrypted state; the login flow (stateless) sends none.
             $state = $request->input('state');
             if ($state) {
-                $linkData = json_decode(decrypt($state), true);
-                if (
-                    $linkData &&
-                    ($linkData['action'] ?? null) === 'link' &&
-                    ($linkData['user_id'] ?? null) &&
-                    ($linkData['expires'] ?? 0) > now()->timestamp
-                ) {
-                    return $this->handleGoogleLink($linkData['user_id']);
+                try {
+                    $linkData = json_decode(decrypt($state), true);
+                    if (
+                        $linkData &&
+                        ($linkData['action'] ?? null) === 'link' &&
+                        ($linkData['user_id'] ?? null) &&
+                        ($linkData['expires'] ?? 0) > now()->timestamp
+                    ) {
+                        return $this->handleGoogleLink($linkData['user_id']);
+                    }
+                } catch (DecryptException $e) {
+                    // Unrecognised state — fall through to login flow
                 }
             }
 
@@ -107,7 +113,11 @@ class AuthController extends Controller
             // 3. Check if google_id already exists
             $existing = User::where('google_id', $googleUser->getId())->first();
             if ($existing) {
-                return $this->redirectWithToken($existing);
+                $existing->update([
+                    'google_avatar' => $googleUser->getAvatar(),
+                    'name' => $googleUser->getName(),
+                ]);
+                return $this->redirectWithToken($existing->fresh());
             }
 
             // 4. Check if email conflicts with an existing password account
@@ -184,6 +194,8 @@ class AuthController extends Controller
                 'google_id'     => $googleUser->getId(),
                 'google_avatar' => $googleUser->getAvatar(),
             ]);
+
+            $user = $user->fresh();
 
             $userData = base64_encode(json_encode(
                 $user->only(['id', 'name', 'email', 'role', 'google_id', 'google_avatar'])

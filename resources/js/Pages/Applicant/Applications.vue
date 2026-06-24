@@ -141,7 +141,7 @@
           </div>
 
           <!-- Interview schedule banner -->
-          <div v-if="app.status === 'for_interview' && app.interview_schedule?.length"
+          <div v-if="(app.status === 'for_interview' || app.status === 'interviewed') && app.interview_schedule?.length"
             class="mx-5 mb-4 px-4 py-3 bg-violet-50 border border-violet-200 rounded-lg flex items-start gap-2.5">
             <svg class="w-4 h-4 text-violet-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -165,14 +165,14 @@
                       isPipelinePast(step.key, app.status) || app.status === step.key ? 'bg-[#2a338f]' : 'bg-gray-200'">
                   </div>
                   <div :class="[
-                    'rounded-full transition-all flex-shrink-0',
+                    'rounded-full transition-all flex-shrink-0 w-2.5 h-2.5',
                     app.status === step.key
-                      ? 'w-3 h-3 bg-[#2a338f] ring-2 ring-[#2a338f]/30 ring-offset-1'
+                      ? 'bg-[#2a338f] ring-2 ring-[#2a338f]/30 ring-offset-1'
                       : isPipelinePast(step.key, app.status)
-                        ? 'w-2.5 h-2.5 bg-[#2a338f]'
+                        ? 'bg-[#2a338f]'
                         : isTerminal(app.status)
-                          ? 'w-2.5 h-2.5 bg-gray-100'
-                          : 'w-2.5 h-2.5 bg-gray-200'
+                          ? 'bg-gray-100'
+                          : 'bg-gray-200'
                   ]"></div>
                   <div class="flex-1 h-0.5 transition-colors"
                     :class="idx === pipeline.length - 1 ? 'invisible' :
@@ -267,7 +267,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import { applicationApi } from '@/services/api'
@@ -280,6 +280,7 @@ const loading       = ref(true)
 const activeStatus  = ref('all')
 const withdrawTarget = ref(null)
 const withdrawing    = ref(false)
+let refreshInterval  = null
 
 watch(activeStatus, () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -291,25 +292,43 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
-onMounted(async () => {
-  if (!localStorage.getItem('auth_token')) { router.visit('/login'); return }
+async function fetchApplications() {
+  if (!localStorage.getItem('auth_token')) return
   try {
     const { data } = await applicationApi.myApplications()
     applications.value = data
   } catch { /* 401 handled by interceptor */ }
-  finally { loading.value = false }
+}
+
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible') fetchApplications()
+}
+
+onMounted(async () => {
+  if (!localStorage.getItem('auth_token')) { router.visit('/login'); return }
+  await fetchApplications()
+  loading.value = false
+  refreshInterval = setInterval(fetchApplications, 30000)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+})
+
+onBeforeUnmount(() => {
+  clearInterval(refreshInterval)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
 })
 
 // ── Pipeline definition (ordered) ────────────────────────────────────────────
 const pipeline = [
-  { key: 'submitted',      label: 'Submitted',   short: 'Submit' },
-  { key: 'under_review',   label: 'Review',      short: 'Review' },
-  { key: 'screened',       label: 'Screened',    short: 'Screen' },
-  { key: 'qualified',      label: 'Qualified',   short: 'Qualify' },
-  { key: 'shortlisted',    label: 'Shortlisted', short: 'List' },
-  { key: 'for_interview',  label: 'Interview',   short: 'Intv.' },
-  { key: 'recommended',    label: 'Recommended', short: 'Rec.' },
-  { key: 'appointed',      label: 'Appointed',   short: 'Appoint' },
+  { key: 'submitted',      label: 'Submitted',     short: 'Submit' },
+  { key: 'under_review',   label: 'Review',        short: 'Review' },
+  { key: 'screened',       label: 'Screened',      short: 'Screen' },
+  { key: 'qualified',      label: 'Qualified',     short: 'Qualify' },
+  { key: 'exam_scheduled', label: 'Exam',          short: 'Exam' },
+  { key: 'shortlisted',    label: 'Shortlisted',   short: 'List' },
+  { key: 'for_interview',  label: 'Interview',     short: 'Intv.' },
+  { key: 'interviewed',    label: 'Interviewed',   short: 'Done' },
+  { key: 'recommended',    label: 'Recommended',   short: 'Rec.' },
+  { key: 'appointed',      label: 'Appointed',     short: 'Appoint' },
 ]
 
 const pipelineOrder = pipeline.map(s => s.key)
@@ -341,7 +360,7 @@ const statusTabs = computed(() => {
   return [
     { value: 'all',         label: 'All',          count: list.length },
     { value: 'in_progress', label: 'In Progress',   count: count(['submitted', 'under_review', 'screened', 'qualified']) },
-    { value: 'selection',   label: 'Selection',     count: count(['exam_scheduled', 'shortlisted', 'for_interview', 'recommended']) },
+    { value: 'selection',   label: 'Selection',     count: count(['exam_scheduled', 'shortlisted', 'for_interview', 'interviewed', 'recommended']) },
     { value: 'appointed',   label: 'Appointed',     count: count('appointed') },
     { value: 'disqualified', label: 'Disqualified', count: count(['disqualified', 'failed']) },
     { value: 'withdrawn',   label: 'Withdrawn',     count: count('withdrawn') },
@@ -353,7 +372,7 @@ const filteredApplications = computed(() => {
   const groupMap = {
     all:          null,
     in_progress:  ['submitted', 'under_review', 'screened', 'qualified'],
-    selection:    ['exam_scheduled', 'shortlisted', 'for_interview', 'recommended'],
+    selection:    ['exam_scheduled', 'shortlisted', 'for_interview', 'interviewed', 'recommended'],
     appointed:    ['appointed', 'completed'],
     disqualified: ['disqualified', 'failed'],
     withdrawn:    ['withdrawn'],
@@ -372,6 +391,7 @@ const statusLabels = {
   exam_scheduled: 'Exam Scheduled',
   shortlisted:    'Shortlisted',
   for_interview:  'For Interview',
+  interviewed:    'Interviewed',
   recommended:    'Recommended',
   appointed:      'Appointed',
   completed:      'Completed',
@@ -393,6 +413,7 @@ function statusIcon(status) {
     exam_scheduled: { bg: 'bg-orange-50',       color: 'text-orange-500',   path: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
     shortlisted:    { bg: 'bg-indigo-50',       color: 'text-indigo-500',   path: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
     for_interview:  { bg: 'bg-violet-50',       color: 'text-violet-500',   path: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
+    interviewed:    { bg: 'bg-green-50',        color: 'text-green-500',    path: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
     recommended:    { bg: 'bg-lime-50',         color: 'text-lime-600',     path: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z' },
     appointed:      { bg: 'bg-[#2a338f]/10',    color: 'text-[#2a338f]',    path: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z' },
     completed:      { bg: 'bg-green-50',        color: 'text-green-500',    path: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },

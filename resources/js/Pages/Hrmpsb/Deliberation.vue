@@ -91,7 +91,7 @@
                   <select
                     v-if="canDecide"
                     v-model="decisions[app.id].action"
-                    class="text-xs border border-gray-300 rounded px-2 py-1"
+                    class="text-xs border border-gray-300 rounded px-2 pr-7 py-1"
                   >
                     <option value="">—</option>
                     <option value="endorsed">Endorsed</option>

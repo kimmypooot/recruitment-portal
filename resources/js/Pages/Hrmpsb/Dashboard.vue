@@ -1,9 +1,9 @@
 <template>
   <HrmbsboardLayout title="Dashboard">
-    <div class="max-w-5xl mx-auto">
+    <div class="space-y-6">
 
       <!-- Board role banner -->
-      <div v-if="myRole" class="mb-6 bg-[#1a5276]/5 border border-[#1a5276]/20 rounded-xl p-5 flex items-center gap-4">
+      <div v-if="myRole" class="bg-[#1a5276]/5 border border-[#1a5276]/20 rounded-xl p-5 flex items-center gap-4">
         <div class="w-12 h-12 rounded-full bg-[#1a5276] flex items-center justify-center text-white font-bold text-base flex-shrink-0">
           {{ initials }}
         </div>
@@ -24,7 +24,7 @@
 
       <!-- No board role notice -->
       <div v-else-if="!loading"
-        class="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-3">
+        class="bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-3">
         <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
         </svg>

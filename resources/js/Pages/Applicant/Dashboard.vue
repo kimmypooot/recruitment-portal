@@ -100,12 +100,12 @@
                 class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" />
             </div>
             <select v-model="vacancyFilters.salary_grade" @change="fetchDashboardVacancies"
-              class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
+              class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
               <option value="">All Salary Grades</option>
               <option v-for="sg in salaryGrades" :key="sg" :value="sg">SG-{{ sg }}</option>
             </select>
             <select v-model="vacancyFilters.sort" @change="fetchDashboardVacancies"
-              class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
+              class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
               <option value="deadline_asc">Deadline: Soonest First</option>
               <option value="deadline_desc">Deadline: Latest First</option>
               <option value="sg_desc">Salary Grade: Highest</option>
@@ -142,7 +142,7 @@
         </div>
 
         <div v-else-if="dashboardVacancies.length" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <VacancyCard v-for="v in dashboardVacancies" :key="v.id" :vacancy="v" :authenticated="true" :show-detail-first="true" />
+          <VacancyCard v-for="v in dashboardVacancies" :key="v.id" :vacancy="v" :authenticated="true" :show-detail-first="true" :applied-ids="appliedVacancyIds" />
         </div>
 
         <div v-else class="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center py-20 text-center">
@@ -300,6 +300,8 @@ const statCards = computed(() => [
     iconBg: 'bg-green-50', iconColor: 'text-green-600',
   },
 ])
+
+const appliedVacancyIds = computed(() => applications.value.map(a => a.vacancy_id))
 
 const profileSteps = computed(() => {
   const p = profile.value

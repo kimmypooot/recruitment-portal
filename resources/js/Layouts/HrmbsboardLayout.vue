@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gray-100 lg:pl-64">
+  <div class="min-h-screen bg-gray-100 transition-all duration-500" :class="sidebarCollapsed ? '' : 'lg:pl-64'">
 
     <!-- Sidebar — always fixed (never scrolls with content) -->
     <aside
-      :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-      class="fixed inset-y-0 left-0 z-50 w-64 text-white flex flex-col transition-transform duration-200 lg:translate-x-0"
+      :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0']"
+      class="fixed inset-y-0 left-0 z-50 w-64 text-white flex flex-col transition-transform duration-200"
       style="background-color: #1a5276;">
 
       <!-- Logo -->
@@ -47,6 +47,13 @@
 
       <!-- Footer -->
       <div class="px-3 py-4 border-t border-white/10">
+        <button v-if="canSwitchToAdmin" @click="showWorkspaceSwitch = true" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors mb-1">
+          <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Switch to Admin
+        </button>
         <button @click="logout" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors">
           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
@@ -68,7 +75,7 @@
       <!-- Top bar — sticky so it stays visible while scrolling -->
       <header class="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 sm:px-6 h-16 flex items-center justify-between flex-shrink-0">
         <div class="flex items-center gap-3">
-          <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100">
+          <button @click="toggleSidebar" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
@@ -106,21 +113,7 @@
             leave-from-class="opacity-100 scale-100"
             leave-to-class="opacity-0 scale-95">
             <div v-if="dropdownOpen"
-              class="absolute right-0 mt-1 w-56 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
-              <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-                <div class="relative w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden"
-                  style="background-color: #1a5276;">
-                  <span>{{ userInitial }}</span>
-                  <img :src="`/profile/photo?token=${authToken}`"
-                    class="absolute inset-0 w-full h-full object-cover"
-                    @error="e => e.target.style.display = 'none'"
-                    alt="" />
-                </div>
-                <div class="min-w-0">
-                  <p class="text-sm font-semibold text-gray-900 truncate">{{ userName }}</p>
-                  <p class="text-xs text-gray-400 truncate">{{ userEmail }}</p>
-                </div>
-              </div>
+              class="absolute right-0 mt-1 w-40 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
               <div class="py-1">
                 <button @click="logout"
                   class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
@@ -135,10 +128,13 @@
         </div>
       </header>
 
-      <main class="flex-1">
+      <main class="flex-1 p-6 pb-14">
         <slot />
       </main>
+
     </div>
+
+    <AppFooter :sidebar-collapsed="sidebarCollapsed" />
 
     <!-- Logout confirmation modal -->
     <Teleport to="body">
@@ -166,29 +162,46 @@
       </div>
     </Teleport>
 
+    <WorkspaceSwitcher :show="showWorkspaceSwitch" target="admin" />
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
+import AppFooter from '@/Components/UI/AppFooter.vue'
+import WorkspaceSwitcher from '@/Components/UI/WorkspaceSwitcher.vue'
 
 const props2 = defineProps({
   title:     { type: String, default: 'HRMPSB' },
   vacancyId: { type: Number, default: null },
 })
 
-const sidebarOpen    = ref(false)
-const dropdownOpen   = ref(false)
-const dropdownRef    = ref(null)
-const showLogoutModal = ref(false)
-const page           = usePage()
+const sidebarOpen       = ref(false)
+const sidebarCollapsed  = ref(false)
+const dropdownOpen      = ref(false)
+const dropdownRef       = ref(null)
+const showLogoutModal   = ref(false)
+const showWorkspaceSwitch = ref(false)
+const page              = usePage()
 const authToken      = ref('')
 const authUser       = ref({})
 
 const userName    = computed(() => authUser.value?.name ?? 'HRMPSB Member')
 const userEmail   = computed(() => authUser.value?.email ?? '')
 const userInitial = computed(() => (authUser.value?.name ?? 'H')[0].toUpperCase())
+const canSwitchToAdmin = computed(() =>
+  ['admin', 'hr-manager', 'hrmpsb-secretariat'].includes(authUser.value?.role)
+)
+
+function toggleSidebar() {
+  if (window.innerWidth >= 1024) {
+    sidebarCollapsed.value = !sidebarCollapsed.value
+  } else {
+    sidebarOpen.value = !sidebarOpen.value
+  }
+}
 
 function handleClickOutside(e) {
   if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
@@ -294,6 +307,7 @@ function isActive(href) {
 }
 
 function logout() {
+  dropdownOpen.value = false
   showLogoutModal.value = true
 }
 

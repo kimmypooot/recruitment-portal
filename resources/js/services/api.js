@@ -1,8 +1,10 @@
 // resources/js/services/api.js
 import axios from 'axios';
 
+const appUrl = document.querySelector('meta[name="app-url"]')?.getAttribute('content') ?? ''
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${appUrl}/api`,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -25,7 +27,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_user');
-      window.location.href = '/login';
+      window.location.href = `${appUrl}/login`;
     }
     if (error.response?.status === 403) {
       console.error('Forbidden — insufficient permissions');

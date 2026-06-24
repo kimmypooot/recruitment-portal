@@ -119,9 +119,9 @@
       <QualificationsTab
         v-show="activeTab === 'qualifications'"
         :personal="personal"
-        :experiences="experiences"
-        :education-records="education"
-        :trainings="trainings"
+        :experiences="sortedExperiences"
+        :education-records="sortedEducation"
+        :trainings="sortedTrainings"
         @add-experience="openExpModal()"
         @edit-experience="openExpModal($event)"
         @delete-experience="deleteExperience($event)"
@@ -567,6 +567,30 @@ const photoRequirements = [
 const experiences = ref([])
 const education   = ref([])
 const trainings   = ref([])
+
+const sortedExperiences = computed(() =>
+  [...experiences.value].sort((a, b) => {
+    const aDate = a.is_present ? '9999-99-99' : (a.date_from || '')
+    const bDate = b.is_present ? '9999-99-99' : (b.date_from || '')
+    return bDate.localeCompare(aDate)
+  })
+)
+
+const sortedEducation = computed(() =>
+  [...education.value].sort((a, b) => {
+    const aYear = a.year_graduated || a.period_to || a.period_from || ''
+    const bYear = b.year_graduated || b.period_to || b.period_from || ''
+    return bYear.localeCompare(aYear)
+  })
+)
+
+const sortedTrainings = computed(() =>
+  [...trainings.value].sort((a, b) => {
+    const aDate = a.date_from || ''
+    const bDate = b.date_from || ''
+    return bDate.localeCompare(aDate)
+  })
+)
 
 const docFiles = reactive({})
 const docPaths = reactive({})

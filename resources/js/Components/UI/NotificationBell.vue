@@ -34,20 +34,20 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import api from '@/services/api';
 
 const isOpen       = ref(false);
 const notifications = ref([]);
 const unreadCount  = ref(0);
 
 async function fetchNotifications() {
-  const { data } = await axios.get('/api/notifications');
+  const { data } = await api.get('/notifications');
   notifications.value = data.notifications;
   unreadCount.value   = data.unread_count;
 }
 
 async function markAllRead() {
-  await axios.post('/api/notifications/mark-all-read');
+  await api.post('/notifications/mark-all-read');
   notifications.value.forEach(n => n.read_at = new Date().toISOString());
   unreadCount.value = 0;
 }

@@ -1,5 +1,6 @@
 <template>
   <HrmbsboardLayout :title="`QS Evaluation — ${vacancy?.position_title ?? '…'}`" :vacancyId="props.vacancyId">
+    <div class="space-y-6">
 
     <!-- Vacancy Banner -->
     <VacancyBanner
@@ -7,11 +8,10 @@
       :stage="1"
       stageLabel="Qualification Standards (QS) Screening"
       :loading="loading"
-      class="mb-5"
     />
 
     <!-- Lock banner -->
-    <div v-if="qsLocked" class="mb-5 flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl px-4 py-3">
+    <div v-if="qsLocked" class="flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl px-4 py-3">
       <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
       </svg>
@@ -19,7 +19,7 @@
     </div>
 
     <!-- Secretariat lock action -->
-    <div v-if="isSecretariat && !qsLocked" class="mb-5 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+    <div v-if="isSecretariat && !qsLocked" class="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
       <div class="text-sm text-blue-800">
         <span class="font-semibold">Secretariat view:</span> You can see all evaluators' inputs. Lock when all evaluations are complete.
       </div>
@@ -30,7 +30,7 @@
     </div>
 
     <!-- Position Requirements Panel -->
-    <div v-if="vacancy" class="mb-5 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div v-if="vacancy" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <button @click="reqExpanded = !reqExpanded"
         class="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-gray-50 transition-colors">
         <div class="flex items-center gap-2.5">
@@ -282,6 +282,7 @@
       :application-id="drawerAppId"
       :display-code="drawerDisplayCode" />
 
+    </div>
   </HrmbsboardLayout>
 </template>
 

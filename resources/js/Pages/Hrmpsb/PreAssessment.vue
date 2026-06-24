@@ -1,8 +1,9 @@
 <template>
   <HrmbsboardLayout title="Pre-Assessment Matrix">
+    <div class="space-y-6">
 
     <!-- ── Back + Vacancy header ─────────────────────────────────────────────── -->
-    <div class="mb-5">
+    <div>
       <button @click="goBack"
         class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-3">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -298,7 +299,7 @@
                 <select :value="getDraft(row.id).requirements_complete"
                   :disabled="!isSecretary"
                   @change="e => setDraft(row.id, 'requirements_complete', e.target.value === '' ? null : e.target.value === 'true')"
-                  class="text-xs border border-gray-200 rounded px-1.5 py-1 bg-white focus:ring-1 focus:ring-[#2a338f] focus:outline-none w-full max-w-[110px] disabled:opacity-60 disabled:cursor-not-allowed"
+                  class="text-xs border border-gray-200 rounded px-1.5 pr-7 py-1 bg-white focus:ring-1 focus:ring-[#2a338f] focus:outline-none w-full max-w-[110px] disabled:opacity-60 disabled:cursor-not-allowed"
                   :class="getDraft(row.id).requirements_complete === true ? 'text-green-700 border-green-300'
                          : getDraft(row.id).requirements_complete === false ? 'text-red-600 border-red-300'
                          : 'text-gray-500'">
@@ -403,7 +404,7 @@
                   <select :value="getDraft(row.id).hrd_assessment"
                     :disabled="!isSecretary"
                     @change="e => setDraft(row.id, 'hrd_assessment', e.target.value === '' ? null : e.target.value === 'true')"
-                    class="text-xs border border-gray-200 rounded px-1.5 py-1 bg-white focus:ring-1 focus:ring-[#2a338f] focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+                     class="text-xs border border-gray-200 rounded px-1.5 pr-7 py-1 bg-white focus:ring-1 focus:ring-[#2a338f] focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
                     :class="getDraft(row.id).hrd_assessment === true ? 'text-green-700 border-green-300'
                            : getDraft(row.id).hrd_assessment === false ? 'text-red-600 border-red-300'
                            : 'text-gray-500'">
@@ -460,7 +461,7 @@
                         <span class="text-[9px] text-gray-500 w-[58px] shrink-0">{{ label }}</span>
                         <select :value="memberDrafts[row.id]?.[field]"
                           @change="e => setMemberDraft(row.id, field, e.target.value === '' ? null : e.target.value === 'true')"
-                          class="flex-1 text-[10px] border rounded px-1 py-0.5 focus:ring-1 focus:outline-none"
+                          class="flex-1 text-[10px] border rounded px-1 pr-6 py-0.5 focus:ring-1 focus:outline-none"
                           :class="memberDrafts[row.id]?.[field] === true  ? 'border-green-300 bg-green-50 text-green-700 focus:ring-green-400'
                                 : memberDrafts[row.id]?.[field] === false ? 'border-red-300 bg-red-50 text-red-600 focus:ring-red-400'
                                 : 'border-gray-200 bg-white text-gray-500 focus:ring-orange-400'">
@@ -509,7 +510,7 @@
                   <select :value="getDraft(row.id).consensus"
                     :disabled="!isSecretary"
                     @change="e => setDraft(row.id, 'consensus', e.target.value === '' ? null : e.target.value === 'true')"
-                    class="text-xs border border-gray-200 rounded px-1.5 py-1 bg-white focus:ring-1 focus:ring-orange-400 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+                     class="text-xs border border-gray-200 rounded px-1.5 pr-7 py-1 bg-white focus:ring-1 focus:ring-orange-400 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
                     :class="getDraft(row.id).consensus === true ? 'text-green-700 border-green-300'
                            : getDraft(row.id).consensus === false ? 'text-red-600 border-red-300'
                            : 'text-gray-500'">
@@ -561,6 +562,7 @@
       Secretariat fields are read-only. Use your column in the HRMPSB Assessment section to submit your QS assessment per applicant.
     </p>
 
+    </div>
   </HrmbsboardLayout>
 </template>
 
@@ -818,7 +820,7 @@ const DocRemarkCell = {
           $emit('update:status', v === '' ? null : v === 'true' ? true : v === 'na' ? null : false)
           if (v === 'na') $emit('update:status', null)
         }"
-        class="text-xs rounded border px-1.5 py-1 focus:ring-1 focus:outline-none w-full disabled:opacity-60 disabled:cursor-not-allowed"
+        class="text-xs rounded border px-1.5 pr-7 py-1 focus:ring-1 focus:outline-none w-full disabled:opacity-60 disabled:cursor-not-allowed"
         :class="status === true  ? 'border-green-300 bg-green-50 text-green-700 focus:ring-green-400'
               : status === false ? 'border-red-300 bg-red-50 text-red-600 focus:ring-red-400'
               : 'border-gray-200 bg-white text-gray-500 focus:ring-purple-400'">

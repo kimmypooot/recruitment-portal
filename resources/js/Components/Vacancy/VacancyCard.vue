@@ -111,6 +111,7 @@
     <VacancyDetailModal
       v-if="showDetailModal && detailVacancy"
       :vacancy="detailVacancy"
+      :applied-ids="appliedIds"
       @close="showDetailModal = false"
     />
 
@@ -157,6 +158,7 @@ const props = defineProps({
   vacancy:         { type: Object,  required: true },
   authenticated:   { type: Boolean, default: false },
   showDetailFirst: { type: Boolean, default: false },
+  appliedIds:      { type: Array,   default: () => [] },
 })
 
 const showAuthModal    = ref(false)

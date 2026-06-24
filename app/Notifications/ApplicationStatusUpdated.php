@@ -3,20 +3,11 @@
 namespace App\Notifications;
 
 use App\Models\Application;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-// Laravel 13: use #[Tries] and #[Timeout] instead of class properties
-use Illuminate\Queue\Attributes\Tries;
-use Illuminate\Queue\Attributes\Timeout;
 
-#[Tries(3)]        // Retry 3 times if email server is down
-#[Timeout(30)]     // Give up after 30 seconds per attempt
-class ApplicationStatusUpdated extends Notification implements ShouldQueue
+class ApplicationStatusUpdated extends Notification
 {
-  use Queueable;   // Makes this run in the background queue
-
   public function __construct(
     private readonly Application $application,
     private readonly string $oldStatus,

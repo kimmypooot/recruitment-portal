@@ -1,6 +1,5 @@
 <template>
   <AdminLayout>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       <!-- Page header -->
       <div class="mb-6">
@@ -110,7 +109,7 @@
                 <p class="text-xs text-gray-400">{{ item.competency_group }}</p>
               </div>
               <select v-model="item.level"
-                class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
+                class="text-xs border border-gray-200 rounded-lg px-2 pr-7 py-1.5 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
                 <option :value="1">1 – Basic</option>
                 <option :value="2">2 – Intermediate</option>
                 <option :value="3">3 – Advanced</option>
@@ -145,7 +144,6 @@
         <p class="text-xs text-gray-400">Use the dropdown above to choose a position.</p>
       </div>
 
-    </div>
   </AdminLayout>
 </template>
 

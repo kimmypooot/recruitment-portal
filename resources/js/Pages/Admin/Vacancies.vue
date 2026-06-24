@@ -8,7 +8,7 @@
           placeholder="Search position..."
           class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none w-52" />
         <select v-model="filters.status" @change="fetchVacancies"
-          class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+          class="px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
           <option value="">All Status</option>
           <option value="draft">Draft</option>
           <option value="published">Published</option>
@@ -163,7 +163,7 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Salary Grade <span class="text-red-500">*</span></label>
                 <select v-model="form.salary_grade" required
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+                  class="w-full px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
                   <option value="">Select SG</option>
                   <option v-for="n in 33" :key="n" :value="n">SG-{{ n }}</option>
                 </select>
@@ -271,7 +271,7 @@
                     <p class="text-[10px] text-gray-400 mt-0.5">{{ item.competency_group }}</p>
                   </div>
                   <select v-model="item.level"
-                    class="text-xs border border-gray-200 rounded-md px-1.5 py-1 bg-white text-gray-700 focus:ring-1 focus:ring-[#2a338f] focus:outline-none flex-shrink-0">
+                    class="text-xs border border-gray-200 rounded-md px-1.5 pr-7 py-1 bg-white text-gray-700 focus:ring-1 focus:ring-[#2a338f] focus:outline-none flex-shrink-0">
                     <option :value="1">Basic</option>
                     <option :value="2">Intermediate</option>
                     <option :value="3">Advanced</option>

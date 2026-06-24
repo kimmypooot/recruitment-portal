@@ -7,27 +7,27 @@
 
         <!-- Header -->
         <div class="p-4 sm:p-6 pb-4 border-b border-gray-100">
-          <!-- Top row: badges + close button -->
-          <div class="flex items-start justify-between gap-3 mb-2">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-[#2a338f] text-white">
-                SG-{{ vacancy.salary_grade }}
-              </span>
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0 flex-1">
               <span v-if="vacancy.is_anticipated_vacancy"
-                class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-amber-100 text-amber-700">
+                class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-amber-100 text-amber-700 mb-1">
                 Anticipated Vacancy
               </span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-lg sm:text-xl font-bold text-gray-900 break-words">{{ vacancy.position_title }}</h2>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-[#2a338f] text-white flex-shrink-0">
+                  SG-{{ vacancy.salary_grade }}
+                </span>
+              </div>
+              <p class="text-sm text-gray-500 mt-0.5">{{ vacancy.place_of_assignment }}</p>
             </div>
             <button @click="$emit('close')"
-              class="flex-shrink-0 p-2 -mt-1 -mr-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+              class="flex-shrink-0 p-2 -mt-0.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
           </div>
-          <!-- Position title + assignment -->
-          <h2 class="text-lg sm:text-xl font-bold text-gray-900 break-words">{{ vacancy.position_title }}</h2>
-          <p class="text-sm text-gray-500 mt-0.5">{{ vacancy.place_of_assignment }}</p>
           <!-- Proficiency legend -->
           <div v-if="vacancy.competencies && vacancy.competencies.length > 0"
             class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
@@ -173,7 +173,14 @@
               class="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
               Cancel
             </button>
-            <Link :href="`/vacancies/${vacancy.id}/apply`"
+            <span v-if="isApplied"
+              class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-semibold text-gray-400 bg-gray-100 rounded-lg cursor-not-allowed">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+              Already Applied
+            </span>
+            <Link v-else :href="`/vacancies/${vacancy.id}/apply`"
               class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-semibold text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors shadow-sm">
               Proceed to Apply
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -193,10 +200,13 @@ import { ref, computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
 
 const props = defineProps({
-  vacancy: { type: Object, required: true },
+  vacancy:    { type: Object, required: true },
+  appliedIds: { type: Array,  default: () => [] },
 })
 
 defineEmits(['close'])
+
+const isApplied = computed(() => props.appliedIds.includes(props.vacancy.id))
 
 const activeTooltip = ref(null)
 

@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gray-100 lg:pl-64">
+  <div class="min-h-screen bg-gray-100 transition-all duration-500" :class="sidebarCollapsed ? '' : 'lg:pl-64'">
 
     <!-- Sidebar -->
     <aside
-      :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-      class="fixed inset-y-0 left-0 z-50 w-64 text-white flex flex-col transition-transform duration-200 lg:translate-x-0" style="background-color: #2a338f;">
+      :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0']"
+      class="fixed inset-y-0 left-0 z-50 w-64 text-white flex flex-col transition-transform duration-200" style="background-color: #2a338f;">
 
       <!-- Logo -->
       <div class="flex items-center gap-3 px-5 py-5 border-b border-white/10">
@@ -46,12 +46,12 @@
 
       <!-- Footer -->
       <div class="px-3 py-4 border-t border-white/10">
-        <Link href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors">
+        <button v-if="canSwitchToHrmpsb" @click="showWorkspaceSwitch = true" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors mb-1">
           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
           </svg>
-          View Public Site
-        </Link>
+          Switch to HRMPSB
+        </button>
         <button @click="logout" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors mt-0.5">
           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
@@ -68,13 +68,12 @@
       class="fixed inset-0 z-40 bg-black/50 lg:hidden" />
 
     <!-- Main content -->
-    <div class="flex-1 flex flex-col min-w-0">
+    <div class="flex-1 flex flex-col min-w-0 min-h-screen">
 
       <!-- Top bar -->
       <header class="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 sm:px-6 h-16 flex items-center justify-between flex-shrink-0">
         <div class="flex items-center gap-3">
-          <!-- Mobile hamburger -->
-          <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100">
+          <button @click="toggleSidebar" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
@@ -111,20 +110,7 @@
               leave-from-class="opacity-100 scale-100"
               leave-to-class="opacity-0 scale-95">
               <div v-if="dropdownOpen"
-                class="absolute right-0 mt-1 w-56 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
-                <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-                  <div class="relative w-9 h-9 rounded-full bg-[#2a338f] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden">
-                    <span>{{ userInitial }}</span>
-                    <img :src="`/profile/photo?token=${authToken}`"
-                      class="absolute inset-0 w-full h-full object-cover"
-                      @error="e => e.target.style.display = 'none'"
-                      alt="" />
-                  </div>
-                  <div class="min-w-0">
-                    <p class="text-sm font-semibold text-gray-900 truncate">{{ userName }}</p>
-                    <p class="text-xs text-gray-400 truncate">{{ userEmail }}</p>
-                  </div>
-                </div>
+                class="absolute right-0 mt-1 w-40 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
                 <div class="py-1">
                   <button @click="logout"
                     class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
@@ -141,11 +127,13 @@
       </header>
 
       <!-- Page content -->
-      <main class="flex-1 overflow-auto">
+      <main class="flex-1 overflow-auto p-4 sm:p-6 pb-14">
         <slot />
       </main>
 
     </div>
+
+    <AppFooter :sidebar-collapsed="sidebarCollapsed" />
 
     <!-- Logout confirmation modal -->
     <Teleport to="body">
@@ -173,26 +161,43 @@
       </div>
     </Teleport>
 
+    <WorkspaceSwitcher :show="showWorkspaceSwitch" target="hrmpsb" />
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
+import AppFooter from '@/Components/UI/AppFooter.vue'
+import WorkspaceSwitcher from '@/Components/UI/WorkspaceSwitcher.vue'
 
 defineProps({ title: { type: String, default: 'Dashboard' } })
 
-const sidebarOpen    = ref(false)
-const dropdownOpen   = ref(false)
-const dropdownRef    = ref(null)
-const showLogoutModal = ref(false)
-const page           = usePage()
+const sidebarOpen       = ref(false)
+const sidebarCollapsed  = ref(false)
+const dropdownOpen      = ref(false)
+const dropdownRef       = ref(null)
+const showLogoutModal   = ref(false)
+const showWorkspaceSwitch = ref(false)
+const page              = usePage()
 const authToken      = ref('')
 const authUser       = ref({})
 
 const userName    = computed(() => authUser.value?.name ?? 'Admin')
 const userEmail   = computed(() => authUser.value?.email ?? '')
 const userInitial = computed(() => (authUser.value?.name ?? 'A')[0].toUpperCase())
+const canSwitchToHrmpsb = computed(() =>
+  ['admin', 'hr-manager', 'hrmpsb-secretariat'].includes(authUser.value?.role)
+)
+
+function toggleSidebar() {
+  if (window.innerWidth >= 1024) {
+    sidebarCollapsed.value = !sidebarCollapsed.value
+  } else {
+    sidebarOpen.value = !sidebarOpen.value
+  }
+}
 
 function handleClickOutside(e) {
   if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {

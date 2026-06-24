@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100 lg:pl-64">
+  <div class="min-h-screen bg-gray-100 transition-all duration-500" :class="sidebarCollapsed ? '' : 'lg:pl-64'">
 
     <!-- Backdrop (mobile) -->
     <div
@@ -9,8 +9,8 @@
 
     <!-- Sidebar -->
     <aside
-      :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-      class="fixed inset-y-0 left-0 z-50 w-64 text-white flex flex-col transition-transform duration-200 lg:translate-x-0"
+      :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0']"
+      class="fixed inset-y-0 left-0 z-50 w-64 text-white flex flex-col transition-transform duration-200"
       style="background-color: #2a338f;">
 
       <!-- Logo -->
@@ -54,7 +54,7 @@
 
       <!-- Footer -->
       <div class="px-3 py-4 border-t border-white/10">
-        <button @click="logout" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors">
+        <button @click="showLogoutModal = true" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors">
           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
           </svg>
@@ -69,7 +69,7 @@
       <!-- Top bar -->
       <header class="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 sm:px-6 h-16 flex items-center justify-between flex-shrink-0">
         <div class="flex items-center gap-3">
-          <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100">
+          <button @click="toggleSidebar" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
@@ -108,22 +108,9 @@
               leave-from-class="opacity-100 scale-100"
               leave-to-class="opacity-0 scale-95">
               <div v-if="dropdownOpen"
-                class="absolute right-0 mt-1 w-56 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
-                <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-                  <div class="relative w-9 h-9 rounded-full bg-[#2a338f] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden">
-                    <span>{{ userInitial }}</span>
-                    <img :src="`/profile/photo?token=${authToken}`"
-                      class="absolute inset-0 w-full h-full object-cover"
-                      @error="e => e.target.style.display = 'none'"
-                      alt="" />
-                  </div>
-                  <div class="min-w-0">
-                    <p class="text-sm font-semibold text-gray-900 truncate">{{ userName }}</p>
-                    <p class="text-xs text-gray-400 truncate">{{ userEmail }}</p>
-                  </div>
-                </div>
+                class="absolute right-0 mt-1 w-40 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
                 <div class="py-1">
-                  <button @click="logout"
+                  <button @click="dropdownOpen = false; showLogoutModal = true"
                     class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
                     <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
@@ -138,11 +125,13 @@
       </header>
 
       <!-- Page content -->
-      <main class="flex-1">
+      <main class="flex-1 pb-14">
         <slot />
       </main>
 
     </div>
+
+    <AppFooter :sidebar-collapsed="sidebarCollapsed" />
 
     <!-- Back to top button -->
     <button v-if="showBackToTop" @click="scrollToTop"
@@ -152,6 +141,32 @@
       </svg>
     </button>
 
+    <!-- Logout confirmation modal -->
+    <Teleport to="body">
+      <div v-if="showLogoutModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" @click="showLogoutModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+          <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+          </div>
+          <h3 class="text-base font-semibold text-gray-900 mb-1">Sign out</h3>
+          <p class="text-sm text-gray-500 mb-6">Are you sure you want to sign out of your account?</p>
+          <div class="flex gap-3">
+            <button @click="showLogoutModal = false"
+              class="flex-1 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+              Cancel
+            </button>
+            <button @click="confirmLogout"
+              class="flex-1 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-semibold">
+              Sign out
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
   </div>
 </template>
 
@@ -159,17 +174,19 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import NotificationBell from '@/Components/UI/NotificationBell.vue'
+import AppFooter from '@/Components/UI/AppFooter.vue'
 
-const sidebarOpen    = ref(false)
-const dropdownOpen   = ref(false)
-const dropdownRef    = ref(null)
-const showBackToTop  = ref(false)
-const page           = usePage()
+const sidebarOpen       = ref(false)
+const sidebarCollapsed  = ref(false)
+const dropdownOpen      = ref(false)
+const dropdownRef       = ref(null)
+const showBackToTop     = ref(false)
+const showLogoutModal   = ref(false)
+const page              = usePage()
 const authToken      = ref('')
 const authUser       = ref({})
 
 const userName    = computed(() => authUser.value?.name ?? 'Applicant')
-const userEmail   = computed(() => authUser.value?.email ?? '')
 const userInitial = computed(() => (authUser.value?.name ?? 'A')[0].toUpperCase())
 
 const navGroups = [
@@ -209,6 +226,14 @@ function isActive(href) {
   return page.url.startsWith(href)
 }
 
+function toggleSidebar() {
+  if (window.innerWidth >= 1024) {
+    sidebarCollapsed.value = !sidebarCollapsed.value
+  } else {
+    sidebarOpen.value = !sidebarOpen.value
+  }
+}
+
 function handleClickOutside(e) {
   if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
     dropdownOpen.value = false
@@ -223,7 +248,8 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-function logout() {
+function confirmLogout() {
+  showLogoutModal.value = false
   dropdownOpen.value = false
   sidebarOpen.value = false
   localStorage.removeItem('auth_token')

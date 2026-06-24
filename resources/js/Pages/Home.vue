@@ -25,6 +25,14 @@
       <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(30,37,112,0.88) 0%, rgba(42,51,143,0.85) 50%, rgba(26,31,94,0.90) 100%);"></div>
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
         <div class="max-w-2xl">
+
+          <!-- 3 banner images -->
+          <div class="flex items-center gap-3 mb-6">
+            <img src="/images/csc-logo.png" alt="CSC Logo" class="h-16 sm:h-20 w-auto" />
+            <img src="/images/bagong_pilipinas.png" alt="Bagong Pilipinas" class="h-16 sm:h-20 w-auto" />
+            <img src="/images/lingkod_bayani.png" alt="Lingkod Bayani" class="h-16 sm:h-20 w-auto" />
+          </div>
+
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-5 border border-white/20 bg-white/10 text-white/90">
             <span class="w-1.5 h-1.5 rounded-full bg-[#ec1c2d]"></span>
             {{ stats.published }} open position{{ stats.published !== 1 ? 's' : '' }} available
@@ -77,7 +85,7 @@
           <select
             v-model="filters.salary_grade"
             @change="fetchVacancies"
-            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
+            class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
             <option value="">All Salary Grades</option>
             <option v-for="sg in salaryGrades" :key="sg" :value="sg">SG-{{ sg }}</option>
           </select>
@@ -86,7 +94,7 @@
           <select
             v-model="filters.place"
             @change="fetchVacancies"
-            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
+            class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
             <option value="">All Offices</option>
             <option v-for="place in uniquePlaces" :key="place" :value="place">{{ place }}</option>
           </select>
@@ -95,7 +103,7 @@
           <select
             v-model="filters.sort"
             @change="fetchVacancies"
-            class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
+            class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
             <option value="deadline_asc">Deadline: Soonest First</option>
             <option value="deadline_desc">Deadline: Latest First</option>
             <option value="sg_desc">Salary Grade: Highest First</option>

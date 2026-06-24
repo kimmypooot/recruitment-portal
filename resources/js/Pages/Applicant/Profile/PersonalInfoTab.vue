@@ -247,7 +247,7 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
-import axios from 'axios'
+import api from '@/services/api'
 
 const props = defineProps({
   personal:    { type: Object, required: true },
@@ -271,7 +271,7 @@ async function linkGoogle() {
   linking.value = true
   linkError.value = ''
   try {
-    const { data } = await axios.post('/api/auth/google/link')
+    const { data } = await api.post('/auth/google/link')
     window.location.href = data.redirect_url
   } catch (err) {
     linkError.value = err.response?.data?.message || 'Failed to initiate linking.'
@@ -284,7 +284,7 @@ async function unlinkGoogle() {
   unlinking.value = true
   linkError.value = ''
   try {
-    await axios.post('/api/auth/google/unlink')
+    await api.post('/auth/google/unlink')
     hasGoogle.value = false
     const user = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
     delete user.google_id

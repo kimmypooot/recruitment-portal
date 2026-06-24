@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Applications">
+    <AdminLayout title="Applications">
 
     <!-- ════════════════════════════════════════════════════════════════════════ -->
     <!-- PAGE 1 — Vacant Positions                                               -->
@@ -17,7 +17,7 @@
             class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none shadow-sm" />
         </div>
         <select v-model="vacancyStatusFilter"
-          class="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-[#2a338f] focus:outline-none shadow-sm">
+          class="px-3 pr-8 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-[#2a338f] focus:outline-none shadow-sm">
           <option value="">All Statuses</option>
           <option value="published">Published</option>
           <option value="draft">Draft</option>
@@ -236,7 +236,7 @@
                 class="w-full sm:w-56 pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" />
             </div>
             <select v-model="filters.status" @change="resetAndFetch"
-              class="px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              class="px-2.5 pr-7 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
               <option value="">All Statuses</option>
               <optgroup label="Initial">
                 <option value="submitted">Submitted</option>
@@ -536,7 +536,7 @@
 
             <div class="flex gap-2 mb-3">
               <select v-model="csForm.type"
-                class="flex-1 px-2.5 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+                class="flex-1 px-2.5 pr-7 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
                 <option value="33A">CS Form 33-A (Appointment)</option>
                 <option value="33B">CS Form 33-B (Casual/Contractual)</option>
                 <option value="form1">CS Form 1 (Personal Data Sheet)</option>
@@ -877,7 +877,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">New Status <span class="text-red-500">*</span></label>
             <select v-model="statusForm.status"
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              class="w-full px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
               <optgroup label="Initial">
                 <option value="under_review">Under Review</option>
               </optgroup>
@@ -992,7 +992,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">New Status <span class="text-red-500">*</span></label>
             <select v-model="batchForm.status" :disabled="batchSaving"
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white disabled:opacity-60">
+              class="w-full px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white disabled:opacity-60">
               <option value="" disabled>Select a status…</option>
               <optgroup label="Initial">
                 <option value="under_review">Under Review</option>
@@ -1050,6 +1050,29 @@
     </div>
     </Teleport>
 
+    <!-- ── Toast (top-right) ─────────────────────────────────────────────────── -->
+    <Teleport to="body">
+      <Transition enter-active-class="transition ease-out duration-300"
+                  enter-from-class="opacity-0 translate-x-4"
+                  enter-to-class="opacity-100 translate-x-0"
+                  leave-active-class="transition ease-in duration-200"
+                  leave-from-class="opacity-100 translate-x-0"
+                  leave-to-class="opacity-0 translate-x-4">
+        <div v-if="toast.show"
+          class="fixed top-4 right-4 z-[9999] min-w-[280px] max-w-sm px-4 py-3 rounded-xl shadow-lg border flex items-start gap-3 pointer-events-auto"
+          :class="toast.type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+          <svg v-if="toast.type === 'success'" class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <svg v-else class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+          </svg>
+          <p class="text-sm flex-1 leading-snug" :class="toast.type === 'success' ? 'text-green-800' : 'text-red-800'">{{ toast.message }}</p>
+          <button @click="toast.show = false" class="flex-shrink-0 text-current opacity-40 hover:opacity-70">&times;</button>
+        </div>
+      </Transition>
+    </Teleport>
+
   </AdminLayout>
 </template>
 
@@ -1087,6 +1110,17 @@ const batchSaving        = ref(false)
 const batchProgress      = ref(0)
 const batchTotal         = ref(0)
 const batchError         = ref('')
+const toast             = reactive({ show: false, type: 'success', message: '' })
+let toastTimer          = null
+
+function showToast(type, message) {
+  toast.show = false
+  clearTimeout(toastTimer)
+  toast.type    = type
+  toast.message = message
+  toast.show    = true
+  toastTimer    = setTimeout(() => { toast.show = false }, 4000)
+}
 
 const filters      = reactive({ search: '', status: '', page: 1 })
 const statusForm   = reactive({ status: '', remarks: '' })
@@ -1375,6 +1409,7 @@ async function doBatchUpdate() {
     batchError.value = `${failed} application${failed !== 1 ? 's' : ''} could not be updated.`
     return
   }
+  showToast('success', `Status updated to "${batchForm.status.replace(/_/g, ' ')}" for ${selectedIds.size} applicant${selectedIds.size !== 1 ? 's' : ''}.`)
   batchUpdateOpen.value = false
   clearSelection()
   await fetchApplications()
@@ -1509,9 +1544,12 @@ async function doUpdateStatus() {
       }
     }
 
+    showToast('success', `Status updated to "${statusForm.status.replace(/_/g, ' ')}" for ${formatApplicantName(updateTarget.value)}.`)
     updateTarget.value = null
     await fetchApplications()
     await fetchVacancies()
+  } catch (e) {
+    showToast('error', e.response?.data?.message ?? 'Failed to update status.')
   } finally {
     saving.value = false
   }
