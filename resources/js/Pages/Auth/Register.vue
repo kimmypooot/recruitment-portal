@@ -1,6 +1,11 @@
 <template>
   <PublicLayout>
 
+    <Head>
+      <title>Register — CSC Recruitment</title>
+      <meta name="description" content="Create a CSC Recruitment account to apply for government career positions at the Civil Service Commission Regional Office VIII." />
+    </Head>
+
     <!-- Hero (compact) -->
     <section class="relative text-white overflow-hidden"
       style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
@@ -179,7 +184,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 

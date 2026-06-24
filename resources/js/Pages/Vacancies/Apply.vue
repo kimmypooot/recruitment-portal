@@ -56,6 +56,11 @@
               </p>
               <p class="text-xs text-white/70 mt-1">
                 Deadline: <span class="font-semibold text-white">{{ formatDate(vacancy.deadline_at) }}</span>
+                <span v-if="daysRemaining !== null && daysRemaining >= 0"
+                  :class="daysRemaining <= 2 ? 'text-red-300' : 'text-amber-300'"
+                  class="block sm:inline text-xs font-semibold mt-0.5 sm:mt-0 sm:ml-1">
+                  ({{ daysRemaining === 0 ? 'Closes today' : `${daysRemaining}d left` }})
+                </span>
               </p>
             </div>
           </div>
@@ -370,6 +375,12 @@ const showSuccess      = ref(false)
 const authUser = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
 
 // ── Derived ──────────────────────────────────────────────────────────────────
+
+const daysRemaining = computed(() => {
+  if (!vacancy.value?.deadline_at) return null
+  const ms = new Date(vacancy.value.deadline_at) - new Date()
+  return ms < 0 ? -1 : Math.ceil(ms / (1000 * 60 * 60 * 24))
+})
 
 const addressLine = computed(() => {
   const p = profile.value

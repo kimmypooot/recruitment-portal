@@ -1,4 +1,4 @@
-import { createApp, h, defineComponent } from 'vue'
+import { createApp, h, defineComponent, Transition } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { createPinia } from 'pinia'
@@ -17,7 +17,10 @@ createInertiaApp({
 
   setup({ el, App, props, plugin }) {
     const Root = defineComponent({
-      render: () => [h(App, props), h(DataPrivacyModal)],
+      render: () => [
+        h(Transition, { name: 'fade', mode: 'out-in' }, () => h(App, props)),
+        h(DataPrivacyModal),
+      ],
     })
 
     createApp(Root)

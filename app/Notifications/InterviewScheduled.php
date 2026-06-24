@@ -46,7 +46,7 @@ class InterviewScheduled extends Notification implements ShouldQueue
             ->line('Please report to the venue at least 15 minutes before your scheduled time. Bring a valid government-issued ID and any supporting documents you may wish to present.')
             ->action('View My Application', url('/applicant/applications'))
             ->line('For inquiries, please contact the HR Management and Practices Section.')
-            ->salutation('Civil Service Commission Regional Office');
+            ->salutation('Civil Service Commission Regional Office VIII');
     }
 
     public function toArray(object $notifiable): array

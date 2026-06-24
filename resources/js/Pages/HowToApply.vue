@@ -1,6 +1,11 @@
 <template>
   <PublicLayout>
 
+    <Head>
+      <title>How to Apply — CSC Recruitment</title>
+      <meta name="description" content="Step-by-step guide on how to apply for government positions through the CSC Regional Office VIII online recruitment portal." />
+    </Head>
+
     <!-- Hero -->
     <section class="relative text-white overflow-hidden"
       style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
@@ -89,7 +94,7 @@
 
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue'
-import { Link } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 
 const steps = [
   {

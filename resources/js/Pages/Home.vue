@@ -1,6 +1,23 @@
 <template>
   <PublicLayout>
 
+    <Head>
+      <title>Home — CSC Recruitment</title>
+      <meta name="description" content="Browse open positions at the Civil Service Commission Regional Office VIII. Sign in or register to apply for a career in government service." />
+      <meta property="og:title" content="CSC Regional Office VIII — Online Recruitment Portal" />
+      <meta property="og:description" content="Browse open government positions and submit your application online." />
+    </Head>
+
+    <!-- Redirect guard: show minimal loader while checking auth -->
+    <div v-if="redirecting" class="min-h-[60vh] flex items-center justify-center">
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-8 h-8 border-2 border-[#2a338f] border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-sm text-gray-400">Loading...</p>
+      </div>
+    </div>
+
+    <template v-if="!redirecting">
+
     <!-- ── Hero ─────────────────────────────────────────────────────────── -->
     <section class="relative text-white overflow-hidden"
       style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
@@ -44,15 +61,15 @@
       </div>
 
       <!-- Wave divider -->
-      <div class="relative h-10 overflow-hidden z-10">
-        <svg viewBox="0 0 1440 40" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB">
-          <path d="M0 40L60 33.3C120 26.7 240 13.3 360 10C480 6.7 600 13.3 720 20C840 26.7 960 33.3 1080 33.3C1200 33.3 1320 26.7 1380 23.3L1440 20V40H0Z"/>
+      <div class="relative h-8 overflow-hidden">
+        <svg viewBox="0 0 1440 32" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB">
+          <path d="M0 32L60 26.7C120 21.3 240 10.7 360 8C480 5.3 600 10.7 720 16C840 21.3 960 26.7 1080 26.7C1200 26.7 1320 21.3 1380 18.7L1440 16V32H0Z"/>
         </svg>
       </div>
     </section>
 
     <!-- ── Filter Bar ─────────────────────────────────────────────────── -->
-    <section class="bg-gray-50 border-b border-gray-200 sticky top-16 z-40">
+    <section class="bg-gray-50 border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div class="flex flex-wrap items-center gap-3">
 
@@ -241,6 +258,8 @@
       </div>
     </section>
 
+    </template>
+
   </PublicLayout>
 </template>
 
@@ -248,7 +267,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { debounce } from 'lodash-es'
-import { router } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import VacancyCard from '@/Components/Vacancy/VacancyCard.vue'
 
@@ -263,9 +282,10 @@ const props = defineProps({
 })
 
 // ── State ─────────────────────────────────────────────────────────────────
-const vacancies  = ref(props.initialVacancies.data ?? [])
-const isLoading  = ref(false)
-const pagination = ref({
+const redirecting = ref(true)
+const vacancies   = ref(props.initialVacancies.data ?? [])
+const isLoading   = ref(!props.initialVacancies.data?.length)
+const pagination  = ref({
   total:        props.initialVacancies.meta?.total        ?? 0,
   current_page: props.initialVacancies.meta?.current_page ?? 1,
   last_page:    props.initialVacancies.meta?.last_page    ?? 1,
@@ -348,18 +368,17 @@ function clearFilters() {
 onMounted(() => {
   const token = localStorage.getItem('auth_token')
   if (token) {
-    const user = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
-    const role = user?.role ?? ''
-    if (role === 'applicant') {
-      router.visit('/applicant/dashboard')
-    } else if (['hrmpsb-member', 'hrmpsb-secretariat', 'appointing-authority'].includes(role)) {
-      router.visit('/hrmpsb/dashboard')
-    } else if (role) {
-      router.visit('/admin/dashboard')
-    }
-    return
+    try {
+      const user = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+      const role = user?.role ?? ''
+      let dest = null
+      if (role === 'applicant') dest = '/applicant/dashboard'
+      else if (['hrmpsb-member', 'hrmpsb-secretariat', 'appointing-authority'].includes(role)) dest = '/hrmpsb/dashboard'
+      else if (role) dest = '/admin/dashboard'
+      if (dest) { router.visit(dest); return }
+    } catch {}
   }
-  // Only fetch if Inertia didn't already pass initial data
+  redirecting.value = false
   if (!props.initialVacancies.data?.length) fetchVacancies()
 })
 </script>

@@ -148,6 +148,8 @@ class ApplicationController extends Controller
 
     public function serveApplicantDocument(Request $request, Application $application, string $type): StreamedResponse
     {
+        $this->authorize('view', $application);
+
         $map = [
             'pds'        => 'pds_path',
             'app_letter' => 'app_letter_path',

@@ -48,6 +48,10 @@
           <dt class="w-24 flex-shrink-0 text-gray-400 font-medium">Eligibility</dt>
           <dd class="text-gray-600 line-clamp-1">{{ vacancy.eligibility_req }}</dd>
         </div>
+        <div class="flex gap-2 text-xs">
+          <dt class="w-24 flex-shrink-0 text-gray-400 font-medium">Training</dt>
+          <dd class="text-gray-600 line-clamp-1">{{ vacancy.training_req || 'None required' }}</dd>
+        </div>
       </dl>
     </div>
 

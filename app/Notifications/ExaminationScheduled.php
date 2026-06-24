@@ -53,7 +53,7 @@ class ExaminationScheduled extends Notification implements ShouldQueue
             ->line('Kindly report to the examination venue at least 15 minutes before the scheduled time. Bring a valid government-issued ID.')
             ->action('View My Application', url('/applicant/applications'))
             ->line('For inquiries, please contact the HR Management and Practices Section.')
-            ->salutation('Civil Service Commission Regional Office');
+            ->salutation('Civil Service Commission Regional Office VIII');
     }
 
     public function toArray(object $notifiable): array

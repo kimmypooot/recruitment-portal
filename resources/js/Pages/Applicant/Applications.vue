@@ -1,6 +1,6 @@
 <template>
   <ApplicantLayout>
-    <div class="max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
 
       <!-- Page header -->
       <div class="flex items-center justify-between mb-6">
@@ -267,7 +267,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import { applicationApi } from '@/services/api'
@@ -280,6 +280,10 @@ const loading       = ref(true)
 const activeStatus  = ref('all')
 const withdrawTarget = ref(null)
 const withdrawing    = ref(false)
+
+watch(activeStatus, () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+})
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 function authHeaders() {

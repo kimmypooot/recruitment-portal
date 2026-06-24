@@ -1,6 +1,11 @@
 <template>
   <PublicLayout>
 
+    <Head>
+      <title>Sign In — CSC Recruitment</title>
+      <meta name="description" content="Sign in to your CSC Recruitment account to manage applications, check exam schedules, and track your career progress." />
+    </Head>
+
     <!-- Hero (compact) -->
     <section class="relative text-white overflow-hidden"
       style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
@@ -104,7 +109,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 

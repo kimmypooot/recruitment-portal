@@ -1,6 +1,11 @@
 <template>
   <PublicLayout>
 
+    <Head>
+      <title>About — CSC Recruitment</title>
+      <meta name="description" content="About the Civil Service Commission Regional Office VIII — our mission, vision, and core values in serving the Filipino people through a world-class civil service." />
+    </Head>
+
     <!-- Hero -->
     <section class="relative text-white overflow-hidden"
       style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
@@ -93,6 +98,7 @@
 </template>
 
 <script setup>
+import { Head } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 
 const mandate = {
@@ -119,8 +125,8 @@ const corePurposeVision = [
 
 const values = [
   { label: 'Patriotism', emoji: '⚖️' },
-  { label: 'Excellence', emoji: '🌟' },
   { label: 'Integrity', emoji: '📋' },
-  { label: 'Excellence', emoji: '🤝' },
+  { label: 'Excellence', emoji: '🌟' },
+  { label: 'Spirituality', emoji: '🤝' },
 ]
 </script>

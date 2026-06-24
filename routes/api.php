@@ -27,19 +27,28 @@ Route::get('/vacancies', [VacancyController::class, 'index']);
 Route::get('/vacancies/{vacancy}', [VacancyController::class, 'show']);
 Route::get('/competencies', [VacancyCompetencyController::class, 'index']);
 
-// Authentication
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+// Authentication — throttled to prevent brute-force and registration spam
+Route::middleware('throttle:5,1')->post('/login', [AuthController::class, 'login']);
+Route::middleware('throttle:3,60')->post('/register', [AuthController::class, 'register']);
 
-// Dashboard (public stats — no auth required)
+// Privacy consent re-acknowledgment (for existing users when policy updates)
+Route::middleware(['auth:sanctum'])->post('/privacy-consent', [AuthController::class, 'recordConsent']);
+Route::middleware(['auth:sanctum'])->post('/auth/google/link', [AuthController::class, 'googleLinkApi']);
+Route::middleware(['auth:sanctum'])->post('/auth/google/unlink', [AuthController::class, 'googleUnlink']);
+
+// Dashboard — aggregate counts only, safe for public
 Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
-Route::get('/dashboard/recent-applications', [DashboardController::class, 'recentApplications']);
-Route::get('/dashboard/pipeline', [DashboardController::class, 'pipeline']);
+
+// Dashboard — applicant PII; requires authentication
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/dashboard/recent-applications', [DashboardController::class, 'recentApplications']);
+    Route::get('/dashboard/pipeline', [DashboardController::class, 'pipeline']);
+});
 
 // Authenticated applicant routes
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/my-applications', [ApplicationController::class, 'index']);
-    Route::post('/applications', [ApplicationController::class, 'store']);
+    Route::middleware('throttle:10,1')->post('/applications', [ApplicationController::class, 'store']);
     Route::get('/applications/{application}', [ApplicationController::class, 'show']);
     Route::post('/applications/{application}/documents', [DocumentController::class, 'store']);
 

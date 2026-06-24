@@ -2,6 +2,49 @@
   <ApplicantLayout>
     <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
 
+      <!-- Full-page skeleton overlay (shown while data loads) -->
+      <div v-if="pageLoading" class="animate-pulse">
+        <div class="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4 flex items-start gap-3">
+          <div class="w-5 h-5 bg-gray-200 rounded flex-shrink-0 mt-0.5"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-4 bg-gray-200 rounded w-64"></div>
+            <div class="h-3 bg-gray-100 rounded w-96"></div>
+          </div>
+          <div class="h-8 w-28 bg-gray-200 rounded-lg flex-shrink-0"></div>
+        </div>
+        <div class="mb-6 space-y-2">
+          <div class="h-7 bg-gray-200 rounded w-72"></div>
+          <div class="h-4 bg-gray-100 rounded w-56"></div>
+        </div>
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+          <div v-for="n in 4" :key="n" class="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4 shadow-sm">
+            <div class="w-11 h-11 rounded-xl bg-gray-200 flex-shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-3 bg-gray-200 rounded w-16"></div>
+              <div class="h-7 bg-gray-200 rounded w-10"></div>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div v-for="n in 6" :key="n" class="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
+            <div class="flex gap-2 mb-3"><div class="h-5 w-12 bg-gray-200 rounded-md"></div><div class="h-5 w-16 bg-gray-200 rounded-full"></div></div>
+            <div class="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
+            <div class="h-4 bg-gray-200 rounded mb-4 w-1/2"></div>
+            <div class="space-y-2">
+              <div class="h-3 bg-gray-100 rounded w-full"></div>
+              <div class="h-3 bg-gray-100 rounded w-5/6"></div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
+              <div class="h-3 w-24 bg-gray-200 rounded"></div>
+              <div class="h-8 w-24 bg-gray-200 rounded-lg"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real content -->
+      <div v-if="!pageLoading">
+
       <!-- Profile incomplete banner -->
       <div v-if="!isComplete"
         class="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
@@ -21,7 +64,7 @@
       <!-- Greeting -->
       <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">{{ greeting }}, {{ firstName }}!</h1>
-        <p class="text-sm text-gray-500 mt-1">Here's a summary of your recruitment activity.</p>
+        <p class="text-sm text-gray-500 mt-1">Discover and apply for open government positions.</p>
       </div>
 
       <!-- Stat cards -->
@@ -41,110 +84,9 @@
         </div>
       </div>
 
-      <!-- ── Tab bar ──────────────────────────────────────────────────────── -->
-      <div class="flex gap-1 border-b border-gray-200 mb-6">
-        <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-          class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg -mb-px transition-colors"
-          :class="activeTab === tab.id
-            ? 'text-[#2a338f] border-b-2 border-[#2a338f] bg-white'
-            : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'">
-          {{ tab.label }}
-          <span v-if="tab.id === 'vacancies' && vacancyPagination.total > 0"
-            class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-bold transition-colors"
-            :class="activeTab === 'vacancies' ? 'bg-[#2a338f] text-white' : 'bg-gray-100 text-gray-500'">
-            {{ vacancyPagination.total }}
-          </span>
-        </button>
-      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <!-- ── My Applications tab ─────────────────────────────────────────── -->
-      <div v-show="activeTab === 'applications'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-semibold text-gray-900">My Applications</h2>
-            <Link href="/applicant/applications" class="text-xs font-medium text-[#2a338f] hover:underline flex-shrink-0">View all →</Link>
-          </div>
-
-          <div v-if="loadingApps" class="space-y-3">
-            <div v-for="n in 3" :key="n" class="h-14 bg-gray-100 rounded-lg animate-pulse"></div>
-          </div>
-
-          <div v-else-if="applications.length" class="divide-y divide-gray-100">
-            <div v-for="app in applications" :key="app.id" class="py-3">
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <p class="text-sm font-medium text-gray-900 truncate">
-                    {{ app.vacancy?.position_title ?? 'Unknown Position' }}
-                  </p>
-                  <p class="text-xs text-gray-500 mt-0.5">
-                    {{ app.vacancy?.place_of_assignment ?? '' }} · Applied {{ formatDate(app.created_at) }}
-                  </p>
-                </div>
-                <StatusBadge :status="app.status" />
-              </div>
-              <!-- HR Remarks shown inline -->
-              <div v-if="app.remarks"
-                class="mt-2 px-3 py-2 bg-blue-50 border border-blue-100 rounded-lg flex items-start gap-2">
-                <svg class="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                </svg>
-                <p class="text-xs text-blue-700 leading-relaxed">{{ app.remarks }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div v-else class="text-center py-10">
-            <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <p class="text-sm text-gray-400 font-medium">No applications yet</p>
-            <button @click="activeTab = 'vacancies'"
-              class="mt-3 inline-block px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-xs font-semibold rounded-lg transition-colors">
-              Browse Open Vacancies
-            </button>
-          </div>
-        </div>
-
-        <!-- Profile status sidebar -->
-        <div class="space-y-4">
-          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-            <h2 class="text-sm font-semibold text-gray-900 mb-4">Profile Status</h2>
-            <div class="space-y-3">
-              <div v-for="step in profileSteps" :key="step.label" class="flex items-center gap-3">
-                <div :class="step.done ? 'bg-green-100' : 'bg-gray-100'"
-                  class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg v-if="step.done" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  <span v-else class="w-2 h-2 rounded-full bg-gray-300 block"></span>
-                </div>
-                <span class="text-sm" :class="step.done ? 'text-gray-700 font-medium' : 'text-gray-400'">{{ step.label }}</span>
-              </div>
-            </div>
-            <div class="mt-4 pt-4 border-t border-gray-100">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="text-xs text-gray-500">Completion</span>
-                <span class="text-xs font-semibold text-gray-700">{{ completionPct }}%</span>
-              </div>
-              <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div class="h-2 rounded-full transition-all duration-500"
-                  :class="completionPct === 100 ? 'bg-green-500' : 'bg-[#2a338f]'"
-                  :style="{ width: completionPct + '%' }"></div>
-              </div>
-            </div>
-            <Link :href="'/applicant/complete-profile'"
-              class="mt-4 flex items-center justify-center gap-1.5 w-full py-2 text-sm font-semibold rounded-lg transition-colors"
-              :class="isComplete ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' : 'bg-[#2a338f] hover:bg-[#1e2570] text-white'">
-              {{ isComplete ? 'View / Edit Profile' : 'Update Profile' }}
-            </Link>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ── Browse Vacancies tab ────────────────────────────────────────── -->
-      <div v-show="activeTab === 'vacancies'">
+        <div class="lg:col-span-2">
 
         <!-- Search + filters -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
@@ -183,7 +125,7 @@
         </div>
 
         <!-- Vacancy grid -->
-        <div v-if="loadingVacancies" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div v-if="loadingVacancies" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div v-for="n in 6" :key="n" class="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
             <div class="flex gap-2 mb-3"><div class="h-5 w-12 bg-gray-200 rounded-md"></div><div class="h-5 w-16 bg-gray-200 rounded-full"></div></div>
             <div class="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
@@ -199,7 +141,7 @@
           </div>
         </div>
 
-        <div v-else-if="dashboardVacancies.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div v-else-if="dashboardVacancies.length" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <VacancyCard v-for="v in dashboardVacancies" :key="v.id" :vacancy="v" :authenticated="true" :show-detail-first="true" />
         </div>
 
@@ -245,9 +187,49 @@
           </div>
         </div>
 
+        </div>
+
+        <!-- Profile status sidebar -->
+        <div class="space-y-4">
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-gray-900 mb-4">Profile Status</h2>
+            <div class="space-y-3">
+              <div v-for="step in profileSteps" :key="step.label" class="flex items-center gap-3">
+                <div :class="step.done ? 'bg-green-100' : 'bg-gray-100'"
+                  class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg v-if="step.done" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <span v-else class="w-2 h-2 rounded-full bg-gray-300 block"></span>
+                </div>
+                <span class="text-sm" :class="step.done ? 'text-gray-700 font-medium' : 'text-gray-400'">{{ step.label }}</span>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-100">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs text-gray-500">Completion</span>
+                <span class="text-xs font-semibold text-gray-700">{{ completionPct }}%</span>
+              </div>
+              <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-2 rounded-full transition-all duration-500"
+                  :class="completionPct === 100 ? 'bg-green-500' : 'bg-[#2a338f]'"
+                  :style="{ width: completionPct + '%' }"></div>
+              </div>
+            </div>
+            <Link :href="'/applicant/complete-profile'"
+              class="mt-4 flex items-center justify-center gap-1.5 w-full py-2 text-sm font-semibold rounded-lg transition-colors"
+              :class="isComplete ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' : 'bg-[#2a338f] hover:bg-[#1e2570] text-white'">
+              {{ isComplete ? 'View / Edit Profile' : 'Update Profile' }}
+            </Link>
+          </div>
+        </div>
+
       </div>
 
     </div>
+
+  </div>
+
   </ApplicantLayout>
 </template>
 
@@ -257,16 +239,11 @@ import { Link } from '@inertiajs/vue3'
 import axios from 'axios'
 import { debounce } from 'lodash-es'
 import { applicationApi, profileApi } from '@/services/api'
-import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import VacancyCard from '@/Components/Vacancy/VacancyCard.vue'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 
-// ── Tabs ─────────────────────────────────────────────────────────────────────
-const activeTab = ref('applications')
-const tabs = [
-  { id: 'applications', label: 'My Applications' },
-  { id: 'vacancies',    label: 'Browse Vacancies' },
-]
+// ── Page loading state ───────────────────────────────────────────────────────
+const pageLoading = ref(true)
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 const authUser  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
@@ -403,20 +380,9 @@ function clearVacancyFilters() {
   fetchDashboardVacancies()
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function formatDate(iso) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
-}
-
 // ── Init ──────────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  // Check if coming from a "Browse vacancies" intent
-  if (new URLSearchParams(window.location.search).get('tab') === 'vacancies') {
-    activeTab.value = 'vacancies'
-  }
-
-  const [_, __] = await Promise.all([
+  await Promise.all([
     (async () => {
       try {
         const [appsRes, profileRes] = await Promise.all([
@@ -434,5 +400,6 @@ onMounted(async () => {
     })(),
     fetchDashboardVacancies(),
   ])
+  pageLoading.value = false
 })
 </script>

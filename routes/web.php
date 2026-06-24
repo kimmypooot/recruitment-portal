@@ -18,6 +18,8 @@ Route::get('/profile/photo', [App\Http\Controllers\ProfileController::class, 'se
 
 Route::get('/auth/google', [AuthController::class, 'googleRedirect']);
 Route::get('/auth/google/callback', [AuthController::class, 'googleCallback']);
+Route::get('/auth/google/callback-handler', fn () => Inertia::render('Auth/GoogleCallback'))
+    ->name('auth.google.callback-handler');
 
 // Applicant pages
 Route::prefix('applicant')->group(function () {

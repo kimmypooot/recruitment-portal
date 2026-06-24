@@ -13,7 +13,18 @@
       "Bash(Select-String -Path \"C:\\\\xampp\\\\php\\\\php.ini\" -Pattern \"mbstring\")",
       "Bash(Select-Object LineNumber, Line)",
       "Bash(Head -10)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(node -e ' *)",
+      "Bash(node -e *)",
+      "Bash(php -r ' *)",
+      "Bash(php -l app/Http/Controllers/ApplicationController.php)",
+      "Bash(php -l app/Notifications/ApplicationStatusUpdated.php)",
+      "Bash(php -l app/Providers/AppServiceProvider.php)",
+      "Bash(php -l routes/api.php)",
+      "Bash(php -l app/Http/Controllers/AuthController.php)",
+      "Bash(php -l app/Models/PrivacyConsent.php)",
+      "Bash(php -l app/Http/Controllers/ProfileController.php)",
+      "Bash(php -l app/Http/Controllers/DocumentController.php)"
     ]
   }
 }

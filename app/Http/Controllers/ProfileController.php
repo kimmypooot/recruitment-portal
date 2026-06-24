@@ -65,7 +65,7 @@ class ProfileController extends Controller
     public function uploadPhoto(Request $request): JsonResponse
     {
         $request->validate([
-            'photo' => 'required|image|mimes:jpeg,png,jpg|max:3072',
+            'photo' => 'required|file|mimes:jpeg,png,jpg|mimetypes:image/jpeg,image/png|max:3072',
         ]);
 
         $profile = $this->getOrCreateProfile();
@@ -102,12 +102,13 @@ class ProfileController extends Controller
 
     public function uploadDocuments(Request $request): JsonResponse
     {
+        $pdfRules = 'nullable|file|mimes:pdf|mimetypes:application/pdf|max:5120';
         $request->validate([
-            'pds'        => 'nullable|file|mimes:pdf|max:5120',
-            'app_letter' => 'nullable|file|mimes:pdf|max:5120',
-            'ipcr'       => 'nullable|file|mimes:pdf|max:5120',
-            'coe'        => 'nullable|file|mimes:pdf|max:5120',
-            'tor'        => 'nullable|file|mimes:pdf|max:5120',
+            'pds'        => $pdfRules,
+            'app_letter' => $pdfRules,
+            'ipcr'       => $pdfRules,
+            'coe'        => $pdfRules,
+            'tor'        => $pdfRules,
         ]);
 
         $profile = $this->getOrCreateProfile();

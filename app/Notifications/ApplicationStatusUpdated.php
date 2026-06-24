@@ -32,9 +32,9 @@ class ApplicationStatusUpdated extends Notification implements ShouldQueue
   // The email content
   public function toMail(object $notifiable): MailMessage
   {
-    $profile = $this->application->applicant;
+    $profile       = $this->application->applicant;
     $applicantName = trim("{$profile->first_name} {$profile->last_name}");
-    $positionTitle = $this->application->vacancy->position_title;
+    $positionTitle = $this->application->vacancy?->position_title ?? 'the applied position';
     $statusLabel   = ucfirst(str_replace('_', ' ', $this->newStatus));
 
     return (new MailMessage)
@@ -43,8 +43,8 @@ class ApplicationStatusUpdated extends Notification implements ShouldQueue
       ->line("Your application for the position of {$positionTitle} has been updated.")
       ->line("New Status: {$statusLabel}")
       ->action('View Your Application', url("/my-applications/{$this->application->id}"))
-      ->line('For questions, please contact the CSC Regional Office.')
-      ->salutation('Civil Service Commission Regional Office');
+      ->line('For questions, please contact the CSC Regional Office VIII.')
+      ->salutation('Civil Service Commission Regional Office VIII');
   }
 
   // What is stored in the notifications database table (for the bell icon)
@@ -52,7 +52,7 @@ class ApplicationStatusUpdated extends Notification implements ShouldQueue
   {
     return [
       'application_id' => $this->application->id,
-      'vacancy_title'  => $this->application->vacancy->position_title,
+      'vacancy_title'  => $this->application->vacancy?->position_title ?? '—',
       'old_status'     => $this->oldStatus,
       'new_status'     => $this->newStatus,
       'message'        => 'Your application status has been updated to: ' . $this->newStatus,

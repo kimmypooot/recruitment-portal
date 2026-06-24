@@ -44,20 +44,59 @@
             </Link>
           </nav>
 
-          <!-- Auth buttons -->
+          <!-- Auth buttons + mobile hamburger -->
           <div class="flex items-center gap-2">
             <Link href="/login"
-              class="inline-flex px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+              class="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
               Sign In
             </Link>
             <Link href="/register"
-              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors shadow-sm">
+              class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors shadow-sm">
               Register
             </Link>
+            <button @click="mobileOpen = !mobileOpen" class="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
     </header>
+
+    <!-- ── Mobile nav panel ────────────────────────────────────────── -->
+    <Transition
+      enter-active-class="transition-all duration-200 ease-out"
+      enter-from-class="opacity-0 -translate-y-2"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition-all duration-150 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-2">
+      <nav v-if="mobileOpen" class="md:hidden bg-white border-b border-gray-200 px-4 py-3 space-y-1">
+        <Link href="/" @click="mobileOpen = false"
+          class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+          :class="$page.url === '/' ? 'bg-[#2a338f]/10 text-[#2a338f]' : 'text-gray-600 hover:bg-gray-100'">
+          Vacancies
+        </Link>
+        <Link href="/how-to-apply" @click="mobileOpen = false"
+          class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+          How to Apply
+        </Link>
+        <Link href="/about" @click="mobileOpen = false"
+          class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+          About
+        </Link>
+        <hr class="my-2 border-gray-100" />
+        <Link href="/login" @click="mobileOpen = false"
+          class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+          Sign In
+        </Link>
+        <Link href="/register" @click="mobileOpen = false"
+          class="block px-3 py-2 rounded-lg text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] transition-colors text-center rounded-lg">
+          Register
+        </Link>
+      </nav>
+    </Transition>
 
     <!-- ── Page Content (slot) ────────────────────────────────────────── -->
     <main class="flex-1">
@@ -137,5 +176,8 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { Link } from '@inertiajs/vue3'
+
+const mobileOpen = ref(false)
 </script>

@@ -85,11 +85,15 @@
           <div class="relative" ref="dropdownRef">
             <button @click="dropdownOpen = !dropdownOpen"
               class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-              <div class="w-8 h-8 rounded-full bg-[#2a338f] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                {{ userInitial }}
+              <div class="relative w-8 h-8 rounded-full bg-[#2a338f] flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
+                <span>{{ userInitial }}</span>
+                <img :src="`/profile/photo?token=${authToken}`"
+                  class="absolute inset-0 w-full h-full object-cover"
+                  @error="e => e.target.style.display = 'none'"
+                  alt="" />
               </div>
               <div class="hidden sm:block text-left">
-                <p class="text-sm font-semibold text-gray-800 leading-none max-w-[120px] truncate">{{ userName }}</p>
+                <p class="text-sm font-semibold text-gray-800 leading-none">{{ userName }}</p>
                 <p class="text-xs text-gray-400 mt-0.5">Admin</p>
               </div>
               <svg class="w-4 h-4 text-gray-400 hidden sm:block transition-transform flex-shrink-0"
@@ -109,8 +113,12 @@
               <div v-if="dropdownOpen"
                 class="absolute right-0 mt-1 w-56 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
                 <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-                  <div class="w-9 h-9 rounded-full bg-[#2a338f] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                    {{ userInitial }}
+                  <div class="relative w-9 h-9 rounded-full bg-[#2a338f] flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden">
+                    <span>{{ userInitial }}</span>
+                    <img :src="`/profile/photo?token=${authToken}`"
+                      class="absolute inset-0 w-full h-full object-cover"
+                      @error="e => e.target.style.display = 'none'"
+                      alt="" />
                   </div>
                   <div class="min-w-0">
                     <p class="text-sm font-semibold text-gray-900 truncate">{{ userName }}</p>
@@ -133,11 +141,38 @@
       </header>
 
       <!-- Page content -->
-      <main class="flex-1 overflow-auto p-4 sm:p-6">
+      <main class="flex-1 overflow-auto">
         <slot />
       </main>
 
     </div>
+
+    <!-- Logout confirmation modal -->
+    <Teleport to="body">
+      <div v-if="showLogoutModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" @click="showLogoutModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+          <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+          </div>
+          <h3 class="text-base font-semibold text-gray-900 mb-1">Sign out</h3>
+          <p class="text-sm text-gray-500 mb-6">Are you sure you want to sign out of your account?</p>
+          <div class="flex gap-3">
+            <button @click="showLogoutModal = false"
+              class="flex-1 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+              Cancel
+            </button>
+            <button @click="confirmLogout"
+              class="flex-1 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-semibold">
+              Sign out
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
   </div>
 </template>
 
@@ -147,11 +182,13 @@ import { Link, router, usePage } from '@inertiajs/vue3'
 
 defineProps({ title: { type: String, default: 'Dashboard' } })
 
-const sidebarOpen  = ref(false)
-const dropdownOpen = ref(false)
-const dropdownRef  = ref(null)
-const page         = usePage()
-const authUser     = ref({})
+const sidebarOpen    = ref(false)
+const dropdownOpen   = ref(false)
+const dropdownRef    = ref(null)
+const showLogoutModal = ref(false)
+const page           = usePage()
+const authToken      = ref('')
+const authUser       = ref({})
 
 const userName    = computed(() => authUser.value?.name ?? 'Admin')
 const userEmail   = computed(() => authUser.value?.email ?? '')
@@ -164,7 +201,8 @@ function handleClickOutside(e) {
 }
 
 onMounted(() => {
-  authUser.value = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+  authToken.value = localStorage.getItem('auth_token') ?? ''
+  authUser.value  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
   document.addEventListener('click', handleClickOutside)
 })
 
@@ -250,6 +288,11 @@ function isActive(href) {
 }
 
 function logout() {
+  showLogoutModal.value = true
+}
+
+function confirmLogout() {
+  showLogoutModal.value = false
   localStorage.removeItem('auth_token')
   router.visit('/login')
 }
