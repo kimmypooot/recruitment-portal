@@ -10,11 +10,15 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $users = User::select('id', 'name', 'email', 'role', 'created_at')
-            ->latest()
-            ->paginate(20);
+        $query = User::select('id', 'name', 'email', 'role', 'created_at');
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        $users = $query->latest()->paginate(20);
 
         return response()->json($users);
     }

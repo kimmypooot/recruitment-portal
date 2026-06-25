@@ -5,7 +5,7 @@
       <!-- Vacancy Banner -->
       <VacancyBanner
         :vacancy="vacancy"
-        :stage="4"
+        :stage="8"
         stageLabel="Final Deliberation &amp; Selection"
         :loading="loading"
       />
@@ -52,17 +52,20 @@
                 <th class="px-4 py-3 text-center font-medium text-gray-600">TWE</th>
                 <th class="px-4 py-3 text-center font-medium text-gray-600">CBWE</th>
                 <th class="px-4 py-3 text-center font-medium text-gray-600">BEI Avg</th>
+                <th class="px-4 py-3 text-center font-medium text-gray-600">BI</th>
+                <th class="px-4 py-3 text-center font-medium text-gray-600">EOPT</th>
                 <th class="px-4 py-3 text-center font-medium text-gray-600">Action</th>
                 <th class="px-4 py-3 text-center font-medium text-gray-600">Rank</th>
+                <th class="px-4 py-3 text-center font-medium text-gray-600">Remarks</th>
                 <th class="px-4 py-3 text-left font-medium text-gray-600">Decision</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr v-if="loading">
-                <td colspan="8" class="px-4 py-8 text-center text-gray-400">Loading…</td>
+                <td colspan="11" class="px-4 py-8 text-center text-gray-400">Loading…</td>
               </tr>
               <tr v-else-if="applications.length === 0">
-                <td colspan="8" class="px-4 py-8 text-center text-gray-400">No applications in deliberation.</td>
+                <td colspan="11" class="px-4 py-8 text-center text-gray-400">No applications in deliberation.</td>
               </tr>
               <tr v-for="app in applications" :key="app.id" class="hover:bg-gray-50">
                 <td class="px-4 py-3">
@@ -88,6 +91,31 @@
                   {{ app.bei_average ?? '—' }}
                 </td>
                 <td class="px-4 py-3 text-center">
+                  <span v-if="app.background_investigation?.submitted"
+                    class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-800 cursor-help"
+                    :title="'By: ' + (app.background_investigation.investigator ?? 'N/A')"
+                  >
+                    ✓ Submitted
+                  </span>
+                  <span v-else class="text-xs text-gray-400">—</span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <div v-if="app.eopt" class="flex items-center justify-center gap-1">
+                    <div v-for="cat in eoptCategories" :key="cat" class="relative group">
+                      <span class="inline-block w-4 h-4 rounded-full text-[8px] font-bold leading-4 text-white cursor-default"
+                        :class="eoptDotClass(app.eopt[cat])"
+                        :title="eoptCategoryLabel(cat) + ': ' + eoptRatingLabel(app.eopt[cat])">
+                      </span>
+                      <div
+                        class="absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-1 w-52 px-2 py-1.5 bg-gray-900 text-white text-[10px] leading-tight rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-normal">
+                        <p class="font-semibold mb-0.5">{{ eoptCategoryLabel(cat) }} — {{ eoptRatingLabel(app.eopt[cat]) }}</p>
+                        <p>{{ eoptDefinition(cat, app.eopt[cat]) }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <span v-else class="text-xs text-gray-400">—</span>
+                </td>
+                <td class="px-4 py-3 text-center">
                   <select
                     v-if="canDecide"
                     v-model="decisions[app.id].action"
@@ -111,6 +139,16 @@
                   />
                   <span v-else>{{ app.deliberation?.rank ?? '—' }}</span>
                 </td>
+                <td class="px-4 py-3 text-center">
+                  <textarea
+                    v-if="canDecide"
+                    v-model="decisions[app.id].remarks"
+                    rows="2"
+                    class="text-xs border border-gray-300 rounded px-2 py-1 w-32 resize-none"
+                    placeholder="Optional remarks…"
+                  ></textarea>
+                  <span v-else class="text-xs text-gray-500 truncate block max-w-[120px]">{{ app.deliberation?.remarks ?? '—' }}</span>
+                </td>
                 <td class="px-4 py-3">
                   <button
                     v-if="canDecide && decisions[app.id].action"
@@ -130,7 +168,7 @@
 
       <!-- Back nav -->
       <div class="flex justify-start pt-2">
-        <a :href="`/hrmpsb/bei-rating/${vacancyId}`" class="btn-secondary">← BEI Rating</a>
+        <a :href="`/hrmpsb/background-check/${vacancyId}`" class="btn-secondary">← Background Investigation</a>
       </div>
     </div>
   </HrmbsboardLayout>
@@ -158,6 +196,45 @@ const saving = reactive({})
 
 const allUnmasked = computed(() => applications.value.every(a => a.unmasked))
 
+const eoptCategories = ['emotional_stability', 'extraversion', 'openness_to_experience', 'agreeableness', 'conscientiousness']
+const eoptDefinitions = ref({})
+
+function eoptCategoryLabel(cat) {
+  const map = {
+    emotional_stability: 'Emotional Stability',
+    extraversion: 'Extraversion',
+    openness_to_experience: 'Openness to Experience',
+    agreeableness: 'Agreeableness',
+    conscientiousness: 'Conscientiousness',
+  }
+  return map[cat] ?? cat
+}
+
+function eoptRatingLabel(rating) {
+  const map = {
+    very_high: 'Very High',
+    high: 'High',
+    average: 'Average',
+    low: 'Low',
+    very_low: 'Very Low',
+  }
+  return map[rating] ?? rating
+}
+
+function eoptDotClass(rating) {
+  return {
+    very_high: 'bg-emerald-600',
+    high:      'bg-green-500',
+    average:   'bg-amber-400',
+    low:       'bg-orange-500',
+    very_low:  'bg-red-500',
+  }[rating] ?? 'bg-gray-300'
+}
+
+function eoptDefinition(category, rating) {
+  return eoptDefinitions.value[category]?.[rating] ?? ''
+}
+
 async function load() {
   loading.value = true
   try {
@@ -165,13 +242,15 @@ async function load() {
     vacancy.value = data.vacancy
     applications.value = data.applications
     canUnmask.value = data.can_unmask
-    canDecide.value = data.can_unmask // same roles
+    canDecide.value = data.can_decide
+    eoptDefinitions.value = data.eopt_definitions ?? {}
 
     // Init decision rows
     data.applications.forEach(app => {
       decisions[app.id] = {
         action: app.deliberation?.action ?? '',
         rank: app.deliberation?.rank ?? null,
+        remarks: app.deliberation?.remarks ?? '',
       }
     })
   } catch (e) {
@@ -203,6 +282,7 @@ async function saveDecision(applicationId) {
       application_id: applicationId,
       action: decisions[applicationId].action,
       rank: decisions[applicationId].rank || null,
+      remarks: decisions[applicationId].remarks || null,
     })
     await load()
   } catch (e) {

@@ -5,8 +5,8 @@
     <!-- Vacancy Banner -->
     <VacancyBanner
       :vacancy="vacancy"
-      :stage="1"
-      stageLabel="Qualification Standards (QS) Screening"
+      :stage="2"
+      stageLabel="QS Screening"
       :loading="loading"
     />
 

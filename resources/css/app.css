@@ -7,6 +7,14 @@
 
 @theme {
   --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --color-primary: #2a338f;
+  --color-primary-dark: #1e2570;
+  --color-primary-light: rgba(42, 51, 143, 0.1);
+}
+
+:root {
+  --color-primary: #2a338f;
+  --color-primary-dark: #1e2570;
 }
 
 .fade-enter-active,

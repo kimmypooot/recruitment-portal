@@ -241,8 +241,16 @@
             <option value="N/A">N/A</option>
             <option value="Career Service Professional Eligibility">Career Service Professional Eligibility</option>
             <option value="Career Service Subprofessional Eligibility">Career Service Subprofessional Eligibility</option>
-            <option value="RA 1080">RA 1080</option>
+            <option value="RA 1080 (Bar/Board Exam)">RA 1080 (Bar/Board Exam)</option>
             <option value="PD 907 (Honor Graduate Eligibility)">PD 907 (Honor Graduate Eligibility)</option>
+            <option value="RA 9418 (Eligibility for NP/EO)">RA 9418 (Eligibility for NP/EO)</option>
+            <option value="RA 10817">RA 10817 (Leveraging Human Resource for Careers Act Eligibility)</option>
+            <option value="Contractual Service Eligibility">Contractual Service Eligibility</option>
+            <option value="Barangay Official Eligibility">Barangay Official Eligibility (BOE)</option>
+            <option value="Honor Graduate Eligibility">Honor Graduate Eligibility (DepEd)</option>
+            <option value="Skill Eligibility">Skill Eligibility</option>
+            <option value="Sanggunian Eligibility">Sanggunian Eligibility</option>
+            <option value="Veteran Preference Rating">Veteran Preference Rating</option>
             <option value="Others">Others</option>
           </select>
           <div v-if="personal.eligibility === 'Others'" class="mt-2">

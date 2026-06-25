@@ -5,17 +5,29 @@
       <!-- ── Vacancy Banner ────────────────────────────────────────────── -->
       <VacancyBanner
         :vacancy="vacancy"
-        :stage="2"
-        stageLabel="Written Examination (TWE &amp; CBWE)"
+        :stage="stageNumber"
+        :stageLabel="stageLabel"
         :loading="loading">
+        <!-- Exam type tabs -->
+        <div class="mt-4 flex items-center gap-1">
+          <a :href="`/hrmpsb/exam-results/${props.vacancyId}?exam_type=TWE`"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors"
+            :class="examType === 'TWE' ? 'bg-[#1a5276] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+            TWE — Technical Written Exam
+          </a>
+          <a :href="`/hrmpsb/exam-results/${props.vacancyId}?exam_type=CBWE`"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors"
+            :class="examType === 'CBWE' ? 'bg-[#1a5276] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+            CBWE — Competency-Based Written Exam
+          </a>
+        </div>
         <!-- Passing threshold note -->
         <div class="mt-4 flex items-center gap-2 text-xs text-gray-500">
           <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          Passing threshold for all examinations is
+          Passing threshold is
           <strong class="text-amber-600 font-bold">{{ passingThreshold }}%</strong>.
-          An applicant must pass all required exam types to be eligible for BEI.
         </div>
       </VacancyBanner>
 
@@ -28,13 +40,13 @@
         </div>
         <div class="bg-white rounded-xl border border-green-200 p-4 shadow-sm text-center">
           <p class="text-2xl font-bold text-green-700">{{ passedCount }}</p>
-          <p class="text-xs text-gray-500 mt-0.5 font-medium">Passed All Exams</p>
-          <p class="text-[10px] text-gray-400 mt-0.5">≥ {{ passingThreshold }}% in all types</p>
+          <p class="text-xs text-gray-500 mt-0.5 font-medium">Passed {{ examType }}</p>
+          <p class="text-[10px] text-gray-400 mt-0.5">≥ {{ passingThreshold }}%</p>
         </div>
         <div class="bg-white rounded-xl border border-red-200 p-4 shadow-sm text-center">
           <p class="text-2xl font-bold text-red-500">{{ failedCount }}</p>
-          <p class="text-xs text-gray-500 mt-0.5 font-medium">Did Not Pass</p>
-          <p class="text-[10px] text-gray-400 mt-0.5">Below threshold / incomplete</p>
+          <p class="text-xs text-gray-500 mt-0.5 font-medium">Failed {{ examType }}</p>
+          <p class="text-[10px] text-gray-400 mt-0.5">Below threshold</p>
         </div>
         <div class="bg-white rounded-xl border border-amber-200 p-4 shadow-sm text-center">
           <p class="text-2xl font-bold text-amber-500">{{ pendingCount }}</p>
@@ -89,7 +101,7 @@
               </div>
               <div>
                 <label class="field-label">No. of Items / Max Score</label>
-                <input v-model.number="form.max_score" type="number" step="1" min="1" max="500" class="input" required />
+                <input v-model.number="form.max_score" type="number" step="1" min="1" max="100" class="input" required />
               </div>
             </div>
 
@@ -203,14 +215,10 @@
                 <th class="pl-6 pr-3 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider w-14">Rank</th>
                 <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Blind Code / Applicant</th>
                 <th class="px-3 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  <div>TWE</div>
-                  <div class="font-normal normal-case text-gray-300">Technical Written Exam</div>
+                  <div>{{ examType }}</div>
+                  <div class="font-normal normal-case text-gray-300">{{ examType === 'TWE' ? 'Technical Written Exam' : 'Competency-Based Written Exam' }}</div>
                 </th>
-                <th class="px-3 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  <div>CBWE</div>
-                  <div class="font-normal normal-case text-gray-300">Competency-Based Written Exam</div>
-                </th>
-                <th class="px-3 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">Average %</th>
+                <th class="px-3 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">Score %</th>
                 <th class="px-3 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">Result</th>
                 <th v-if="canEncode" class="pl-3 pr-6 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
@@ -262,21 +270,21 @@
                   </div>
                 </td>
 
-                <!-- TWE -->
+                <!-- Exam Score -->
                 <td class="px-3 py-4 text-center">
-                  <div v-if="getScore(app, 'TWE')" class="inline-flex flex-col items-center gap-1">
+                  <div v-if="getScore(app, examType)" class="inline-flex flex-col items-center gap-1">
                     <span class="text-base font-bold"
-                      :class="getScore(app, 'TWE').passed ? 'text-green-700' : 'text-red-600'">
-                      {{ getScore(app, 'TWE').percentage }}%
+                      :class="getScore(app, examType).passed ? 'text-green-700' : 'text-red-600'">
+                      {{ getScore(app, examType).percentage }}%
                     </span>
                     <span class="text-[10px] text-gray-400">
-                      {{ getScore(app, 'TWE').raw_score }} / {{ getScore(app, 'TWE').max_score }} items
+                      {{ getScore(app, examType).raw_score }} / {{ getScore(app, examType).max_score }} items
                     </span>
                     <span class="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
-                      :class="getScore(app, 'TWE').passed
+                      :class="getScore(app, examType).passed
                         ? 'bg-green-100 text-green-700'
                         : 'bg-red-100 text-red-600'">
-                      {{ getScore(app, 'TWE').passed ? 'PASS' : 'FAIL' }}
+                      {{ getScore(app, examType).passed ? 'PASS' : 'FAIL' }}
                     </span>
                   </div>
                   <div v-else class="inline-flex flex-col items-center gap-1 text-gray-300">
@@ -285,49 +293,18 @@
                   </div>
                 </td>
 
-                <!-- CBWE -->
+                <!-- Result -->
                 <td class="px-3 py-4 text-center">
-                  <div v-if="getScore(app, 'CBWE')" class="inline-flex flex-col items-center gap-1">
-                    <span class="text-base font-bold"
-                      :class="getScore(app, 'CBWE').passed ? 'text-green-700' : 'text-red-600'">
-                      {{ getScore(app, 'CBWE').percentage }}%
-                    </span>
-                    <span class="text-[10px] text-gray-400">
-                      {{ getScore(app, 'CBWE').raw_score }} / {{ getScore(app, 'CBWE').max_score }} items
-                    </span>
-                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
-                      :class="getScore(app, 'CBWE').passed
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-600'">
-                      {{ getScore(app, 'CBWE').passed ? 'PASS' : 'FAIL' }}
-                    </span>
-                  </div>
-                  <div v-else class="inline-flex flex-col items-center gap-1 text-gray-300">
-                    <span class="text-sm">—</span>
-                    <span class="text-[10px]">Not yet encoded</span>
-                  </div>
-                </td>
-
-                <!-- Average % -->
-                <td class="px-3 py-4 text-center">
-                  <span v-if="avgPct(app) !== null" class="text-sm font-bold text-gray-700">
-                    {{ avgPct(app) }}%
-                  </span>
-                  <span v-else class="text-gray-300 text-sm">—</span>
-                </td>
-
-                <!-- Overall Result -->
-                <td class="px-3 py-4 text-center">
-                  <span v-if="app.exam_results.length"
+                  <span v-if="getScore(app, examType)"
                     class="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full"
-                    :class="app.overall_passed
+                    :class="getScore(app, examType).passed
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-700'">
                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                      <path v-if="app.overall_passed" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                      <path v-if="getScore(app, examType).passed" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                       <path v-else stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
-                    {{ app.overall_passed ? 'PASSED' : 'FAILED' }}
+                    {{ getScore(app, examType).passed ? 'PASSED' : 'FAILED' }}
                   </span>
                   <span v-else class="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -384,9 +361,18 @@
 import { ref, computed, reactive, onMounted } from 'vue'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
+import { useConfirm } from '@/composables/useConfirm'
 import api from '@/services/api'
 
-const props = defineProps({ vacancyId: Number })
+const { confirm } = useConfirm()
+
+const props = defineProps({ vacancyId: Number, exam_type: { type: String, default: 'TWE' } })
+
+const examType = computed(() => props.exam_type ?? 'TWE')
+const stageNumber = computed(() => examType.value === 'TWE' ? 3 : 4)
+const stageLabel = computed(() => examType.value === 'TWE'
+  ? 'Qualifying Exam (TWE)'
+  : 'Qualifying Exam (CBWE)')
 
 const loading          = ref(true)
 const submitting       = ref(false)
@@ -420,9 +406,9 @@ const previewPct = computed(() => {
   return ((form.value.raw_score / form.value.max_score) * 100).toFixed(2)
 })
 
-const passedCount  = computed(() => applications.value.filter(a => a.overall_passed && a.exam_results.length).length)
-const failedCount  = computed(() => applications.value.filter(a => !a.overall_passed && a.exam_results.length).length)
-const pendingCount = computed(() => applications.value.filter(a => !a.exam_results.length).length)
+const passedCount  = computed(() => applications.value.filter(a => getScore(a, examType.value)?.passed).length)
+const failedCount  = computed(() => applications.value.filter(a => getScore(a, examType.value) && !getScore(a, examType.value).passed).length)
+const pendingCount = computed(() => applications.value.filter(a => !getScore(a, examType.value)).length)
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -480,7 +466,8 @@ async function submitScore() {
 }
 
 async function deleteScore(app) {
-  if (!confirm(`Clear all exam scores for this applicant? This cannot be undone.`)) return
+  const ok = await confirm(`Clear all exam scores for this applicant? This cannot be undone.`)
+  if (!ok) return
   deleting[app.id] = true
   try {
     for (const r of app.exam_results) {

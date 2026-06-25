@@ -28,8 +28,8 @@ class ExaminationScheduled extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $examLabel = match ($this->schedule->exam_type) {
-            'TWE'  => 'Technical Written Examination (TWE)',
-            'CBWE' => 'Competency-Based Written Examination (CBWE)',
+            'TWE'  => 'Technical Written Examination',
+            'CBWE' => 'Competency-Based Written Examination',
             default => $this->schedule->exam_type,
         };
 
@@ -37,33 +37,42 @@ class ExaminationScheduled extends Notification implements ShouldQueue
         $time = $this->schedule->scheduled_at->format('g:i A');
 
         return (new MailMessage)
-            ->subject("Examination Schedule Notice — {$this->positionTitle}")
+            ->subject("Exam Scheduled — {$this->positionTitle}")
             ->greeting("Dear {$notifiable->name},")
-            ->line('We are pleased to inform you that you have qualified for the written examination as part of the selection process for the following position:')
-            ->line("**{$this->positionTitle}**")
-            ->line('Please take note of your examination schedule details below:')
-            ->line("**Examination Type:** {$examLabel}")
-            ->line("**Date:** {$date}")
-            ->line("**Time:** {$time}")
-            ->line("**Venue:** {$this->schedule->venue}")
+            ->line("Congratulations! You have qualified for the written examination for the position of **{$this->positionTitle}**.")
+            ->line('Here are the details of your exam:')
+            ->line("- **Type:** {$examLabel}")
+            ->line("- **Date:** {$date}")
+            ->line("- **Time:** {$time}")
+            ->line("- **Venue:** {$this->schedule->venue}")
             ->when(
                 $this->schedule->notes,
-                fn ($m) => $m->line("**Special Instructions:** {$this->schedule->notes}")
+                fn ($m) => $m->line("- **Reminders:** {$this->schedule->notes}")
             )
-            ->line('Kindly report to the examination venue at least 15 minutes before the scheduled time. Bring a valid government-issued ID.')
+            ->line('Please arrive at least 15 minutes early. Bring a valid government-issued ID and your own ballpen.')
             ->action('View My Application', url('/applicant/applications'))
-            ->line('For inquiries, please contact the HR Management and Practices Section.')
-            ->salutation('Civil Service Commission Regional Office VIII');
+            ->line('For questions, please contact the HR Management and Practices Section.')
+            ->salutation('CSC RO VIII Recruitment Portal');
     }
 
     public function toArray(object $notifiable): array
     {
+        $examLabel = match ($this->schedule->exam_type) {
+            'TWE'  => 'Technical Written Examination',
+            'CBWE' => 'Competency-Based Written Examination',
+            default => $this->schedule->exam_type,
+        };
+
+        $date = $this->schedule->scheduled_at->format('F j, Y');
+        $time = $this->schedule->scheduled_at->format('g:i A');
+
         return [
             'type'         => 'exam_scheduled',
             'exam_type'    => $this->schedule->exam_type,
             'scheduled_at' => $this->schedule->scheduled_at->toIso8601String(),
             'venue'        => $this->schedule->venue,
             'position'     => $this->positionTitle,
+            'message'      => "You have an exam scheduled for {$this->positionTitle} on {$date} at {$time}.",
         ];
     }
 }

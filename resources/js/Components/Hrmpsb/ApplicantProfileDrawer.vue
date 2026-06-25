@@ -203,6 +203,9 @@
 <script setup>
 import { ref, watch } from 'vue'
 import axios from 'axios'
+import { useConfirm } from '@/composables/useConfirm'
+
+const { alert } = useConfirm()
 
 const props = defineProps({
   modelValue:    { type: Boolean, default: false },
@@ -265,7 +268,7 @@ async function viewDocument(type, url) {
     window.open(objUrl, '_blank')
     setTimeout(() => URL.revokeObjectURL(objUrl), 60000)
   } catch (e) {
-    alert('Could not open the document. It may not be available.')
+    await alert('Could not open the document. It may not be available.')
   } finally {
     viewingDoc.value = null
   }

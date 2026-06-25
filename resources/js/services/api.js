@@ -1,17 +1,15 @@
 // resources/js/services/api.js
 import axios from 'axios';
 
-const appUrl = document.querySelector('meta[name="app-url"]')?.getAttribute('content') ?? ''
+const origin = window.location.origin
 
 const api = axios.create({
-  baseURL: `${appUrl}/api`,
+  baseURL: `${origin}/api`,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
 });
-
-api.defaults.withCredentials = true;
 
 // Attach stored Bearer token on every request
 api.interceptors.request.use((config) => {
@@ -27,7 +25,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_user');
-      window.location.href = `${appUrl}/login`;
+      window.location.href = `${origin}/login`;
     }
     if (error.response?.status === 403) {
       console.error('Forbidden — insufficient permissions');

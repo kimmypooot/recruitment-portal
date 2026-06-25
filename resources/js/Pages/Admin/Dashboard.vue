@@ -3,8 +3,8 @@
 
     <!-- Stat cards -->
     <div class="grid grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
-      <div v-for="card in statCards" :key="card.label"
-        class="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4 shadow-sm">
+      <Link v-for="card in statCards" :key="card.label" :href="card.link"
+        class="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4 shadow-sm hover:border-[#2a338f]/30 hover:shadow-md transition-all cursor-pointer">
         <div :class="card.iconBg" class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0">
           <svg class="w-5 h-5" :class="card.iconColor" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" :d="card.icon"/>
@@ -16,7 +16,7 @@
           <div v-else class="h-7 w-14 bg-gray-200 rounded animate-pulse mt-0.5"></div>
           <p v-if="card.sub" class="text-xs text-gray-400 mt-0.5">{{ card.sub }}</p>
         </div>
-      </div>
+      </Link>
     </div>
 
     <!-- Pipeline summary chips -->
@@ -36,6 +36,16 @@
       <p v-else class="text-sm text-gray-400">No application data yet.</p>
     </div>
 
+    <!-- Pipeline color legend -->
+    <div class="mt-3 flex flex-wrap gap-2 text-[10px] text-gray-400">
+      <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> Submitted</span>
+      <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span> Under Review</span>
+      <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-500"></span> Exam Scheduled</span>
+      <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> Completed</span>
+      <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span> Disqualified</span>
+      <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-gray-500"></span> Withdrawn</span>
+    </div>
+
     <!-- Bottom row: Recent Applications + Upcoming Schedules -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -43,7 +53,15 @@
       <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-sm font-semibold text-gray-900">Recent Applications</h2>
-          <Link href="/admin/applications" class="text-xs text-[#2a338f] hover:underline font-medium">View all</Link>
+          <div class="flex items-center gap-2">
+            <button @click="autoRefresh = !autoRefresh"
+              class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium transition-colors"
+              :class="autoRefresh ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'">
+              <span class="w-1.5 h-1.5 rounded-full" :class="autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'"></span>
+              {{ autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF' }}
+            </button>
+            <Link href="/admin/applications" class="text-xs text-[#2a338f] hover:underline font-medium">View all</Link>
+          </div>
         </div>
         <div v-if="loading" class="space-y-3">
           <div v-for="n in 5" :key="n" class="h-10 bg-gray-100 rounded animate-pulse"></div>
@@ -112,7 +130,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
@@ -124,6 +142,20 @@ const stats           = ref({})
 const pipeline        = ref([])
 const recentApplications = ref([])
 const upcoming        = ref({ exams: [], interviews: [] })
+const autoRefresh     = ref(false)
+let refreshInterval   = null
+
+watch(autoRefresh, (val) => {
+  if (val) {
+    refreshInterval = setInterval(loadDashboard, 30000)
+  } else {
+    clearInterval(refreshInterval)
+  }
+})
+
+onBeforeUnmount(() => {
+  clearInterval(refreshInterval)
+})
 
 // ── Pipeline ──────────────────────────────────────────────────────────────────
 const STATUS_ORDER = [
@@ -187,32 +219,32 @@ const upcomingAll = computed(() => {
 // ── Stat cards ────────────────────────────────────────────────────────────────
 const statCards = computed(() => [
   {
-    label:    'Total Vacancies',
-    value:    stats.value.vacancies?.total ?? 0,
-    sub:      `${stats.value.vacancies?.published ?? 0} published`,
-    icon:     'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-    iconBg:   'bg-[#2a338f]/10', iconColor: 'text-[#2a338f]',
+    label: 'Total Vacancies', value: stats.value.vacancies?.total ?? 0,
+    sub: `${stats.value.vacancies?.published ?? 0} published`,
+    link: '/admin/vacancies',
+    icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+    iconBg: 'bg-[#2a338f]/10', iconColor: 'text-[#2a338f]',
   },
   {
-    label:    'Closing Soon',
-    value:    stats.value.vacancies?.closing_soon ?? 0,
-    sub:      'within 7 days',
-    icon:     'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-    iconBg:   'bg-yellow-100', iconColor: 'text-yellow-700',
+    label: 'Closing Soon', value: stats.value.vacancies?.closing_soon ?? 0,
+    sub: 'within 7 days',
+    link: '/admin/vacancies?status=published',
+    icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+    iconBg: 'bg-yellow-100', iconColor: 'text-yellow-700',
   },
   {
-    label:    'Total Applications',
-    value:    stats.value.applications?.total ?? 0,
-    sub:      `${stats.value.applications?.this_month ?? 0} this month`,
-    icon:     'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
-    iconBg:   'bg-green-100', iconColor: 'text-green-700',
+    label: 'Total Applications', value: stats.value.applications?.total ?? 0,
+    sub: `${stats.value.applications?.this_month ?? 0} this month`,
+    link: '/admin/applications',
+    icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+    iconBg: 'bg-green-100', iconColor: 'text-green-700',
   },
   {
-    label:    'Pending Review',
-    value:    stats.value.applications?.pending ?? 0,
-    sub:      'awaiting action',
-    icon:     'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
-    iconBg:   'bg-red-100', iconColor: 'text-red-700',
+    label: 'Pending Review', value: stats.value.applications?.pending ?? 0,
+    sub: 'awaiting action',
+    link: '/admin/applications?status=submitted',
+    icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
+    iconBg: 'bg-red-100', iconColor: 'text-red-700',
   },
 ])
 

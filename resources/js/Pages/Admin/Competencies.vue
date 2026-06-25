@@ -229,6 +229,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 
+// Hardcoded order; can be replaced with import { COMPETENCY_GROUPS } from '@/utils/constants' if server order matches
 const groupOrder = ['Core', 'Organizational', 'Leadership', 'Technical']
 
 // ── Auth ──────────────────────────────────────────────────────────────────────

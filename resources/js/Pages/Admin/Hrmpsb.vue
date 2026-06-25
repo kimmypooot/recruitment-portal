@@ -151,6 +151,9 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { useConfirm } from '@/composables/useConfirm'
+
+const { confirm } = useConfirm()
 
 const compositions = ref([])
 const roles        = ref({})
@@ -223,7 +226,8 @@ async function toggleActive(c) {
 }
 
 async function removeMember(c) {
-  if (!confirm(`Remove ${c.user?.name} from the HRMPSB?`)) return
+  const ok = await confirm(`Remove ${c.user?.name} from the HRMPSB?`)
+  if (!ok) return
   await axios.delete(`/api/admin/hrmpsb/compositions/${c.id}`, { headers: authHeaders() })
   loadCompositions()
 }

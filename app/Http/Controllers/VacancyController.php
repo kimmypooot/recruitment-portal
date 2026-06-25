@@ -184,6 +184,26 @@ class VacancyController extends Controller
         ]);
     }
 
+    public function bulkUpdateStatus(Request $request): JsonResponse
+    {
+        $request->validate([
+            'ids'    => 'required|array',
+            'ids.*'  => 'exists:vacancies,id',
+            'status' => 'required|in:published,closed,draft,archived,filled',
+        ]);
+
+        $count = Vacancy::whereIn('id', $request->ids)->update([
+            'status' => $request->status,
+        ]);
+
+        AuditLog::record("bulk_vacancy_status_update:{$request->status}", new Vacancy());
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$count} vacancy(ies) updated to '{$request->status}'.",
+        ]);
+    }
+
     /**
      * Delete vacancy
      */

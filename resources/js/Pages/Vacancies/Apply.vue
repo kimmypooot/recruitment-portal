@@ -81,6 +81,22 @@
           </div>
         </div>
 
+        <!-- ── Deadline Passed Banner ─────────────────────────────── -->
+        <div v-if="deadlinePassed && !existingApplication"
+          class="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 flex items-start gap-4">
+          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-red-800">Application deadline has passed</p>
+            <p class="text-xs text-red-700 mt-0.5">
+              The submission period for this position ended on {{ formatDate(vacancy.deadline_at) }}. You can no longer submit an application.
+            </p>
+          </div>
+        </div>
+
         <!-- ── Already Applied Banner ──────────────────────────────── -->
         <div v-if="existingApplication"
           class="mb-6 rounded-xl border border-green-200 bg-green-50 p-5 flex items-start gap-4">
@@ -307,7 +323,7 @@
               </Link>
               <button
                 @click="submitApplication"
-                :disabled="isSubmitting || missingRequiredDocs.length > 0"
+                :disabled="isSubmitting || missingRequiredDocs.length > 0 || deadlinePassed"
                 class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg v-if="isSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -382,6 +398,8 @@ const daysRemaining = computed(() => {
   return ms < 0 ? -1 : Math.ceil(ms / (1000 * 60 * 60 * 24))
 })
 
+const deadlinePassed = computed(() => daysRemaining.value !== null && daysRemaining.value < 0)
+
 const addressLine = computed(() => {
   const p = profile.value
   if (!p) return '—'
@@ -445,6 +463,10 @@ onMounted(async () => {
 // ── Actions ──────────────────────────────────────────────────────────────────
 
 async function submitApplication() {
+  if (deadlinePassed.value) {
+    submitError.value = 'This application period has closed. You can no longer submit an application.'
+    return
+  }
   isSubmitting.value = true
   submitError.value  = ''
   try {

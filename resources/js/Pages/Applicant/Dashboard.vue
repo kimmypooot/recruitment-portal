@@ -67,10 +67,28 @@
         <p class="text-sm text-gray-500 mt-1">Discover and apply for open government positions.</p>
       </div>
 
+      <!-- Quick actions -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <Link href="/applicant/dashboard"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          Browse Vacancies
+        </Link>
+        <Link href="/applicant/applications"
+          class="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          View My Applications
+        </Link>
+      </div>
+
       <!-- Stat cards -->
       <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        <div v-for="card in statCards" :key="card.label"
-          class="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4 shadow-sm">
+        <Link v-for="card in statCards" :key="card.label" :href="card.link"
+          class="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4 shadow-sm hover:border-[#2a338f]/30 hover:shadow-md transition-all cursor-pointer">
           <div :class="card.iconBg" class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0">
             <svg class="w-5 h-5" :class="card.iconColor" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" :d="card.icon"/>
@@ -81,7 +99,7 @@
             <p v-if="!loadingApps" class="text-2xl font-bold text-gray-900 mt-0.5">{{ card.value }}</p>
             <div v-else class="h-7 w-10 bg-gray-200 rounded animate-pulse mt-0.5"></div>
           </div>
-        </div>
+        </Link>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -281,21 +299,25 @@ const appCounts = computed(() => {
 const statCards = computed(() => [
   {
     label: 'Total Applications', value: appCounts.value.total,
+    link: '/applicant/applications',
     icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
     iconBg: 'bg-[#2a338f]/10', iconColor: 'text-[#2a338f]',
   },
   {
     label: 'Pending Review', value: appCounts.value.pending,
+    link: '/applicant/applications?status=submitted',
     icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
     iconBg: 'bg-yellow-50', iconColor: 'text-yellow-600',
   },
   {
     label: 'Exam Scheduled', value: appCounts.value.exam,
+    link: '/applicant/applications?status=exam_scheduled',
     icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
     iconBg: 'bg-purple-50', iconColor: 'text-purple-600',
   },
   {
     label: 'Passed', value: appCounts.value.passed,
+    link: '/applicant/applications?status=passed',
     icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
     iconBg: 'bg-green-50', iconColor: 'text-green-600',
   },
@@ -310,8 +332,9 @@ const profileSteps = computed(() => {
     { label: 'Address information',      done: !!(p?.region && p?.province) },
     { label: 'Contact details',          done: !!(p?.mobile_number) },
     { label: 'Experience & education',   done: !!(p?.work_experiences?.length || p?.educational_attainments?.length) },
+    { label: 'Trainings',                done: !!(p?.trainings?.length) },
     { label: 'Eligibility & other info', done: !!(p?.eligibility) },
-    { label: 'Documents uploaded',       done: !!(p?.pds_path && p?.app_letter_path) },
+    { label: 'Documents uploaded',       done: !!(p?.pds_path && p?.app_letter_path && p?.coe_path && p?.tor_path && p?.ipcr_path) },
   ]
 })
 

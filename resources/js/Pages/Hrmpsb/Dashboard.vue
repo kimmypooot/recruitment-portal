@@ -43,6 +43,12 @@
         <span v-if="!loading" class="text-xs text-gray-400 font-medium">
           {{ vacancies.length }} position{{ vacancies.length !== 1 ? 's' : '' }}
         </span>
+        <button @click="autoRefresh = !autoRefresh"
+          class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors"
+          :class="autoRefresh ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'">
+          <span class="w-1.5 h-1.5 rounded-full" :class="autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'"></span>
+          {{ autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF' }}
+        </button>
       </div>
 
       <!-- Loading skeletons -->
@@ -135,19 +141,15 @@
           <!-- Action Buttons -->
           <div class="px-5 pb-5 flex flex-wrap gap-2">
             <template v-if="stages[v.id]">
-              <!-- Pre-Assessment Matrix — viewable by all members; editable by secretariat -->
-              <NavBtn :href="`/hrmpsb/pre-assessment/${v.id}`"
-                variant="outline"
-                icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
+              <!-- Phase 1: Pre-Assessment -->
+              <NavBtn :href="`/hrmpsb/pre-assessment/${v.id}`" variant="primary" icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
                 Pre-Assessment
               </NavBtn>
 
-              <!-- QS Evaluation — always accessible if there are applications -->
+              <!-- Phase 2: QS Screening -->
               <NavBtn :href="`/hrmpsb/qs-evaluation/${v.id}`" variant="primary" icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
-                QS Evaluation
+                QS Screening
               </NavBtn>
-
-              <!-- QS Results — after at least one QS exists -->
               <NavBtn :href="`/hrmpsb/qs-results/${v.id}`"
                 :disabled="!stages[v.id].qs_exists"
                 :tooltip="!stages[v.id].qs_exists ? 'No QS evaluations submitted yet' : null"
@@ -155,47 +157,77 @@
                 QS Results
               </NavBtn>
 
-              <!-- Exam Scheduler — after QS is locked -->
-              <NavBtn :href="`/hrmpsb/exam-schedule/${v.id}`"
+              <!-- Phase 3: TWE -->
+              <NavBtn :href="`/hrmpsb/exam-schedule/${v.id}?exam_type=TWE`"
                 :disabled="!stages[v.id].qs_locked"
-                :tooltip="!stages[v.id].qs_locked ? 'QS must be locked before scheduling exams' : null"
+                :tooltip="!stages[v.id].qs_locked ? 'QS must be locked before scheduling TWE' : null"
                 variant="outline"
                 icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                Exam Scheduler
+                TWE Scheduler
               </NavBtn>
-
-              <!-- Exam Results — after QS is locked -->
-              <NavBtn :href="`/hrmpsb/exam-results/${v.id}`"
+              <NavBtn :href="`/hrmpsb/exam-results/${v.id}?exam_type=TWE`"
                 :disabled="!stages[v.id].qs_locked"
-                :tooltip="!stages[v.id].qs_locked ? 'QS must be locked before encoding exam results' : null"
+                :tooltip="!stages[v.id].qs_locked ? 'QS must be locked before encoding TWE results' : null"
                 icon="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
-                Exam Results
+                TWE Results
               </NavBtn>
 
-              <!-- BEI Scheduler — after exam scores exist -->
-              <NavBtn :href="`/hrmpsb/bei-schedule/${v.id}`"
-                :disabled="!stages[v.id].exam_exists"
-                :tooltip="!stages[v.id].exam_exists ? 'Exam scores must be encoded before scheduling BEI' : null"
+              <!-- Phase 4: CBWE -->
+              <NavBtn :href="`/hrmpsb/exam-schedule/${v.id}?exam_type=CBWE`"
+                :disabled="!stages[v.id].twe_exists"
+                :tooltip="!stages[v.id].twe_exists ? 'TWE must be completed before scheduling CBWE' : null"
+                variant="outline"
+                icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                CBWE Scheduler
+              </NavBtn>
+              <NavBtn :href="`/hrmpsb/exam-results/${v.id}?exam_type=CBWE`"
+                :disabled="!stages[v.id].twe_exists"
+                :tooltip="!stages[v.id].twe_exists ? 'TWE must be completed before encoding CBWE results' : null"
+                icon="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                CBWE Results
+              </NavBtn>
+
+              <!-- Phase 5: BEI -->
+              <NavBtn v-if="['hrmpsb-secretariat', 'hrmpsb-chief-hrd'].includes(authUser.role)"
+                :href="`/hrmpsb/bei-schedule/${v.id}`"
+                :disabled="!stages[v.id].cbwe_exists"
+                :tooltip="!stages[v.id].cbwe_exists ? 'CBWE scores must be encoded before scheduling BEI' : null"
                 variant="outline"
                 icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                 BEI Scheduler
               </NavBtn>
-
-              <!-- BEI Rating — after QS locked and exam scores exist -->
               <NavBtn :href="`/hrmpsb/bei-rating/${v.id}`"
-                :disabled="!stages[v.id].qs_locked || !stages[v.id].exam_exists"
+                :disabled="!stages[v.id].qs_locked || !stages[v.id].cbwe_exists"
                 :tooltip="!stages[v.id].qs_locked ? 'QS must be locked first'
-                  : !stages[v.id].exam_exists ? 'Exam scores must be encoded before BEI'
+                  : !stages[v.id].cbwe_exists ? 'CBWE scores must be encoded before BEI'
                   : null"
                 icon="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z">
                 BEI Rating
               </NavBtn>
 
-              <!-- Deliberation — chair/secretariat only, after BEI is locked -->
+              <!-- Phase 6: EOPT -->
+              <NavBtn :href="`/hrmpsb/eopt/${v.id}`"
+                :disabled="!stages[v.id].bei_locked"
+                :tooltip="!stages[v.id].bei_locked ? 'BEI ratings must be locked before EOPT' : null"
+                variant="outline"
+                icon="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                EOPT Assessment
+              </NavBtn>
+
+              <!-- Phase 7: Background Investigation -->
+              <NavBtn :href="`/hrmpsb/background-check/${v.id}`"
+                :disabled="!stages[v.id].eopt_exists"
+                :tooltip="!stages[v.id].eopt_exists ? 'EOPT must be completed before background check' : null"
+                variant="outline"
+                icon="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                Background Investigation
+              </NavBtn>
+
+              <!-- Phase 8: Deliberation -->
               <NavBtn v-if="isChairOrSecretary"
                 :href="`/hrmpsb/deliberation/${v.id}`"
-                :disabled="!stages[v.id].bei_locked"
-                :tooltip="!stages[v.id].bei_locked ? 'BEI ratings must be locked before deliberation' : null"
+                :disabled="!stages[v.id].background_check_locked"
+                :tooltip="!stages[v.id].background_check_locked ? 'Background investigation must be completed before deliberation' : null"
                 variant="outline"
                 icon="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z">
                 Deliberation
@@ -214,13 +246,23 @@
       </div>
 
     </div>
+
+    <ConfirmModal
+      :show="!!confirmDelete"
+      title="Remove Board Member?"
+      :message="`Remove ${confirmDelete?.user?.name ?? 'this member'} from the HRMPSB composition?`"
+      confirm-text="Remove"
+      @confirm="doRemove"
+      @cancel="confirmDelete = null"
+    />
   </HrmbsboardLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, h, resolveComponent } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, h, resolveComponent } from 'vue'
 import axios from 'axios'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import ConfirmModal from '@/Components/UI/ConfirmModal.vue'
 
 /* ── Inline NavBtn sub-component ─────────────────────────────────────────── */
 const NavBtn = {
@@ -267,6 +309,9 @@ const roleLabels = ref({})
 const authUser   = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
 const vacancies  = ref([])
 const stages     = ref({})
+const confirmDelete = ref(null)
+const autoRefresh = ref(false)
+let refreshInterval = null
 
 /* ── Computed ────────────────────────────────────────────────────────────── */
 const initials = computed(() => {
@@ -282,9 +327,13 @@ const pendingActions = computed(() => {
   return vacancies.value.filter(v => {
     const s = stages.value[v.id]
     if (!s) return false
-    if (!s.qs_exists) return true
-    if (s.qs_locked && !s.exam_exists) return true
-    if (s.exam_exists && s.qs_locked && !s.bei_exists) return true
+    if (!s.pre_assessment_exists) return true
+    if (!s.qs_locked) return true
+    if (s.qs_locked && !s.twe_exists) return true
+    if (s.twe_exists && !s.cbwe_exists) return true
+    if (s.cbwe_exists && !s.bei_locked) return true
+    if (s.bei_locked && !s.eopt_exists) return true
+    if (s.eopt_exists && !s.background_check_locked) return true
     return false
   }).length
 })
@@ -307,26 +356,56 @@ function authHeaders() {
 function getSteps(vacancyId) {
   const s = stages.value[vacancyId] ?? {}
   return [
-    { key: 'qs',            label: 'QS\nEvaluation',    done: s.qs_locked,            active: s.qs_exists && !s.qs_locked },
-    { key: 'exam_sched',    label: 'Exam\nScheduling',   done: s.exam_scheduled,       active: s.qs_locked && !s.exam_scheduled },
-    { key: 'exam',          label: 'Exam\nResults',      done: s.exam_exists,          active: s.exam_scheduled && !s.exam_exists },
-    { key: 'bei_sched',     label: 'BEI\nScheduling',    done: s.bei_scheduled,        active: s.exam_exists && !s.bei_scheduled },
-    { key: 'bei',           label: 'BEI\nRating',        done: s.bei_locked,           active: s.bei_scheduled && !s.bei_locked },
-    { key: 'deliberation',  label: 'Deliberation',       done: s.deliberation_exists,  active: s.bei_locked && !s.deliberation_exists },
+    { key: 'pre_assessment', label: 'Pre-\nAssessment', done: s.pre_assessment_exists, active: false },
+    { key: 'qs',             label: 'QS\nScreening',     done: s.qs_locked,             active: s.qs_exists && !s.qs_locked },
+    { key: 'twe',            label: 'TWE',               done: s.twe_exists,            active: (s.qs_locked || s.qs_exists) && !s.twe_exists },
+    { key: 'cbwe',           label: 'CBWE',              done: s.cbwe_exists,           active: s.twe_exists && !s.cbwe_exists },
+    { key: 'bei',            label: 'BEI',               done: s.bei_locked,            active: (s.twe_exists || s.cbwe_exists) && !s.bei_locked },
+    { key: 'eopt',           label: 'EOPT',              done: s.eopt_exists,           active: s.bei_locked && !s.eopt_exists },
+    { key: 'background',     label: 'Background\nCheck', done: s.background_check_locked, active: s.eopt_exists && !s.background_check_locked },
+    { key: 'deliberation',   label: 'Deliberation',      done: s.deliberation_exists,   active: s.background_check_locked && !s.deliberation_exists },
   ]
 }
 
 function currentStageBadge(s) {
-  if (s.deliberation_exists) return { label: 'Deliberation Done',    class: 'bg-indigo-100 text-indigo-700', dot: 'bg-indigo-500' }
-  if (s.bei_locked)          return { label: 'Awaiting Deliberation', class: 'bg-violet-100 text-violet-700', dot: 'bg-violet-500' }
-  if (s.bei_exists)          return { label: 'BEI In Progress',       class: 'bg-blue-100 text-blue-700',    dot: 'bg-blue-500 animate-pulse' }
-  if (s.bei_scheduled)       return { label: 'BEI Scheduled',         class: 'bg-sky-100 text-sky-700',      dot: 'bg-sky-500' }
-  if (s.exam_exists)         return { label: 'Exam Encoded',          class: 'bg-orange-100 text-orange-700',dot: 'bg-orange-500' }
-  if (s.exam_scheduled)      return { label: 'Exam Scheduled',        class: 'bg-teal-100 text-teal-700',    dot: 'bg-teal-500' }
-  if (s.qs_locked)           return { label: 'QS Locked',             class: 'bg-amber-100 text-amber-700',  dot: 'bg-amber-500' }
-  if (s.qs_exists)           return { label: 'QS In Progress',        class: 'bg-yellow-100 text-yellow-700',dot: 'bg-yellow-500 animate-pulse' }
-  return                            { label: 'Not Started',            class: 'bg-gray-100 text-gray-500',    dot: 'bg-gray-400' }
+  if (s.deliberation_exists)       return { label: 'Deliberation Done',           class: 'bg-indigo-100 text-indigo-700', dot: 'bg-indigo-500' }
+  if (s.background_check_locked)   return { label: 'Awaiting Deliberation',       class: 'bg-violet-100 text-violet-700', dot: 'bg-violet-500' }
+  if (s.background_check_exists)   return { label: 'Background Check In Progress',class: 'bg-purple-100 text-purple-700', dot: 'bg-purple-500 animate-pulse' }
+  if (s.eopt_exists)               return { label: 'EOPT Rated',                   class: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' }
+  if (s.bei_locked)                return { label: 'Awaiting EOPT Assessment',     class: 'bg-fuchsia-100 text-fuchsia-700', dot: 'bg-fuchsia-500' }
+  if (s.bei_exists)                return { label: 'BEI In Progress',             class: 'bg-blue-100 text-blue-700',    dot: 'bg-blue-500 animate-pulse' }
+  if (s.bei_scheduled)             return { label: 'BEI Scheduled',               class: 'bg-sky-100 text-sky-700',      dot: 'bg-sky-500' }
+  if (s.cbwe_exists)               return { label: 'CBWE Completed',              class: 'bg-orange-100 text-orange-700',dot: 'bg-orange-500' }
+  if (s.cbwe_scheduled)            return { label: 'CBWE Scheduled',              class: 'bg-amber-100 text-amber-700',  dot: 'bg-amber-500' }
+  if (s.twe_exists)                return { label: 'TWE Completed',               class: 'bg-teal-100 text-teal-700',    dot: 'bg-teal-500' }
+  if (s.twe_scheduled)             return { label: 'TWE Scheduled',               class: 'bg-cyan-100 text-cyan-700',    dot: 'bg-cyan-500' }
+  if (s.qs_locked)                 return { label: 'QS Locked',                   class: 'bg-amber-100 text-amber-700',  dot: 'bg-amber-500' }
+  if (s.qs_exists)                 return { label: 'QS In Progress',              class: 'bg-yellow-100 text-yellow-700',dot: 'bg-yellow-500 animate-pulse' }
+  if (s.pre_assessment_exists)     return { label: 'Pre-Assessed',                class: 'bg-slate-100 text-slate-700',  dot: 'bg-slate-500' }
+  return                                  { label: 'Not Started',                  class: 'bg-gray-100 text-gray-500',    dot: 'bg-gray-400' }
 }
+
+function promptRemove(member) {
+  confirmDelete.value = member
+}
+
+function doRemove() {
+  const member = confirmDelete.value
+  if (!member) return
+  confirmDelete.value = null
+}
+
+watch(autoRefresh, (val) => {
+  if (val) {
+    refreshInterval = setInterval(loadData, 30000)
+  } else {
+    clearInterval(refreshInterval)
+  }
+})
+
+onBeforeUnmount(() => {
+  clearInterval(refreshInterval)
+})
 
 /* ── Data loading ────────────────────────────────────────────────────────── */
 async function loadData() {

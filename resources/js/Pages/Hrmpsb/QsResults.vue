@@ -5,8 +5,8 @@
       <!-- ── Vacancy Banner ──────────────────────────────────────────────── -->
       <VacancyBanner
         :vacancy="vacancy"
-        :stage="1"
-        stageLabel="Qualification Standards (QS) Results"
+        :stage="2"
+        stageLabel="QS Results"
         :loading="loading"
       >
         <div v-if="qsLocked" class="mt-4 flex items-center gap-2 text-xs text-amber-700">

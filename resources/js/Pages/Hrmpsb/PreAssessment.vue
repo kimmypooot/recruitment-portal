@@ -2,31 +2,13 @@
   <HrmbsboardLayout title="Pre-Assessment Matrix">
     <div class="space-y-6">
 
-    <!-- ── Back + Vacancy header ─────────────────────────────────────────────── -->
-    <div>
-      <button @click="goBack"
-        class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-3">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
-        </svg>
-        Back to HRMPSB Dashboard
-      </button>
-
-      <div v-if="loading" class="space-y-1.5">
-        <div class="h-5 w-72 bg-gray-200 rounded animate-pulse"></div>
-        <div class="h-3 w-48 bg-gray-100 rounded animate-pulse"></div>
-      </div>
-      <template v-else-if="vacancy">
-        <h1 class="text-lg font-bold text-gray-900 leading-tight">
-          Pre-Assessment Matrix — {{ vacancy.position_title }}
-        </h1>
-        <p class="text-xs text-gray-500 mt-0.5">
-          Plantilla Item No. {{ vacancy.item_number ?? '—' }} &nbsp;·&nbsp;
-          SG-{{ vacancy.salary_grade }} &nbsp;·&nbsp;
-          {{ vacancy.place_of_assignment ?? '—' }}
-        </p>
-      </template>
-    </div>
+    <!-- Vacancy Banner -->
+    <VacancyBanner
+      :vacancy="vacancy"
+      :stage="1"
+      stageLabel="Pre-Assessment Matrix"
+      :loading="loading"
+    />
 
     <!-- ── Expand/collapse toolbar ───────────────────────────────────────────── -->
     <div class="flex flex-wrap items-center gap-2 mb-4">
@@ -571,6 +553,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
 import axios from 'axios'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 
 const props = defineProps({ vacancyId: Number })
 

@@ -64,11 +64,13 @@ class AuthController extends Controller
             'password.regex' => 'The password must contain at least one uppercase letter, one lowercase letter, and one number.',
         ]);
 
+        $middleName = $data['middle_name'] ?? null;
+        $suffix     = $data['suffix'] ?? null;
         $name = trim(
             $data['first_name'] . ' ' .
-            ($data['middle_name'] ? $data['middle_name'] . ' ' : '') .
+            ($middleName ? $middleName . ' ' : '') .
             $data['last_name'] .
-            ($data['suffix'] ? ', ' . $data['suffix'] : '')
+            ($suffix ? ', ' . $suffix : '')
         );
 
         $user  = User::create([

@@ -310,18 +310,32 @@
                     @change="toggleSelectAll"
                     class="rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f] cursor-pointer" />
                 </th>
-                <th class="px-4 py-3.5 min-w-[200px]">Applicant Name</th>
-                <th class="px-4 py-3.5 min-w-[90px]">Gender</th>
-                <th class="px-4 py-3.5 min-w-[110px]">Civil Status</th>
-                <th class="px-4 py-3.5 min-w-[110px]">Birthday</th>
-                <th class="px-4 py-3.5 min-w-[130px]">Mobile Number</th>
-                <th class="px-4 py-3.5 min-w-[180px]">Email Address</th>
-                <th class="px-4 py-3.5 min-w-[120px]">Status</th>
+                <th class="px-4 py-3.5 min-w-[200px] cursor-pointer select-none hover:text-gray-700" @click="toggleSort('name')">
+                  Applicant Name<span class="text-[10px]" v-html="sortIcon('name')"></span>
+                </th>
+                <th class="px-4 py-3.5 min-w-[90px] cursor-pointer select-none hover:text-gray-700" @click="toggleSort('gender')">
+                  Gender<span class="text-[10px]" v-html="sortIcon('gender')"></span>
+                </th>
+                <th class="px-4 py-3.5 min-w-[110px] cursor-pointer select-none hover:text-gray-700" @click="toggleSort('civil_status')">
+                  Civil Status<span class="text-[10px]" v-html="sortIcon('civil_status')"></span>
+                </th>
+                <th class="px-4 py-3.5 min-w-[110px] cursor-pointer select-none hover:text-gray-700" @click="toggleSort('birthday')">
+                  Birthday<span class="text-[10px]" v-html="sortIcon('birthday')"></span>
+                </th>
+                <th class="px-4 py-3.5 min-w-[130px] cursor-pointer select-none hover:text-gray-700" @click="toggleSort('mobile')">
+                  Mobile Number<span class="text-[10px]" v-html="sortIcon('mobile')"></span>
+                </th>
+                <th class="px-4 py-3.5 min-w-[180px] cursor-pointer select-none hover:text-gray-700" @click="toggleSort('email')">
+                  Email Address<span class="text-[10px]" v-html="sortIcon('email')"></span>
+                </th>
+                <th class="px-4 py-3.5 min-w-[120px] cursor-pointer select-none hover:text-gray-700" @click="toggleSort('status')">
+                  Status<span class="text-[10px]" v-html="sortIcon('status')"></span>
+                </th>
                 <th class="px-4 py-3.5 text-right min-w-[200px]">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr v-for="(app, idx) in applications" :key="app.id"
+              <tr v-for="(app, idx) in sortedApplications" :key="app.id"
                 :class="['hover:bg-gray-50/80 transition-colors', selectedIds.has(app.id) ? 'bg-[#2a338f]/3' : '']">
 
                 <!-- Checkbox -->
@@ -404,7 +418,7 @@
                 </td>
               </tr>
 
-              <tr v-if="!applications.length">
+              <tr v-if="!sortedApplications.length">
                 <td colspan="9" class="px-5 py-20 text-center">
                   <div class="flex flex-col items-center gap-2">
                     <svg class="w-9 h-9 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -1082,6 +1096,9 @@ import { debounce } from 'lodash-es'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
+import { useConfirm } from '@/composables/useConfirm'
+
+const { alert } = useConfirm()
 
 // ── State ─────────────────────────────────────────────────────────────────────
 const view               = ref('list')
@@ -1122,6 +1139,7 @@ function showToast(type, message) {
   toastTimer    = setTimeout(() => { toast.show = false }, 4000)
 }
 
+const sortState    = reactive({ field: '', direction: 'asc' })
 const filters      = reactive({ search: '', status: '', page: 1 })
 const statusForm   = reactive({ status: '', remarks: '' })
 const scheduleForm = reactive({ scheduled_at: '', venue: '', notes: '' })
@@ -1140,6 +1158,64 @@ watchEffect(() => {
   if (headerCheckbox.value) {
     headerCheckbox.value.indeterminate = someOnPageSelected.value
   }
+})
+
+function toggleSort(field) {
+  if (sortState.field === field) {
+    sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortState.field = field
+    sortState.direction = 'asc'
+  }
+}
+
+function sortIcon(field) {
+  if (sortState.field !== field) return ''
+  return sortState.direction === 'asc' ? ' ▲' : ' ▼'
+}
+
+const sortedApplications = computed(() => {
+  const list = [...applications.value]
+  if (!sortState.field) return list
+  list.sort((a, b) => {
+    let va, vb
+    switch (sortState.field) {
+      case 'name':
+        va = (a.applicant?.last_name ?? a.applicant?.user?.name ?? '').toLowerCase()
+        vb = (b.applicant?.last_name ?? b.applicant?.user?.name ?? '').toLowerCase()
+        break
+      case 'gender':
+        va = (a.applicant?.gender ?? '').toLowerCase()
+        vb = (b.applicant?.gender ?? '').toLowerCase()
+        break
+      case 'civil_status':
+        va = (a.applicant?.civil_status ?? '').toLowerCase()
+        vb = (b.applicant?.civil_status ?? '').toLowerCase()
+        break
+      case 'birthday':
+        va = a.applicant?.birthday ?? ''
+        vb = b.applicant?.birthday ?? ''
+        break
+      case 'mobile':
+        va = a.applicant?.mobile_number ?? ''
+        vb = b.applicant?.mobile_number ?? ''
+        break
+      case 'email':
+        va = (a.applicant?.user?.email ?? '').toLowerCase()
+        vb = (b.applicant?.user?.email ?? '').toLowerCase()
+        break
+      case 'status':
+        va = a.status ?? ''
+        vb = b.status ?? ''
+        break
+      default:
+        return 0
+    }
+    if (va < vb) return sortState.direction === 'asc' ? -1 : 1
+    if (va > vb) return sortState.direction === 'asc' ? 1 : -1
+    return 0
+  })
+  return list
 })
 
 const filteredVacancies = computed(() => {
@@ -1215,7 +1291,7 @@ async function viewDoc(appId, type) {
     window.open(url, '_blank')
     setTimeout(() => URL.revokeObjectURL(url), 60000)
   } catch {
-    alert('Unable to load document.')
+    await alert('Unable to load document.')
   } finally {
     docAction.value = ''
   }
@@ -1235,7 +1311,7 @@ async function downloadDoc(appId, type, label) {
     a.click()
     URL.revokeObjectURL(url)
   } catch {
-    alert('Unable to download document.')
+    await alert('Unable to download document.')
   } finally {
     docAction.value = ''
   }

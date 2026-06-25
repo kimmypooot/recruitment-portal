@@ -7,6 +7,12 @@
         <p class="text-sm text-gray-500 mt-1">Assign competency requirements and proficiency levels to each vacant position.</p>
       </div>
 
+      <div class="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+        <strong>Note:</strong> Competencies can also be managed directly from the
+        <Link href="/admin/vacancies" class="underline font-medium">Vacancies</Link> page.
+        Changes made here will be reflected there and vice versa.
+      </div>
+
       <!-- Vacancy selector -->
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
         <label class="block text-sm font-semibold text-gray-700 mb-2">Select Vacancy</label>
@@ -149,6 +155,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { Link } from '@inertiajs/vue3'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 

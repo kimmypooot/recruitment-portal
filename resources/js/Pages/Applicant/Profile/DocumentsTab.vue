@@ -106,6 +106,8 @@
 
 <script setup>
 import { Link } from '@inertiajs/vue3'
+import { useConfirm } from '@/composables/useConfirm'
+const { alert } = useConfirm()
 
 const props = defineProps({
   docFields:  { type: Array,  required: true },
@@ -119,11 +121,11 @@ const props = defineProps({
 
 const emit = defineEmits(['file-select'])
 
-function onFileSelect(event, key) {
+async function onFileSelect(event, key) {
   const file = event.target.files[0]
   if (!file) return
   if (file.size > 5 * 1024 * 1024) {
-    alert('File exceeds the 5 MB limit.')
+    await alert('File exceeds the 5 MB limit.')
     event.target.value = ''
     return
   }

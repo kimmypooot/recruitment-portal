@@ -16,7 +16,7 @@
           <p class="text-white/60 text-sm font-medium uppercase tracking-wider mb-3">Application Guide</p>
           <h1 class="text-3xl sm:text-4xl font-bold leading-tight mb-4">How to Apply</h1>
           <p class="text-white/80 text-base leading-relaxed">
-            Follow these steps to submit your application for a position at the Civil Service Commission Regional Office.
+            Follow these steps to submit your application for a position at the Civil Service Commission Regional Office VIII.
           </p>
         </div>
       </div>
@@ -103,7 +103,14 @@ const steps = [
   },
   {
     title: 'Create an Account',
-    description: 'Register for a free applicant account using your email address. You will need an account to submit and track your application.',
+    description: 'Register for a free applicant account using your email address or sign in with Google. You will need an account to submit and track your application.',
+    items: [
+      'You can register with email or use "Continue with Google" for faster signup',
+      'Password must be at least 8 characters with uppercase, lowercase, and a number',
+      'You must agree to the Data Privacy Policy to complete registration',
+      'Check your email inbox and click the verification link to activate your account',
+      'If you forget your password, use the "Forgot password" link on the sign-in page to reset it',
+    ],
   },
   {
     title: 'Prepare Your Documents',
@@ -131,11 +138,10 @@ const steps = [
 ]
 
 const documents = [
-  { name: 'Personal Data Sheet', note: 'CS Form No. 212, revised 2017' },
-  { name: 'Civil Service Eligibility', note: 'Certified true copy' },
-  { name: 'Diploma / Transcript of Records', note: 'Certified true copy' },
-  { name: 'Certificate of Training', note: 'Relevant trainings and seminars' },
-  { name: 'Performance Rating', note: 'Last two rating periods (at least Very Satisfactory)' },
-  { name: 'Work Experience Record', note: 'CS Form No. 212 Attachment' },
+  { name: 'Personal Data Sheet (PDS)', note: 'Required — CS Form No. 212, revised 2017' },
+  { name: 'Application Letter', note: 'Required — addressed to the CSC Regional Office VIII' },
+  { name: 'Certificate of Eligibility', note: 'Required — certified true copy' },
+  { name: 'Transcript of Records', note: 'Required — certified true copy' },
+  { name: 'IPCR', note: 'Optional — Individual Performance Commitment and Review' },
 ]
 </script>

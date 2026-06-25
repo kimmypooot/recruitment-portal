@@ -5,8 +5,8 @@
       <!-- Vacancy Banner -->
       <VacancyBanner
         :vacancy="vacancy"
-        :stage="3"
-        stageLabel="Behavioral Event Interview Scheduling"
+        :stage="5"
+        stageLabel="BEI Scheduling"
         :loading="loading"
       >
         <div class="mt-4 flex items-center gap-2 text-xs text-gray-500">
@@ -385,7 +385,10 @@
 import { ref, computed, reactive, onMounted, nextTick } from 'vue'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
+import { useConfirm } from '@/composables/useConfirm'
 import api from '@/services/api'
+
+const { confirm, alert } = useConfirm()
 
 const props = defineProps({ vacancyId: Number })
 
@@ -559,7 +562,7 @@ async function submitBatch() {
     batchForm.value = { scheduled_at: '', venue: '', notes: '' }
     batchOpen.value = false
     await load()
-    alert(`Successfully scheduled ${data.scheduled} applicant(s) for BEI.`)
+    await alert(`Successfully scheduled ${data.scheduled} applicant(s) for BEI.`)
   } catch (e) {
     batchError.value = e.response?.data?.message ?? 'Failed to batch schedule.'
   } finally {
@@ -590,13 +593,14 @@ async function submitForm() {
 }
 
 async function deleteSchedule(schedule) {
-  if (!confirm('Remove this BEI schedule for the applicant?')) return
+  const ok = await confirm('Remove this BEI schedule for the applicant?')
+  if (!ok) return
   deleting[schedule.id] = true
   try {
     await api.delete(`/bei-schedules/${schedule.id}`)
     await load()
   } catch (e) {
-    alert(e.response?.data?.message ?? 'Failed to delete schedule.')
+    await alert(e.response?.data?.message ?? 'Failed to delete schedule.')
   } finally {
     delete deleting[schedule.id]
   }
@@ -612,7 +616,8 @@ async function sendNotification() {
   if (missing > 0) {
     confirmMsg += `\n\nNote: ${missing} selected applicant(s) have no BEI schedule and will be skipped.`
   }
-  if (!confirm(confirmMsg)) return
+  const confirmed = await confirm(confirmMsg)
+  if (!confirmed) return
 
   notifying.value = true
   notifyResult.value = null
@@ -623,7 +628,7 @@ async function sendNotification() {
     notifyResult.value = data
     clearSelection()
   } catch (e) {
-    alert(e.response?.data?.message ?? 'Failed to send notifications.')
+    await alert(e.response?.data?.message ?? 'Failed to send notifications.')
   } finally {
     notifying.value = false
   }

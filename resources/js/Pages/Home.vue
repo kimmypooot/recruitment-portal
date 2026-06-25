@@ -42,7 +42,7 @@
             <span class="text-white/70">Online Recruitment Portal</span>
           </h1>
           <p class="text-white/80 text-base sm:text-lg leading-relaxed mb-8 max-w-xl">
-            Browse open positions at the Civil Service Commission Regional Office.
+            Browse open positions at the Civil Service Commission Regional Office VIII.
             Sign in or create a free account to apply for a career in government service.
           </p>
 
@@ -373,10 +373,11 @@ function clearFilters() {
   fetchVacancies()
 }
 
-onMounted(() => {
+onMounted(async () => {
   const token = localStorage.getItem('auth_token')
   if (token) {
     try {
+      await axios.get('/api/profile', { headers: { Authorization: `Bearer ${token}` } })
       const user = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
       const role = user?.role ?? ''
       let dest = null
@@ -384,7 +385,10 @@ onMounted(() => {
       else if (['hrmpsb-member', 'hrmpsb-secretariat', 'appointing-authority'].includes(role)) dest = '/hrmpsb/dashboard'
       else if (role) dest = '/admin/dashboard'
       if (dest) { router.visit(dest); return }
-    } catch {}
+    } catch {
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_user')
+    }
   }
   redirecting.value = false
   if (!props.initialVacancies.data?.length) fetchVacancies()

@@ -14,9 +14,17 @@ class AuditLogController extends Controller
             ->leftJoin('users as u', 'u.id', '=', 'a.user_id')
             ->select(
                 'a.id', 'a.action', 'a.auditable_type', 'a.auditable_id',
-                'a.user_id', 'u.name as user_name', 'a.created_at'
+                'a.user_id', 'u.name as user_name', 'u.role as user_role', 'a.created_at'
             )
             ->latest('a.created_at');
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('a.created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('a.created_at', '<=', $request->date_to);
+        }
 
         if ($request->filled('search')) {
             $q = $request->search;

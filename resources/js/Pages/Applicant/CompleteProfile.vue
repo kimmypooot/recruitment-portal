@@ -1,6 +1,6 @@
 <template>
   <ApplicantLayout>
-    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 pb-20">
 
       <!-- Full-page skeleton overlay -->
       <div v-if="pageLoading" class="animate-pulse space-y-6">
@@ -148,40 +148,44 @@
 
       <!-- Sticky save bar -->
       <div v-if="activeTab !== 'documents'"
-        class="sticky bottom-0 mt-8 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 bg-white/95 backdrop-blur-sm border-t border-gray-200 flex items-center justify-end gap-4 z-20">
-        <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-          </svg>
-          Saved
+        class="fixed bottom-10 left-0 right-0 z-20 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-end gap-4">
+          <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            Saved
+          </div>
+          <button @click="savePersonal" :disabled="savingPersonal"
+            class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+            <svg v-if="savingPersonal" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+            </svg>
+            {{ savingPersonal ? 'Saving…' : 'Save Changes' }}
+          </button>
         </div>
-        <button @click="savePersonal" :disabled="savingPersonal"
-          class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-          <svg v-if="savingPersonal" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-          </svg>
-          {{ savingPersonal ? 'Saving…' : 'Save Changes' }}
-        </button>
       </div>
 
       <!-- Document upload bar (separate because docs use FormData upload) -->
       <div v-if="activeTab === 'documents'"
-        class="sticky bottom-0 mt-8 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 bg-white/95 backdrop-blur-sm border-t border-gray-200 flex items-center justify-end gap-4 z-20">
-        <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-          </svg>
-          Uploaded
+        class="fixed bottom-10 left-0 right-0 z-20 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-end gap-4">
+          <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            Uploaded
+          </div>
+          <button @click="uploadDocuments" :disabled="savingDocs"
+            class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+            <svg v-if="savingDocs" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+            </svg>
+            {{ savingDocs ? 'Uploading…' : 'Upload Documents' }}
+          </button>
         </div>
-        <button @click="uploadDocuments" :disabled="savingDocs"
-          class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-          <svg v-if="savingDocs" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-          </svg>
-          {{ savingDocs ? 'Uploading…' : 'Upload Documents' }}
-        </button>
       </div>
 
     </div>
@@ -534,6 +538,8 @@ import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 import PersonalInfoTab from './Profile/PersonalInfoTab.vue'
 import QualificationsTab from './Profile/QualificationsTab.vue'
 import DocumentsTab from './Profile/DocumentsTab.vue'
+import { useConfirm } from '@/composables/useConfirm'
+const { confirm, alert } = useConfirm()
 
 const DRAFT_KEY = 'csc_profile_draft'
 
@@ -717,10 +723,11 @@ watch(() => ({ ...personal }), saveDraft, { deep: true })
 
 // ─── Unsaved changes guard ───────────────────────────────────────────────────
 
-function switchTab(tabKey) {
+async function switchTab(tabKey) {
   const hasDocChanges = Object.keys(docFiles).length > 0
   if (hasDocChanges && activeTab.value !== tabKey) {
-    if (!confirm('You have pending document uploads. Switch tabs anyway?')) return
+    const ok = await confirm('You have pending document uploads. Switch tabs anyway?')
+    if (!ok) return
   }
   activeTab.value = tabKey
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -782,7 +789,7 @@ async function savePersonal() {
     localStorage.removeItem(DRAFT_KEY)
     showSaveIndicator()
   } catch (e) {
-    alert(e.response?.data?.message ?? 'Failed to save.')
+    await alert(e.response?.data?.message ?? 'Failed to save.')
   } finally {
     savingPersonal.value = false
   }
@@ -801,7 +808,7 @@ async function uploadDocuments() {
   ;['pds', 'app_letter', 'ipcr', 'coe', 'tor'].forEach(k => {
     if (docFiles[k]) { fd.append(k, docFiles[k]); hasFile = true }
   })
-  if (!hasFile) { alert('Please select at least one file to upload.'); return }
+  if (!hasFile) { await alert('Please select at least one file to upload.'); return }
 
   savingDocs.value = true
   try {
@@ -812,7 +819,7 @@ async function uploadDocuments() {
     isComplete.value = data.is_complete
     showSaveIndicator()
   } catch (e) {
-    alert(e.response?.data?.message ?? 'Upload failed.')
+    await alert(e.response?.data?.message ?? 'Upload failed.')
   } finally {
     savingDocs.value = false
   }
@@ -857,7 +864,8 @@ async function saveExperience() {
 }
 
 async function deleteExperience(id) {
-  if (!confirm('Remove this work experience?')) return
+  const ok = await confirm('Remove this work experience?')
+  if (!ok) return
   await profileApi.deleteExperience(id)
   experiences.value = experiences.value.filter(e => e.id !== id)
 }
@@ -908,7 +916,8 @@ async function saveEducation() {
 }
 
 async function deleteEducation(id) {
-  if (!confirm('Remove this education record?')) return
+  const ok2 = await confirm('Remove this education record?')
+  if (!ok2) return
   await profileApi.deleteEducation(id)
   education.value = education.value.filter(e => e.id !== id)
 }
@@ -950,7 +959,8 @@ async function saveTraining() {
 }
 
 async function deleteTraining(id) {
-  if (!confirm('Remove this training record?')) return
+  const ok3 = await confirm('Remove this training record?')
+  if (!ok3) return
   await profileApi.deleteTraining(id)
   trainings.value = trainings.value.filter(t => t.id !== id)
 }

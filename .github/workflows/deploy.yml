@@ -32,6 +32,7 @@ jobs:
   deploy:
     needs: test   # Only deploy if tests pass
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1

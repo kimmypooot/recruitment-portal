@@ -26,8 +26,8 @@ class Application extends Model
     // Tell Laravel which columns to auto-cast to PHP types
     protected $casts = [
         'submitted_at' => 'datetime',
-        'reviewed_at'  => 'datetime',
-        'deleted_at'   => 'datetime',
+        'reviewed_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────
@@ -100,6 +100,21 @@ class Application extends Model
     public function preAssessment(): HasOne
     {
         return $this->hasOne(PreAssessment::class);
+    }
+
+    public function backgroundChecks(): HasMany
+    {
+        return $this->hasMany(BackgroundCheck::class);
+    }
+
+    public function backgroundInvestigationReports(): HasMany
+    {
+        return $this->hasMany(BackgroundInvestigationReport::class);
+    }
+
+    public function eoptResult(): HasOne
+    {
+        return $this->hasOne(EoptResult::class);
     }
 
     // ── Query Scopes (reusable filters) ───────────────────────────────────

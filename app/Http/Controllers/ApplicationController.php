@@ -175,17 +175,20 @@ class ApplicationController extends Controller
     public function updateStatus(Request $request, Application $application): JsonResponse
     {
         $request->validate([
-            'status'  => 'required|in:under_review,screened,qualified,disqualified,exam_scheduled,interviewed,shortlisted,for_interview,recommended,appointed,completed,withdrawn',
+            'status'  => 'required|in:under_review,screened,qualified,disqualified,exam_scheduled,interviewed,shortlisted,for_interview,recommended,appointed,completed,withdrawn,failed',
             'remarks' => 'nullable|string|max:1000',
+            'reason'  => 'nullable|string|max:1000',
         ]);
 
         $oldStatus = $application->status;
 
-        $application->update([
+        $updateData = [
             'status'      => $request->status,
-            'remarks'     => $request->remarks,
+            'remarks'     => $request->remarks ?? $request->reason,
             'reviewed_at' => now(),
-        ]);
+        ];
+
+        $application->update($updateData);
 
         AuditLog::record("application_status_changed:{$oldStatus}→{$request->status}", $application);
 

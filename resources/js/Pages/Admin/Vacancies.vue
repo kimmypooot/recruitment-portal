@@ -24,6 +24,34 @@
       </button>
     </div>
 
+    <!-- Bulk action bar -->
+    <div v-if="selectedIds.length" class="flex items-center gap-3 px-5 py-3 bg-[#2a338f]/5 border border-[#2a338f]/20 rounded-lg mb-4">
+      <span class="text-sm font-medium text-gray-700">{{ selectedIds.length }} selected</span>
+      <div class="flex-1"></div>
+      <select v-model="bulkStatus"
+        class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
+        <option value="">Change status to…</option>
+        <option value="draft">Draft</option>
+        <option value="published">Published</option>
+        <option value="closed">Closed</option>
+      </select>
+      <button @click="bulkApply" :disabled="!bulkStatus || bulkLoading"
+        class="px-4 py-1.5 text-sm font-semibold text-white bg-[#2a338f] hover:bg-[#1e2570] disabled:opacity-50 rounded-lg transition-colors">
+        <span v-if="bulkLoading" class="flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+          </svg>
+          Applying…
+        </span>
+        <span v-else>Apply</span>
+      </button>
+      <button @click="selectedIds = []"
+        class="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        Clear
+      </button>
+    </div>
+
     <!-- Table -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div v-if="loading" class="p-8 space-y-3">
@@ -33,6 +61,10 @@
       <table v-else class="w-full text-sm">
         <thead class="bg-gray-50 border-b border-gray-200">
           <tr class="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider">
+            <th class="px-5 py-3 w-10">
+              <input type="checkbox" :checked="selectAll" @change="toggleSelectAll"
+                class="w-4 h-4 rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f]" />
+            </th>
             <th class="px-5 py-3">Position</th>
             <th class="px-5 py-3">SG</th>
             <th class="px-5 py-3">Office</th>
@@ -44,7 +76,12 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr v-for="v in vacancies" :key="v.id" class="hover:bg-gray-50 transition-colors">
+          <tr v-for="v in vacancies" :key="v.id" class="hover:bg-gray-50 transition-colors"
+            :class="selectedIds.includes(v.id) ? 'bg-[#2a338f]/5' : ''">
+            <td class="px-5 py-3.5">
+              <input type="checkbox" :checked="selectedIds.includes(v.id)" @change="toggleSelect(v.id)"
+                class="w-4 h-4 rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f]" />
+            </td>
             <td class="px-5 py-3.5 font-medium text-gray-900">{{ v.position_title }}</td>
             <td class="px-5 py-3.5 text-gray-600">SG-{{ v.salary_grade }}</td>
             <td class="px-5 py-3.5 text-gray-600 max-w-[160px] truncate">{{ v.place_of_assignment }}</td>
@@ -61,13 +98,34 @@
                   class="px-2.5 py-1 text-xs font-medium text-[#2a338f] bg-[#2a338f]/10 hover:bg-[#2a338f]/20 rounded-md transition-colors">
                   Edit
                 </button>
-                <button v-if="v.status === 'draft'" @click="changeStatus(v, 'publish')"
-                  class="px-2.5 py-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-md transition-colors">
-                  Publish
+                <Link :href="`/vacancies/${v.id}/apply`" target="_blank"
+                  class="px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors inline-flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  </svg>
+                  Preview
+                </Link>
+                <button v-if="v.status === 'draft'" @click="changeStatus(v, 'publish')" :disabled="statusLoading === v.id"
+                  class="px-2.5 py-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-md transition-colors disabled:opacity-60">
+                  <span v-if="statusLoading === v.id" class="flex items-center gap-1">
+                    <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                    </svg>
+                    Publishing…
+                  </span>
+                  <span v-else>Publish</span>
                 </button>
-                <button v-if="v.status === 'published'" @click="changeStatus(v, 'archive')"
-                  class="px-2.5 py-1 text-xs font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 rounded-md transition-colors">
-                  Archive
+                <button v-if="v.status === 'published'" @click="changeStatus(v, 'archive')" :disabled="statusLoading === v.id"
+                  class="px-2.5 py-1 text-xs font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 rounded-md transition-colors disabled:opacity-60">
+                  <span v-if="statusLoading === v.id" class="flex items-center gap-1">
+                    <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                    </svg>
+                    Archiving…
+                  </span>
+                  <span v-else>Archive</span>
                 </button>
                 <button @click="confirmDelete(v)"
                   class="px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors">
@@ -77,7 +135,7 @@
             </td>
           </tr>
           <tr v-if="!vacancies.length">
-            <td colspan="8" class="px-5 py-12 text-center text-sm text-gray-400">No vacancies found.</td>
+            <td colspan="9" class="px-5 py-12 text-center text-sm text-gray-400">No vacancies found.</td>
           </tr>
         </tbody>
       </table>
@@ -114,7 +172,7 @@
               {{ form.position_title }}
             </p>
           </div>
-          <button type="button" @click="showModal = false"
+          <button type="button" @click="showModal = false" aria-label="Close modal"
             class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors flex-shrink-0">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -277,7 +335,7 @@
                     <option :value="3">Advanced</option>
                     <option :value="4">Superior</option>
                   </select>
-                  <button type="button" @click="removeAssignment(item.competency_key)"
+                  <button type="button" @click="removeAssignment(item.competency_key)" aria-label="Remove competency"
                     class="p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -361,7 +419,7 @@
       <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
         <h3 class="text-base font-semibold text-gray-900 mb-2">Delete Vacancy?</h3>
         <p class="text-sm text-gray-500 mb-6">
-          "<strong>{{ deleteTarget.position_title }}</strong>" will be permanently removed. This cannot be undone.
+          "<strong>{{ deleteTarget.position_title }}</strong>" will be archived. Previous data will be preserved.
         </p>
         <div class="flex justify-end gap-3">
           <button @click="deleteTarget = null"
@@ -378,21 +436,63 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { Link } from '@inertiajs/vue3'
 import { debounce } from 'lodash-es'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 
 // ── State ────────────────────────────────────────────────────────────────────────
-const loading      = ref(true)
-const saving       = ref(false)
-const vacancies    = ref([])
-const meta         = ref({})
-const showModal    = ref(false)
-const editingId    = ref(null)
-const deleteTarget = ref(null)
-const modalTab     = ref('position')
+const loading       = ref(true)
+const saving        = ref(false)
+const statusLoading = ref(null)
+const vacancies     = ref([])
+const meta          = ref({})
+const showModal     = ref(false)
+const editingId     = ref(null)
+const deleteTarget  = ref(null)
+const modalTab      = ref('position')
+const selectedIds   = ref([])
+const bulkStatus    = ref('')
+const bulkLoading   = ref(false)
+
+const selectAll = computed(() =>
+  vacancies.value.length > 0 && selectedIds.value.length === vacancies.value.length
+)
+
+function toggleSelectAll() {
+  if (selectAll.value) {
+    selectedIds.value = []
+  } else {
+    selectedIds.value = vacancies.value.map(v => v.id)
+  }
+}
+
+function toggleSelect(id) {
+  const i = selectedIds.value.indexOf(id)
+  if (i === -1) {
+    selectedIds.value.push(id)
+  } else {
+    selectedIds.value.splice(i, 1)
+  }
+}
+
+async function bulkApply() {
+  if (!bulkStatus.value || !selectedIds.value.length) return
+  bulkLoading.value = true
+  try {
+    await axios.patch('/api/vacancies/bulk/status', {
+      ids: selectedIds.value,
+      status: bulkStatus.value,
+    }, { headers: authHeaders() })
+    selectedIds.value = []
+    bulkStatus.value = ''
+    fetchVacancies()
+  } finally {
+    bulkLoading.value = false
+  }
+}
 
 const activeTabs = computed(() => {
   const base = [
@@ -562,8 +662,13 @@ async function submitVacancy() {
 }
 
 async function changeStatus(vacancy, action) {
-  await axios.patch(`/api/vacancies/${vacancy.id}/${action}`, {}, { headers: authHeaders() })
-  fetchVacancies()
+  statusLoading.value = vacancy.id
+  try {
+    await axios.patch(`/api/vacancies/${vacancy.id}/${action}`, {}, { headers: authHeaders() })
+    fetchVacancies()
+  } finally {
+    statusLoading.value = null
+  }
 }
 
 function confirmDelete(v) { deleteTarget.value = v }
@@ -584,6 +689,22 @@ function formatDate(str) {
   if (!str) return '—'
   return new Date(str).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
 }
+
+// ── Escape handler ─────────────────────────────────────────────────────────────────
+function handleKeydown(e) {
+  if (e.key === 'Escape') {
+    showModal.value = false
+    deleteTarget.value = null
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleKeydown)
+})
 
 // ── Init ──────────────────────────────────────────────────────────────────────────
 onMounted(async () => {

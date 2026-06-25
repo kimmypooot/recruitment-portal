@@ -108,7 +108,7 @@
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Gender <span class="text-red-500 normal-case">*</span>
           </label>
-          <select v-model="personal.gender" @blur="validate('gender')"
+          <select v-model="personal.gender" @blur="validate('gender')" @input="validate('gender')"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
             :class="errors.gender ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select —</option>
@@ -122,7 +122,7 @@
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Civil Status <span class="text-red-500 normal-case">*</span>
           </label>
-          <select v-model="personal.civil_status" @blur="validate('civil_status')"
+          <select v-model="personal.civil_status" @blur="validate('civil_status')" @input="validate('civil_status')"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
             :class="errors.civil_status ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select —</option>
@@ -139,7 +139,7 @@
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Date of Birth <span class="text-red-500 normal-case">*</span>
           </label>
-          <input v-model="personal.birthday" type="date" @blur="validate('birthday')"
+          <input v-model="personal.birthday" type="date" @blur="validate('birthday')" @input="validate('birthday')"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
             :class="errors.birthday ? 'border-red-400' : 'border-gray-300'" />
           <p v-if="errors.birthday" class="mt-1 text-xs text-red-500">{{ errors.birthday }}</p>
@@ -172,7 +172,7 @@
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Region <span class="text-red-500 normal-case">*</span>
           </label>
-          <select v-model="personal.region" @blur="validate('region')"
+          <select v-model="personal.region" @blur="validate('region')" @input="validate('region')" @change="onRegionChange"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
             :class="errors.region ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select Region —</option>
@@ -184,27 +184,36 @@
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Province <span class="text-red-500 normal-case">*</span>
           </label>
-          <input v-model="personal.province" type="text" placeholder="e.g. Cebu" @blur="validate('province')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
-            :class="errors.province ? 'border-red-400' : 'border-gray-300'" />
+          <select v-model="personal.province" @blur="validate('province')" @input="validate('province')" @change="onProvinceChange"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            :class="errors.province ? 'border-red-400' : 'border-gray-300'">
+            <option value="">— Select Province —</option>
+            <option v-for="p in availableProvinces" :key="p" :value="p">{{ p }}</option>
+          </select>
           <p v-if="errors.province" class="mt-1 text-xs text-red-500">{{ errors.province }}</p>
         </div>
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             City / Municipality <span class="text-red-500 normal-case">*</span>
           </label>
-          <input v-model="personal.city_municipality" type="text" placeholder="e.g. Cebu City" @blur="validate('city_municipality')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
-            :class="errors.city_municipality ? 'border-red-400' : 'border-gray-300'" />
+          <select v-model="personal.city_municipality" @blur="validate('city_municipality')" @input="validate('city_municipality')" @change="onCityChange"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            :class="errors.city_municipality ? 'border-red-400' : 'border-gray-300'">
+            <option value="">— Select City/Municipality —</option>
+            <option v-for="c in availableCities" :key="c" :value="c">{{ c }}</option>
+          </select>
           <p v-if="errors.city_municipality" class="mt-1 text-xs text-red-500">{{ errors.city_municipality }}</p>
         </div>
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Barangay <span class="text-red-500 normal-case">*</span>
           </label>
-          <input v-model="personal.barangay" type="text" placeholder="e.g. Lahug" @blur="validate('barangay')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
-            :class="errors.barangay ? 'border-red-400' : 'border-gray-300'" />
+          <select v-model="personal.barangay" @blur="validate('barangay')" @input="validate('barangay')"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            :class="errors.barangay ? 'border-red-400' : 'border-gray-300'">
+            <option value="">— Select Barangay —</option>
+            <option v-for="b in availableBarangays" :key="b" :value="b">{{ b }}</option>
+          </select>
           <p v-if="errors.barangay" class="mt-1 text-xs text-red-500">{{ errors.barangay }}</p>
         </div>
       </div>
@@ -228,7 +237,7 @@
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Mobile Number <span class="text-red-500 normal-case">*</span>
           </label>
-          <input v-model="personal.mobile_number" type="tel" placeholder="09XX XXX XXXX" @blur="validate('mobile_number')"
+          <input v-model="personal.mobile_number" type="tel" placeholder="09XX XXX XXXX" @blur="validate('mobile_number')" @input="validate('mobile_number')"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
             :class="errors.mobile_number ? 'border-red-400' : 'border-gray-300'" />
           <p v-if="errors.mobile_number" class="mt-1 text-xs text-red-500">{{ errors.mobile_number }}</p>
@@ -246,8 +255,10 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, computed } from 'vue'
 import api from '@/services/api'
+import { useConfirm } from '@/composables/useConfirm'
+const { confirm } = useConfirm()
 
 const props = defineProps({
   personal:    { type: Object, required: true },
@@ -260,7 +271,7 @@ const props = defineProps({
   errors:      { type: Object, default: () => ({}) },
 })
 
-defineEmits(['open-photo-modal', 'google-linked', 'google-unlinked'])
+const emit = defineEmits(['open-photo-modal', 'google-linked', 'google-unlinked'])
 
 const hasGoogle = ref(!!props.googleId)
 const linking = ref(false)
@@ -280,7 +291,8 @@ async function linkGoogle() {
 }
 
 async function unlinkGoogle() {
-  if (!confirm('Disconnect your Google account? You can still sign in with your password.')) return
+  const ok = await confirm('Disconnect your Google account? You can still sign in with your password.')
+  if (!ok) return
   unlinking.value = true
   linkError.value = ''
   try {
@@ -295,6 +307,230 @@ async function unlinkGoogle() {
   } finally {
     unlinking.value = false
   }
+}
+
+// ── PSGC Cascading Data ──────────────────────────────────────────────────────
+const psgcProvinces = [
+  { region: 'NCR - National Capital Region', province: 'Metro Manila' },
+  { region: 'CAR - Cordillera Administrative Region', province: 'Abra' },
+  { region: 'CAR - Cordillera Administrative Region', province: 'Benguet' },
+  { region: 'CAR - Cordillera Administrative Region', province: 'Ifugao' },
+  { region: 'CAR - Cordillera Administrative Region', province: 'Kalinga' },
+  { region: 'CAR - Cordillera Administrative Region', province: 'Mt. Province' },
+  { region: 'Region I - Ilocos Region', province: 'Ilocos Norte' },
+  { region: 'Region I - Ilocos Region', province: 'Ilocos Sur' },
+  { region: 'Region I - Ilocos Region', province: 'La Union' },
+  { region: 'Region I - Ilocos Region', province: 'Pangasinan' },
+  { region: 'Region II - Cagayan Valley', province: 'Batanes' },
+  { region: 'Region II - Cagayan Valley', province: 'Cagayan' },
+  { region: 'Region II - Cagayan Valley', province: 'Isabela' },
+  { region: 'Region II - Cagayan Valley', province: 'Nueva Vizcaya' },
+  { region: 'Region II - Cagayan Valley', province: 'Quirino' },
+  { region: 'Region III - Central Luzon', province: 'Aurora' },
+  { region: 'Region III - Central Luzon', province: 'Bataan' },
+  { region: 'Region III - Central Luzon', province: 'Bulacan' },
+  { region: 'Region III - Central Luzon', province: 'Nueva Ecija' },
+  { region: 'Region III - Central Luzon', province: 'Pampanga' },
+  { region: 'Region III - Central Luzon', province: 'Tarlac' },
+  { region: 'Region III - Central Luzon', province: 'Zambales' },
+  { region: 'Region IV-A - CALABARZON', province: 'Batangas' },
+  { region: 'Region IV-A - CALABARZON', province: 'Cavite' },
+  { region: 'Region IV-A - CALABARZON', province: 'Laguna' },
+  { region: 'Region IV-A - CALABARZON', province: 'Quezon' },
+  { region: 'Region IV-A - CALABARZON', province: 'Rizal' },
+  { region: 'Region IV-B - MIMAROPA', province: 'Marinduque' },
+  { region: 'Region IV-B - MIMAROPA', province: 'Occidental Mindoro' },
+  { region: 'Region IV-B - MIMAROPA', province: 'Oriental Mindoro' },
+  { region: 'Region IV-B - MIMAROPA', province: 'Palawan' },
+  { region: 'Region IV-B - MIMAROPA', province: 'Romblon' },
+  { region: 'Region V - Bicol Region', province: 'Albay' },
+  { region: 'Region V - Bicol Region', province: 'Camarines Norte' },
+  { region: 'Region V - Bicol Region', province: 'Camarines Sur' },
+  { region: 'Region V - Bicol Region', province: 'Catanduanes' },
+  { region: 'Region V - Bicol Region', province: 'Masbate' },
+  { region: 'Region V - Bicol Region', province: 'Sorsogon' },
+  { region: 'Region VI - Western Visayas', province: 'Aklan' },
+  { region: 'Region VI - Western Visayas', province: 'Antique' },
+  { region: 'Region VI - Western Visayas', province: 'Capiz' },
+  { region: 'Region VI - Western Visayas', province: 'Guimaras' },
+  { region: 'Region VI - Western Visayas', province: 'Iloilo' },
+  { region: 'Region VI - Western Visayas', province: 'Negros Occidental' },
+  { region: 'Region VII - Central Visayas', province: 'Bohol' },
+  { region: 'Region VII - Central Visayas', province: 'Cebu' },
+  { region: 'Region VII - Central Visayas', province: 'Negros Oriental' },
+  { region: 'Region VII - Central Visayas', province: 'Siquijor' },
+  { region: 'Region VIII - Eastern Visayas', province: 'Biliran' },
+  { region: 'Region VIII - Eastern Visayas', province: 'Eastern Samar' },
+  { region: 'Region VIII - Eastern Visayas', province: 'Leyte' },
+  { region: 'Region VIII - Eastern Visayas', province: 'Northern Samar' },
+  { region: 'Region VIII - Eastern Visayas', province: 'Samar' },
+  { region: 'Region VIII - Eastern Visayas', province: 'Southern Leyte' },
+  { region: 'Region IX - Zamboanga Peninsula', province: 'Zamboanga del Norte' },
+  { region: 'Region IX - Zamboanga Peninsula', province: 'Zamboanga del Sur' },
+  { region: 'Region IX - Zamboanga Peninsula', province: 'Zamboanga Sibugay' },
+  { region: 'Region X - Northern Mindanao', province: 'Bukidnon' },
+  { region: 'Region X - Northern Mindanao', province: 'Camiguin' },
+  { region: 'Region X - Northern Mindanao', province: 'Lanao del Norte' },
+  { region: 'Region X - Northern Mindanao', province: 'Misamis Occidental' },
+  { region: 'Region X - Northern Mindanao', province: 'Misamis Oriental' },
+  { region: 'Region XI - Davao Region', province: 'Davao de Oro' },
+  { region: 'Region XI - Davao Region', province: 'Davao del Norte' },
+  { region: 'Region XI - Davao Region', province: 'Davao del Sur' },
+  { region: 'Region XI - Davao Region', province: 'Davao Occidental' },
+  { region: 'Region XI - Davao Region', province: 'Davao Oriental' },
+  { region: 'Region XII - SOCCSKSARGEN', province: 'Cotabato' },
+  { region: 'Region XII - SOCCSKSARGEN', province: 'Sarangani' },
+  { region: 'Region XII - SOCCSKSARGEN', province: 'South Cotabato' },
+  { region: 'Region XII - SOCCSKSARGEN', province: 'Sultan Kudarat' },
+  { region: 'Region XIII - Caraga', province: 'Agusan del Norte' },
+  { region: 'Region XIII - Caraga', province: 'Agusan del Sur' },
+  { region: 'Region XIII - Caraga', province: 'Dinagat Islands' },
+  { region: 'Region XIII - Caraga', province: 'Surigao del Norte' },
+  { region: 'Region XIII - Caraga', province: 'Surigao del Sur' },
+  { region: 'BARMM - Bangsamoro Autonomous Region in Muslim Mindanao', province: 'Basilan' },
+  { region: 'BARMM - Bangsamoro Autonomous Region in Muslim Mindanao', province: 'Lanao del Sur' },
+  { region: 'BARMM - Bangsamoro Autonomous Region in Muslim Mindanao', province: 'Maguindanao' },
+  { region: 'BARMM - Bangsamoro Autonomous Region in Muslim Mindanao', province: 'Sulu' },
+  { region: 'BARMM - Bangsamoro Autonomous Region in Muslim Mindanao', province: 'Tawi-Tawi' },
+]
+
+const psgcCities = [
+  { province: 'Metro Manila', city: 'Caloocan' },
+  { province: 'Metro Manila', city: 'Las Piñas' },
+  { province: 'Metro Manila', city: 'Makati' },
+  { province: 'Metro Manila', city: 'Malabon' },
+  { province: 'Metro Manila', city: 'Mandaluyong' },
+  { province: 'Metro Manila', city: 'Manila' },
+  { province: 'Metro Manila', city: 'Marikina' },
+  { province: 'Metro Manila', city: 'Muntinlupa' },
+  { province: 'Metro Manila', city: 'Navotas' },
+  { province: 'Metro Manila', city: 'Parañaque' },
+  { province: 'Metro Manila', city: 'Pasay' },
+  { province: 'Metro Manila', city: 'Pasig' },
+  { province: 'Metro Manila', city: 'Pateros' },
+  { province: 'Metro Manila', city: 'Quezon City' },
+  { province: 'Metro Manila', city: 'San Juan' },
+  { province: 'Metro Manila', city: 'Taguig' },
+  { province: 'Metro Manila', city: 'Valenzuela' },
+  { province: 'Benguet', city: 'Baguio City' },
+  { province: 'Benguet', city: 'La Trinidad' },
+  { province: 'Abra', city: 'Bangued' },
+  { province: 'Ilocos Norte', city: 'Laoag City' },
+  { province: 'Ilocos Sur', city: 'Vigan City' },
+  { province: 'La Union', city: 'San Fernando City' },
+  { province: 'Pangasinan', city: 'Dagupan City' },
+  { province: 'Cagayan', city: 'Tuguegarao City' },
+  { province: 'Isabela', city: 'Cauayan City' },
+  { province: 'Isabela', city: 'Santiago City' },
+  { province: 'Pampanga', city: 'Angeles City' },
+  { province: 'Pampanga', city: 'San Fernando City' },
+  { province: 'Bulacan', city: 'Malolos City' },
+  { province: 'Bulacan', city: 'Meycauayan' },
+  { province: 'Nueva Ecija', city: 'Cabanatuan City' },
+  { province: 'Tarlac', city: 'Tarlac City' },
+  { province: 'Bataan', city: 'Balanga City' },
+  { province: 'Zambales', city: 'Olongapo City' },
+  { province: 'Cavite', city: 'Bacoor' },
+  { province: 'Cavite', city: 'Dasmarinas City' },
+  { province: 'Cavite', city: 'Imus' },
+  { province: 'Cavite', city: 'Tagaytay City' },
+  { province: 'Cavite', city: 'Trece Martires City' },
+  { province: 'Laguna', city: 'Biñan' },
+  { province: 'Laguna', city: 'Calamba City' },
+  { province: 'Laguna', city: 'San Pablo City' },
+  { province: 'Laguna', city: 'Santa Rosa City' },
+  { province: 'Batangas', city: 'Batangas City' },
+  { province: 'Batangas', city: 'Lipa City' },
+  { province: 'Batangas', city: 'Tanauan City' },
+  { province: 'Rizal', city: 'Antipolo City' },
+  { province: 'Rizal', city: 'Cainta' },
+  { province: 'Rizal', city: 'Taytay' },
+  { province: 'Quezon', city: 'Lucena City' },
+  { province: 'Palawan', city: 'Puerto Princesa City' },
+  { province: 'Albay', city: 'Legazpi City' },
+  { province: 'Camarines Sur', city: 'Naga City' },
+  { province: 'Iloilo', city: 'Iloilo City' },
+  { province: 'Negros Occidental', city: 'Bacolod City' },
+  { province: 'Cebu', city: 'Cebu City' },
+  { province: 'Cebu', city: 'Lapu-Lapu City' },
+  { province: 'Cebu', city: 'Mandaue City' },
+  { province: 'Cebu', city: 'Toledo City' },
+  { province: 'Bohol', city: 'Tagbilaran City' },
+  { province: 'Negros Oriental', city: 'Dumaguete City' },
+  { province: 'Leyte', city: 'Tacloban City' },
+  { province: 'Zamboanga del Sur', city: 'Zamboanga City' },
+  { province: 'Bukidnon', city: 'Malaybalay City' },
+  { province: 'Bukidnon', city: 'Valencia City' },
+  { province: 'Misamis Oriental', city: 'Cagayan de Oro City' },
+  { province: 'Lanao del Norte', city: 'Iligan City' },
+  { province: 'Davao del Sur', city: 'Davao City' },
+  { province: 'Davao del Norte', city: 'Tagum City' },
+  { province: 'South Cotabato', city: 'General Santos City' },
+  { province: 'Cotabato', city: 'Cotabato City' },
+  { province: 'Agusan del Norte', city: 'Butuan City' },
+  { province: 'Surigao del Norte', city: 'Surigao City' },
+  { province: 'Lanao del Sur', city: 'Marawi City' },
+  { province: 'Maguindanao', city: 'Shariff Aguak' },
+]
+
+const psgcBarangays = {
+  'Manila': ['Binondo', 'Ermita', 'Intramuros', 'Malate', 'Paco', 'Pandacan', 'Port Area', 'Quiapo', 'Sampaloc', 'San Andres', 'San Miguel', 'San Nicolas', 'Santa Ana', 'Santa Cruz', 'Santa Mesa', 'Tondo'],
+  'Quezon City': ['Bago Bantay', 'Batasan Hills', 'Cubao', 'Diliman', 'Kamuning', 'New Manila', 'Project 6', 'Santa Mesa Heights', 'Socorro'],
+  'Makati': ['Bel-Air', 'Dasmarinas Village', 'Forbes Park', 'Poblacion', 'San Antonio', 'San Isidro', 'San Lorenzo', 'Santa Ana'],
+  'Taguig': ['Bagumbayan', 'Bambang', 'Bgc', 'Bayanan', 'Fort Bonifacio', 'Pinagsama', 'Signal Village', 'Ususan'],
+  'Pasig': ['Kapitolyo', 'Oranbo', 'Rosario', 'San Nicolas', 'Santolan', 'Sta. Lucia'],
+  'Caloocan': ['Bagong Barrio', 'Baesa', 'Grace Park', 'Camarin', 'Kaybiga'],
+  'Parañaque': ['Baclaran', 'Don Bosco', 'San Dionisio', 'Tambo', 'BF Homes'],
+  'Las Piñas': ['Almanza', 'BF Resort', 'Pamplona', 'Pulang Lupa'],
+  'Muntinlupa': ['Alabang', 'Ayala Alabang', 'Bayanan', 'Sucat', 'Tunasan'],
+  'Mandaluyong': ['Addition Hills', 'Barangka', 'Highway Hills', 'Plainview'],
+  'Marikina': ['Barangka', 'Calumpang', 'Concepcion', 'Malanday'],
+  'Valenzuela': ['Arkong Bato', 'Dalandanan', 'Polo', 'Malanday'],
+  'Pasay': ['Barangay 10', 'Barangay 183', 'Malibay', 'San Rafael'],
+  'Navotas': ['Bagong Nayon', 'Tangos', 'Tanza'],
+  'Malabon': ['Catmon', 'Flores', 'Longos'],
+  'San Juan': ['Addition Hills', 'Corazon de Jesus', 'West Crame'],
+  'Pateros': ['Aguho', 'Magtanggol', 'Tabacalera'],
+  'Baguio City': ['Asin Road', 'Camp 7', 'Country Club', 'Magsaysay', 'Pinsao', 'Sto. Tomas'],
+  'Cebu City': ['Basak', 'Camputhaw', 'Guadalupe', 'Lahug', 'Poblacion', 'Talamban'],
+  'Davao City': ['Buhangin', 'Calinan', 'Ecoland', 'Matina', 'Talomo', 'Toril'],
+  'Zamboanga City': ['Arena Blanco', 'Baliwasan', 'Pasonanca', 'Tetuan'],
+  'Cagayan de Oro City': ['Balulang', 'Carmen', 'Gusa', 'Lapasan', 'Macasandig'],
+  'Iloilo City': ['Arevalo', 'Jaro', 'La Paz', 'Lapuz', 'Molo'],
+  'Bacolod City': ['Alangilan', 'Bata', 'Mandalagan', 'Sum-ag'],
+  'General Santos City': ['Bula', 'Fatima', 'Lagao', 'San Isidro'],
+  'Angeles City': ['Balibago', 'Cutcut', 'Malabanias', 'Pulung Cacutud'],
+  'Antipolo City': ['Bagong Nayon', 'Cupang', 'San Isidro', 'Santa Cruz'],
+  'Calamba City': ['Barandal', 'Bitin', 'Halang', 'Paciano', 'Parian'],
+  'Legazpi City': ['Bagumbayan', 'Bitano', 'Dita', 'Puro'],
+  'Butuan City': ['Ampayon', 'Baan', 'Libertad', 'San Mateo'],
+}
+
+const availableProvinces = computed(() =>
+  psgcProvinces.filter(p => p.region === props.personal.region).map(p => p.province)
+)
+
+const availableCities = computed(() =>
+  psgcCities.filter(c => c.province === props.personal.province).map(c => c.city)
+)
+
+const availableBarangays = computed(() =>
+  psgcBarangays[props.personal.city_municipality] ?? []
+)
+
+function onRegionChange() {
+  props.personal.province = ''
+  props.personal.city_municipality = ''
+  props.personal.barangay = ''
+}
+
+function onProvinceChange() {
+  props.personal.city_municipality = ''
+  props.personal.barangay = ''
+}
+
+function onCityChange() {
+  props.personal.barangay = ''
 }
 
 const fieldLabels = {

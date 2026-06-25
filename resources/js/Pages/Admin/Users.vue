@@ -33,19 +33,27 @@
             class="pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none w-60" />
         </div>
 
-        <!-- Role filter pills -->
-        <div class="flex gap-1 bg-gray-100 rounded-lg p-1">
-          <button v-for="f in roleFilters" :key="f.value" @click="roleFilter = f.value"
-            class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
-            :class="roleFilter === f.value
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'">
-            {{ f.label }}
-          </button>
-        </div>
+        <!-- Role filter dropdown -->
+        <select v-model="roleFilter" @change="onRoleChange"
+          class="px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+          <option value="">All Roles</option>
+          <optgroup label="Applicant">
+            <option value="applicant">Applicants</option>
+          </optgroup>
+          <optgroup label="HR Staff">
+            <option value="hr-officer">HR Officer</option>
+            <option value="hr-manager">HR Manager</option>
+            <option value="admin">Admin</option>
+          </optgroup>
+          <optgroup label="HRMPSB">
+            <option value="hrmpsb-member">HRMPSB Member</option>
+            <option value="hrmpsb-secretariat">HRMPSB Secretariat</option>
+            <option value="appointing-authority">Appointing Authority</option>
+          </optgroup>
+        </select>
 
         <span v-if="!loading" class="text-xs text-gray-400">
-          {{ filteredUsers.length }} of {{ users.length }}
+          {{ users.length }} total
         </span>
       </div>
 
@@ -142,7 +150,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
                 <p class="text-sm font-medium text-gray-400">No users match your filters</p>
-                <button @click="search = ''; roleFilter = 'all'"
+                <button @click="search = ''; roleFilter = ''; fetchUsers()"
                   class="text-xs text-[#2a338f] hover:underline">Clear filters</button>
               </div>
             </td>
@@ -370,7 +378,7 @@ const loading      = ref(true)
 const saving       = ref(false)
 const users        = ref([])
 const search       = ref('')
-const roleFilter   = ref('all')
+const roleFilter   = ref('')
 const showModal    = ref(false)
 const editTarget   = ref(null)
 const deleteTarget = ref(null)
@@ -383,26 +391,12 @@ const form = reactive({
 })
 
 // ── Role filter options ──────────────────────────────────────────────────────────
-const roleFilters = [
-  { value: 'all',      label: 'All' },
-  { value: 'applicant', label: 'Applicants' },
-  { value: 'hr',       label: 'HR Staff' },
-  { value: 'hrmpsb',   label: 'HRMPSB' },
-  { value: 'admin',    label: 'Admin' },
-]
-
 const hrRoles     = ['hr-officer', 'hr-manager']
 const hrmbsRoles  = ['hrmpsb-member', 'hrmpsb-secretariat', 'appointing-authority']
 
 // ── Computed ─────────────────────────────────────────────────────────────────────
 const filteredUsers = computed(() => {
   let list = users.value
-
-  if (roleFilter.value !== 'all') {
-    if (roleFilter.value === 'hr')      list = list.filter(u => hrRoles.includes(u.role))
-    else if (roleFilter.value === 'hrmpsb') list = list.filter(u => hrmbsRoles.includes(u.role))
-    else list = list.filter(u => u.role === roleFilter.value)
-  }
 
   const q = search.value.toLowerCase().trim()
   if (q) {
@@ -453,8 +447,8 @@ const statCards = computed(() => [
   },
 ])
 
-// Reset to page 1 when filters change
-watch([search, roleFilter], () => { currentPage.value = 1 })
+// Reset to page 1 when search changes
+watch(search, () => { currentPage.value = 1 })
 
 // ── Auth ─────────────────────────────────────────────────────────────────────────
 function authHeaders() {
@@ -466,12 +460,17 @@ function authHeaders() {
 async function fetchUsers() {
   loading.value = true
   try {
-    const { data } = await axios.get('/api/admin/users', { headers: authHeaders() })
+    const { data } = await axios.get('/api/admin/users', {
+      params: { role: roleFilter.value || undefined },
+      headers: authHeaders(),
+    })
     users.value = data.data ?? data
   } finally {
     loading.value = false
   }
 }
+
+function onRoleChange() { currentPage.value = 1; fetchUsers() }
 
 function openCreate() {
   editTarget.value = null

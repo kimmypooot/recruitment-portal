@@ -3,16 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\BackgroundInvestigationReport;
 use App\Models\BeiRating;
 use App\Models\DeliberationResult;
+use App\Models\EoptResult;
 use App\Models\ExamResult;
 use App\Models\ExamSchedule;
 use App\Models\HrmbsboardComposition;
 use App\Models\InterviewSchedule;
+use App\Models\PreAssessment;
 use App\Models\QsEvaluation;
 use App\Models\User;
-use App\Models\Vacancy;
 use App\Services\AuditLog;
+use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +23,8 @@ use Illuminate\Validation\Rule;
 
 class HrmbsboardController extends Controller
 {
-    use \App\Traits\FormatsApplicantName;
+    use FormatsApplicantName;
+
     public function compositions(): JsonResponse
     {
         $compositions = HrmbsboardComposition::with(['user:id,name,email,role', 'assignedBy:id,name'])
@@ -29,26 +33,26 @@ class HrmbsboardController extends Controller
 
         return response()->json([
             'compositions' => $compositions,
-            'roles'        => HrmbsboardComposition::ROLES,
+            'roles' => HrmbsboardComposition::ROLES,
         ]);
     }
 
     public function assign(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'user_id'     => 'required|exists:users,id',
+            'user_id' => 'required|exists:users,id',
             'hrmpsb_role' => ['required', Rule::in(array_keys(HrmbsboardComposition::ROLES))],
             'member_type' => 'required|in:principal,alternate',
         ]);
 
         $composition = HrmbsboardComposition::updateOrCreate(
             [
-                'user_id'     => $data['user_id'],
+                'user_id' => $data['user_id'],
                 'hrmpsb_role' => $data['hrmpsb_role'],
             ],
             [
                 'member_type' => $data['member_type'],
-                'is_active'   => true,
+                'is_active' => true,
                 'assigned_by' => $request->user()->id,
                 'assigned_at' => now(),
             ]
@@ -79,7 +83,7 @@ class HrmbsboardController extends Controller
 
     public function toggleActive(HrmbsboardComposition $composition): JsonResponse
     {
-        $composition->update(['is_active' => !$composition->is_active]);
+        $composition->update(['is_active' => ! $composition->is_active]);
 
         AuditLog::record("hrmpsb_toggled_active:{$composition->hrmpsb_role}", $composition);
 
@@ -106,8 +110,8 @@ class HrmbsboardController extends Controller
 
         return response()->json([
             'composition' => $composition,
-            'roles'       => HrmbsboardComposition::ROLES,
-            'user'        => $request->user()->only('id', 'name', 'email', 'role'),
+            'roles' => HrmbsboardComposition::ROLES,
+            'user' => $request->user()->only('id', 'name', 'email', 'role'),
         ]);
     }
 
@@ -132,33 +136,54 @@ class HrmbsboardController extends Controller
 
             if ($appIds->isEmpty()) {
                 $stages[$vacancyId] = [
-                    'qs_exists'           => false,
-                    'qs_locked'           => false,
-                    'exam_exists'         => false,
-                    'bei_exists'          => false,
-                    'bei_locked'          => false,
+                    'pre_assessment_exists' => false,
+                    'qs_exists' => false,
+                    'qs_locked' => false,
+                    'twe_scheduled' => false,
+                    'twe_exists' => false,
+                    'cbwe_scheduled' => false,
+                    'cbwe_exists' => false,
+                    'bei_scheduled' => false,
+                    'bei_exists' => false,
+                    'bei_locked' => false,
+                    'eopt_exists' => false,
+                    'background_check_exists' => false,
+                    'background_check_locked' => false,
                     'deliberation_exists' => false,
                 ];
+
                 continue;
             }
 
-            $qsExists      = QsEvaluation::whereIn('application_id', $appIds)->exists();
-            $qsLocked      = QsEvaluation::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
-            $examScheduled = ExamSchedule::whereIn('application_id', $appIds)->exists();
-            $examExists    = ExamResult::whereIn('application_id', $appIds)->exists();
-            $beiScheduled  = InterviewSchedule::whereIn('application_id', $appIds)->exists();
-            $beiExists     = BeiRating::whereIn('application_id', $appIds)->exists();
-            $beiLocked     = BeiRating::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
-            $deliExists    = DeliberationResult::where('vacancy_id', $vacancyId)->exists();
+            $preAssessmentExists = PreAssessment::whereIn('application_id', $appIds)->exists();
+            $qsExists = QsEvaluation::whereIn('application_id', $appIds)->exists();
+            $qsLocked = QsEvaluation::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
+            $tweScheduled = ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->exists();
+            $tweExists = ExamResult::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->exists();
+            $cbweScheduled = ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'CBWE')->exists();
+            $cbweExists = ExamResult::whereIn('application_id', $appIds)->where('exam_type', 'CBWE')->exists();
+            $beiScheduled = InterviewSchedule::whereIn('application_id', $appIds)->exists();
+            $beiExists = BeiRating::whereIn('application_id', $appIds)->exists();
+            $beiLocked = BeiRating::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
+            $bgCheckExists = BackgroundInvestigationReport::whereIn('application_id', $appIds)->exists();
+            $bgCheckLocked = BackgroundInvestigationReport::whereIn('application_id', $appIds)->whereNotNull('submitted_at')->exists();
+            $eoptExists = EoptResult::whereIn('application_id', $appIds)->exists();
+            $deliExists = DeliberationResult::where('vacancy_id', $vacancyId)->exists();
 
             $stages[$vacancyId] = [
-                'qs_exists'           => $qsExists,
-                'qs_locked'           => $qsLocked,
-                'exam_scheduled'      => $examScheduled,
-                'exam_exists'         => $examExists,
-                'bei_scheduled'       => $beiScheduled,
-                'bei_exists'          => $beiExists,
-                'bei_locked'          => $beiLocked,
+                'pre_assessment_exists' => $preAssessmentExists,
+                'qs_exists' => $qsExists,
+                'qs_locked' => $qsLocked,
+                'twe_scheduled' => $tweScheduled,
+                'twe_exists' => $tweExists,
+                'cbwe_scheduled' => $cbweScheduled,
+                'cbwe_exists' => $cbweExists,
+                'bei_scheduled' => $beiScheduled,
+                'bei_exists' => $beiExists,
+                'bei_locked' => $beiLocked,
+                'eopt_exists' => $eoptExists,
+                'background_check_exists' => $bgCheckExists,
+                'background_check_locked' => $bgCheckLocked,
                 'deliberation_exists' => $deliExists,
             ];
         }
@@ -179,7 +204,7 @@ class HrmbsboardController extends Controller
             ->where('is_active', true)
             ->exists();
 
-        if (!$isAdmin && !$isMember) {
+        if (! $isAdmin && ! $isMember) {
             return response()->json(['message' => 'Access denied.'], 403);
         }
 
@@ -194,26 +219,26 @@ class HrmbsboardController extends Controller
 
         return response()->json([
             'application_id' => $application->id,
-            'token'          => $token?->token,
-            'unmasked'       => $isUnmasked,
-            'name'           => $isUnmasked ? $this->formatApplicantName($profile) : null,
-            'eligibility'    => $profile->eligibility,
-            'education'      => $profile->educationalAttainments,
-            'experience'     => $profile->workExperiences,
-            'trainings'      => $profile->trainings,
-            'documents'      => [
-                'pds'        => (bool) $profile->pds_path,
-                'tor'        => (bool) $profile->tor_path,
+            'token' => $token?->token,
+            'unmasked' => $isUnmasked,
+            'name' => $isUnmasked ? $this->formatApplicantName($profile) : null,
+            'eligibility' => $profile->eligibility,
+            'education' => $profile->educationalAttainments,
+            'experience' => $profile->workExperiences,
+            'trainings' => $profile->trainings,
+            'documents' => [
+                'pds' => (bool) $profile->pds_path,
+                'tor' => (bool) $profile->tor_path,
                 'app_letter' => (bool) $profile->app_letter_path,
-                'ipcr'       => (bool) $profile->ipcr_path,
-                'coe'        => (bool) $profile->coe_path,
+                'ipcr' => (bool) $profile->ipcr_path,
+                'coe' => (bool) $profile->coe_path,
             ],
             'document_links' => [
-                'pds'        => $profile->pds_path        ? "/api/hrmpsb/applications/{$application->id}/documents/pds"        : null,
-                'tor'        => $profile->tor_path        ? "/api/hrmpsb/applications/{$application->id}/documents/tor"        : null,
+                'pds' => $profile->pds_path ? "/api/hrmpsb/applications/{$application->id}/documents/pds" : null,
+                'tor' => $profile->tor_path ? "/api/hrmpsb/applications/{$application->id}/documents/tor" : null,
                 'app_letter' => $profile->app_letter_path ? "/api/hrmpsb/applications/{$application->id}/documents/app_letter" : null,
-                'ipcr'       => $profile->ipcr_path       ? "/api/hrmpsb/applications/{$application->id}/documents/ipcr"       : null,
-                'coe'        => $profile->coe_path        ? "/api/hrmpsb/applications/{$application->id}/documents/coe"        : null,
+                'ipcr' => $profile->ipcr_path ? "/api/hrmpsb/applications/{$application->id}/documents/ipcr" : null,
+                'coe' => $profile->coe_path ? "/api/hrmpsb/applications/{$application->id}/documents/coe" : null,
             ],
         ]);
     }
@@ -226,29 +251,29 @@ class HrmbsboardController extends Controller
     {
         $user = $request->user();
 
-        $isAdmin  = in_array($user->role, ['admin', 'hr-manager']);
+        $isAdmin = in_array($user->role, ['admin', 'hr-manager']);
         $isMember = HrmbsboardComposition::where('user_id', $user->id)
             ->where('is_active', true)
             ->exists();
 
-        if (!$isAdmin && !$isMember) {
+        if (! $isAdmin && ! $isMember) {
             abort(403);
         }
 
         $pathMap = [
-            'pds'        => 'pds_path',
-            'tor'        => 'tor_path',
+            'pds' => 'pds_path',
+            'tor' => 'tor_path',
             'app_letter' => 'app_letter_path',
-            'ipcr'       => 'ipcr_path',
-            'coe'        => 'coe_path',
+            'ipcr' => 'ipcr_path',
+            'coe' => 'coe_path',
         ];
 
-        abort_if(!isset($pathMap[$type]), 404);
+        abort_if(! isset($pathMap[$type]), 404);
 
         $profile = $application->applicant;
-        $path    = $profile?->{$pathMap[$type]};
+        $path = $profile?->{$pathMap[$type]};
 
-        abort_if(!$path || !Storage::disk('public')->exists($path), 404);
+        abort_if(! $path || ! Storage::disk('public')->exists($path), 404);
 
         return Storage::disk('public')->response($path);
     }

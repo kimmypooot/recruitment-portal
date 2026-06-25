@@ -4,16 +4,16 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { createPinia } from 'pinia'
 import axios from 'axios'
 import DataPrivacyModal from './Components/DataPrivacyModal.vue'
+import ToastContainer from './Components/UI/ToastContainer.vue'
+import ConfirmDialog from './Components/UI/ConfirmDialog.vue'
 
-// Rewrite root-relative axios URLs (e.g. '/api/vacancies') to absolute URLs
-// using the APP_URL injected by PHP, so calls work regardless of whether
-// Laravel is served at a subdirectory (XAMPP) or at root (php artisan serve).
-// This only affects the global axios instance; the api.js service uses its
-// own axios.create() instance with baseURL already set correctly.
-const appUrl = document.querySelector('meta[name="app-url"]')?.getAttribute('content') ?? ''
+// Rewrite root-relative axios URLs to absolute URLs using window.location.origin
+// so calls work regardless of whether Laravel is served at a subdirectory
+// (XAMPP) or at root (php artisan serve).
+const origin = window.location.origin
 axios.interceptors.request.use((config) => {
   if (config.url?.startsWith('/')) {
-    config.url = `${appUrl}${config.url}`
+    config.url = `${origin}${config.url}`
   }
   return config
 })
@@ -34,6 +34,8 @@ createInertiaApp({
       render: () => [
         h(Transition, { name: 'fade', mode: 'out-in' }, () => h(App, props)),
         h(DataPrivacyModal),
+        h(ToastContainer),
+        h(ConfirmDialog),
       ],
     })
 

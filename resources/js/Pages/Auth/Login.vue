@@ -27,7 +27,7 @@
     </section>
 
     <!-- Form -->
-    <section class="max-w-md mx-auto px-4 sm:px-6 py-10">
+    <section class="max-w-[32rem] mx-auto px-4 sm:px-6 py-10">
 
       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
 

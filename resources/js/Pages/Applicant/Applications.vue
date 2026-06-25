@@ -8,13 +8,22 @@
           <h1 class="text-2xl font-bold text-gray-900">My Applications</h1>
           <p class="text-sm text-gray-500 mt-1">Track the status of all your submitted applications.</p>
         </div>
-        <Link href="/applicant/dashboard?tab=vacancies"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
-          Browse Vacancies
-        </Link>
+        <div class="flex items-center gap-2">
+          <button @click="fetchApplications"
+            class="inline-flex items-center gap-2 px-3.5 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
+            </svg>
+            Refresh
+          </button>
+          <Link href="/applicant/dashboard?tab=vacancies"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            Browse Vacancies
+          </Link>
+        </div>
       </div>
 
       <!-- Status filter pills -->
@@ -80,6 +89,12 @@
                       SG-{{ app.vacancy.salary_grade }}
                     </span>
                   </p>
+                  <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-gray-400">
+                    <span v-if="app.vacancy?.plantilla_number">Plantilla: {{ app.vacancy.plantilla_number }}</span>
+                    <span v-if="app.vacancy?.item_number">Item No.: {{ app.vacancy.item_number }}</span>
+                    <span v-if="app.vacancy?.position_level">{{ app.vacancy.position_level }}</span>
+                    <span v-if="app.vacancy?.monthly_salary">₱ {{ Number(app.vacancy.monthly_salary).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                  </div>
                 </div>
                 <StatusBadge :status="app.status" class="flex-shrink-0 mt-0.5" />
               </div>
@@ -250,6 +265,11 @@
         <strong class="text-gray-700">{{ withdrawTarget.vacancy?.position_title }}</strong>
       </p>
       <p class="text-xs text-gray-400 text-center mb-6">This action cannot be undone. You will not be able to reapply for this position.</p>
+      <div class="mb-4">
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Reason for withdrawal (optional)</label>
+        <textarea v-model="withdrawReason" rows="2" placeholder="Tell us why you're withdrawing..."
+          class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none resize-none"></textarea>
+      </div>
       <div class="flex gap-3">
         <button @click="withdrawTarget = null"
           class="flex-1 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
@@ -275,12 +295,12 @@ import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 
 // ── State ─────────────────────────────────────────────────────────────────────
-const applications  = ref([])
-const loading       = ref(true)
-const activeStatus  = ref('all')
-const withdrawTarget = ref(null)
-const withdrawing    = ref(false)
-let refreshInterval  = null
+const applications   = ref([])
+const loading        = ref(true)
+const activeStatus   = ref('all')
+const withdrawTarget  = ref(null)
+const withdrawing     = ref(false)
+const withdrawReason  = ref('')
 
 watch(activeStatus, () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -308,12 +328,10 @@ onMounted(async () => {
   if (!localStorage.getItem('auth_token')) { router.visit('/login'); return }
   await fetchApplications()
   loading.value = false
-  refreshInterval = setInterval(fetchApplications, 30000)
   document.addEventListener('visibilitychange', onVisibilityChange)
 })
 
 onBeforeUnmount(() => {
-  clearInterval(refreshInterval)
   document.removeEventListener('visibilitychange', onVisibilityChange)
 })
 
@@ -329,6 +347,7 @@ const pipeline = [
   { key: 'interviewed',    label: 'Interviewed',   short: 'Done' },
   { key: 'recommended',    label: 'Recommended',   short: 'Rec.' },
   { key: 'appointed',      label: 'Appointed',     short: 'Appoint' },
+  { key: 'failed',         label: 'Not Passed',    short: 'Fail' },
 ]
 
 const pipelineOrder = pipeline.map(s => s.key)
@@ -362,7 +381,8 @@ const statusTabs = computed(() => {
     { value: 'in_progress', label: 'In Progress',   count: count(['submitted', 'under_review', 'screened', 'qualified']) },
     { value: 'selection',   label: 'Selection',     count: count(['exam_scheduled', 'shortlisted', 'for_interview', 'interviewed', 'recommended']) },
     { value: 'appointed',   label: 'Appointed',     count: count('appointed') },
-    { value: 'disqualified', label: 'Disqualified', count: count(['disqualified', 'failed']) },
+    { value: 'disqualified', label: 'Disqualified', count: count('disqualified') },
+    { value: 'failed',      label: 'Failed',        count: count('failed') },
     { value: 'withdrawn',   label: 'Withdrawn',     count: count('withdrawn') },
   ].filter(t => t.value === 'all' || t.count > 0 || activeStatus.value === t.value)
 })
@@ -374,7 +394,8 @@ const filteredApplications = computed(() => {
     in_progress:  ['submitted', 'under_review', 'screened', 'qualified'],
     selection:    ['exam_scheduled', 'shortlisted', 'for_interview', 'interviewed', 'recommended'],
     appointed:    ['appointed', 'completed'],
-    disqualified: ['disqualified', 'failed'],
+    disqualified: ['disqualified'],
+    failed:       ['failed'],
     withdrawn:    ['withdrawn'],
   }
   const group = groupMap[activeStatus.value]
@@ -444,12 +465,13 @@ async function doWithdraw() {
   try {
     await axios.patch(
       `/api/applications/${withdrawTarget.value.id}/status`,
-      { status: 'withdrawn', remarks: null },
+      { status: 'withdrawn', remarks: withdrawReason.value || null },
       { headers: authHeaders() },
     )
     const idx = applications.value.findIndex(a => a.id === withdrawTarget.value.id)
     if (idx >= 0) applications.value[idx].status = 'withdrawn'
     withdrawTarget.value = null
+    withdrawReason.value = ''
   } catch (e) {
     console.error('Withdraw failed', e)
   } finally {

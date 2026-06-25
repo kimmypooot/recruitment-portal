@@ -31,31 +31,34 @@ class InterviewScheduled extends Notification implements ShouldQueue
         $time = $this->schedule->scheduled_at->format('g:i A');
 
         return (new MailMessage)
-            ->subject("Behavioral Event Interview (BEI) Schedule — {$this->positionTitle}")
+            ->subject("Interview Scheduled — {$this->positionTitle}")
             ->greeting("Dear {$notifiable->name},")
-            ->line('Congratulations! You have passed the written examinations and are hereby invited to undergo the **Behavioral Event Interview (BEI)** for the following position:')
-            ->line("**{$this->positionTitle}**")
-            ->line('Please take note of your interview schedule:')
-            ->line("**Date:** {$date}")
-            ->line("**Time:** {$time}")
-            ->line("**Venue:** {$this->schedule->venue}")
+            ->line("Congratulations on passing the written exam! You are invited to a **Behavioral Event Interview (BEI)** for the position of **{$this->positionTitle}**.")
+            ->line('Here are the details of your interview:')
+            ->line("- **Date:** {$date}")
+            ->line("- **Time:** {$time}")
+            ->line("- **Venue:** {$this->schedule->venue}")
             ->when(
                 $this->schedule->notes,
-                fn ($m) => $m->line("**Notes / Panel Information:** {$this->schedule->notes}")
+                fn ($m) => $m->line("- **Additional Info:** {$this->schedule->notes}")
             )
-            ->line('Please report to the venue at least 15 minutes before your scheduled time. Bring a valid government-issued ID and any supporting documents you may wish to present.')
+            ->line('Please arrive at least 15 minutes early. Bring a valid government-issued ID and any supporting documents you wish to present.')
             ->action('View My Application', url('/applicant/applications'))
-            ->line('For inquiries, please contact the HR Management and Practices Section.')
-            ->salutation('Civil Service Commission Regional Office VIII');
+            ->line('For questions, please contact the HR Management and Practices Section.')
+            ->salutation('CSC RO VIII Recruitment Portal');
     }
 
     public function toArray(object $notifiable): array
     {
+        $date = $this->schedule->scheduled_at->format('F j, Y');
+        $time = $this->schedule->scheduled_at->format('g:i A');
+
         return [
             'type'         => 'bei_scheduled',
             'scheduled_at' => $this->schedule->scheduled_at->toIso8601String(),
             'venue'        => $this->schedule->venue,
             'position'     => $this->positionTitle,
+            'message'      => "You have an interview scheduled for {$this->positionTitle} on {$date} at {$time}.",
         ];
     }
 }

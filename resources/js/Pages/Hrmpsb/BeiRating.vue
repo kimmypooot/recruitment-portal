@@ -1,11 +1,11 @@
 <template>
   <HrmbsboardLayout title="BEI Rating" :vacancyId="props.vacancyId">
-    <div class="space-y-6">
+    <div class="space-y-4">
 
       <!-- Vacancy Banner -->
       <VacancyBanner
         :vacancy="vacancy"
-        :stage="3"
+        :stage="5"
         stageLabel="Behavioral Event Interview (BEI)"
         :loading="loading"
       />
@@ -233,8 +233,8 @@
 
       <!-- Navigation -->
       <div class="flex justify-between pt-2">
-        <a :href="`/hrmpsb/exam-results/${vacancyId}`" class="btn-secondary">← Exam Results</a>
-        <a :href="`/hrmpsb/deliberation/${vacancyId}`" class="btn-primary">Deliberation →</a>
+        <a :href="`/hrmpsb/bei-schedule/${vacancyId}`" class="btn-secondary">← BEI Schedule</a>
+        <a :href="`/hrmpsb/eopt/${vacancyId}`" class="btn-primary">EOPT Assessment →</a>
       </div>
     </div>
   </HrmbsboardLayout>
@@ -259,8 +259,18 @@ const vacancy      = ref(null)
 const applications = ref([])
 const competencies = ref({})   // { key: { name, group, level, description } }
 const isSecretariat = ref(false)
-const beiLocked    = ref(false)
 const selectedId   = ref(null)
+
+const beiLocked = computed(() => {
+  if (!selectedId.value) return false
+  if (isSecretariat.value) {
+    return applications.value.length > 0
+      && applications.value.every(a =>
+        a.all_ratings?.length > 0 && a.all_ratings.every(r => r.locked)
+      )
+  }
+  return !!selected.value?.my_rating?.locked_at
+})
 
 const selected = computed(() => applications.value.find(a => a.id === selectedId.value) ?? null)
 
@@ -323,9 +333,6 @@ async function load() {
     applications.value = data.applications
     competencies.value = data.competencies ?? {}
     isSecretariat.value = data.is_secretariat
-    beiLocked.value = data.applications.some(a =>
-      a.all_ratings?.some(r => r.locked) || a.my_rating?.locked_at
-    )
     if (applications.value.length && !selectedId.value) {
       selectedId.value = applications.value[0].id
     }

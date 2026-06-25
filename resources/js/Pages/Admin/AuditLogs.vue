@@ -34,6 +34,19 @@
         </optgroup>
       </select>
 
+      <!-- Date range filter -->
+      <input v-model="filters.date_from" @change="resetAndFetch" type="date"
+        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white" />
+      <span class="text-xs text-gray-400">–</span>
+      <input v-model="filters.date_to" @change="resetAndFetch" type="date"
+        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white" />
+
+      <button @click="autoRefresh = !autoRefresh"
+        class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
+        :class="autoRefresh ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'">
+        <span class="w-1.5 h-1.5 rounded-full" :class="autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'"></span>
+        {{ autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF' }}
+      </button>
       <span v-if="!loading" class="text-xs text-gray-400 whitespace-nowrap">
         {{ meta.total ?? 0 }} log{{ meta.total !== 1 ? 's' : '' }}
       </span>
@@ -81,8 +94,13 @@
                 <div class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold flex-shrink-0">
                   {{ initials(log.user_name) }}
                 </div>
-                <span class="text-gray-700 text-xs truncate max-w-[160px]">
+                <span class="text-gray-700 text-xs truncate max-w-[130px]">
                   {{ log.user_name ?? 'System' }}
+                </span>
+                <span v-if="log.user_role"
+                  class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider"
+                  :class="roleBadgeClass(log.user_role)">
+                  {{ log.user_role.replace('-', ' ') }}
                 </span>
               </div>
             </td>
@@ -137,16 +155,30 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue'
 import { debounce } from 'lodash-es'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 
 // ── State ────────────────────────────────────────────────────────────────────────
-const loading = ref(true)
-const logs    = ref([])
-const meta    = ref({})
-const filters = reactive({ search: '', action_type: '', page: 1 })
+const loading      = ref(true)
+const logs         = ref([])
+const meta         = ref({})
+const filters      = reactive({ search: '', action_type: '', date_from: '', date_to: '', page: 1 })
+const autoRefresh  = ref(false)
+let refreshInterval = null
+
+watch(autoRefresh, (val) => {
+  if (val) {
+    refreshInterval = setInterval(fetchLogs, 30000)
+  } else {
+    clearInterval(refreshInterval)
+  }
+})
+
+onBeforeUnmount(() => {
+  clearInterval(refreshInterval)
+})
 
 // ── Auth ──────────────────────────────────────────────────────────────────────────
 function authHeaders() {
@@ -162,6 +194,8 @@ async function fetchLogs() {
       params: {
         search:      filters.search      || undefined,
         action_type: filters.action_type || undefined,
+        date_from:   filters.date_from   || undefined,
+        date_to:     filters.date_to     || undefined,
         page:        filters.page,
       },
       headers: authHeaders(),
@@ -176,7 +210,19 @@ async function fetchLogs() {
 const onSearch = debounce(() => resetAndFetch(), 350)
 function resetAndFetch() { filters.page = 1; fetchLogs() }
 function goPage(p) { filters.page = p; fetchLogs() }
-function clearFilters() { filters.search = ''; filters.action_type = ''; resetAndFetch() }
+function clearFilters() { filters.search = ''; filters.action_type = ''; filters.date_from = ''; filters.date_to = ''; resetAndFetch() }
+
+function roleBadgeClass(role) {
+  return {
+    admin: 'bg-purple-100 text-purple-700',
+    'hr-manager': 'bg-[#2a338f]/10 text-[#2a338f]',
+    'hr-officer': 'bg-teal-100 text-teal-700',
+    applicant: 'bg-gray-100 text-gray-600',
+    'hrmpsb-member': 'bg-amber-100 text-amber-700',
+    'hrmpsb-secretariat': 'bg-orange-100 text-orange-700',
+    'appointing-authority': 'bg-rose-100 text-rose-700',
+  }[role] ?? 'bg-gray-100 text-gray-600'
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────────
 function initials(name) {

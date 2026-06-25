@@ -5,17 +5,27 @@
       <!-- Vacancy Banner -->
       <VacancyBanner
         :vacancy="vacancy"
-        :stage="2"
-        stageLabel="Examination Scheduling — TWE &amp; CBWE"
+        :stage="stageNumber"
+        :stageLabel="stageLabel"
         :loading="loading"
       >
+        <div class="mt-4 flex items-center gap-1">
+          <a :href="`/hrmpsb/exam-schedule/${props.vacancyId}?exam_type=TWE`"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors"
+            :class="examType === 'TWE' ? 'bg-[#1a5276] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+            TWE — Technical Written Exam
+          </a>
+          <a :href="`/hrmpsb/exam-schedule/${props.vacancyId}?exam_type=CBWE`"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors"
+            :class="examType === 'CBWE' ? 'bg-[#1a5276] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+            CBWE — Competency-Based Written Exam
+          </a>
+        </div>
         <div class="mt-4 flex items-center gap-2 text-xs text-gray-500">
           <svg class="w-4 h-4 text-[#1a5276] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          Schedule the <strong class="text-gray-700">Technical Written Examination (TWE)</strong> and
-          <strong class="text-gray-700">Competency-Based Written Examination (CBWE)</strong> for all qualified applicants.
-          TWE and CBWE may be scheduled on different dates.
+          Schedule the <strong class="text-gray-700">{{ examTypeLabel }}</strong> for all qualified applicants.
         </div>
       </VacancyBanner>
 
@@ -27,19 +37,8 @@
           <p class="text-[10px] text-gray-400 mt-0.5">Eligible for examination</p>
         </div>
         <div class="bg-white rounded-xl border border-blue-200 p-4 shadow-sm text-center">
-          <p class="text-2xl font-bold text-blue-700">{{ tweCount }}</p>
-          <p class="text-xs text-gray-500 mt-0.5 font-medium">Scheduled for TWE</p>
-          <p class="text-[10px] text-gray-400 mt-0.5">Technical Written Exam</p>
-        </div>
-        <div class="bg-white rounded-xl border border-indigo-200 p-4 shadow-sm text-center">
-          <p class="text-2xl font-bold text-indigo-700">{{ cbweCount }}</p>
-          <p class="text-xs text-gray-500 mt-0.5 font-medium">Scheduled for CBWE</p>
-          <p class="text-[10px] text-gray-400 mt-0.5">Competency-Based Written Exam</p>
-        </div>
-        <div class="bg-white rounded-xl border border-green-200 p-4 shadow-sm text-center">
-          <p class="text-2xl font-bold text-green-700">{{ fullyScheduled }}</p>
-          <p class="text-xs text-gray-500 mt-0.5 font-medium">Fully Scheduled</p>
-          <p class="text-[10px] text-gray-400 mt-0.5">Both TWE and CBWE set</p>
+          <p class="text-2xl font-bold text-blue-700">{{ scheduledForType }}</p>
+          <p class="text-xs text-gray-500 mt-0.5 font-medium">Scheduled for {{ examType }}</p>
         </div>
       </div>
 
@@ -91,7 +90,7 @@
               <p v-if="batchError" class="text-sm text-red-600">{{ batchError }}</p>
               <div v-else class="text-xs text-gray-400">
                 This will schedule all <strong>{{ applications.length }}</strong> applicant(s) for
-                <strong>{{ batchForm.exam_type }}</strong> at the same date and venue.
+                <strong>{{ examType }}</strong> at the same date and venue.
                 Existing schedules for the selected type will be overwritten.
               </div>
               <button type="submit" :disabled="batchSubmitting" class="btn-primary ml-4 flex-shrink-0">
@@ -197,22 +196,13 @@
             </div>
             <div class="flex items-center gap-2 flex-shrink-0 flex-wrap">
               <button
-                @click="sendNotification('TWE')"
+                @click="sendNotification(examType)"
                 :disabled="notifying"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                 </svg>
-                {{ notifying === 'TWE' ? 'Sending…' : 'Notify — TWE' }}
-              </button>
-              <button
-                @click="sendNotification('CBWE')"
-                :disabled="notifying"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50 transition-colors">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
-                {{ notifying === 'CBWE' ? 'Sending…' : 'Notify — CBWE' }}
+                {{ notifying === examType ? 'Sending…' : `Notify — ${examType}` }}
               </button>
               <button
                 @click="clearSelection"
@@ -228,7 +218,7 @@
           <!-- Default header -->
           <div v-else class="flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <h2 class="text-sm font-bold text-gray-900">Examination Schedule — All Applicants</h2>
+              <h2 class="text-sm font-bold text-gray-900">{{ examType }} Schedule — All Applicants</h2>
               <p class="text-xs text-gray-400 mt-0.5">Check rows to select, then use Notify to send schedule notices</p>
             </div>
             <div class="flex items-center gap-2 text-xs text-gray-500">
@@ -304,12 +294,8 @@
                 <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider w-12">#</th>
                 <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Blind Code</th>
                 <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  TWE Schedule
-                  <div class="font-normal normal-case text-gray-300">Technical Written Exam</div>
-                </th>
-                <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  CBWE Schedule
-                  <div class="font-normal normal-case text-gray-300">Competency-Based Written Exam</div>
+                  {{ examType }} Schedule
+                  <div class="font-normal normal-case text-gray-300">{{ examType === 'TWE' ? 'Technical Written Exam' : 'Competency-Based Written Exam' }}</div>
                 </th>
                 <th v-if="canSchedule" class="pl-3 pr-6 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
@@ -341,25 +327,12 @@
                   </span>
                 </td>
 
-                <!-- TWE -->
+                <!-- {{ examType }} Schedule -->
                 <td class="px-3 py-4">
-                  <div v-if="getSchedule(app.id, 'TWE')" class="flex flex-col gap-0.5">
-                    <span class="text-sm font-semibold text-gray-900">{{ formatDt(getSchedule(app.id, 'TWE').scheduled_at) }}</span>
-                    <span class="text-xs text-gray-500">{{ getSchedule(app.id, 'TWE').venue }}</span>
-                    <span v-if="getSchedule(app.id, 'TWE').notes" class="text-[10px] text-gray-400 italic">{{ getSchedule(app.id, 'TWE').notes }}</span>
-                  </div>
-                  <div v-else class="flex items-center gap-1.5 text-xs text-gray-400">
-                    <span class="w-2 h-2 rounded-full bg-gray-200 inline-block flex-shrink-0"></span>
-                    Not scheduled
-                  </div>
-                </td>
-
-                <!-- CBWE -->
-                <td class="px-3 py-4">
-                  <div v-if="getSchedule(app.id, 'CBWE')" class="flex flex-col gap-0.5">
-                    <span class="text-sm font-semibold text-gray-900">{{ formatDt(getSchedule(app.id, 'CBWE').scheduled_at) }}</span>
-                    <span class="text-xs text-gray-500">{{ getSchedule(app.id, 'CBWE').venue }}</span>
-                    <span v-if="getSchedule(app.id, 'CBWE').notes" class="text-[10px] text-gray-400 italic">{{ getSchedule(app.id, 'CBWE').notes }}</span>
+                  <div v-if="getSchedule(app.id, examType)" class="flex flex-col gap-0.5">
+                    <span class="text-sm font-semibold text-gray-900">{{ formatDt(getSchedule(app.id, examType).scheduled_at) }}</span>
+                    <span class="text-xs text-gray-500">{{ getSchedule(app.id, examType).venue }}</span>
+                    <span v-if="getSchedule(app.id, examType).notes" class="text-[10px] text-gray-400 italic">{{ getSchedule(app.id, examType).notes }}</span>
                   </div>
                   <div v-else class="flex items-center gap-1.5 text-xs text-gray-400">
                     <span class="w-2 h-2 rounded-full bg-gray-200 inline-block flex-shrink-0"></span>
@@ -370,20 +343,18 @@
                 <!-- Actions -->
                 <td v-if="canSchedule" class="pl-3 pr-6 py-4" @click.stop>
                   <div class="flex items-center justify-end gap-3">
-                    <template v-for="type in ['TWE', 'CBWE']" :key="type">
-                      <button
-                        @click="editSchedule(app.id, type)"
-                        class="text-[11px] font-semibold text-[#1a5276] hover:underline transition-colors">
-                        {{ getSchedule(app.id, type) ? `Edit ${type}` : `Set ${type}` }}
-                      </button>
-                      <button
-                        v-if="getSchedule(app.id, type)"
-                        @click="deleteSchedule(getSchedule(app.id, type))"
-                        :disabled="deleting[getSchedule(app.id, type).id]"
-                        class="text-[11px] font-semibold text-red-500 hover:underline disabled:opacity-50 transition-colors">
-                        {{ deleting[getSchedule(app.id, type).id] ? '…' : 'Clear' }}
-                      </button>
-                    </template>
+                    <button
+                      @click="editSchedule(app.id, examType)"
+                      class="text-[11px] font-semibold text-[#1a5276] hover:underline transition-colors">
+                      {{ getSchedule(app.id, examType) ? 'Edit' : 'Set' }}
+                    </button>
+                    <button
+                      v-if="getSchedule(app.id, examType)"
+                      @click="deleteSchedule(getSchedule(app.id, examType))"
+                      :disabled="deleting[getSchedule(app.id, examType).id]"
+                      class="text-[11px] font-semibold text-red-500 hover:underline disabled:opacity-50 transition-colors">
+                      {{ deleting[getSchedule(app.id, examType).id] ? '…' : 'Clear' }}
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -422,9 +393,19 @@
 import { ref, computed, reactive, onMounted, nextTick } from 'vue'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
+import { useConfirm } from '@/composables/useConfirm'
 import api from '@/services/api'
 
-const props = defineProps({ vacancyId: Number })
+const { confirm, alert } = useConfirm()
+
+const props = defineProps({ vacancyId: Number, exam_type: { type: String, default: 'TWE' } })
+
+const examType = computed(() => props.exam_type ?? 'TWE')
+const examTypeLabel = computed(() => examType.value === 'TWE' ? 'Technical Written Examination (TWE)' : 'Competency-Based Written Examination (CBWE)')
+const stageNumber = computed(() => examType.value === 'TWE' ? 3 : 4)
+const stageLabel = computed(() => examType.value === 'TWE'
+  ? 'Qualifying Exam (TWE)'
+  : 'Qualifying Exam (CBWE)')
 
 const loading       = ref(true)
 const vacancy       = ref(null)
@@ -462,14 +443,8 @@ const scheduleMap = computed(() => {
   return map
 })
 
-const tweCount = computed(() =>
-  applications.value.filter(a => scheduleMap.value[a.id]?.TWE).length
-)
-const cbweCount = computed(() =>
-  applications.value.filter(a => scheduleMap.value[a.id]?.CBWE).length
-)
-const fullyScheduled = computed(() =>
-  applications.value.filter(a => scheduleMap.value[a.id]?.TWE && scheduleMap.value[a.id]?.CBWE).length
+const scheduledForType = computed(() =>
+  applications.value.filter(a => scheduleMap.value[a.id]?.[examType.value]).length
 )
 
 const allSelected = computed(() =>
@@ -593,11 +568,12 @@ async function submitBatch() {
   batchSubmitting.value = true
   batchError.value = null
   try {
-    const { data } = await api.post(`/exam-schedules/batch/${props.vacancyId}`, batchForm.value)
-    batchForm.value = { exam_type: batchForm.value.exam_type, scheduled_at: '', venue: '', notes: '' }
+    const payload = { ...batchForm.value, exam_type: examType.value }
+    const { data } = await api.post(`/exam-schedules/batch/${props.vacancyId}`, payload)
+    batchForm.value = { exam_type: examType.value, scheduled_at: '', venue: '', notes: '' }
     batchOpen.value = false
     await load()
-    alert(`Successfully scheduled ${data.scheduled} applicant(s) for ${data.exam_type}.`)
+    await alert(`Successfully scheduled ${data.scheduled} applicant(s) for ${data.exam_type}.`)
   } catch (e) {
     batchError.value = e.response?.data?.message ?? 'Failed to batch schedule.'
   } finally {
@@ -628,41 +604,43 @@ async function submitForm() {
 }
 
 async function deleteSchedule(schedule) {
-  if (!confirm(`Remove the ${schedule.exam_type} schedule for this applicant?`)) return
+  const ok = await confirm(`Remove the ${schedule.exam_type} schedule for this applicant?`)
+  if (!ok) return
   deleting[schedule.id] = true
   try {
     await api.delete(`/exam-schedules/${schedule.id}`)
     await load()
   } catch (e) {
-    alert(e.response?.data?.message ?? 'Failed to delete schedule.')
+    await alert(e.response?.data?.message ?? 'Failed to delete schedule.')
   } finally {
     delete deleting[schedule.id]
   }
 }
 
-async function sendNotification(examType) {
+async function sendNotification(et) {
   if (!selected.value.length) return
 
-  const hasSchedule = selected.value.filter(id => getSchedule(id, examType))
+  const hasSchedule = selected.value.filter(id => getSchedule(id, et))
   const missing = selected.value.length - hasSchedule.length
 
-  let confirmMsg = `Send ${examType} schedule notification to ${hasSchedule.length} applicant(s)?`
+  let confirmMsg = `Send ${et} schedule notification to ${hasSchedule.length} applicant(s)?`
   if (missing > 0) {
-    confirmMsg += `\n\nNote: ${missing} selected applicant(s) have no ${examType} schedule and will be skipped.`
+    confirmMsg += `\n\nNote: ${missing} selected applicant(s) have no ${et} schedule and will be skipped.`
   }
-  if (!confirm(confirmMsg)) return
+  const confirmed = await confirm(confirmMsg)
+  if (!confirmed) return
 
-  notifying.value = examType
+  notifying.value = et
   notifyResult.value = null
   try {
     const { data } = await api.post(`/exam-schedules/notify/${props.vacancyId}`, {
       application_ids: selected.value,
-      exam_type: examType,
+      exam_type: et,
     })
     notifyResult.value = data
     clearSelection()
   } catch (e) {
-    alert(e.response?.data?.message ?? 'Failed to send notifications.')
+    await alert(e.response?.data?.message ?? 'Failed to send notifications.')
   } finally {
     notifying.value = null
   }
