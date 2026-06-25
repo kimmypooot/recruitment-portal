@@ -173,8 +173,12 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
+import axios from 'axios'
 import NotificationBell from '@/Components/UI/NotificationBell.vue'
 import AppFooter from '@/Components/UI/AppFooter.vue'
+import { useIdleTimer } from '@/composables/useIdleTimer'
+
+useIdleTimer()
 
 const sidebarOpen       = ref(false)
 const sidebarCollapsed  = ref(false)
@@ -248,10 +252,17 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-function confirmLogout() {
+async function confirmLogout() {
   showLogoutModal.value = false
   dropdownOpen.value = false
   sidebarOpen.value = false
+  try {
+    await axios.post('/api/logout', {}, {
+      headers: { Authorization: `Bearer ${authToken.value}` }
+    })
+  } catch {
+    // Proceed with local logout even if server call fails
+  }
   localStorage.removeItem('auth_token')
   localStorage.removeItem('auth_user')
   router.visit('/login')

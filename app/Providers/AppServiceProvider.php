@@ -9,8 +9,12 @@ use App\Policies\ApplicationPolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\EvaluationPolicy;
 use App\Policies\VacancyPolicy;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,5 +31,15 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('evaluate-application', [EvaluationPolicy::class, 'evaluate']);
         Gate::define('lock-evaluation', [EvaluationPolicy::class, 'lock']);
         Gate::define('unmask-identities', [EvaluationPolicy::class, 'unmask']);
+
+        RateLimiter::for('login', function (Request $request) {
+            $key = Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());
+
+            return Limit::perMinute(5)->by($key);
+        });
+
+        RateLimiter::for('register', function (Request $request) {
+            return Limit::perMinutes(60, 3)->by($request->ip());
+        });
     }
 }

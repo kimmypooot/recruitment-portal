@@ -169,8 +169,12 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
+import axios from 'axios'
 import AppFooter from '@/Components/UI/AppFooter.vue'
 import WorkspaceSwitcher from '@/Components/UI/WorkspaceSwitcher.vue'
+import { useIdleTimer } from '@/composables/useIdleTimer'
+
+useIdleTimer()
 
 defineProps({ title: { type: String, default: 'Dashboard' } })
 
@@ -296,9 +300,17 @@ function logout() {
   showLogoutModal.value = true
 }
 
-function confirmLogout() {
+async function confirmLogout() {
   showLogoutModal.value = false
+  try {
+    await axios.post('/api/logout', {}, {
+      headers: { Authorization: `Bearer ${authToken.value}` }
+    })
+  } catch {
+    // Proceed with local logout even if server call fails
+  }
   localStorage.removeItem('auth_token')
+  localStorage.removeItem('auth_user')
   router.visit('/login')
 }
 </script>

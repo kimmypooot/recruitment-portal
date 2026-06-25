@@ -18,7 +18,7 @@ class ApplicantProfileFactory extends Factory
             'first_name'   => fake()->firstName(),
             'last_name'    => fake()->lastName(),
             'middle_name'  => fake()->optional()->lastName(),
-            'contact_number' => fake()->phoneNumber(),
+            'mobile_number'  => '09' . fake()->numerify('#########'),
             'address'      => fake()->address(),
         ];
     }

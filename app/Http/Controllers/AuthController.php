@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PrivacyConsent;
 use App\Models\User;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,9 +21,13 @@ class AuthController extends Controller
         $request->validate([
             'email'    => 'required|email',
             'password' => 'required|string',
+            'remember' => 'nullable|boolean',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        if (!Auth::attempt(
+            $request->only('email', 'password'),
+            $request->boolean('remember')
+        )) {
             return response()->json(['message' => 'Invalid credentials.'], 401);
         }
 
@@ -30,6 +35,13 @@ class AuthController extends Controller
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json(['token' => $token, 'user' => $user]);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'Logged out successfully.']);
     }
 
     public function register(Request $request): JsonResponse
@@ -40,8 +52,16 @@ class AuthController extends Controller
             'middle_name'            => 'nullable|string|max:100',
             'suffix'                 => 'nullable|string|max:20',
             'email'                  => 'required|email|unique:users',
-            'password'               => 'required|string|min:8|confirmed',
+            'password'               => [
+                'required', 'string', 'confirmed',
+                'min:8',
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/[0-9]/',
+            ],
             'privacy_policy_version' => 'required|string|max:20',
+        ], [
+            'password.regex' => 'The password must contain at least one uppercase letter, one lowercase letter, and one number.',
         ]);
 
         $name = trim(
@@ -76,6 +96,37 @@ class AuthController extends Controller
         PrivacyConsent::record($request->user(), $data['privacy_policy_version'], $request);
 
         return response()->json(['message' => 'Consent recorded.']);
+    }
+
+    // ── Email verification ────────────────────────────────────────────────
+
+    public function verifyEmail(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->intended('/applicant/dashboard');
+        }
+
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
+        }
+
+        return redirect()->intended('/applicant/dashboard')
+            ->with('message', 'Email verified successfully.');
+    }
+
+    public function resendVerification(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->intended('/applicant/dashboard');
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return back()->with('message', 'Verification link sent.');
     }
 
     // ── Google OAuth: Login flow ──────────────────────────────────────────

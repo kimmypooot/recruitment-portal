@@ -132,34 +132,93 @@
           <!-- Password -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Password <span class="text-red-500">*</span></label>
-            <input
-              v-model="form.password"
-              type="password"
-              autocomplete="new-password"
-              required
-              placeholder="At least 8 characters"
-              class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
-              :class="errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
+            <div class="relative">
+              <input
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                autocomplete="new-password"
+                required
+                placeholder="At least 8 characters"
+                class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition pr-10"
+                :class="errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
+              <button type="button" @click="showPassword = !showPassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <svg v-if="!showPassword" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                </svg>
+              </button>
+            </div>
             <p v-if="errors.password" class="mt-1 text-xs text-red-600">{{ errors.password }}</p>
+
+            <!-- Password requirements -->
+            <div class="mt-2 space-y-1">
+              <p class="text-xs" :class="form.password.length >= 8 ? 'text-green-600' : 'text-gray-400'">
+                <span v-html="form.password.length >= 8 ? '&#10003;' : '&#9679;'"></span> At least 8 characters
+              </p>
+              <p class="text-xs" :class="/[A-Z]/.test(form.password) ? 'text-green-600' : 'text-gray-400'">
+                <span v-html="/[A-Z]/.test(form.password) ? '&#10003;' : '&#9679;'"></span> One uppercase letter
+              </p>
+              <p class="text-xs" :class="/[a-z]/.test(form.password) ? 'text-green-600' : 'text-gray-400'">
+                <span v-html="/[a-z]/.test(form.password) ? '&#10003;' : '&#9679;'"></span> One lowercase letter
+              </p>
+              <p class="text-xs" :class="/[0-9]/.test(form.password) ? 'text-green-600' : 'text-gray-400'">
+                <span v-html="/[0-9]/.test(form.password) ? '&#10003;' : '&#9679;'"></span> One number
+              </p>
+            </div>
           </div>
 
           <!-- Confirm Password -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm password <span class="text-red-500">*</span></label>
-            <input
-              v-model="form.password_confirmation"
-              type="password"
-              autocomplete="new-password"
-              required
-              placeholder="Repeat your password"
-              class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
-              :class="errors.password_confirmation ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
+            <div class="relative">
+              <input
+                v-model="form.password_confirmation"
+                :type="showConfirmPassword ? 'text' : 'password'"
+                autocomplete="new-password"
+                required
+                placeholder="Repeat your password"
+                class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition pr-10"
+                :class="errors.password_confirmation ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
+              <button type="button" @click="showConfirmPassword = !showConfirmPassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <svg v-if="!showConfirmPassword" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                </svg>
+              </button>
+            </div>
             <p v-if="errors.password_confirmation" class="mt-1 text-xs text-red-600">{{ errors.password_confirmation }}</p>
+            <p v-if="form.password_confirmation && form.password !== form.password_confirmation" class="mt-1 text-xs text-red-500">
+              Passwords do not match
+            </p>
+          </div>
+
+          <!-- Privacy policy consent -->
+          <div>
+            <label class="flex items-start gap-2.5 cursor-pointer">
+              <input
+                v-model="form.privacy_consent"
+                type="checkbox"
+                class="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f] accent-[#2a338f]" />
+              <span class="text-sm text-gray-600 leading-relaxed">
+                I have read and agree to the
+                <a href="/privacy-policy" target="_blank" class="text-[#2a338f] font-medium hover:underline">Data Privacy Policy</a>
+                of the Civil Service Commission. <span class="text-red-500">*</span>
+              </span>
+            </label>
+            <p v-if="errors.privacy" class="mt-1 text-xs text-red-600">{{ errors.privacy }}</p>
           </div>
 
           <button
             type="submit"
-            :disabled="loading"
+            :disabled="loading || !form.privacy_consent"
             class="w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white font-semibold text-sm rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
             {{ loading ? 'Creating account…' : 'Create account' }}
           </button>
@@ -188,6 +247,8 @@ import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 
+const PRIVACY_POLICY_VERSION = '1.0'
+
 const form = reactive({
   last_name:             '',
   first_name:            '',
@@ -196,12 +257,15 @@ const form = reactive({
   email:                 '',
   password:              '',
   password_confirmation: '',
+  privacy_consent:       false,
 })
 
 const loading = ref(false)
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 const errors  = reactive({
   last_name: '', first_name: '', email: '',
-  password: '', password_confirmation: '', general: '',
+  password: '', password_confirmation: '', privacy: '', general: '',
 })
 
 function clearErrors() {
@@ -210,18 +274,30 @@ function clearErrors() {
 
 async function submit() {
   clearErrors()
+  if (!form.privacy_consent) {
+    errors.privacy = 'You must agree to the Data Privacy Policy to continue.'
+    return
+  }
   loading.value = true
   try {
-    const { data } = await axios.post('/api/register', form)
+    const { data } = await axios.post('/api/register', {
+      ...form,
+      privacy_policy_version: PRIVACY_POLICY_VERSION,
+    })
     localStorage.setItem('auth_token', data.token)
     localStorage.setItem('auth_user', JSON.stringify(data.user))
-    router.visit('/applicant/complete-profile')
+    router.visit('/email/verify')
   } catch (err) {
-    const resp = err.response?.data
-    if (resp?.errors) {
-      Object.assign(errors, resp.errors)
+    const status = err.response?.status
+    if (status === 429) {
+      errors.general = 'Too many registration attempts. Please try again later.'
     } else {
-      errors.general = resp?.message ?? 'Registration failed. Please try again.'
+      const resp = err.response?.data
+      if (resp?.errors) {
+        Object.assign(errors, resp.errors)
+      } else {
+        errors.general = resp?.message ?? 'Registration failed. Please try again.'
+      }
     }
   } finally {
     loading.value = false
