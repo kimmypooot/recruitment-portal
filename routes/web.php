@@ -13,6 +13,7 @@ Route::get('/', [HomeController::class, 'index']);
 Route::get('/how-to-apply', fn () => Inertia::render('HowToApply'));
 Route::get('/about', fn () => Inertia::render('About'));
 Route::get('/privacy-policy', fn () => Inertia::render('PrivacyPolicy'));
+Route::get('/terms-of-service', fn () => Inertia::render('TermsOfService'));
 Route::get('/login', fn () => Inertia::render('Auth/Login'))->name('login');
 Route::get('/register', fn () => Inertia::render('Auth/Register'));
 
@@ -82,4 +83,5 @@ Route::prefix('hrmpsb')->group(function () {
     Route::get('/exam-schedule/{vacancy}', fn ($vacancy, Request $r) => Inertia::render('Hrmpsb/ExamScheduler', ['vacancyId' => (int) $vacancy, 'exam_type' => $r->query('exam_type', 'TWE')]));
     Route::get('/bei-schedule/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/BeiScheduler', ['vacancyId' => (int) $vacancy]));
     Route::get('/background-check/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/BackgroundCheck', ['vacancyId' => (int) $vacancy]));
+    Route::get('/applicants/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/Applicants', ['vacancyId' => (int) $vacancy]));
 });

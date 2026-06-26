@@ -39,6 +39,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'profile_complete' => $request->user()?->applicantProfile?->isComplete() ?? false,
             ],
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),

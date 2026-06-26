@@ -6,19 +6,30 @@ use App\Models\User;
 use App\Services\AuditLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = User::select('id', 'name', 'email', 'role', 'created_at');
+        $query = User::select('id', 'name', 'email', 'role', 'created_at')
+            ->with('applicantProfile:user_id,photo_path');
 
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
         $users = $query->latest()->paginate(20);
+
+        $users->getCollection()->transform(function ($user) {
+            $path = $user->applicantProfile?->photo_path;
+            $user->photo_url = $path && Storage::disk('public')->exists($path)
+                ? Storage::url($path)
+                : null;
+            unset($user->applicantProfile);
+            return $user;
+        });
 
         return response()->json($users);
     }

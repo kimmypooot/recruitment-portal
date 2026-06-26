@@ -34,7 +34,7 @@
     <tr><th colspan="3" class="section-title">I. POSITION INFORMATION</th></tr>
     <tr>
       <td><span class="label">Position Title</span><span class="value">{{ $vacancy->position_title ?? '—' }}</span></td>
-      <td><span class="label">Item No.</span><span class="value">{{ $vacancy->item_number ?? '—' }}</span></td>
+      <td><span class="label">Item No.</span><span class="value">{{ $vacancy->plantilla_no ?? '—' }}</span></td>
       <td><span class="label">Salary Grade</span><span class="value">SG-{{ $vacancy->salary_grade ?? '—' }}</span></td>
     </tr>
     <tr>

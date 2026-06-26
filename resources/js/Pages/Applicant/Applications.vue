@@ -90,8 +90,7 @@
                     </span>
                   </p>
                   <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-gray-400">
-                    <span v-if="app.vacancy?.plantilla_number">Plantilla: {{ app.vacancy.plantilla_number }}</span>
-                    <span v-if="app.vacancy?.item_number">Item No.: {{ app.vacancy.item_number }}</span>
+                    <span v-if="app.vacancy?.plantilla_no">Plantilla Item No.: {{ app.vacancy.plantilla_no }}</span>
                     <span v-if="app.vacancy?.position_level">{{ app.vacancy.position_level }}</span>
                     <span v-if="app.vacancy?.monthly_salary">₱ {{ Number(app.vacancy.monthly_salary).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
                   </div>
@@ -290,7 +289,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
-import { applicationApi } from '@/services/api'
+import { applicationApi, profileApi } from '@/services/api'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 
@@ -326,6 +325,18 @@ function onVisibilityChange() {
 
 onMounted(async () => {
   if (!localStorage.getItem('auth_token')) { router.visit('/login'); return }
+  try {
+    const { data } = await profileApi.show()
+    localStorage.setItem('profile_complete', data.is_complete)
+    window.dispatchEvent(new CustomEvent('profile-complete-changed'))
+    if (!data.is_complete) {
+      window.location.href = '/applicant/complete-profile'
+      return
+    }
+  } catch {
+    window.location.href = '/login'
+    return
+  }
   await fetchApplications()
   loading.value = false
   document.addEventListener('visibilitychange', onVisibilityChange)

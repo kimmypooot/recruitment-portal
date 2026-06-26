@@ -15,9 +15,8 @@ class VacancyFactory extends Factory
     {
         return [
             'position_title'      => fake()->jobTitle(),
-            'item_number'         => strtoupper(fake()->unique()->bothify('ITEM-####')),
+            'plantilla_no'        => strtoupper(fake()->unique()->bothify('PLNT-####')),
             'salary_grade'        => fake()->numberBetween(1, 33),
-            'plantilla_number'    => fake()->optional()->numerify('PLANTILLA-###'),
             'place_of_assignment' => fake()->city(),
             'education_req'       => 'Bachelor\'s Degree relevant to the job',
             'experience_req'      => '1 year of relevant experience',

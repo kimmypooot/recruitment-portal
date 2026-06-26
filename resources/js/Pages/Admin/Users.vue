@@ -104,9 +104,15 @@
             </td>
             <td class="px-5 py-3.5">
               <div class="flex items-center gap-3">
-                <div :class="avatarBg(user.role)"
-                  class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-                  {{ initials(user.name) }}
+                <div class="relative w-9 h-9 rounded-full flex-shrink-0 overflow-hidden">
+                  <img v-if="user.photo_url" :src="user.photo_url"
+                    class="w-full h-full object-cover rounded-full"
+                    @error="e => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex' }"
+                    alt="" />
+                  <div :class="[avatarBg(user.role), user.photo_url ? 'hidden' : '']"
+                    class="w-full h-full rounded-full flex items-center justify-center text-xs font-bold">
+                    {{ initials(user.name) }}
+                  </div>
                 </div>
                 <div class="min-w-0">
                   <p class="font-medium text-gray-900 truncate">{{ user.name }}</p>
@@ -196,9 +202,15 @@
 
         <!-- Header -->
         <div class="flex items-start gap-4 px-6 pt-6 pb-4 border-b border-gray-100">
-          <div v-if="editTarget" :class="avatarBg(form.role)"
-            class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
-            {{ initials(form.name || editTarget.name) }}
+          <div v-if="editTarget" class="relative w-12 h-12 rounded-full flex-shrink-0 overflow-hidden">
+            <img v-if="editTarget.photo_url" :src="editTarget.photo_url"
+              class="w-full h-full object-cover rounded-full"
+              @error="e => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex' }"
+              alt="" />
+            <div :class="[avatarBg(form.role), editTarget.photo_url ? 'hidden' : '']"
+              class="w-full h-full rounded-full flex items-center justify-center text-sm font-bold">
+              {{ initials(form.name || editTarget.name) }}
+            </div>
           </div>
           <div v-else class="w-12 h-12 rounded-full bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
             <svg class="w-6 h-6 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">

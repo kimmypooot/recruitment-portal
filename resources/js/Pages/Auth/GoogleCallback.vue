@@ -19,18 +19,22 @@
       <transition name="fade" mode="out-in">
         <div v-if="status === 'processing'" key="processing" class="space-y-6">
           <!-- Animated rings -->
-          <div class="relative w-20 h-20 mx-auto">
-            <svg class="absolute inset-0 w-20 h-20 animate-spin" viewBox="0 0 24 24" fill="none">
+          <div class="relative w-28 h-28 mx-auto">
+            <svg class="absolute inset-0 w-28 h-28 animate-spin" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="10" stroke="#e5e7eb" stroke-width="2.5"/>
               <circle cx="12" cy="12" r="10" stroke="url(#gradient)" stroke-width="2.5"
                 stroke-linecap="round" stroke-dasharray="62.832" stroke-dashoffset="20"
                 class="animate-[spin_1.5s_linear_infinite]"/>
             </svg>
-            <svg class="absolute inset-2 w-16 h-16 animate-spin" style="animation-duration: 2s; animation-direction: reverse;" viewBox="0 0 24 24" fill="none">
+            <svg class="absolute inset-2 w-[96px] h-[96px] animate-spin" style="animation-duration: 2s; animation-direction: reverse;" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="8" stroke="#e5e7eb" stroke-width="1.5"/>
               <circle cx="12" cy="12" r="8" stroke="#ec1c2d" stroke-width="1.5"
                 stroke-linecap="round" stroke-dasharray="50.265" stroke-dashoffset="15" opacity="0.6"/>
             </svg>
+            <img src="/images/csc-logo.png" alt="CSC"
+              class="absolute w-12 h-12 rounded-full bg-white shadow-sm object-contain p-1.5"
+              style="top: 50%; left: 50%; transform: translate(-50%, -50%);"
+              @error="e => e.target.style.display = 'none'" />
             <defs>
               <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#2a338f"/>

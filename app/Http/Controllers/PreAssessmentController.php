@@ -104,7 +104,7 @@ class PreAssessmentController extends Controller
             'vacancy' => [
                 'id'                 => $vacancy->id,
                 'position_title'     => $vacancy->position_title,
-                'item_number'        => $vacancy->item_number,
+                'plantilla_no'       => $vacancy->plantilla_no,
                 'salary_grade'       => $vacancy->salary_grade,
                 'place_of_assignment'=> $vacancy->place_of_assignment,
                 'education_req'      => $vacancy->education_req,

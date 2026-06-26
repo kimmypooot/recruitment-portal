@@ -100,7 +100,7 @@
                 <span v-if="log.user_role"
                   class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider"
                   :class="roleBadgeClass(log.user_role)">
-                  {{ log.user_role.replace('-', ' ') }}
+                  {{ roleLabel(log.user_role) }}
                 </span>
               </div>
             </td>
@@ -159,6 +159,7 @@ import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue'
 import { debounce } from 'lodash-es'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { roleLabel } from '@/utils/roleLabel'
 
 // ── State ────────────────────────────────────────────────────────────────────────
 const loading      = ref(true)

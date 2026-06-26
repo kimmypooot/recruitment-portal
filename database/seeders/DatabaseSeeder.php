@@ -76,9 +76,8 @@ class DatabaseSeeder extends Seeder
         $vacancyData = [
             [
                 'position_title'   => 'Administrative Officer II',
-                'item_number'      => 'CSCRO-AO2-001-2026',
+                'plantilla_no'     => 'CSCRO-AO2-001-2026',
                 'salary_grade'     => 11,
-                'plantilla_number' => 'PNTN-001',
                 'place_of_assignment' => 'CSC Regional Office No. XI, Davao City',
                 'education_req'    => 'Bachelor\'s Degree relevant to the job',
                 'experience_req'   => '1 year of relevant experience',
@@ -90,9 +89,8 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'position_title'   => 'Information Technology Officer I',
-                'item_number'      => 'CSCRO-ITO1-002-2026',
+                'plantilla_no'     => 'CSCRO-ITO1-002-2026',
                 'salary_grade'     => 19,
-                'plantilla_number' => 'PNTN-002',
                 'place_of_assignment' => 'CSC Regional Office No. XI, Davao City',
                 'education_req'    => 'Bachelor\'s Degree in Information Technology, Computer Science, or related field',
                 'experience_req'   => '2 years of relevant experience',
@@ -104,9 +102,8 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'position_title'   => 'Human Resource Management Officer III',
-                'item_number'      => 'CSCRO-HRMO3-003-2026',
+                'plantilla_no'     => 'CSCRO-HRMO3-003-2026',
                 'salary_grade'     => 18,
-                'plantilla_number' => 'PNTN-003',
                 'place_of_assignment' => 'CSC Regional Office No. XI, Davao City',
                 'education_req'    => 'Bachelor\'s Degree in Public Administration, Human Resource Management, or related field',
                 'experience_req'   => '2 years of relevant experience',
@@ -118,9 +115,8 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'position_title'   => 'Attorney III',
-                'item_number'      => 'CSCRO-ATY3-004-2026',
+                'plantilla_no'     => 'CSCRO-ATY3-004-2026',
                 'salary_grade'     => 21,
-                'plantilla_number' => 'PNTN-004',
                 'place_of_assignment' => 'CSC Regional Office No. XI, Davao City',
                 'education_req'    => 'Bachelor of Laws',
                 'experience_req'   => '3 years of relevant experience',
@@ -132,9 +128,8 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'position_title'   => 'Administrative Aide VI',
-                'item_number'      => 'CSCRO-AA6-005-2026',
+                'plantilla_no'     => 'CSCRO-AA6-005-2026',
                 'salary_grade'     => 6,
-                'plantilla_number' => 'PNTN-005',
                 'place_of_assignment' => 'CSC Regional Office No. XI, Davao City',
                 'education_req'    => 'Completion of 2 years studies in college',
                 'experience_req'   => '1 year of relevant experience',
@@ -146,9 +141,8 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'position_title'   => 'Records Officer II',
-                'item_number'      => 'CSCRO-RO2-006-2026',
+                'plantilla_no'     => 'CSCRO-RO2-006-2026',
                 'salary_grade'     => 11,
-                'plantilla_number' => 'PNTN-006',
                 'place_of_assignment' => 'CSC Regional Office No. XI, Davao City',
                 'education_req'    => 'Bachelor\'s Degree relevant to the job',
                 'experience_req'   => '1 year of relevant experience',

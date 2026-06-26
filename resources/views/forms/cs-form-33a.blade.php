@@ -41,7 +41,7 @@
       </td>
       <td width="25%">
         <span class="label">Item / Plantilla No.</span>
-        <span class="value">{{ $vacancy->plantilla_number ?? $vacancy->item_number ?? '—' }}</span>
+        <span class="value">{{ $vacancy->plantilla_no ?? '—' }}</span>
       </td>
       <td width="25%">
         <span class="label">Salary Grade</span>

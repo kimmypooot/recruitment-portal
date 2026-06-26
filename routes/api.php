@@ -49,6 +49,7 @@ Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard/recent-applications', [DashboardController::class, 'recentApplications']);
     Route::get('/dashboard/pipeline', [DashboardController::class, 'pipeline']);
+    Route::get('/dashboard/upcoming', [DashboardController::class, 'upcoming']);
 });
 
 // Authenticated applicant routes
@@ -85,8 +86,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 // HR Officer routes
-Route::middleware(['auth:sanctum', 'role:hr-officer,hr-manager,admin'])->group(function () {
-    Route::get('/dashboard/upcoming', [DashboardController::class, 'upcoming']);
+Route::middleware(['auth:sanctum', 'role:hr-officer,hr-manager,admin,hrmpsb-secretariat'])->group(function () {
     Route::apiResource('vacancies', VacancyController::class)->except(['index', 'show']);
     Route::patch('/vacancies/bulk-status', [VacancyController::class, 'bulkUpdateStatus']);
     Route::patch('/vacancies/{vacancy}/publish', [VacancyController::class, 'publish']);
@@ -111,7 +111,7 @@ Route::middleware(['auth:sanctum', 'role:hr-officer,hr-manager,admin'])->group(f
 });
 
 // Admin routes
-Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin,hrmpsb-secretariat'])->prefix('admin')->group(function () {
     Route::apiResource('users', UserController::class);
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
     Route::get('/dashboard-stats', [DashboardController::class, 'adminStats']);
@@ -136,7 +136,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 });
 
 // Exports
-Route::middleware(['auth:sanctum', 'role:admin,hr-manager'])->prefix('exports')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin,hr-manager,hrmpsb-secretariat'])->prefix('exports')->group(function () {
     Route::get('/applicants/{vacancy?}', [ExportController::class, 'applicants']);
     Route::get('/audit-logs', [ExportController::class, 'auditLogs']);
 });
@@ -147,6 +147,7 @@ Route::middleware(['auth:sanctum', 'role:hrmpsb-member,hrmpsb-secretariat,admin,
     Route::get('/hrmpsb/pipeline-stages', [HrmbsboardController::class, 'pipelineStages']);
     Route::get('/hrmpsb/applications/{application}/profile', [HrmbsboardController::class, 'applicantProfile']);
     Route::get('/hrmpsb/applications/{application}/documents/{type}', [HrmbsboardController::class, 'serveDocument']);
+    Route::get('/hrmpsb/vacancies/{vacancy}/applicants', [HrmbsboardController::class, 'vacancyApplicants']);
     // QS Evaluation
     Route::get('/qs-evaluations/{vacancy}', [QsEvaluationController::class, 'index']);
     Route::post('/qs-evaluations', [QsEvaluationController::class, 'store']);
@@ -203,3 +204,6 @@ Route::middleware(['auth:sanctum', 'role:hrmpsb-member,hrmpsb-secretariat,admin,
     Route::post('/background-investigation/resend-link/{report}', [BackgroundInvestigationController::class, 'resendLink']);
     Route::delete('/background-investigation/revoke-link/{report}', [BackgroundInvestigationController::class, 'revokeLink']);
 });
+
+// PSGC data (public)
+Route::get('/psgc/barangays/{cityCode}', [PsgcController::class, 'barangays']);

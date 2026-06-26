@@ -69,7 +69,6 @@
             <th class="px-5 py-3">SG</th>
             <th class="px-5 py-3">Office</th>
             <th class="px-5 py-3">Status</th>
-            <th class="px-5 py-3">Applicants</th>
             <th class="px-5 py-3">Published</th>
             <th class="px-5 py-3">Deadline</th>
             <th class="px-5 py-3 text-right">Actions</th>
@@ -86,10 +85,6 @@
             <td class="px-5 py-3.5 text-gray-600">SG-{{ v.salary_grade }}</td>
             <td class="px-5 py-3.5 text-gray-600 max-w-[160px] truncate">{{ v.place_of_assignment }}</td>
             <td class="px-5 py-3.5"><StatusBadge :status="v.status" /></td>
-            <td class="px-5 py-3.5 text-gray-700 font-medium">
-              {{ v.applications_count ?? 0 }}
-              <span class="font-normal text-gray-400 text-xs">{{ (v.applications_count ?? 0) === 1 ? 'applicant' : 'applicants' }}</span>
-            </td>
             <td class="px-5 py-3.5 text-gray-500 whitespace-nowrap">{{ formatDate(v.published_at) }}</td>
             <td class="px-5 py-3.5 text-gray-500 whitespace-nowrap">{{ formatDate(v.deadline_at) }}</td>
             <td class="px-5 py-3.5">
@@ -209,13 +204,8 @@
                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Item Number <span class="text-red-500">*</span></label>
-                <input v-model="form.item_number" required type="text"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Plantilla Number</label>
-                <input v-model="form.plantilla_number" type="text"
+                <label class="block text-sm font-medium text-gray-700 mb-1">Plantilla Item No. <span class="text-red-500">*</span></label>
+                <input v-model="form.plantilla_no" required type="text"
                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
               </div>
               <div>
@@ -232,9 +222,15 @@
                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Position Level</label>
-                <input v-model="form.position_level" type="text" placeholder="e.g. Division Chief"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                <label class="block text-sm font-medium text-gray-700 mb-1">Position Level <span class="text-red-500">*</span></label>
+                <select v-model="form.position_level" required
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
+                  <option value="" disabled>Select position level</option>
+                  <option value="Supervisory">Supervisory</option>
+                  <option value="Technical or Non-Supervisory">Technical or Non-Supervisory</option>
+                  <option value="Administrative Support">Administrative Support</option>
+                  <option value="Skills, Trades and Craft">Skills, Trades and Craft</option>
+                </select>
               </div>
               <div class="col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Place of Assignment <span class="text-red-500">*</span></label>
@@ -506,7 +502,7 @@ const activeTabs = computed(() => {
 const filters = reactive({ search: '', status: '', page: 1 })
 
 const blankForm = {
-  position_title: '', item_number: '', plantilla_number: '', salary_grade: '',
+  position_title: '', plantilla_no: '', salary_grade: '',
   monthly_salary: '', position_level: '', is_anticipated_vacancy: false,
   place_of_assignment: '', deadline_at: '',
   education_req: '', experience_req: '', training_req: '', eligibility_req: '',
@@ -629,8 +625,7 @@ async function openEdit(vacancy) {
   modalTab.value  = 'position'
   Object.assign(form, {
     position_title:         vacancy.position_title ?? '',
-    item_number:            vacancy.item_number ?? '',
-    plantilla_number:       vacancy.plantilla_number ?? '',
+    plantilla_no:           vacancy.plantilla_no ?? '',
     salary_grade:           vacancy.salary_grade ?? '',
     monthly_salary:         vacancy.monthly_salary ?? '',
     position_level:         vacancy.position_level ?? '',

@@ -90,7 +90,7 @@ class BeiRatingController extends Controller
 
         return response()->json([
             'vacancy'        => $vacancy->only(
-                'id', 'position_title', 'item_number', 'salary_grade',
+                'id', 'position_title', 'plantilla_no', 'salary_grade',
                 'place_of_assignment', 'status', 'published_at'
             ),
             'competencies'   => $vacancyCompetencies,

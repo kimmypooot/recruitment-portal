@@ -249,6 +249,11 @@ const navGroups = computed(() => {
 
   if (props2.vacancyId) {
     const v = props2.vacancyId
+    groups[0].items.push({
+      label: 'Applicants & Documents',
+      href:  `/hrmpsb/applicants/${v}`,
+      icon:  'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    })
     groups.push(
       {
         label: 'Screening',
@@ -303,7 +308,7 @@ const navGroups = computed(() => {
       {
         label: 'Interview',
         items: (() => {
-          const canSchedule = ['hrmpsb-secretariat', 'hrmpsb-chief-hrd'].includes(authUser.value?.role)
+          const canSchedule = ['hrmpsb-secretariat', 'admin'].includes(authUser.value?.role)
           const interviewItems = []
           if (canSchedule) {
             interviewItems.push({

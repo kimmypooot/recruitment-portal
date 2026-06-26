@@ -210,6 +210,8 @@
               <span class="text-sm text-gray-600 leading-relaxed">
                 I have read and agree to the
                 <a href="/privacy-policy" target="_blank" class="text-[#2a338f] font-medium hover:underline">Data Privacy Policy</a>
+                and
+                <a href="/terms-of-service" target="_blank" class="text-[#2a338f] font-medium hover:underline">Terms of Service</a>
                 of the Civil Service Commission. <span class="text-red-500">*</span>
               </span>
             </label>
@@ -233,7 +235,10 @@
       </div>
 
       <p class="mt-4 text-center text-xs text-gray-400">
-        By creating an account you agree to the CSC data privacy policy.
+        By creating an account you agree to the CSC
+        <a href="/privacy-policy" target="_blank" class="underline hover:text-gray-600">Data Privacy Policy</a>
+        and
+        <a href="/terms-of-service" target="_blank" class="underline hover:text-gray-600">Terms of Service</a>.
       </p>
 
     </section>

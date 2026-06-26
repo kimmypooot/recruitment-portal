@@ -247,7 +247,7 @@
     </section>
 
     <!-- ── Info strip ────────────────────────────────────────────────── -->
-    <section class="text-white" style="background-color: #2a338f;">
+    <!-- <section class="text-white" style="background-color: #2a338f;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center divide-y sm:divide-y-0 sm:divide-x divide-white/20">
           <div class="pb-6 sm:pb-0">
@@ -264,7 +264,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </section> -->
 
     </template>
 

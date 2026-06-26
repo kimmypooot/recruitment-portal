@@ -132,7 +132,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { Link } from '@inertiajs/vue3'
-import axios from 'axios'
+import api from '@/services/api'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 
@@ -160,8 +160,8 @@ onBeforeUnmount(() => {
 // ── Pipeline ──────────────────────────────────────────────────────────────────
 const STATUS_ORDER = [
   'submitted', 'under_review', 'screened', 'qualified', 'disqualified',
-  'exam_scheduled', 'shortlisted', 'for_interview', 'recommended',
-  'appointed', 'completed', 'withdrawn',
+  'exam_scheduled', 'shortlisted', 'for_interview', 'interviewed',
+  'recommended', 'appointed', 'completed', 'withdrawn',
 ]
 const STATUS_LABELS = {
   submitted:      'Submitted',
@@ -172,6 +172,7 @@ const STATUS_LABELS = {
   exam_scheduled: 'Exam Scheduled',
   shortlisted:    'Shortlisted',
   for_interview:  'For Interview',
+  interviewed:    'Interviewed',
   recommended:    'Recommended',
   appointed:      'Appointed',
   completed:      'Completed',
@@ -186,6 +187,7 @@ const STATUS_CHIP = {
   exam_scheduled: 'bg-orange-50 text-orange-700 border-orange-200',
   shortlisted:    'bg-indigo-50 text-indigo-700 border-indigo-200',
   for_interview:  'bg-violet-50 text-violet-700 border-violet-200',
+  interviewed:    'bg-cyan-50 text-cyan-700 border-cyan-200',
   recommended:    'bg-lime-50 text-lime-700 border-lime-200',
   appointed:      'bg-[#2a338f]/10 text-[#2a338f] border-[#2a338f]/20',
   completed:      'bg-green-50 text-green-700 border-green-200',
@@ -249,11 +251,6 @@ const statCards = computed(() => [
 ])
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function authHeaders() {
-  const token = localStorage.getItem('auth_token')
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
-
 function formatApplicantName(app) {
   const p = app?.applicant
   if (p?.last_name && p?.first_name) {
@@ -279,11 +276,12 @@ function formatDateTime(iso) {
 // ── Data fetching ─────────────────────────────────────────────────────────────
 async function loadDashboard() {
   loading.value = true
+  scheduleLoading.value = true
   try {
     const [statsRes, pipelineRes, recentRes] = await Promise.all([
-      axios.get('/api/dashboard/stats'),
-      axios.get('/api/dashboard/pipeline'),
-      axios.get('/api/dashboard/recent-applications'),
+      api.get('/dashboard/stats'),
+      api.get('/dashboard/pipeline'),
+      api.get('/dashboard/recent-applications'),
     ])
     stats.value              = statsRes.data
     pipeline.value           = pipelineRes.data
@@ -294,9 +292,8 @@ async function loadDashboard() {
     loading.value = false
   }
 
-  scheduleLoading.value = true
   try {
-    const { data } = await axios.get('/api/dashboard/upcoming', { headers: authHeaders() })
+    const { data } = await api.get('/dashboard/upcoming')
     upcoming.value = data
   } catch {
     upcoming.value = { exams: [], interviews: [] }

@@ -407,24 +407,21 @@ function clearVacancyFilters() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  await Promise.all([
-    (async () => {
-      try {
-        const [appsRes, profileRes] = await Promise.all([
-          applicationApi.myApplications(),
-          profileApi.show(),
-        ])
-        applications.value = appsRes.data
-        profile.value      = profileRes.data.profile
-        isComplete.value   = profileRes.data.is_complete
-      } catch (e) {
-        // 401 handled by api.js interceptor
-      } finally {
-        loadingApps.value = false
-      }
-    })(),
-    fetchDashboardVacancies(),
-  ])
+  const profileRes = await profileApi.show().catch(() => null)
+  if (!profileRes?.data?.is_complete) {
+    window.location.href = '/applicant/complete-profile'
+    return
+  }
+  isComplete.value = profileRes.data.is_complete
+  localStorage.setItem('profile_complete', profileRes.data.is_complete)
+  window.dispatchEvent(new CustomEvent('profile-complete-changed'))
+  profile.value    = profileRes.data.profile
+
+  const appsRes = await applicationApi.myApplications().catch(() => null)
+  if (appsRes) applications.value = appsRes.data
+
+  loadingApps.value = false
+  fetchDashboardVacancies()
   pageLoading.value = false
 })
 </script>

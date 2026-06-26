@@ -381,7 +381,6 @@ async function lockRatings() {
   try {
     await api.patch(`/bei-ratings/${props.vacancyId}/lock`)
     confirmLock.value = false
-    beiLocked.value = true
     await load()
   } catch (e) {
     error.value = e.response?.data?.message ?? 'Failed to lock ratings.'

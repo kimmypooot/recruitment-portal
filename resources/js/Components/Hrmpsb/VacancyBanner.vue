@@ -30,7 +30,7 @@
       <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="bg-gray-50 rounded-xl px-4 py-3 border border-gray-100">
           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Plantilla Item No.</p>
-          <p class="mt-1 text-sm font-semibold text-gray-800 font-mono truncate">{{ vacancy.item_number ?? '—' }}</p>
+          <p class="mt-1 text-sm font-semibold text-gray-800 font-mono truncate">{{ vacancy.plantilla_no ?? '—' }}</p>
         </div>
         <div class="bg-gray-50 rounded-xl px-4 py-3 border border-gray-100">
           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Salary Grade</p>

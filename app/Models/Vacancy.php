@@ -14,12 +14,11 @@ class Vacancy extends Model
 
     protected $fillable = [
         'position_title',
-        'item_number',
+        'plantilla_no',
         'salary_grade',
         'monthly_salary',
         'position_level',
         'is_anticipated_vacancy',
-        'plantilla_number',
         'place_of_assignment',
         'education_req',
         'experience_req',

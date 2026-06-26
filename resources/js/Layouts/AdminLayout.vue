@@ -72,8 +72,8 @@
 
       <!-- Top bar -->
       <header class="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 sm:px-6 h-16 flex items-center justify-between flex-shrink-0">
-        <div class="flex items-center gap-3">
-          <button @click="toggleSidebar" aria-label="Toggle sidebar" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100">
+        <div class="flex items-center gap-3 min-w-0">
+          <button @click="toggleSidebar" aria-label="Toggle sidebar" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 flex-shrink-0">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
@@ -93,7 +93,7 @@
               </div>
               <div class="hidden sm:block text-left">
                 <p class="text-sm font-semibold text-gray-800 leading-none">{{ userName }}</p>
-                <p class="text-xs text-gray-400 mt-0.5 capitalize">{{ authUser.role?.replace('-', ' ') }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">{{ roleLabel(authUser.role) }}</p>
               </div>
               <svg class="w-4 h-4 text-gray-400 hidden sm:block transition-transform flex-shrink-0"
                 :class="dropdownOpen ? 'rotate-180' : ''"
@@ -170,6 +170,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import axios from 'axios'
+import { roleLabel } from '@/utils/roleLabel'
 import AppFooter from '@/Components/UI/AppFooter.vue'
 import WorkspaceSwitcher from '@/Components/UI/WorkspaceSwitcher.vue'
 import { useIdleTimer } from '@/composables/useIdleTimer'

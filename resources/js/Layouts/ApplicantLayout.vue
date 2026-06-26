@@ -35,19 +35,29 @@
             {{ group.label }}
           </p>
           <div class="space-y-0.5">
-            <Link
-              v-for="item in group.items" :key="item.href"
-              :href="item.href"
-              @click="sidebarOpen = false"
-              class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-              :class="isActive(item.href)
-                ? 'bg-white/15 text-white'
-                : 'text-white/75 hover:bg-white/10 hover:text-white'">
-              <svg class="w-4.5 h-4.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon"/>
-              </svg>
-              {{ item.label }}
-            </Link>
+            <template v-for="item in group.items" :key="item.href">
+              <span
+                v-if="item.disabled && !profileComplete"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/30 cursor-not-allowed">
+                <svg class="w-4.5 h-4.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon"/>
+                </svg>
+                {{ item.label }}
+              </span>
+              <Link
+                v-else
+                :href="item.href"
+                @click="sidebarOpen = false"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                :class="isActive(item.href)
+                  ? 'bg-white/15 text-white'
+                  : 'text-white/75 hover:bg-white/10 hover:text-white'">
+                <svg class="w-4.5 h-4.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon"/>
+                </svg>
+                {{ item.label }}
+              </Link>
+            </template>
           </div>
         </div>
       </nav>
@@ -190,8 +200,19 @@ const page              = usePage()
 const authToken      = ref('')
 const authUser       = ref({})
 
+const profileComplete = ref(localStorage.getItem('profile_complete') === 'true')
+
+function refreshProfileStatus() {
+  profileComplete.value = localStorage.getItem('profile_complete') === 'true'
+}
+
 const userName    = computed(() => authUser.value?.name ?? 'Applicant')
 const userInitial = computed(() => (authUser.value?.name ?? 'A')[0].toUpperCase())
+
+function disabledHint(item) {
+  if (item.label === 'My Profile') return false
+  return !profileComplete.value
+}
 
 const navGroups = [
   {
@@ -201,6 +222,7 @@ const navGroups = [
         label: 'Dashboard',
         href:  '/applicant/dashboard',
         icon:  'M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z',
+        disabled: true,
       },
     ],
   },
@@ -211,6 +233,7 @@ const navGroups = [
         label: 'My Applications',
         href:  '/applicant/applications',
         icon:  'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z',
+        disabled: true,
       },
     ],
   },
@@ -221,6 +244,7 @@ const navGroups = [
         label: 'My Profile',
         href:  '/applicant/complete-profile',
         icon:  'M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z',
+        disabled: false,
       },
     ],
   },
@@ -271,12 +295,17 @@ async function confirmLogout() {
 onMounted(() => {
   authToken.value = localStorage.getItem('auth_token') ?? ''
   authUser.value  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+  refreshProfileStatus()
   document.addEventListener('click', handleClickOutside)
   window.addEventListener('scroll', handleScroll, { passive: true })
+  window.addEventListener('storage', refreshProfileStatus)
+  window.addEventListener('profile-complete-changed', refreshProfileStatus)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('storage', refreshProfileStatus)
+  window.removeEventListener('profile-complete-changed', refreshProfileStatus)
 })
 </script>

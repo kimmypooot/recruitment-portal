@@ -66,41 +66,39 @@ class AnonymizationService
     }
 
     /**
-     * Generate a blind code in the format: {POSITION_CODE}-{MM}-{YYYY}-{NNN}
+     * Generate a blind code in the format: {POSITION_CODE}-{MMDD}-{NNN}
      *
-     * POSITION_CODE: first segment of item_number (e.g. "AO2-001-2026" → "AO2")
-     * MM:            2-digit publication month
-     * YYYY:          publication year
-     * NNN:           random 3-digit integer (100–999), unique within the vacancy
+     * POSITION_CODE: first segment of plantilla_no (e.g. "AO2-001-2026" → "AO2")
+     * MMDD:          4-digit month + day of publication (e.g. "0326" for March 26)
+     * NNN:           sequential 3-digit increment based on applicant count (001, 002…)
      */
     private function uniqueToken(Vacancy $vacancy): string
     {
-        // Extract position code — everything before the first dash in item_number
-        $itemNum = $vacancy->item_number ?? 'POS';
+        // Extract position code — everything before the first dash in plantilla_no
+        $itemNum = $vacancy->plantilla_no ?? 'POS';
         $posCode = Str::before($itemNum, '-') ?: $itemNum;
 
         // Use publication date; fall back to creation date if not yet published
         $pubDate = $vacancy->published_at ?? $vacancy->created_at;
-        $prefix  = $posCode . '-' . $pubDate->format('m') . '-' . $pubDate->format('Y');
+        $prefix  = $posCode . '-' . $pubDate->format('md');
 
-        // Collect 3-digit suffixes already assigned to this vacancy
-        $usedInVacancy = AnonymizationToken::whereIn(
+        // Determine the next sequential number based on existing tokens for this vacancy
+        $existingCount = AnonymizationToken::whereIn(
             'application_id',
             $vacancy->applications()->pluck('id')
         )
-            ->pluck('token')
-            ->map(fn ($t) => (int) Str::afterLast($t, '-'))
-            ->filter(fn ($n) => $n >= 100 && $n <= 999)
-            ->all();
+            ->where('token', 'like', "{$prefix}-%")
+            ->count();
 
-        // Pick a suffix that is unique within the vacancy AND globally
-        do {
-            $suffix = random_int(100, 999);
-            $token  = "{$prefix}-{$suffix}";
-        } while (
-            in_array($suffix, $usedInVacancy, true) ||
-            AnonymizationToken::where('token', $token)->exists()
-        );
+        $seq = str_pad($existingCount + 1, 3, '0', STR_PAD_LEFT);
+        $token = "{$prefix}-{$seq}";
+
+        // Ensure global uniqueness (safety net)
+        while (AnonymizationToken::where('token', $token)->exists()) {
+            $existingCount++;
+            $seq = str_pad($existingCount + 1, 3, '0', STR_PAD_LEFT);
+            $token = "{$prefix}-{$seq}";
+        }
 
         return $token;
     }

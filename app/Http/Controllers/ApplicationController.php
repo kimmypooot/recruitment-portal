@@ -124,7 +124,7 @@ class ApplicationController extends Controller
                 'salary_grade'        => $v->salary_grade,
                 'monthly_salary'      => $v->monthly_salary,
                 'place_of_assignment' => $v->place_of_assignment,
-                'item_number'         => $v->item_number,
+                'plantilla_no'        => $v->plantilla_no,
                 'status'              => $v->status,
                 'published_at'        => $v->published_at,
                 'deadline_at'         => $v->deadline_at,
@@ -175,7 +175,7 @@ class ApplicationController extends Controller
     public function updateStatus(Request $request, Application $application): JsonResponse
     {
         $request->validate([
-            'status'  => 'required|in:under_review,screened,qualified,disqualified,exam_scheduled,interviewed,shortlisted,for_interview,recommended,appointed,completed,withdrawn,failed',
+            'status'  => 'required|in:under_review,screened,qualified,disqualified,exam_scheduled,interviewed,shortlisted,for_interview,recommended,appointed,completed,withdrawn',
             'remarks' => 'nullable|string|max:1000',
             'reason'  => 'nullable|string|max:1000',
         ]);

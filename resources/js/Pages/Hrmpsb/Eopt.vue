@@ -11,13 +11,13 @@
       />
 
       <!-- EOPT Table -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-clip">
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <h2 class="font-semibold text-gray-800">Ethics-Oriented Personality Test</h2>
           <span v-if="isSecretariat" class="text-xs text-gray-400">You are rating based on CSC CO results</span>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto overflow-y-visible">
           <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50">
               <tr>
@@ -60,7 +60,7 @@
                         </option>
                       </select>
                       <div v-if="ratings[app.id][cat]"
-                        class="absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-1 w-56 px-2 py-1.5 bg-gray-900 text-white text-[10px] leading-tight rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+                        class="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-1.5 w-56 px-2.5 py-2 bg-gray-900 text-white text-[11px] leading-tight rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
                         <p class="font-semibold mb-0.5">{{ ratingLabels[ratings[app.id][cat]] }}</p>
                         <p>{{ definition(cat, ratings[app.id][cat]) }}</p>
                       </div>
@@ -77,7 +77,7 @@
                         {{ ratingAbbr(app.eopt[cat]) }}
                       </span>
                       <div
-                        class="absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-1 w-56 px-2 py-1.5 bg-gray-900 text-white text-[10px] leading-tight rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+                        class="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-1.5 w-56 px-2.5 py-2 bg-gray-900 text-white text-[11px] leading-tight rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
                         <p class="font-semibold mb-0.5">{{ categoryLabel(cat) }} — {{ ratingLabels[app.eopt[cat]] }}</p>
                         <p>{{ definition(cat, app.eopt[cat]) }}</p>
                       </div>

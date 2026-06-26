@@ -114,7 +114,7 @@ class InterviewController extends Controller
             ]);
 
         return response()->json([
-            'vacancy'           => $vacancy->only('id', 'position_title', 'item_number', 'salary_grade', 'place_of_assignment', 'status', 'published_at', 'deadline_at'),
+            'vacancy'           => $vacancy->only('id', 'position_title', 'plantilla_no', 'salary_grade', 'place_of_assignment', 'status', 'published_at', 'deadline_at'),
             'can_schedule'      => $this->isSecretary($request),
             'applications'      => $applications,
             'schedules'         => $schedules,

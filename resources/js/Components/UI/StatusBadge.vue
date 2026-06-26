@@ -32,8 +32,6 @@ const map = {
   completed:      { label: 'Completed',      cls: 'bg-green-100 text-green-700' },
   withdrawn:      { label: 'Withdrawn',      cls: 'bg-gray-200 text-gray-500' },
   interviewed:    { label: 'Interviewed',    cls: 'bg-cyan-100 text-cyan-700' },
-  passed:         { label: 'Passed',         cls: 'bg-green-100 text-green-700' },
-  failed:         { label: 'Failed',         cls: 'bg-red-100 text-red-700' },
 }
 
 const entry     = computed(() => map[props.status] ?? { label: props.status, cls: 'bg-gray-100 text-gray-600' })

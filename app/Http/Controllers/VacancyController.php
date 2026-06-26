@@ -94,8 +94,7 @@ class VacancyController extends Controller
     {
         $data = $request->validate([
             'position_title'         => 'sometimes|required|string|max:255',
-            'item_number'            => 'sometimes|required|string|max:100',
-            'plantilla_number'       => 'nullable|string|max:100',
+            'plantilla_no'           => 'sometimes|required|string|max:100',
             'salary_grade'           => 'sometimes|required|integer|between:1,33',
             'monthly_salary'         => 'nullable|numeric|min:0',
             'position_level'         => 'nullable|string|max:100',

@@ -13,6 +13,7 @@ use App\Models\HrmbsboardComposition;
 use App\Models\InterviewSchedule;
 use App\Models\PreAssessment;
 use App\Models\QsEvaluation;
+use App\Models\Vacancy;
 use App\Models\User;
 use App\Services\AuditLog;
 use App\Traits\FormatsApplicantName;
@@ -276,5 +277,66 @@ class HrmbsboardController extends Controller
         abort_if(! $path || ! Storage::disk('public')->exists($path), 404);
 
         return Storage::disk('public')->response($path);
+    }
+
+    /**
+     * All applicants for a vacancy with their document statuses and links.
+     */
+    public function vacancyApplicants(Request $request, Vacancy $vacancy): JsonResponse
+    {
+        $user = $request->user();
+
+        $isAdmin = in_array($user->role, ['admin', 'hr-manager']);
+        $isMember = HrmbsboardComposition::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->exists();
+
+        if (! $isAdmin && ! $isMember) {
+            return response()->json(['message' => 'Access denied.'], 403);
+        }
+
+        $applications = $vacancy->applications()
+            ->with(['applicant.user:id,name'])
+            ->whereNotIn('status', ['withdrawn', 'disqualified'])
+            ->orderBy('created_at')
+            ->get()
+            ->map(function ($app) {
+                $profile = $app->applicant;
+
+                $docExists = fn ($col) => $profile?->$col && Storage::disk('public')->exists($profile->$col);
+                $docLink   = fn ($col, $type) => $docExists($col) ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}" : null;
+
+                return [
+                    'id'              => $app->id,
+                    'anonymized_name' => $app->anonymizationToken?->token ?? ('APP-' . $app->id),
+                    'status'          => $app->status,
+                    'submitted_at'    => $app->submitted_at,
+                    'documents'       => [
+                        'pds'        => $docExists('pds_path'),
+                        'tor'        => $docExists('tor_path'),
+                        'app_letter' => $docExists('app_letter_path'),
+                        'ipcr'       => $docExists('ipcr_path'),
+                        'coe'        => $docExists('coe_path'),
+                    ],
+                    'document_links'  => [
+                        'pds'        => $docLink('pds_path', 'pds'),
+                        'tor'        => $docLink('tor_path', 'tor'),
+                        'app_letter' => $docLink('app_letter_path', 'app_letter'),
+                        'ipcr'       => $docLink('ipcr_path', 'ipcr'),
+                        'coe'        => $docLink('coe_path', 'coe'),
+                    ],
+                ];
+            });
+
+        return response()->json([
+            'vacancy' => [
+                'id'               => $vacancy->id,
+                'position_title'   => $vacancy->position_title,
+                'plantilla_no'     => $vacancy->plantilla_no,
+                'salary_grade'     => $vacancy->salary_grade,
+                'place_of_assignment' => $vacancy->place_of_assignment,
+            ],
+            'applicants' => $applications,
+        ]);
     }
 }

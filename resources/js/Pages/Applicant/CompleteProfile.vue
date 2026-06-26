@@ -71,10 +71,31 @@
       <div v-if="!pageLoading">
 
       <!-- Page header -->
-      <div class="mb-8">
+      <div class="mb-6">
         <h1 class="text-2xl font-bold tracking-tight text-gray-900">Complete Your Profile</h1>
         <p class="mt-1.5 text-sm text-gray-500 max-w-2xl">
           Fill out all sections below before submitting an application.
+        </p>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-sm font-medium text-gray-700">Profile completion</span>
+          <span class="text-sm font-semibold" :class="progressPct === 100 ? 'text-green-600' : 'text-[#2a338f]'">
+            {{ progressPct }}%
+          </span>
+        </div>
+        <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+          <div class="h-full rounded-full transition-all duration-500"
+            :class="progressPct === 100 ? 'bg-green-500' : 'bg-[#2a338f]'"
+            :style="{ width: progressPct + '%' }"></div>
+        </div>
+        <p v-if="progressPct === 100" class="mt-1 text-xs text-green-600 font-medium">
+          All sections completed — you can now submit applications.
+        </p>
+        <p v-else class="mt-1 text-xs text-gray-400">
+          {{ completedChecks }} of {{ totalChecks }} required fields filled
         </p>
       </div>
 
@@ -105,6 +126,7 @@
         :personal="personal"
         :photo-path="photoPath"
         :photo-url="photoUrl"
+        :photo-saving="photoModal.saving"
         :regions="regions"
         :auth-email="authUser.email"
         :google-id="authUser.google_id"
@@ -541,7 +563,7 @@ import DocumentsTab from './Profile/DocumentsTab.vue'
 import { useConfirm } from '@/composables/useConfirm'
 const { confirm, alert } = useConfirm()
 
-const DRAFT_KEY = 'csc_profile_draft'
+const DRAFT_KEY = () => `csc_profile_draft_${authUser.value.id ?? 'anonymous'}`
 
 const pageLoading    = ref(true)
 const activeTab      = ref('personal')
@@ -637,6 +659,16 @@ const tabs = computed(() => [
   },
 ])
 
+const completedChecks = computed(() => {
+  let n = 0
+  tabs.value.forEach(t => { if (t.complete) n++ })
+  return n
+})
+const totalChecks = computed(() => tabs.value.length)
+const progressPct = computed(() =>
+  totalChecks.value === 0 ? 0 : Math.round((completedChecks.value / totalChecks.value) * 100)
+)
+
 const docFields = [
   { key: 'pds',        label: 'Personal Data Sheet (PDS) with Work Experience Sheet', required: true, full: true,
     note: 'CS Form No. 212 (Revised 2025)' },
@@ -699,14 +731,14 @@ function saveDraft() {
   draftTimer = setTimeout(() => {
     try {
       const data = { personal: { ...personal }, activeTab: activeTab.value }
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(data))
+      localStorage.setItem(DRAFT_KEY(), JSON.stringify(data))
     } catch {}
   }, 800)
 }
 
 function restoreDraft() {
   try {
-    const raw = localStorage.getItem(DRAFT_KEY)
+    const raw = localStorage.getItem(DRAFT_KEY())
     if (!raw) return
     const draft = JSON.parse(raw)
     if (draft.personal) {
@@ -741,6 +773,7 @@ onMounted(async () => {
     activeTab.value = tabParam
   }
 
+  localStorage.removeItem('csc_profile_draft')
   restoreDraft()
 
   try {
@@ -758,6 +791,9 @@ onMounted(async () => {
       })
     }
     isComplete.value = data.is_complete
+    localStorage.setItem('profile_complete', data.is_complete)
+    window.dispatchEvent(new CustomEvent('profile-complete-changed'))
+    localStorage.removeItem(DRAFT_KEY())
   } catch {}
   pageLoading.value = false
 })
@@ -786,7 +822,9 @@ async function savePersonal() {
   try {
     const { data } = await profileApi.update({ ...personal })
     isComplete.value = data.is_complete
-    localStorage.removeItem(DRAFT_KEY)
+    localStorage.setItem('profile_complete', data.is_complete)
+    window.dispatchEvent(new CustomEvent('profile-complete-changed'))
+    localStorage.removeItem(DRAFT_KEY())
     showSaveIndicator()
   } catch (e) {
     await alert(e.response?.data?.message ?? 'Failed to save.')

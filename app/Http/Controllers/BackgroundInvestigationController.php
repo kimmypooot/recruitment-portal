@@ -59,7 +59,7 @@ class BackgroundInvestigationController extends Controller
 
         return response()->json([
             'vacancy'       => $vacancy->only(
-                'id', 'position_title', 'item_number', 'salary_grade',
+                'id', 'position_title', 'plantilla_no', 'salary_grade',
                 'place_of_assignment', 'status', 'published_at'
             ),
             'applications'  => $applications,
@@ -223,7 +223,7 @@ class BackgroundInvestigationController extends Controller
             'investigatorName'   => $report->investigator_name,
             'applicantName'      => $applicantName,
             'positionTitle'      => $vacancy->position_title,
-            'itemNumber'         => $vacancy->item_number,
+            'itemNumber'         => $vacancy->plantilla_no,
             'salaryGrade'        => $vacancy->salary_grade,
             'placeOfAssignment'  => $vacancy->place_of_assignment,
         ]);

@@ -12,12 +12,11 @@ class VacancyResource extends JsonResource
         return [
             'id'                     => $this->id,
             'position_title'         => $this->position_title,
-            'item_number'            => $this->item_number,
+            'plantilla_no'           => $this->plantilla_no,
             'salary_grade'           => $this->salary_grade,
             'monthly_salary'         => $this->monthly_salary,
             'position_level'         => $this->position_level,
             'is_anticipated_vacancy' => $this->is_anticipated_vacancy,
-            'plantilla_number'       => $this->plantilla_number,
             'place_of_assignment'    => $this->place_of_assignment,
             'education_req'          => $this->education_req,
             'experience_req'         => $this->experience_req,

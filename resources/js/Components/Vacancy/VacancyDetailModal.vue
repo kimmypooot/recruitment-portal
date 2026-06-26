@@ -52,11 +52,11 @@
                 <dl class="space-y-2.5">
                   <div class="flex gap-3">
                     <dt class="w-28 sm:w-36 flex-shrink-0 text-xs text-gray-400 font-medium pt-0.5">Item No.</dt>
-                    <dd class="text-sm text-gray-800 break-words min-w-0">{{ vacancy.item_number || '—' }}</dd>
+                    <dd class="text-sm text-gray-800 break-words min-w-0">{{ vacancy.plantilla_no || '—' }}</dd>
                   </div>
                   <div class="flex gap-3">
                     <dt class="w-28 sm:w-36 flex-shrink-0 text-xs text-gray-400 font-medium pt-0.5">Plantilla No.</dt>
-                    <dd class="text-sm text-gray-800 break-words min-w-0">{{ vacancy.plantilla_number || '—' }}</dd>
+
                   </div>
                   <div class="flex gap-3">
                     <dt class="w-28 sm:w-36 flex-shrink-0 text-xs text-gray-400 font-medium pt-0.5">Salary Grade</dt>

@@ -66,7 +66,7 @@ class EoptController extends Controller
             });
 
         return response()->json([
-            'vacancy' => $vacancy->only('id', 'position_title', 'item_number', 'salary_grade', 'place_of_assignment', 'status'),
+            'vacancy' => $vacancy->only('id', 'position_title', 'plantilla_no', 'salary_grade', 'place_of_assignment', 'status'),
             'applications' => $applications,
             'is_secretariat' => $isSecretariat,
             'definitions' => EoptResult::getAllDefinitions(),
