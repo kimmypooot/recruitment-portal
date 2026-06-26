@@ -93,11 +93,16 @@ class ProfileController extends Controller
         $user    = $accessToken->tokenable;
         $profile = ApplicantProfile::where('user_id', $user->id)->first();
 
-        if (! $profile?->photo_path || ! Storage::disk('public')->exists($profile->photo_path)) {
-            abort(404);
+        if ($profile?->photo_path && Storage::disk('public')->exists($profile->photo_path)) {
+            return Storage::disk('public')->response($profile->photo_path);
         }
 
-        return Storage::disk('public')->response($profile->photo_path);
+        // Return transparent pixel so the browser doesn't log a 404 for non-applicant users
+        return response(
+            base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'),
+            200,
+            ['Content-Type' => 'image/gif']
+        );
     }
 
     public function uploadDocuments(Request $request): JsonResponse
