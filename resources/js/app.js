@@ -21,7 +21,7 @@ axios.interceptors.request.use((config) => {
 const pinia = createPinia()
 
 createInertiaApp({
-  title: (title) => `${title} — CSC Recruitment`,
+  title: (title) => `${title} — CSC RO VIII - Recruitment Portal`,
 
   resolve: (name) =>
     resolvePageComponent(

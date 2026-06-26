@@ -2,8 +2,8 @@
   <PublicLayout>
 
     <Head>
-      <title>Sign In — CSC Recruitment</title>
-      <meta name="description" content="Sign in to your CSC Recruitment account to manage applications, check exam schedules, and track your career progress." />
+      <title>Sign In — CSC RO VIII - Recruitment Portal</title>
+      <meta name="description" content="Sign in to your CSC RO VIII - Recruitment Portal account to manage applications, check exam schedules, and track your career progress." />
     </Head>
 
     <!-- Hero (compact) -->

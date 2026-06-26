@@ -2,9 +2,9 @@
   <PublicLayout>
 
     <Head>
-      <title>Home — CSC Recruitment</title>
+      <title>Home — CSC RO VIII - Recruitment Portal</title>
       <meta name="description" content="Browse open positions at the Civil Service Commission Regional Office VIII. Sign in or register to apply for a career in government service." />
-      <meta property="og:title" content="CSC Regional Office VIII — Online Recruitment Portal" />
+      <meta property="og:title" content="CSC RO VIII - Recruitment Portal" />
       <meta property="og:description" content="Browse open government positions and submit your application online." />
     </Head>
 
@@ -39,7 +39,7 @@
           </div>
           <h1 class="text-2xl sm:text-3xl lg:text-5xl font-bold leading-tight mb-4">
             CSC RO VIII<br>
-            <span class="text-white/70">Online Recruitment Portal</span>
+            <span class="text-white/70">Recruitment Portal</span>
           </h1>
           <p class="text-white/80 text-base sm:text-lg leading-relaxed mb-8 max-w-xl">
             Browse open positions at the Civil Service Commission Regional Office VIII.

@@ -406,14 +406,15 @@
                 </td>
                 <!-- PDS Link -->
                 <td class="border border-gray-100 px-3 py-2.5 text-center bg-teal-50/30">
-                  <a v-if="row.applicant.pds_url" :href="row.applicant.pds_url" target="_blank"
-                    class="inline-flex items-center gap-1 text-[#2a338f] hover:underline font-medium whitespace-nowrap">
+                  <button @click="viewDocument(row.applicant.pds_url)"
+                    :disabled="!row.applicant.pds_url"
+                    class="inline-flex items-center gap-1 font-medium whitespace-nowrap cursor-pointer transition-colors"
+                    :class="row.applicant.pds_url ? 'text-[#2a338f] hover:underline' : 'text-gray-300 cursor-not-allowed'">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                     </svg>
                     View PDS
-                  </a>
-                  <span v-else class="text-gray-300 text-[11px]">No PDS</span>
+                  </button>
                 </td>
               </template>
               <template v-else>
@@ -592,6 +593,23 @@ const currentUserId = authUser.id ?? null
 const isSecretary   = computed(() =>
   ['hrmpsb-secretariat', 'admin', 'hr-manager'].includes(authUser.role)
 )
+
+// ── Document viewer ──────────────────────────────────────────────────────────
+async function viewDocument(url) {
+  try {
+    const resp = await axios.get(url, {
+      headers: authHeaders(),
+      responseType: 'blob',
+    })
+    const mime   = resp.headers['content-type'] ?? 'application/octet-stream'
+    const blob   = new Blob([resp.data], { type: mime })
+    const objUrl = URL.createObjectURL(blob)
+    window.open(objUrl, '_blank')
+    setTimeout(() => URL.revokeObjectURL(objUrl), 60000)
+  } catch {
+    // silently fail
+  }
+}
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 async function loadMatrix() {

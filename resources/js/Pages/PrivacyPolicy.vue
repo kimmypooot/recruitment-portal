@@ -2,8 +2,8 @@
   <PublicLayout>
 
     <Head>
-      <title>Data Privacy Policy — CSC Recruitment</title>
-      <meta name="description" content="Civil Service Commission Regional Office VIII data privacy policy governing the collection, use, and protection of personal information in the recruitment portal." />
+      <title>Data Privacy Policy — CSC RO VIII - Recruitment Portal</title>
+      <meta name="description" content="Civil Service Commission Regional Office VIII data privacy policy governing the collection, use, and protection of personal information in the CSC RO VIII - Recruitment Portal." />
     </Head>
 
     <!-- Hero -->
@@ -124,7 +124,7 @@
         <div>
           <h2 class="text-lg font-semibold text-gray-900 mb-2">9. Cookies and Tracking</h2>
           <p class="text-sm text-gray-600 leading-relaxed">
-            Our recruitment portal uses essential cookies and local storage for authentication and session management. We do not use tracking cookies, analytics cookies, or third-party tracking services. You may clear your browser's local storage at any time, but doing so will sign you out of your account.
+            The CSC RO VIII - Recruitment Portal uses essential cookies and local storage for authentication and session management. We do not use tracking cookies, analytics cookies, or third-party tracking services. You may clear your browser's local storage at any time, but doing so will sign you out of your account.
           </p>
         </div>
 
@@ -144,7 +144,7 @@
         <div>
           <h2 class="text-lg font-semibold text-gray-900 mb-2">11. Changes to This Policy</h2>
           <p class="text-sm text-gray-600 leading-relaxed">
-            We reserve the right to update this Data Privacy Policy at any time. Changes will take effect immediately upon posting on this page. We encourage you to review this policy periodically. Continued use of the recruitment portal after changes constitutes your acceptance of the updated policy.
+            We reserve the right to update this Data Privacy Policy at any time. Changes will take effect immediately upon posting on this page. We encourage you to review this policy periodically. Continued use of the CSC RO VIII - Recruitment Portal after changes constitutes your acceptance of the updated policy.
           </p>
         </div>
 

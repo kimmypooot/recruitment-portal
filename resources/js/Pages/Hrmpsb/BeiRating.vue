@@ -74,6 +74,44 @@
         <!-- Selected applicant panel -->
         <div v-if="selected" class="p-6">
 
+          <!-- ── Submitted view ── -->
+          <div v-if="!isSecretariat && selected.my_rating" class="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <p class="text-sm font-semibold text-green-800">Rating submitted</p>
+                <p class="text-xs text-green-600">Your average: <span class="font-bold">{{ selected.my_rating?.total_rating ?? '—' }}</span></p>
+              </div>
+            </div>
+            <span v-if="selected.my_rating?.locked_at"
+              class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700">Locked</span>
+          </div>
+
+          <!-- ── Documents ── -->
+          <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Submitted Documents</h4>
+            <div class="grid grid-cols-5 gap-2">
+              <button
+                v-for="doc in documentTypes"
+                :key="doc.key"
+                @click="viewDocument(selected.document_links[doc.key])"
+                :disabled="!selected.documents[doc.hasKey]"
+                class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors"
+                :class="selected.documents[doc.hasKey]
+                  ? 'bg-indigo-100 text-indigo-700 border border-indigo-300 hover:bg-indigo-200 shadow-sm'
+                  : 'bg-gray-100 text-gray-300 cursor-not-allowed'"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                {{ doc.label }}
+              </button>
+            </div>
+          </div>
+
           <!-- ── Secretariat: consolidated view ── -->
           <div v-if="isSecretariat" class="space-y-4">
             <h3 class="font-semibold text-gray-800">All Evaluator Ratings</h3>
@@ -125,9 +163,13 @@
 
           <!-- ── Member: own rating form ── -->
           <div v-else>
-            <h3 class="font-semibold text-gray-800 mb-5">Your BEI Rating</h3>
+            <h3 class="font-semibold text-gray-800 mb-2">Your BEI Rating</h3>
 
-            <form v-if="!beiLocked" @submit.prevent="submitRating" class="space-y-6">
+            <div class="mb-5 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700 leading-relaxed">
+              <p>You can submit and update your rating anytime before it is locked. Once the secretariat locks ratings after the interview, no further changes can be made.</p>
+            </div>
+
+            <form v-if="!beiLocked" @submit.prevent="openPreview" class="space-y-6">
 
               <!-- Competencies grouped by category -->
               <div v-for="(group, groupName) in groupedCompetencies" :key="groupName" class="space-y-3">
@@ -140,7 +182,7 @@
                 </div>
 
                 <div v-for="(comp, key) in group" :key="key"
-                  class="flex items-start gap-4 p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                  class="flex items-start gap-4 p-3 rounded-lg border border-gray-100 bg-gray-50/50 hover:bg-indigo-50 hover:border-indigo-300 transition-colors">
                   <!-- Label -->
                   <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-gray-800">{{ comp.name }}</p>
@@ -195,32 +237,50 @@
               </p>
             </form>
 
-            <!-- Locked / submitted view -->
-            <div v-else-if="selected.my_rating" class="space-y-4">
-              <div v-for="(group, groupName) in groupedCompetencies" :key="groupName" class="space-y-2">
-                <div class="flex items-center gap-2">
-                  <span class="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded"
-                    :class="groupColor(groupName)">
-                    {{ groupName }}
-                  </span>
-                  <div class="flex-1 h-px bg-gray-100"></div>
+            <!-- ── Preview Modal ── -->
+            <div v-if="showPreview" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="showPreview = false">
+              <div class="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-lg mx-4 max-h-[85vh] overflow-y-auto">
+                <div class="p-6">
+                  <h3 class="text-lg font-bold text-gray-900 mb-4">Preview Your BEI Rating</h3>
+
+                  <div v-for="(group, groupName) in groupedCompetencies" :key="groupName" class="mb-4">
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded"
+                        :class="groupColor(groupName)">{{ groupName }}</span>
+                      <div class="flex-1 h-px bg-gray-100"></div>
+                    </div>
+                    <div v-for="(comp, key) in group" :key="key"
+                      class="flex items-center justify-between px-3 py-2 rounded-lg border border-gray-100 mb-1">
+                      <span class="text-sm text-gray-700">{{ comp.name }}</span>
+                      <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold"
+                        :class="scoreClass(ratingForm.competency_scores[key])">
+                        {{ ratingForm.competency_scores[key] ?? '—' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-3 p-3 bg-indigo-50 rounded-lg border border-indigo-100 mb-4">
+                    <span class="text-sm text-indigo-700 font-medium">Average:</span>
+                    <span class="text-lg font-bold text-indigo-700">{{ runningAverage }}</span>
+                    <span class="text-xs text-indigo-400">({{ scoredCount }} / {{ competencyCount }})</span>
+                  </div>
+
+                  <div v-if="ratingForm.remarks" class="mb-4">
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Remarks</p>
+                    <p class="text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2">{{ ratingForm.remarks }}</p>
+                  </div>
+
+                  <div class="flex justify-end gap-3 pt-3 border-t border-gray-200">
+                    <button type="button" @click="showPreview = false" class="btn-secondary">Cancel</button>
+                    <button type="button" @click="confirmSubmit" :disabled="submitting" class="btn-primary">
+                      {{ submitting ? 'Submitting…' : 'Confirm Submit' }}
+                    </button>
+                  </div>
                 </div>
-                <div v-for="(comp, key) in group" :key="key"
-                  class="flex items-center gap-4 px-3 py-2 rounded-lg border border-gray-100">
-                  <span class="flex-1 text-sm text-gray-700">{{ comp.name }}</span>
-                  <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold"
-                    :class="scoreClass(selected.my_rating?.competency_scores?.[key])">
-                    {{ selected.my_rating?.competency_scores?.[key] ?? '—' }}
-                  </span>
-                </div>
-              </div>
-              <div class="flex items-center gap-3 p-3 bg-indigo-50 rounded-lg border border-indigo-100 mt-2">
-                <span class="text-sm text-indigo-700 font-medium">Your average:</span>
-                <span class="text-lg font-bold text-indigo-700">{{ selected.my_rating?.total_rating ?? '—' }}</span>
               </div>
             </div>
 
-            <p v-else class="text-gray-400 text-sm">No rating submitted.</p>
+
           </div>
         </div>
       </div>
@@ -242,18 +302,22 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import axios from 'axios'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import { useEvaluationStore } from '@/stores/evaluation'
 import api from '@/services/api'
+import { useToast } from '@/composables/useToast'
 
 const props = defineProps({ vacancyId: Number })
+const toast = useToast()
 
 const evalStore    = useEvaluationStore()
 const loading      = ref(true)
 const submitting   = ref(false)
 const locking      = ref(false)
 const confirmLock  = ref(false)
+const showPreview  = ref(false)
 const error        = ref(null)
 const vacancy      = ref(null)
 const applications = ref([])
@@ -301,6 +365,32 @@ const runningAverage = computed(() => {
 
 const LEVEL_LABELS = { 1: 'Basic', 2: 'Intermediate', 3: 'Advanced', 4: 'Superior' }
 function levelLabel(n) { return LEVEL_LABELS[n] ?? `Level ${n}` }
+
+const documentTypes = [
+  { key: 'pds',        hasKey: 'has_pds',        label: 'PDS x WES',  full: 'Personal Data Sheet x Work Experience Sheet (PDS x WES)' },
+  { key: 'tor',        hasKey: 'has_tor',        label: 'TOR',        full: 'Transcript of Records (TOR)' },
+  { key: 'app_letter', hasKey: 'has_app_letter', label: 'App Letter', full: 'Application Letter' },
+  { key: 'ipcr',       hasKey: 'has_ipcr',       label: 'IPCR',       full: 'Individual Performance Commitment Review (IPCR)' },
+  { key: 'coe',        hasKey: 'has_coe',        label: 'COE',        full: 'Certificate of Eligibility (COE)' },
+]
+
+async function viewDocument(url) {
+  if (!url) return
+  try {
+    const token = localStorage.getItem('auth_token')
+    const resp = await axios.get(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      responseType: 'blob',
+    })
+    const mime   = resp.headers['content-type'] ?? 'application/octet-stream'
+    const blob   = new Blob([resp.data], { type: mime })
+    const objUrl = URL.createObjectURL(blob)
+    window.open(objUrl, '_blank')
+    setTimeout(() => URL.revokeObjectURL(objUrl), 60000)
+  } catch {
+    // silently fail
+  }
+}
 
 function groupColor(group) {
   return {
@@ -358,8 +448,13 @@ function saveDraft() {
   evalStore.saveBeiDraft(selectedId.value, { ...ratingForm.value })
 }
 
-async function submitRating() {
+function openPreview() {
+  showPreview.value = true
+}
+
+async function confirmSubmit() {
   submitting.value = true
+  showPreview.value = false
   error.value = null
   try {
     await api.post('/bei-ratings', {
@@ -368,8 +463,9 @@ async function submitRating() {
     })
     evalStore.clearBeiDraft(selectedId.value)
     await load()
+    toast.success('BEI rating submitted successfully.')
   } catch (e) {
-    error.value = e.response?.data?.message ?? 'Failed to submit rating.'
+    toast.error(e.response?.data?.message ?? 'Failed to submit rating.')
   } finally {
     submitting.value = false
   }

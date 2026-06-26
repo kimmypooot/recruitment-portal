@@ -23,7 +23,7 @@
           </svg>
         </div>
         <div class="leading-tight">
-          <p class="text-sm font-bold text-white">CSC Regional Office VIII</p>
+          <p class="text-sm font-bold text-white">CSC RO VIII</p>
           <p class="text-xs text-white/60">Recruitment Portal</p>
         </div>
       </div>

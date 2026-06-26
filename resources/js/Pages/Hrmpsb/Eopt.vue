@@ -10,6 +10,15 @@
         :loading="loading"
       />
 
+      <!-- Legend -->
+      <div class="flex flex-wrap items-center gap-4 px-5 py-3 bg-white rounded-xl border border-gray-200 shadow-sm text-xs">
+        <span class="font-semibold text-gray-500 uppercase tracking-wider">Rating Legend</span>
+        <span v-for="r in ratingLevels" :key="r" class="inline-flex items-center gap-1.5">
+          <span class="inline-block w-3 h-3 rounded-full" :class="ratingDotClass(r)"></span>
+          <span class="text-gray-600">{{ ratingLabels[r] }}</span>
+        </span>
+      </div>
+
       <!-- EOPT Table -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-clip">
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -17,7 +26,7 @@
           <span v-if="isSecretariat" class="text-xs text-gray-400">You are rating based on CSC CO results</span>
         </div>
 
-        <div class="overflow-x-auto overflow-y-visible">
+        <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50">
               <tr>
@@ -46,41 +55,33 @@
 
                 <!-- Secretary: dropdown per category -->
                 <template v-if="isSecretariat">
-                  <td v-for="cat in categories" :key="cat" class="px-3 py-3 text-center">
-                    <div class="relative group">
-                      <select
-                        v-model="ratings[app.id][cat]"
-                        @change="markDirty(app.id)"
-                        class="text-xs border border-gray-300 rounded px-1.5 py-1 w-full max-w-[110px]"
-                        :class="ratingColorClass(ratings[app.id][cat])"
-                      >
-                        <option value="" disabled>—</option>
-                        <option v-for="r in ratingLevels" :key="r" :value="r">
-                          {{ ratingLabels[r] }}
-                        </option>
-                      </select>
-                      <div v-if="ratings[app.id][cat]"
-                        class="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-1.5 w-56 px-2.5 py-2 bg-gray-900 text-white text-[11px] leading-tight rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-                        <p class="font-semibold mb-0.5">{{ ratingLabels[ratings[app.id][cat]] }}</p>
-                        <p>{{ definition(cat, ratings[app.id][cat]) }}</p>
-                      </div>
-                    </div>
+                  <td v-for="cat in categories" :key="cat" class="px-3 py-3 text-center align-top">
+                    <select
+                      v-model="ratings[app.id][cat]"
+                      @change="markDirty(app.id)"
+                      class="text-xs border rounded px-2 py-1.5 w-full max-w-[130px] focus:ring-1 focus:ring-indigo-400 focus:outline-none"
+                      :class="ratingColorClass(ratings[app.id][cat])"
+                    >
+                      <option value="" disabled>— Select —</option>
+                      <option v-for="r in ratingLevels" :key="r" :value="r">
+                        {{ ratingLabels[r] }}
+                      </option>
+                    </select>
+                    <p v-if="ratings[app.id][cat]" class="text-[10px] text-gray-400 leading-tight mt-1 max-w-[130px] mx-auto">
+                      {{ definition(cat, ratings[app.id][cat]) }}
+                    </p>
                   </td>
                 </template>
 
-                <!-- Member: read-only color badges -->
+                <!-- Member: read-only colored badges with label -->
                 <template v-else>
-                  <td v-for="cat in categories" :key="cat" class="px-3 py-3 text-center">
-                    <div v-if="app.eopt" class="relative group inline-block">
-                      <span class="inline-block w-6 h-6 rounded-full text-[10px] font-bold leading-6 text-white cursor-default"
-                        :class="ratingDotClass(app.eopt[cat])">
-                        {{ ratingAbbr(app.eopt[cat]) }}
-                      </span>
-                      <div
-                        class="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-1.5 w-56 px-2.5 py-2 bg-gray-900 text-white text-[11px] leading-tight rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-                        <p class="font-semibold mb-0.5">{{ categoryLabel(cat) }} — {{ ratingLabels[app.eopt[cat]] }}</p>
-                        <p>{{ definition(cat, app.eopt[cat]) }}</p>
+                  <td v-for="cat in categories" :key="cat" class="px-3 py-3 text-center align-top">
+                    <div v-if="app.eopt" class="inline-flex flex-col items-center gap-0.5">
+                      <div class="inline-flex items-center gap-1.5">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full" :class="ratingDotClass(app.eopt[cat])"></span>
+                        <span class="text-[11px] font-medium text-gray-600">{{ ratingLabels[app.eopt[cat]] }}</span>
                       </div>
+                      <p class="text-[10px] text-gray-400 leading-tight max-w-[130px]">{{ definition(cat, app.eopt[cat]) }}</p>
                     </div>
                     <span v-else class="text-gray-300">—</span>
                   </td>
@@ -162,10 +163,6 @@ function categoryLabel(cat) {
 
 function definition(cat, rating) {
   return definitionsMap.value[cat]?.[rating] ?? ''
-}
-
-function ratingAbbr(rating) {
-  return ({ very_high: 'VH', high: 'H', average: 'A', low: 'L', very_low: 'VL' })[rating] ?? '—'
 }
 
 function ratingDotClass(rating) {

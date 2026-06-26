@@ -17,30 +17,44 @@
           </svg>
         </div>
         <div class="leading-tight">
-          <p class="text-sm font-bold text-white">CSC Regional Office VIII</p>
+          <p class="text-sm font-bold text-white">CSC RO VIII</p>
           <p class="text-xs text-white/60">HRMPSB Portal</p>
         </div>
       </div>
 
       <!-- Navigation -->
-      <nav class="flex-1 px-3 py-4 overflow-y-auto space-y-4">
+      <nav class="sidebar-nav flex-1 px-3 py-4 overflow-y-auto space-y-4">
         <div v-for="group in navGroups" :key="group.label">
           <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest px-3 mb-1.5">
             {{ group.label }}
           </p>
           <div class="space-y-0.5">
-            <Link
-              v-for="item in group.items" :key="item.href"
-              :href="item.href"
-              class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-              :class="isActive(item.href)
-                ? 'bg-white/15 text-white'
-                : 'text-white/75 hover:bg-white/10 hover:text-white'">
-              <svg class="w-4.5 h-4.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon"/>
-              </svg>
-              {{ item.label }}
-            </Link>
+            <template v-for="item in group.items" :key="item.href">
+              <Link
+                v-if="!itemLockInfo(item.href).locked"
+                :href="item.href"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                :class="isActive(item.href)
+                  ? 'bg-white/15 text-white'
+                  : 'text-white/75 hover:bg-white/10 hover:text-white'">
+                <svg class="w-4.5 h-4.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon"/>
+                </svg>
+                {{ item.label }}
+              </Link>
+              <span v-else
+                class="group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/25 cursor-not-allowed select-none"
+                @mouseenter="showTooltip($event, itemLockInfo(item.href).reason)"
+                @mouseleave="hideTooltip">
+                <svg class="w-4.5 h-4.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon"/>
+                </svg>
+                <span class="flex-1 truncate">{{ item.label }}</span>
+                <svg class="w-3 h-3 text-white/20 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+              </span>
+            </template>
           </div>
         </div>
       </nav>
@@ -164,6 +178,14 @@
 
     <WorkspaceSwitcher :show="showWorkspaceSwitch" target="admin" />
 
+    <Teleport to="body">
+      <div v-if="tooltip.visible"
+        class="fixed z-[9999] px-2.5 py-1.5 bg-gray-900 text-white text-[10px] leading-tight rounded-lg shadow-xl pointer-events-none whitespace-nowrap"
+        :style="{ top: tooltip.y + 'px', left: tooltip.x + 'px', transform: 'translateY(-50%)' }">
+        {{ tooltip.text }}
+      </div>
+    </Teleport>
+
   </div>
 </template>
 
@@ -188,9 +210,37 @@ const dropdownOpen      = ref(false)
 const dropdownRef       = ref(null)
 const showLogoutModal   = ref(false)
 const showWorkspaceSwitch = ref(false)
-const page              = usePage()
-const authToken      = ref('')
-const authUser       = ref({})
+const stages           = ref(null)
+const page             = usePage()
+const authToken        = ref('')
+const authUser         = ref({})
+const tooltip          = ref({ visible: false, x: 0, y: 0, text: '' })
+
+const stageReasons = {
+  pre_assessment_exists:   'Complete Pre-Assessment first',
+  qs_exists:               'Complete QS Screening first',
+  qs_locked:               'Lock QS Screening results first',
+  twe_exists:              'Complete TWE first',
+  cbwe_exists:             'Complete CBWE first',
+  bei_scheduled:           'Schedule BEI first',
+  bei_locked:              'Lock BEI ratings first',
+  eopt_exists:             'Complete EOPT first',
+  background_check_locked: 'Lock Background Check first',
+}
+
+const requiredStage = {
+  '/hrmpsb/pre-assessment/':    { flag: null,                reason: null },
+  '/hrmpsb/qs-evaluation/':     { flag: 'pre_assessment_exists', reason: stageReasons.pre_assessment_exists },
+  '/hrmpsb/qs-results/':        { flag: 'pre_assessment_exists', reason: stageReasons.pre_assessment_exists },
+  '/hrmpsb/exam-schedule/':     { flag: 'qs_locked',             reason: stageReasons.qs_locked },
+  '/hrmpsb/exam-results/':      { flag: 'qs_locked',             reason: stageReasons.qs_locked },
+  '/hrmpsb/bei-schedule/':      { flag: 'cbwe_exists',           reason: stageReasons.cbwe_exists },
+  '/hrmpsb/bei-rating/':        { flag: 'bei_scheduled',         reason: stageReasons.bei_scheduled },
+  '/hrmpsb/eopt/':              { flag: 'bei_locked',            reason: stageReasons.bei_locked },
+  '/hrmpsb/background-check/':  { flag: 'eopt_exists',           reason: stageReasons.eopt_exists },
+  '/hrmpsb/deliberation/':      { flag: 'background_check_locked', reason: stageReasons.background_check_locked },
+  '/hrmpsb/applicants/':        { flag: null,                    reason: null },
+}
 
 const userName    = computed(() => authUser.value?.name ?? 'HRMPSB Member')
 const userEmail   = computed(() => authUser.value?.email ?? '')
@@ -226,7 +276,50 @@ onMounted(() => {
   authUser.value  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeydown)
+
+  if (props2.vacancyId) {
+    loadStages()
+  }
 })
+
+async function loadStages() {
+  try {
+    const { data } = await axios.get('/api/hrmpsb/pipeline-stages', {
+      params: { vacancy_ids: [props2.vacancyId] },
+      headers: { Authorization: `Bearer ${authToken.value}` },
+    })
+    stages.value = data[props2.vacancyId] ?? null
+  } catch {
+    stages.value = null
+  }
+}
+
+function showTooltip(e, text) {
+  const rect = e.currentTarget.getBoundingClientRect()
+  tooltip.value = {
+    visible: true,
+    x: rect.right + 10,
+    y: rect.top + rect.height / 2,
+    text,
+  }
+}
+
+function hideTooltip() {
+  tooltip.value.visible = false
+}
+
+function itemLockInfo(href) {
+  if (!stages.value) return { locked: false, reason: null }
+  for (const [path, rule] of Object.entries(requiredStage)) {
+    if (href.startsWith(path)) {
+      if (rule.flag && !stages.value[rule.flag]) {
+        return { locked: true, reason: rule.reason }
+      }
+      return { locked: false, reason: null }
+    }
+  }
+  return { locked: false, reason: null }
+}
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
@@ -379,3 +472,11 @@ async function confirmLogout() {
   router.visit('/login')
 }
 </script>
+
+<style scoped>
+.sidebar-nav::-webkit-scrollbar { width: 5px; }
+.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+.sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+.sidebar-nav { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent; }
+</style>

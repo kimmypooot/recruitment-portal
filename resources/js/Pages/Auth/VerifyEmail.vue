@@ -2,7 +2,7 @@
   <PublicLayout>
 
     <Head>
-      <title>Verify Email — CSC Recruitment</title>
+      <title>Verify Email — CSC RO VIII - Recruitment Portal</title>
     </Head>
 
     <section class="relative text-white overflow-hidden"

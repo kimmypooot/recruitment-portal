@@ -103,7 +103,7 @@
       </transition>
 
       <!-- Footer branding -->
-      <p class="mt-8 text-xs text-gray-400 tracking-wide">CSC RO VIII Recruitment Portal</p>
+      <p class="mt-8 text-xs text-gray-400 tracking-wide">CSC RO VIII - Recruitment Portal</p>
     </div>
   </div>
 </template>

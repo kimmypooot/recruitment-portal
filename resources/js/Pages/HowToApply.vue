@@ -2,8 +2,8 @@
   <PublicLayout>
 
     <Head>
-      <title>How to Apply — CSC Recruitment</title>
-      <meta name="description" content="Step-by-step guide on how to apply for government positions through the CSC Regional Office VIII online recruitment portal." />
+      <title>How to Apply — CSC RO VIII - Recruitment Portal</title>
+      <meta name="description" content="Step-by-step guide on how to apply for government positions through the CSC RO VIII - Recruitment Portal." />
     </Head>
 
     <!-- Hero -->
@@ -139,7 +139,7 @@ const steps = [
 
 const documents = [
   { name: 'Personal Data Sheet (PDS)', note: 'Required — CS Form No. 212, revised 2017' },
-  { name: 'Application Letter', note: 'Required — addressed to the CSC Regional Office VIII' },
+  { name: 'Application Letter', note: 'Required — addressed to the CSC RO VIII' },
   { name: 'Certificate of Eligibility', note: 'Required — certified true copy' },
   { name: 'Transcript of Records', note: 'Required — certified true copy' },
   { name: 'IPCR', note: 'Optional — Individual Performance Commitment and Review' },

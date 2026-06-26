@@ -2,8 +2,8 @@
   <PublicLayout>
 
     <Head>
-      <title>Register — CSC Recruitment</title>
-      <meta name="description" content="Create a CSC Recruitment account to apply for government career positions at the Civil Service Commission Regional Office VIII." />
+      <title>Register — CSC RO VIII - Recruitment Portal</title>
+      <meta name="description" content="Create a CSC RO VIII - Recruitment Portal account to apply for government career positions at the Civil Service Commission Regional Office VIII." />
     </Head>
 
     <!-- Hero (compact) -->

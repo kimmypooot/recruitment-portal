@@ -10,6 +10,7 @@ use App\Models\VacancyCompetency;
 use App\Services\AuditLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BeiRatingController extends Controller
 {
@@ -43,17 +44,36 @@ class BeiRatingController extends Controller
 
         $applications = Application::where('vacancy_id', $vacancy->id)
             ->with('anonymizationToken')
+            ->with('applicant')
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
             ->get()
             ->map(function ($app) use ($user, $isSecretariat) {
                 $token = $app->anonymizationToken;
                 $isUnmasked = $token?->isUnmasked();
+                $profile = $app->applicant;
+
+                $docExists = fn ($col) => $profile?->$col && Storage::disk('public')->exists($profile->$col);
+                $docLink   = fn ($col, $type) => $docExists($col) ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}" : null;
 
                 $base = [
                     'id'       => $app->id,
                     'token'    => $token?->token ?? 'NO-TOKEN',
                     'unmasked' => $isUnmasked,
-                    'name'     => $isUnmasked ? $this->formatApplicantName($app->applicant) : null,
+                    'name'     => $isUnmasked ? $this->formatApplicantName($profile) : null,
+                    'documents' => [
+                        'has_pds'        => $docExists('pds_path'),
+                        'has_tor'        => $docExists('tor_path'),
+                        'has_app_letter' => $docExists('app_letter_path'),
+                        'has_ipcr'       => $docExists('ipcr_path'),
+                        'has_coe'        => $docExists('coe_path'),
+                    ],
+                    'document_links' => [
+                        'pds'        => $docLink('pds_path', 'pds'),
+                        'tor'        => $docLink('tor_path', 'tor'),
+                        'app_letter' => $docLink('app_letter_path', 'app_letter'),
+                        'ipcr'       => $docLink('ipcr_path', 'ipcr'),
+                        'coe'        => $docLink('coe_path', 'coe'),
+                    ],
                 ];
 
                 if ($isSecretariat) {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\BackgroundCheck;
 use App\Models\BackgroundInvestigationReport;
 use App\Models\BeiRating;
 use App\Models\DeliberationResult;
@@ -131,11 +132,12 @@ class HrmbsboardController extends Controller
         $stages = [];
 
         foreach ($vacancyIds as $vacancyId) {
+            $allAppIds = Application::where('vacancy_id', $vacancyId)->pluck('id');
             $appIds = Application::where('vacancy_id', $vacancyId)
                 ->whereNotIn('status', ['withdrawn'])
                 ->pluck('id');
 
-            if ($appIds->isEmpty()) {
+            if ($allAppIds->isEmpty()) {
                 $stages[$vacancyId] = [
                     'pre_assessment_exists' => false,
                     'qs_exists' => false,
@@ -157,8 +159,8 @@ class HrmbsboardController extends Controller
             }
 
             $preAssessmentExists = PreAssessment::whereIn('application_id', $appIds)->exists();
-            $qsExists = QsEvaluation::whereIn('application_id', $appIds)->exists();
-            $qsLocked = QsEvaluation::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
+            $qsExists = QsEvaluation::whereIn('application_id', $allAppIds)->exists();
+            $qsLocked = QsEvaluation::whereIn('application_id', $allAppIds)->whereNotNull('locked_at')->exists();
             $tweScheduled = ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->exists();
             $tweExists = ExamResult::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->exists();
             $cbweScheduled = ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'CBWE')->exists();
@@ -166,8 +168,10 @@ class HrmbsboardController extends Controller
             $beiScheduled = InterviewSchedule::whereIn('application_id', $appIds)->exists();
             $beiExists = BeiRating::whereIn('application_id', $appIds)->exists();
             $beiLocked = BeiRating::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
-            $bgCheckExists = BackgroundInvestigationReport::whereIn('application_id', $appIds)->exists();
-            $bgCheckLocked = BackgroundInvestigationReport::whereIn('application_id', $appIds)->whereNotNull('submitted_at')->exists();
+            $bgCheckExists = BackgroundCheck::whereIn('application_id', $appIds)->exists()
+                || BackgroundInvestigationReport::whereIn('application_id', $appIds)->exists();
+            $bgCheckLocked = BackgroundCheck::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists()
+                || BackgroundInvestigationReport::whereIn('application_id', $appIds)->whereNotNull('submitted_at')->exists();
             $eoptExists = EoptResult::whereIn('application_id', $appIds)->exists();
             $deliExists = DeliberationResult::where('vacancy_id', $vacancyId)->exists();
 

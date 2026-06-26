@@ -2,8 +2,8 @@
   <PublicLayout>
 
     <Head>
-      <title>Terms of Service — CSC Recruitment</title>
-      <meta name="description" content="Civil Service Commission Regional Office VIII terms of service governing the use of the online recruitment portal." />
+      <title>Terms of Service — CSC RO VIII - Recruitment Portal</title>
+      <meta name="description" content="Civil Service Commission Regional Office VIII terms of service governing the use of the CSC RO VIII - Recruitment Portal." />
     </Head>
 
     <!-- Hero -->

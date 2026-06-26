@@ -21,7 +21,7 @@
           <tr>
             <td style="background:linear-gradient(90deg,#2a338f,#1a5276);border-radius:12px 12px 0 0;padding:20px 30px;text-align:center;">
               <h1 style="color:#ffffff;font-size:18px;font-weight:600;margin:0;letter-spacing:0.3px;">CIVIL SERVICE COMMISSION</h1>
-              <p style="color:#c5cae9;font-size:12px;margin:2px 0 0 0;">Regional Office VIII — Recruitment Portal</p>
+              <p style="color:#c5cae9;font-size:12px;margin:2px 0 0 0;">CSC RO VIII - Recruitment Portal</p>
             </td>
           </tr>
 
@@ -145,7 +145,7 @@
                       For questions, please contact the <strong>HRMPSB Secretariat</strong>.
                     </p>
                     <p style="font-size:13px;color:#2a338f;font-weight:600;margin:0;">
-                      CSC RO VIII Recruitment Portal
+                      CSC RO VIII - Recruitment Portal
                     </p>
                   </td>
                 </tr>
@@ -157,7 +157,7 @@
           <tr>
             <td style="background-color:#2a338f;border-radius:0 0 12px 12px;padding:16px 30px;text-align:center;">
               <p style="font-size:11px;color:#a5b4fc;margin:0;line-height:1.6;">
-                This is an automated message from the CSC RO VIII Recruitment Portal.Please do not reply to this email.
+                This is an automated message from the CSC RO VIII - Recruitment Portal.Please do not reply to this email.
               </p>
             </td>
           </tr>

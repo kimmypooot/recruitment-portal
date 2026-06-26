@@ -2,7 +2,7 @@
   <PublicLayout>
 
     <Head>
-      <title>Reset Password — CSC Recruitment</title>
+      <title>Reset Password — CSC RO VIII - Recruitment Portal</title>
     </Head>
 
     <section class="relative text-white overflow-hidden"

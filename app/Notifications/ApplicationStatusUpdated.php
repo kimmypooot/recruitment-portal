@@ -42,8 +42,8 @@ class ApplicationStatusUpdated extends Notification
                 fn ($m) => $m->line($details['description'])
             )
             ->action('View Your Application', url('/applicant/applications'))
-            ->line('Thank you for your continued interest in the CSC Regional Office VIII.')
-            ->salutation('CSC RO VIII Recruitment Portal');
+            ->line('Thank you for your continued interest in the CSC RO VIII.')
+            ->salutation('CSC RO VIII - Recruitment Portal');
     }
 
     public function toDatabase(object $notifiable): array
@@ -99,7 +99,7 @@ class ApplicationStatusUpdated extends Notification
             ],
             'disqualified' => [
                 'headline' => 'We regret to inform you that your application was not qualified.',
-                'description' => 'After careful evaluation, we found that your qualifications do not fully meet the requirements for this position. We encourage you to apply for other positions that match your profile. Thank you for your interest in the CSC Regional Office VIII.',
+                'description' => 'After careful evaluation, we found that your qualifications do not fully meet the requirements for this position. We encourage you to apply for other positions that match your profile. Thank you for your interest in the CSC RO VIII.',
             ],
             'exam_scheduled' => [
                 'headline' => 'You have been scheduled for an exam.',

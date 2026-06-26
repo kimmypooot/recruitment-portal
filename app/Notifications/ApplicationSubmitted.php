@@ -31,8 +31,8 @@ class ApplicationSubmitted extends Notification implements ShouldQueue
             ->line("Thank you for applying for the position of **{$positionTitle}**.")
             ->line('Your application has been received and is now being reviewed. We will notify you once there is an update on your status.')
             ->action('View Your Application', url('/applicant/applications'))
-            ->line("If you have any questions, feel free to reach out to the CSC Regional Office VIII.")
-            ->salutation('CSC RO VIII Recruitment Portal');
+            ->line("If you have any questions, feel free to reach out to the CSC RO VIII.")
+            ->salutation('CSC RO VIII - Recruitment Portal');
     }
 
     public function toArray(object $notifiable): array

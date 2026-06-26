@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CSC Regional Office Recruitment Portal — a Laravel 13 + Inertia.js (Vue 3) SPA for the Civil Service Commission. Applicants browse vacancies and submit applications; HR officers manage the pipeline; admins oversee users and audit logs.
+CSC RO VIII - Recruitment Portal — a Laravel 13 + Inertia.js (Vue 3) SPA for the Civil Service Commission. Applicants browse vacancies and submit applications; HR officers manage the pipeline; admins oversee users and audit logs.
 
 ## Commands
 

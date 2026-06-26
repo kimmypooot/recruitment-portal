@@ -31,7 +31,7 @@ class CsFormGenerationTest extends TestCase
         $vacancy = Vacancy::factory()->published()->create([
             'position_title'      => 'Administrative Officer II',
             'salary_grade'        => 11,
-            'place_of_assignment' => 'CSC Regional Office VIII',
+            'place_of_assignment' => 'CSC RO VIII',
         ]);
 
         $profile = ApplicantProfile::factory()->complete()->create([

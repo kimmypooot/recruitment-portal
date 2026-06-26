@@ -36,7 +36,7 @@ class ShortlistResult extends Notification implements ShouldQueue
                 ->line('You will receive further instructions regarding the next steps of the selection process. Please keep an eye on your notifications and email.')
                 ->action('View Your Application', url('/applicant/applications'))
                 ->line('We look forward to meeting you in the next stage of the process.')
-                ->salutation('CSC RO VIII Recruitment Portal');
+                ->salutation('CSC RO VIII - Recruitment Portal');
         }
 
         return (new MailMessage)
@@ -46,7 +46,7 @@ class ShortlistResult extends Notification implements ShouldQueue
             ->line('After careful evaluation, we regret to inform you that you were not selected for the shortlist at this time.')
             ->line('We encourage you to apply again for future vacancies that match your qualifications. Thank you for your understanding.')
             ->action('Browse Other Vacancies', url('/'))
-            ->salutation('CSC RO VIII Recruitment Portal');
+            ->salutation('CSC RO VIII - Recruitment Portal');
     }
 
     public function toArray(object $notifiable): array

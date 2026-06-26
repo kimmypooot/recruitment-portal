@@ -2,7 +2,7 @@
   <PublicLayout>
 
     <Head>
-      <title>About — CSC Recruitment</title>
+      <title>About — CSC RO VIII - Recruitment Portal</title>
       <meta name="description" content="About the Civil Service Commission Regional Office VIII — our mission, vision, and core values in serving the Filipino people through a world-class civil service." />
     </Head>
 
@@ -14,7 +14,7 @@
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div class="max-w-2xl">
           <p class="text-white/60 text-sm font-medium uppercase tracking-wider mb-3">Who We Are</p>
-          <h1 class="text-3xl sm:text-4xl font-bold leading-tight mb-4">About the CSC Regional Office</h1>
+          <h1 class="text-3xl sm:text-4xl font-bold leading-tight mb-4">About CSC RO VIII</h1>
           <p class="text-white/80 text-base leading-relaxed">
             The Civil Service Commission is the central personnel agency of the Philippine government,
             mandated to establish a career service and promote morale, efficiency, integrity, responsiveness,
@@ -70,7 +70,7 @@
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <h2 class="text-2xl font-bold text-gray-900 mb-3">About This Portal</h2>
         <p class="text-gray-600 text-sm leading-relaxed mb-4">
-          The CSC Regional Office Recruitment Portal is the official online platform for posting career opportunities
+          The CSC RO VIII - Recruitment Portal is the official online platform for posting career opportunities
           and accepting applications for vacant positions in the regional office. It streamlines the recruitment
           and selection process in accordance with the CSC's merit and fitness principles.
         </p>
