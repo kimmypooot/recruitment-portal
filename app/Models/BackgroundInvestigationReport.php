@@ -18,11 +18,13 @@ class BackgroundInvestigationReport extends Model
         'on_competencies',
         'on_performance',
         'submitted_at',
+        'locked_at',
     ];
 
     protected $casts = [
         'token_expires_at' => 'datetime',
         'submitted_at'     => 'datetime',
+        'locked_at'        => 'datetime',
     ];
 
     public function application(): BelongsTo
@@ -38,5 +40,10 @@ class BackgroundInvestigationReport extends Model
     public function isSubmitted(): bool
     {
         return $this->submitted_at !== null;
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->locked_at !== null;
     }
 }

@@ -9,6 +9,6 @@ class DocumentPolicy
 {
     public function verify(User $user, Document $document): bool
     {
-        return in_array($user->role, ['hr-officer', 'hr-manager', 'admin']);
+        return $user->canAccessAdminModule();
     }
 }

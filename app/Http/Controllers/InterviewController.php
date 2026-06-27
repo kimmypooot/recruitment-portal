@@ -18,11 +18,11 @@ class InterviewController extends Controller
     private function isSecretary(Request $request): bool
     {
         $user = $request->user();
-        if (in_array($user->role, ['admin', 'hr-manager'])) {
+        if ($user->canAccessAdminModule()) {
             return true;
         }
         return HrmbsboardComposition::where('user_id', $user->id)
-            ->where('hrmpsb_role', 'secretariat')
+            ->whereIn('hrmpsb_role', ['secretariat', 'hr-chief'])
             ->where('is_active', true)
             ->exists();
     }
@@ -122,38 +122,38 @@ class InterviewController extends Controller
         ]);
     }
 
-    public function storeHrmpsb(Request $request): JsonResponse
-    {
-        if (! $this->isSecretary($request)) {
-            return response()->json(['message' => 'Only the HRMPSB Secretariat can schedule BEI.'], 403);
+public function storeHrmpsb(Request $request): JsonResponse
+        {
+            if (! $this->isSecretary($request)) {
+                return response()->json(['message' => 'Only the HRMPSB Secretariat, Admin, HR-Manager, or HR-Chief can schedule BEI.'], 403);
+            }
+
+            $data = $request->validate([
+                'application_id' => 'required|exists:applications,id',
+                'scheduled_at'   => 'required|date',
+                'venue'          => 'required|string|max:255',
+                'notes'          => 'nullable|string|max:1000',
+            ]);
+
+            $interview = InterviewSchedule::updateOrCreate(
+                ['application_id' => $data['application_id']],
+                ['scheduled_at' => $data['scheduled_at'], 'venue' => $data['venue'], 'notes' => $data['notes'] ?? null]
+            );
+
+            return response()->json($interview, 201);
         }
 
-        $data = $request->validate([
-            'application_id' => 'required|exists:applications,id',
-            'scheduled_at'   => 'required|date',
-            'venue'          => 'required|string|max:255',
-            'notes'          => 'nullable|string|max:1000',
-        ]);
+public function batchSchedule(Request $request, Vacancy $vacancy): JsonResponse
+        {
+            if (! $this->isSecretary($request)) {
+                return response()->json(['message' => 'Only the HRMPSB Secretariat, Admin, HR-Manager, or HR-Chief can schedule BEI.'], 403);
+            }
 
-        $interview = InterviewSchedule::updateOrCreate(
-            ['application_id' => $data['application_id']],
-            ['scheduled_at' => $data['scheduled_at'], 'venue' => $data['venue'], 'notes' => $data['notes'] ?? null]
-        );
-
-        return response()->json($interview, 201);
-    }
-
-    public function batchSchedule(Request $request, Vacancy $vacancy): JsonResponse
-    {
-        if (! $this->isSecretary($request)) {
-            return response()->json(['message' => 'Only the HRMPSB Secretariat can schedule BEI.'], 403);
-        }
-
-        $data = $request->validate([
-            'scheduled_at' => 'required|date',
-            'venue'        => 'required|string|max:255',
-            'notes'        => 'nullable|string|max:1000',
-        ]);
+            $data = $request->validate([
+                'scheduled_at' => 'required|date',
+                'venue'        => 'required|string|max:255',
+                'notes'        => 'nullable|string|max:1000',
+            ]);
 
         $appIds = Application::where('vacancy_id', $vacancy->id)
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
@@ -171,11 +171,11 @@ class InterviewController extends Controller
         return response()->json(['scheduled' => $passerIds->count()]);
     }
 
-    public function notifyApplicants(Request $request, Vacancy $vacancy): JsonResponse
-    {
-        if (! $this->isSecretary($request)) {
-            return response()->json(['message' => 'Only the HRMPSB Secretariat can send notifications.'], 403);
-        }
+public function notifyApplicants(Request $request, Vacancy $vacancy): JsonResponse
+        {
+            if (! $this->isSecretary($request)) {
+                return response()->json(['message' => 'Only the HRMPSB Secretariat, Admin, HR-Manager, or HR-Chief can send notifications.'], 403);
+            }
 
         $data = $request->validate([
             'application_ids'   => 'required|array|min:1',

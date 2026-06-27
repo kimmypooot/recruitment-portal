@@ -477,9 +477,12 @@ async function lockRatings() {
   try {
     await api.patch(`/bei-ratings/${props.vacancyId}/lock`)
     confirmLock.value = false
+    toast.success('BEI ratings locked successfully.')
     await load()
   } catch (e) {
-    error.value = e.response?.data?.message ?? 'Failed to lock ratings.'
+    const msg = e.response?.data?.message ?? 'Failed to lock ratings.'
+    error.value = msg
+    toast.error(msg)
   } finally {
     locking.value = false
   }

@@ -21,7 +21,7 @@ class DeliberationController extends Controller
     {
         $user = $request->user();
 
-        $isMember = in_array($user->role, ['admin', 'hr-manager', 'appointing-authority'])
+        $isMember = $user->canAccessAdminModule()
             || HrmbsboardComposition::where('user_id', $user->id)
                 ->where('is_active', true)
                 ->exists();
@@ -100,18 +100,28 @@ class DeliberationController extends Controller
                 ];
             });
 
+        $locked = DeliberationResult::where('vacancy_id', $vacancy->id)
+            ->whereNotNull('locked_at')
+            ->exists();
+
         return response()->json([
             'vacancy' => $vacancy->only(
                 'id', 'position_title', 'plantilla_no', 'salary_grade',
                 'place_of_assignment', 'status', 'published_at'
             ),
             'applications' => $applications,
-            'can_unmask' => in_array($user->role, ['admin', 'hr-manager', 'appointing-authority']),
-            'can_decide' => in_array($user->role, ['admin', 'hr-manager', 'appointing-authority'])
+            'can_unmask' => $user->canAccessAdminModule(),
+            'can_decide' => $user->canAccessAdminModule()
                 || HrmbsboardComposition::where('user_id', $user->id)
                     ->whereIn('hrmpsb_role', ['chairperson'])
                     ->where('is_active', true)
                     ->exists(),
+            'can_lock' => $user->canAccessAdminModule()
+                || HrmbsboardComposition::where('user_id', $user->id)
+                    ->whereIn('hrmpsb_role', ['chairperson', 'secretariat'])
+                    ->where('is_active', true)
+                    ->exists(),
+            'locked' => $locked,
             'eopt_definitions' => EoptResult::getAllDefinitions(),
         ]);
     }
@@ -120,8 +130,8 @@ class DeliberationController extends Controller
     {
         $user = $request->user();
 
-        if (! in_array($user->role, ['admin', 'hr-manager', 'appointing-authority'])) {
-            return response()->json(['message' => 'Only authorized roles can unmask applicant identities.'], 403);
+        if (! $user->canAccessAdminModule()) {
+            return response()->json(['message' => 'Only admin-level users can unmask applicant identities.'], 403);
         }
 
         (new AnonymizationService)->unmaskVacancy($vacancy, $user);
@@ -135,7 +145,7 @@ class DeliberationController extends Controller
     {
         $user = $request->user();
 
-        $isChairOrAbove = in_array($user->role, ['admin', 'hr-manager', 'appointing-authority'])
+        $isChairOrAbove = $user->canAccessAdminModule()
             || HrmbsboardComposition::where('user_id', $user->id)
                 ->whereIn('hrmpsb_role', ['chairperson'])
                 ->where('is_active', true)
@@ -151,6 +161,14 @@ class DeliberationController extends Controller
             'rank' => 'nullable|integer|min:1',
             'remarks' => 'nullable|string|max:1000',
         ]);
+
+        $locked = DeliberationResult::where('vacancy_id', $vacancy->id)
+            ->whereNotNull('locked_at')
+            ->exists();
+
+        if ($locked) {
+            return response()->json(['message' => 'Deliberation results are locked and cannot be modified.'], 422);
+        }
 
         $application = Application::findOrFail($data['application_id']);
 
@@ -178,5 +196,31 @@ class DeliberationController extends Controller
         AuditLog::record('deliberation_decision', $application);
 
         return response()->json($result, 201);
+    }
+
+    public function lock(Request $request, Vacancy $vacancy): JsonResponse
+    {
+        $user = $request->user();
+
+        $canLock = $user->canAccessAdminModule()
+            || HrmbsboardComposition::where('user_id', $user->id)
+                ->whereIn('hrmpsb_role', ['chairperson', 'secretariat'])
+                ->where('is_active', true)
+                ->exists();
+
+        if (! $canLock) {
+            return response()->json(['message' => 'Only the Chairperson, Secretariat, or an admin-level user can lock deliberation results.'], 403);
+        }
+
+        $count = DeliberationResult::where('vacancy_id', $vacancy->id)
+            ->whereNull('locked_at')
+            ->update(['locked_at' => now()]);
+
+        AuditLog::record('deliberation_locked', $vacancy);
+
+        return response()->json([
+            'message'      => 'Deliberation results locked successfully.',
+            'locked_count' => $count,
+        ]);
     }
 }

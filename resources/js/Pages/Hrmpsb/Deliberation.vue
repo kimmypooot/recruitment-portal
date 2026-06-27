@@ -11,13 +11,73 @@
       />
 
       <!-- Actions row -->
-      <div class="flex items-center justify-end">
+      <div class="flex items-center justify-end gap-3">
+        <!-- Lock button -->
+        <button
+          v-if="canLock && !locked"
+          @click="showLockConfirm = true"
+          class="btn-primary"
+        >Lock Deliberation</button>
         <!-- Unmask button -->
         <button
           v-if="canUnmask && !allUnmasked"
           @click="confirmUnmask = true"
           class="btn-danger"
         >Reveal Identities</button>
+        <!-- Generate Comparative Assessment Result -->
+        <button
+          v-if="locked && canGenerateCAR && !carExists"
+          @click="generateCAR"
+          :disabled="carGenerating"
+          class="btn-success"
+        >
+          <span v-if="carGenerating" class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+            </svg>
+            Generating…
+          </span>
+          <span v-else>Generate Comparative Assessment Result</span>
+        </button>
+        <!-- Download CAR -->
+        <a
+          v-if="locked && carExists"
+          :href="carDownloadUrl"
+          class="btn-success inline-flex items-center gap-1.5"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Download Comparative Assessment Result
+        </a>
+        <!-- Forward to Appointing Authority -->
+        <a
+          v-if="locked && carExists"
+          :href="`/hrmpsb/appointing-authority/${vacancyId}`"
+          class="btn-primary"
+        >Forward to Appointing Authority →</a>
+      </div>
+
+      <!-- Lock banner -->
+      <div v-if="locked" class="flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl px-4 py-3">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        Deliberation results have been locked. No further changes are allowed.
+      </div>
+
+      <!-- Lock confirmation -->
+      <div v-if="showLockConfirm" class="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-center justify-between">
+        <p class="text-sm text-amber-800 font-medium">
+          Locking will prevent any further changes to deliberation results and decisions. This action cannot be undone.
+        </p>
+        <div class="flex gap-2">
+          <button @click="showLockConfirm = false" class="btn-secondary">Cancel</button>
+          <button @click="lockDeliberation" :disabled="locking" class="btn-primary">
+            {{ locking ? 'Locking…' : 'Confirm Lock' }}
+          </button>
+        </div>
       </div>
 
       <!-- Unmask confirmation -->
@@ -119,11 +179,11 @@
                   <select
                     v-if="canDecide"
                     v-model="decisions[app.id].action"
+                    :disabled="locked"
                     class="text-xs border border-gray-300 rounded px-2 pr-7 py-1"
                   >
                     <option value="">—</option>
                     <option value="endorsed">Endorsed</option>
-                    <option value="appointed">Appointed</option>
                     <option value="not_recommended">Not Recommended</option>
                   </select>
                   <span v-else class="text-xs text-gray-500">{{ app.deliberation?.action ?? '—' }}</span>
@@ -134,7 +194,8 @@
                     v-model.number="decisions[app.id].rank"
                     type="number"
                     min="1"
-                    class="w-14 text-xs border border-gray-300 rounded px-2 py-1 text-center"
+                    :disabled="locked"
+                    class="w-14 text-xs border border-gray-300 rounded px-2 py-1 text-center disabled:bg-gray-100 disabled:text-gray-400"
                     placeholder="—"
                   />
                   <span v-else>{{ app.deliberation?.rank ?? '—' }}</span>
@@ -144,7 +205,8 @@
                     v-if="canDecide"
                     v-model="decisions[app.id].remarks"
                     rows="2"
-                    class="text-xs border border-gray-300 rounded px-2 py-1 w-32 resize-none"
+                    :disabled="locked"
+                    class="text-xs border border-gray-300 rounded px-2 py-1 w-32 resize-none disabled:bg-gray-100 disabled:text-gray-400"
                     placeholder="Optional remarks…"
                   ></textarea>
                   <span v-else class="text-xs text-gray-500 truncate block max-w-[120px]">{{ app.deliberation?.remarks ?? '—' }}</span>
@@ -153,7 +215,7 @@
                   <button
                     v-if="canDecide && decisions[app.id].action"
                     @click="saveDecision(app.id)"
-                    :disabled="saving[app.id]"
+                    :disabled="saving[app.id] || locked"
                     class="text-xs px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
                   >{{ saving[app.id] ? '…' : 'Save' }}</button>
                   <span v-else-if="app.deliberation?.action" class="text-xs text-green-600 font-medium">✓ Saved</span>
@@ -176,20 +238,32 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
+import { router } from '@inertiajs/vue3'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import api from '@/services/api'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 const props = defineProps({ vacancyId: Number })
 
 const loading = ref(true)
 const unmasking = ref(false)
+const locking = ref(false)
 const confirmUnmask = ref(false)
+const showLockConfirm = ref(false)
 const error = ref(null)
 const vacancy = ref(null)
 const applications = ref([])
 const canUnmask = ref(false)
 const canDecide = ref(false)
+const canLock = ref(false)
+const locked = ref(false)
+const canGenerateCAR = ref(false)
+const carGenerating = ref(false)
+const carExists = ref(false)
+const carDownloadUrl = ref('')
 
 const decisions = reactive({})
 const saving = reactive({})
@@ -238,12 +312,25 @@ function eoptDefinition(category, rating) {
 async function load() {
   loading.value = true
   try {
-    const { data } = await api.get(`/deliberation/${props.vacancyId}`)
+    const [delibRes, carRes] = await Promise.all([
+      api.get(`/deliberation/${props.vacancyId}`),
+      api.get(`/deliberation/${props.vacancyId}/comparative-assessment`).catch(() => null),
+    ])
+    const data = delibRes.data
     vacancy.value = data.vacancy
     applications.value = data.applications
     canUnmask.value = data.can_unmask
     canDecide.value = data.can_decide
+    canLock.value = data.can_lock
+    locked.value = data.locked
+    canGenerateCAR.value = data.can_lock
     eoptDefinitions.value = data.eopt_definitions ?? {}
+
+    // CAR status
+    if (carRes?.data) {
+      carExists.value = carRes.data.exists
+      carDownloadUrl.value = carRes.data.download_url ?? ''
+    }
 
     // Init decision rows
     data.applications.forEach(app => {
@@ -266,11 +353,48 @@ async function unmaskAll() {
   try {
     await api.patch(`/deliberation/${props.vacancyId}/unmask`)
     confirmUnmask.value = false
+    toast.success('Applicant identities revealed for deliberation.')
     await load()
   } catch (e) {
-    error.value = e.response?.data?.message ?? 'Failed to reveal identities.'
+    const msg = e.response?.data?.message ?? 'Failed to reveal identities.'
+    error.value = msg
+    toast.error(msg)
   } finally {
     unmasking.value = false
+  }
+}
+
+async function lockDeliberation() {
+  locking.value = true
+  error.value = null
+  try {
+    await api.patch(`/deliberation/${props.vacancyId}/lock`)
+    showLockConfirm.value = false
+    toast.success('Deliberation results locked successfully.')
+    await load()
+  } catch (e) {
+    const msg = e.response?.data?.message ?? 'Failed to lock deliberation results.'
+    error.value = msg
+    toast.error(msg)
+  } finally {
+    locking.value = false
+  }
+}
+
+async function generateCAR() {
+  carGenerating.value = true
+  error.value = null
+  try {
+    const { data } = await api.post(`/deliberation/${props.vacancyId}/comparative-assessment/generate`)
+    carExists.value = true
+    carDownloadUrl.value = data.download_url
+    toast.success('Comparative Assessment Result generated successfully.')
+  } catch (e) {
+    const msg = e.response?.data?.message ?? 'Failed to generate Comparative Assessment Result.'
+    error.value = msg
+    toast.error(msg)
+  } finally {
+    carGenerating.value = false
   }
 }
 
@@ -284,9 +408,12 @@ async function saveDecision(applicationId) {
       rank: decisions[applicationId].rank || null,
       remarks: decisions[applicationId].remarks || null,
     })
+    toast.success('Decision saved.')
     await load()
   } catch (e) {
-    error.value = e.response?.data?.message ?? 'Failed to save decision.'
+    const msg = e.response?.data?.message ?? 'Failed to save decision.'
+    error.value = msg
+    toast.error(msg)
   } finally {
     saving[applicationId] = false
   }
@@ -305,5 +432,8 @@ onMounted(load)
 }
 .btn-danger {
   @apply inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 transition;
+}
+.btn-success {
+  @apply inline-flex items-center px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition;
 }
 </style>

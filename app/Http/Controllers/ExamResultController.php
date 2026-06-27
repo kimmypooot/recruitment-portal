@@ -22,13 +22,12 @@ class ExamResultController extends Controller
             ->exists();
     }
 
-    private function canEncode(int $userId, string $role): bool
+    private function canEncode(int $userId, \App\Models\User $user): bool
     {
-        if (in_array($role, ['admin', 'hr-manager'])) {
+        if ($user->canAccessAdminModule()) {
             return true;
         }
 
-        // All active HRMPSB members encode scores; secretariat consolidates
         return $this->isActiveMember($userId);
     }
 
@@ -36,11 +35,11 @@ class ExamResultController extends Controller
     {
         $user = $request->user();
 
-        if (! $this->canEncode($user->id, $user->role)) {
+        if (! $this->canEncode($user->id, $user)) {
             return response()->json(['message' => 'Access denied.'], 403);
         }
 
-        $canEncode = $this->canEncode($user->id, $user->role);
+        $canEncode = $this->canEncode($user->id, $user);
         $passingThreshold = 70.0;
 
         $applications = Application::where('vacancy_id', $vacancy->id)
@@ -97,7 +96,7 @@ class ExamResultController extends Controller
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
 
-        if (! $this->canEncode($user->id, $user->role)) {
+        if (! $this->canEncode($user->id, $user)) {
             return response()->json(['message' => 'Only active HRMPSB members can encode exam results.'], 403);
         }
 
@@ -121,7 +120,7 @@ class ExamResultController extends Controller
         $application = Application::with('vacancy')->findOrFail($examResult->application_id);
         $user = $request->user();
 
-        if (! $this->canEncode($user->id, $user->role)) {
+        if (! $this->canEncode($user->id, $user)) {
             return response()->json(['message' => 'Access denied.'], 403);
         }
 

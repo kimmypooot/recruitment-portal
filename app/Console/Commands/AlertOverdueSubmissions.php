@@ -30,7 +30,7 @@ class AlertOverdueSubmissions extends Command
             ->update(['status' => 'overdue']);
 
         // Notify HR managers
-        $hrManagers = User::whereIn('role', ['hr-manager', 'admin'])->pluck('email')->toArray();
+        $hrManagers = User::where('role', 'admin')->pluck('email')->toArray();
 
         $lines = $overdue->map(fn ($t) =>
             "• " . trim(($t->application->applicant->first_name ?? '') . ' ' . ($t->application->applicant->last_name ?? ''))

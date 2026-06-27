@@ -2,10 +2,10 @@
   <PublicLayout>
 
     <Head>
-      <title>Reset Password — CSC RO VIII - Recruitment Portal</title>
+      <title>Reset Password</title>
     </Head>
 
-    <section class="relative text-white overflow-hidden"
+    <section class="relative text-white overflow-hidden min-h-[240px]"
       style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
       <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(30,37,112,0.88) 0%, rgba(42,51,143,0.85) 50%, rgba(26,31,94,0.90) 100%);"></div>
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -17,8 +17,8 @@
           </p>
         </div>
       </div>
-      <div class="relative h-10 overflow-hidden z-10">
-        <svg viewBox="0 0 1440 40" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB">
+      <div class="relative h-10 overflow-hidden z-10 pointer-events-none">
+        <svg viewBox="0 0 1440 40" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB" aria-hidden="true">
           <path d="M0 40L60 33.3C120 26.7 240 13.3 360 10C480 6.7 600 13.3 720 20C840 26.7 960 33.3 1080 33.3C1200 33.3 1320 26.7 1380 23.3L1440 20V40H0Z"/>
         </svg>
       </div>

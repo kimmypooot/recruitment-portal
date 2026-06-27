@@ -178,6 +178,47 @@
 
     <WorkspaceSwitcher :show="showWorkspaceSwitch" target="admin" />
 
+    <!-- Sign-out preload overlay -->
+    <Teleport to="body">
+      <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100"
+                  leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+        <div v-if="showSignOutPreload" class="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
+          style="background: linear-gradient(135deg, #f0eef9 0%, #e8eafa 50%, #fdeef0 100%);">
+          <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-20"
+              style="background: radial-gradient(circle, #2a338f 0%, transparent 70%); animation: float 8s ease-in-out infinite;"></div>
+            <div class="absolute -bottom-16 -right-16 w-96 h-96 rounded-full opacity-15"
+              style="background: radial-gradient(circle, #ec1c2d 0%, transparent 70%); animation: float 10s ease-in-out infinite reverse;"></div>
+          </div>
+          <div class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/40 p-10 text-center max-w-sm w-full mx-4">
+            <div class="relative w-28 h-28 mx-auto mb-6">
+              <svg class="absolute inset-0 w-28 h-28 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="#e5e7eb" stroke-width="2.5"/>
+                <circle cx="12" cy="12" r="10" stroke="#2a338f" stroke-width="2.5"
+                  stroke-linecap="round" stroke-dasharray="62.832" stroke-dashoffset="20"/>
+              </svg>
+              <svg class="absolute inset-2 w-[96px] h-[96px] animate-spin" style="animation-duration:2s;animation-direction:reverse;" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="8" stroke="#e5e7eb" stroke-width="1.5"/>
+                <circle cx="12" cy="12" r="8" stroke="#ec1c2d" stroke-width="1.5"
+                  stroke-linecap="round" stroke-dasharray="50.265" stroke-dashoffset="15"/>
+              </svg>
+              <img src="/images/csc-logo.png" alt="CSC"
+                class="absolute w-12 h-12 rounded-full bg-white shadow-sm object-contain p-1.5"
+                style="top:50%;left:50%;transform:translate(-50%,-50%);"
+                @error="e => e.target.style.display='none'" />
+            </div>
+            <p class="text-xl font-semibold mb-1" style="color:#2a338f;">Signing you out</p>
+            <p class="text-gray-500 text-sm">See you next time!</p>
+            <div class="flex justify-center gap-1.5 mt-6">
+              <span v-for="i in 3" :key="i" class="w-2 h-2 rounded-full transition-all duration-300"
+                :style="{ backgroundColor: soDot === i - 1 ? '#ec1c2d' : '#2a338f',
+                          transform: soDot === i - 1 ? 'scale(1.25)' : 'scale(1)' }"></span>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <Teleport to="body">
       <div v-if="tooltip.visible"
         class="fixed z-[9999] px-2.5 py-1.5 bg-gray-900 text-white text-[10px] leading-tight rounded-lg shadow-xl pointer-events-none whitespace-nowrap"
@@ -196,6 +237,7 @@ import axios from 'axios'
 import AppFooter from '@/Components/UI/AppFooter.vue'
 import WorkspaceSwitcher from '@/Components/UI/WorkspaceSwitcher.vue'
 import { useIdleTimer } from '@/composables/useIdleTimer'
+import { navigateTo } from '@/utils/navigate'
 
 useIdleTimer()
 
@@ -208,9 +250,13 @@ const sidebarOpen       = ref(false)
 const sidebarCollapsed  = ref(false)
 const dropdownOpen      = ref(false)
 const dropdownRef       = ref(null)
-const showLogoutModal   = ref(false)
+const showLogoutModal     = ref(false)
 const showWorkspaceSwitch = ref(false)
+const showSignOutPreload  = ref(false)
+const soDot               = ref(0)
+let soTimer = null
 const stages           = ref(null)
+const myRole           = ref(null)
 const page             = usePage()
 const authToken        = ref('')
 const authUser         = ref({})
@@ -226,28 +272,39 @@ const stageReasons = {
   bei_locked:              'Lock BEI ratings first',
   eopt_exists:             'Complete EOPT first',
   background_check_locked: 'Lock Background Check first',
+  deliberation_done:       'Complete Deliberation first',
 }
 
 const requiredStage = {
-  '/hrmpsb/pre-assessment/':    { flag: null,                reason: null },
-  '/hrmpsb/qs-evaluation/':     { flag: 'pre_assessment_exists', reason: stageReasons.pre_assessment_exists },
-  '/hrmpsb/qs-results/':        { flag: 'pre_assessment_exists', reason: stageReasons.pre_assessment_exists },
-  '/hrmpsb/exam-schedule/':     { flag: 'qs_locked',             reason: stageReasons.qs_locked },
-  '/hrmpsb/exam-results/':      { flag: 'qs_locked',             reason: stageReasons.qs_locked },
-  '/hrmpsb/bei-schedule/':      { flag: 'cbwe_exists',           reason: stageReasons.cbwe_exists },
-  '/hrmpsb/bei-rating/':        { flag: 'bei_scheduled',         reason: stageReasons.bei_scheduled },
-  '/hrmpsb/eopt/':              { flag: 'bei_locked',            reason: stageReasons.bei_locked },
-  '/hrmpsb/background-check/':  { flag: 'eopt_exists',           reason: stageReasons.eopt_exists },
-  '/hrmpsb/deliberation/':      { flag: 'background_check_locked', reason: stageReasons.background_check_locked },
-  '/hrmpsb/applicants/':        { flag: null,                    reason: null },
+  '/hrmpsb/pre-assessment/':        { flag: 'pre_assessment_exists',      reason: stageReasons.pre_assessment_exists },
+  '/hrmpsb/qs-evaluation/':         { flag: 'pre_assessment_exists',      reason: stageReasons.pre_assessment_exists },
+  '/hrmpsb/qs-results/':            { flag: 'pre_assessment_exists',      reason: stageReasons.pre_assessment_exists },
+  '/hrmpsb/exam-schedule/':         { flag: 'qs_locked',                  reason: stageReasons.qs_locked },
+  '/hrmpsb/exam-results/':          { flag: 'qs_locked',                  reason: stageReasons.qs_locked },
+  '/hrmpsb/bei-schedule/':          { flag: 'cbwe_exists',                reason: stageReasons.cbwe_exists },
+  '/hrmpsb/bei-rating/':            { flag: 'bei_scheduled',              reason: stageReasons.bei_scheduled },
+  '/hrmpsb/eopt/':                  { flag: 'bei_locked',                 reason: stageReasons.bei_locked },
+  '/hrmpsb/background-check/':      { flag: 'eopt_exists',                reason: stageReasons.eopt_exists },
+  '/hrmpsb/deliberation/':          { flag: 'background_check_locked',    reason: stageReasons.background_check_locked },
+  '/hrmpsb/appointing-authority/':  { flag: 'deliberation_exists',        reason: stageReasons.deliberation_done },
+  '/hrmpsb/applicants/':            { flag: null,                         reason: null },
 }
 
 const userName    = computed(() => authUser.value?.name ?? 'HRMPSB Member')
 const userEmail   = computed(() => authUser.value?.email ?? '')
 const userInitial = computed(() => (authUser.value?.name ?? 'H')[0].toUpperCase())
-const canSwitchToAdmin = computed(() =>
-  ['admin', 'hr-manager', 'hrmpsb-secretariat'].includes(authUser.value?.role)
-)
+const canSchedule = computed(() => {
+  const role = authUser.value?.role
+  if (role === 'admin') return true
+  if (myRole.value && ['secretariat', 'hr-chief'].includes(myRole.value.hrmpsb_role)) return true
+  return false
+})
+
+const canSwitchToAdmin = computed(() => {
+  const role = authUser.value?.role
+  if (role === 'admin') return true
+  return canSchedule.value
+})
 
 function toggleSidebar() {
   if (window.innerWidth >= 1024) {
@@ -271,11 +328,22 @@ function handleKeydown(e) {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   authToken.value = localStorage.getItem('auth_token') ?? ''
   authUser.value  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeydown)
+
+  if (authToken.value) {
+    try {
+      const { data } = await axios.get('/api/hrmpsb/my-role', {
+        headers: { Authorization: `Bearer ${authToken.value}` }
+      })
+      myRole.value = data.composition
+    } catch {
+      // Board role not available — proceed with system role only
+    }
+  }
 
   if (props2.vacancyId) {
     loadStages()
@@ -370,40 +438,47 @@ const navGroups = computed(() => {
       },
       {
         label: 'TWE (Written Exam)',
-        items: [
-          {
-            label: 'TWE Scheduler',
-            href:  `/hrmpsb/exam-schedule/${v}?exam_type=TWE`,
-            icon:  'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-          },
-          {
+        items: (() => {
+          const tweItems = []
+          if (canSchedule.value) {
+            tweItems.push({
+              label: 'TWE Scheduler',
+              href:  `/hrmpsb/exam-schedule/${v}?exam_type=TWE`,
+              icon:  'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+            })
+          }
+          tweItems.push({
             label: 'TWE Results',
             href:  `/hrmpsb/exam-results/${v}?exam_type=TWE`,
             icon:  'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-          },
-        ],
+          })
+          return tweItems
+        })(),
       },
       {
         label: 'CBWE (Written Exam)',
-        items: [
-          {
-            label: 'CBWE Scheduler',
-            href:  `/hrmpsb/exam-schedule/${v}?exam_type=CBWE`,
-            icon:  'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-          },
-          {
+        items: (() => {
+          const cbweItems = []
+          if (canSchedule.value) {
+            cbweItems.push({
+              label: 'CBWE Scheduler',
+              href:  `/hrmpsb/exam-schedule/${v}?exam_type=CBWE`,
+              icon:  'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+            })
+          }
+          cbweItems.push({
             label: 'CBWE Results',
             href:  `/hrmpsb/exam-results/${v}?exam_type=CBWE`,
             icon:  'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-          },
-        ],
+          })
+          return cbweItems
+        })(),
       },
       {
         label: 'Interview',
         items: (() => {
-          const canSchedule = ['hrmpsb-secretariat', 'admin'].includes(authUser.value?.role)
           const interviewItems = []
-          if (canSchedule) {
+          if (canSchedule.value) {
             interviewItems.push({
               label: 'BEI Scheduler',
               href:  `/hrmpsb/bei-schedule/${v}`,
@@ -441,6 +516,11 @@ const navGroups = computed(() => {
             href:  `/hrmpsb/deliberation/${v}`,
             icon:  'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
           },
+          {
+            label: 'Appointing Authority',
+            href:  `/hrmpsb/appointing-authority/${v}`,
+            icon:  'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+          },
         ],
       }
     )
@@ -459,17 +539,20 @@ function logout() {
 }
 
 async function confirmLogout() {
-  showLogoutModal.value = false
-  try {
-    await axios.post('/api/logout', {}, {
-      headers: { Authorization: `Bearer ${authToken.value}` }
-    })
-  } catch {
-    // Proceed with local logout even if server call fails
-  }
+  showLogoutModal.value    = false
+  showSignOutPreload.value = true
+  soTimer = setInterval(() => { soDot.value = (soDot.value + 1) % 3 }, 400)
+
+  // API call and minimum display time run in parallel
+  await Promise.allSettled([
+    axios.post('/api/logout', {}, { headers: { Authorization: `Bearer ${authToken.value}` } }),
+    new Promise(r => setTimeout(r, 900)),
+  ])
+
+  clearInterval(soTimer)
   localStorage.removeItem('auth_token')
   localStorage.removeItem('auth_user')
-  router.visit('/login')
+  navigateTo('/login')
 }
 </script>
 
@@ -479,4 +562,9 @@ async function confirmLogout() {
 .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
 .sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
 .sidebar-nav { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent; }
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -30px) scale(1.05); }
+  66%       { transform: translate(-20px, 20px) scale(0.95); }
+}
 </style>

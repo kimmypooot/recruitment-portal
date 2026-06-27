@@ -37,19 +37,9 @@
         <select v-model="roleFilter" @change="onRoleChange"
           class="px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
           <option value="">All Roles</option>
-          <optgroup label="Applicant">
-            <option value="applicant">Applicants</option>
-          </optgroup>
-          <optgroup label="HR Staff">
-            <option value="hr-officer">HR Officer</option>
-            <option value="hr-manager">HR Manager</option>
-            <option value="admin">Admin</option>
-          </optgroup>
-          <optgroup label="HRMPSB">
-            <option value="hrmpsb-member">HRMPSB Member</option>
-            <option value="hrmpsb-secretariat">HRMPSB Secretariat</option>
-            <option value="appointing-authority">Appointing Authority</option>
-          </optgroup>
+          <option value="applicant">Applicant</option>
+          <option value="hrmpsb">HRMPSB</option>
+          <option value="admin">Admin</option>
         </select>
 
         <span v-if="!loading" class="text-xs text-gray-400">
@@ -262,19 +252,9 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">System Role <span class="text-red-500">*</span></label>
                 <select v-model="form.role" required
                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
-                  <optgroup label="Applicant">
-                    <option value="applicant">Applicant</option>
-                  </optgroup>
-                  <optgroup label="HR Staff">
-                    <option value="hr-officer">HR Officer</option>
-                    <option value="hr-manager">HR Manager</option>
-                    <option value="admin">Admin</option>
-                  </optgroup>
-                  <optgroup label="HRMPSB">
-                    <option value="hrmpsb-member">HRMPSB Member</option>
-                    <option value="hrmpsb-secretariat">HRMPSB Secretariat</option>
-                    <option value="appointing-authority">Appointing Authority</option>
-                  </optgroup>
+                  <option value="applicant">Applicant</option>
+                  <option value="hrmpsb">HRMPSB</option>
+                  <option value="admin">Admin</option>
                 </select>
                 <!-- Role description -->
                 <p class="mt-1.5 text-xs text-gray-400">{{ roleDescription(form.role) }}</p>
@@ -384,6 +364,9 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 // ── State ────────────────────────────────────────────────────────────────────────
 const loading      = ref(true)
@@ -401,10 +384,6 @@ const perPage      = 15
 const form = reactive({
   name: '', email: '', role: 'applicant', password: '', password_confirmation: '',
 })
-
-// ── Role filter options ──────────────────────────────────────────────────────────
-const hrRoles     = ['hr-officer', 'hr-manager']
-const hrmbsRoles  = ['hrmpsb-member', 'hrmpsb-secretariat', 'appointing-authority']
 
 // ── Computed ─────────────────────────────────────────────────────────────────────
 const filteredUsers = computed(() => {
@@ -448,12 +427,12 @@ const statCards = computed(() => [
     iconBg: 'bg-gray-100', iconColor: 'text-gray-500',
   },
   {
-    label: 'HR Staff', value: users.value.filter(u => [...hrRoles, 'admin'].includes(u.role)).length,
+    label: 'Admins', value: users.value.filter(u => u.role === 'admin').length,
     icon:  'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-    iconBg: 'bg-teal-50', iconColor: 'text-teal-600',
+    iconBg: 'bg-purple-50', iconColor: 'text-purple-600',
   },
   {
-    label: 'HRMPSB Members', value: users.value.filter(u => hrmbsRoles.includes(u.role)).length,
+    label: 'HRMPSB', value: users.value.filter(u => u.role === 'hrmpsb').length,
     icon:  'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
     iconBg: 'bg-amber-50', iconColor: 'text-amber-600',
   },
@@ -505,13 +484,18 @@ async function submitUser() {
   try {
     if (editTarget.value) {
       const payload = { name: form.name, email: form.email, role: form.role }
-      if (form.password) payload.password = form.password
+      if (form.password) { payload.password = form.password; payload.password_confirmation = form.password_confirmation }
       await axios.put(`/api/admin/users/${editTarget.value.id}`, payload, { headers: authHeaders() })
+      toast.success('User updated successfully.')
     } else {
       await axios.post('/api/admin/users', form, { headers: authHeaders() })
+      toast.success('User created successfully.')
     }
     showModal.value = false
     fetchUsers()
+  } catch (e) {
+    const msg = e.response?.data?.message ?? 'Something went wrong. Please try again.'
+    toast.error(msg)
   } finally {
     saving.value = false
   }
@@ -524,7 +508,11 @@ async function doDelete() {
   try {
     await axios.delete(`/api/admin/users/${deleteTarget.value.id}`, { headers: authHeaders() })
     deleteTarget.value = null
+    toast.success('User deleted successfully.')
     fetchUsers()
+  } catch (e) {
+    const msg = e.response?.data?.message ?? 'Failed to delete user.'
+    toast.error(msg)
   } finally {
     saving.value = false
   }
@@ -537,49 +525,33 @@ function initials(name) {
 
 function avatarBg(role) {
   return {
-    admin:                  'bg-purple-100 text-purple-700',
-    'hr-manager':           'bg-[#2a338f]/15 text-[#2a338f]',
-    'hr-officer':           'bg-teal-100 text-teal-700',
-    applicant:              'bg-gray-100 text-gray-600',
-    'hrmpsb-member':        'bg-amber-100 text-amber-700',
-    'hrmpsb-secretariat':   'bg-orange-100 text-orange-700',
-    'appointing-authority': 'bg-rose-100 text-rose-700',
+    admin:      'bg-purple-100 text-purple-700',
+    hrmpsb:     'bg-amber-100 text-amber-700',
+    applicant:  'bg-gray-100 text-gray-600',
   }[role] ?? 'bg-gray-100 text-gray-600'
 }
 
 function roleClass(role) {
   return {
-    admin:                  'bg-purple-100 text-purple-700',
-    'hr-manager':           'bg-[#2a338f]/10 text-[#2a338f]',
-    'hr-officer':           'bg-teal-100 text-teal-700',
-    applicant:              'bg-gray-100 text-gray-600',
-    'hrmpsb-member':        'bg-amber-100 text-amber-700',
-    'hrmpsb-secretariat':   'bg-orange-100 text-orange-700',
-    'appointing-authority': 'bg-rose-100 text-rose-700',
+    admin:      'bg-purple-100 text-purple-700',
+    hrmpsb:     'bg-amber-100 text-amber-700',
+    applicant:  'bg-gray-100 text-gray-600',
   }[role] ?? 'bg-gray-100 text-gray-600'
 }
 
 function roleLabel(role) {
   return {
-    applicant:              'Applicant',
-    'hr-officer':           'HR Officer',
-    'hr-manager':           'HR Manager',
-    admin:                  'Admin',
-    'hrmpsb-member':        'HRMPSB Member',
-    'hrmpsb-secretariat':   'HRMPSB Secretariat',
-    'appointing-authority': 'Appointing Authority',
+    applicant:  'Applicant',
+    hrmpsb:     'HRMPSB',
+    admin:      'Admin',
   }[role] ?? role
 }
 
 function roleDescription(role) {
   return {
-    applicant:              'Can browse vacancies and submit applications.',
-    'hr-officer':           'Can manage vacancies, view and process applications.',
-    'hr-manager':           'Full HR access including reports and HRMPSB evaluation views.',
-    admin:                  'Full system access including user management and audit logs.',
-    'hrmpsb-member':        'Access to QS evaluation, exam results, and BEI rating.',
-    'hrmpsb-secretariat':   'HRMPSB access plus deliberation management.',
-    'appointing-authority': 'View-only access to deliberation results.',
+    applicant:  'Can browse vacancies and submit applications.',
+    hrmpsb:     'Access to the HRMPSB portal for evaluations and ratings. Designation assigned separately.',
+    admin:      'Full system access including user management and audit logs.',
   }[role] ?? ''
 }
 

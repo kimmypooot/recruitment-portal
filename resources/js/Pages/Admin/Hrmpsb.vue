@@ -108,7 +108,7 @@
               <option value="">Select user…</option>
               <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ u.name }}</option>
             </select>
-            <p class="mt-1 text-xs text-gray-400">Their system role will be updated to HRMPSB Member or Secretariat automatically.</p>
+            <p class="mt-1 text-xs text-gray-400">Only users with the HRMPSB system role are shown. Assign their system role first in Admin → Users.</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">HRMPSB Role <span class="text-red-500">*</span></label>
@@ -189,7 +189,7 @@ async function loadCompositions() {
 }
 
 async function loadUsers() {
-  const { data } = await axios.get('/api/admin/users', { headers: authHeaders() })
+  const { data } = await axios.get('/api/admin/users?role=hrmpsb', { headers: authHeaders() })
   users.value = data.data ?? data
 }
 

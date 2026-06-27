@@ -32,15 +32,14 @@ class QsEvaluationController extends Controller
     {
         $user = $request->user();
 
-        if (!in_array($user->role, ['admin', 'hr-manager', 'hrmpsb-secretariat'])) {
+        if (! $user->canAccessAdminModule()) {
             $composition = $this->getComposition($user->id);
-            if (!$composition) {
+            if (! $composition) {
                 return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
             }
         }
 
-        $isSecretariat = $this->isSecretariat($user->id)
-            || in_array($user->role, ['admin', 'hr-manager']);
+        $isSecretariat = $this->isSecretariat($user->id) || $user->canAccessAdminModule();
 
         // Resolve the active secretariat user so members can reference their evaluation
         $secretariatComp = HrmbsboardComposition::where('hrmpsb_role', 'secretariat')
@@ -125,13 +124,11 @@ class QsEvaluationController extends Controller
         $user = $request->user();
 
         $composition = $this->getComposition($user->id);
-        if (!$composition && !in_array($user->role, ['admin', 'hr-manager'])) {
+        if (! $composition && ! $user->canAccessAdminModule()) {
             return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
         }
 
-        // Members may only evaluate after the Secretariat has submitted their assessment first
-        $isSubmitterSecretariat = $this->isSecretariat($user->id)
-            || in_array($user->role, ['admin', 'hr-manager']);
+        $isSubmitterSecretariat = $this->isSecretariat($user->id) || $user->canAccessAdminModule();
 
         if (!$isSubmitterSecretariat) {
             $secretariatComp = HrmbsboardComposition::where('hrmpsb_role', 'secretariat')
@@ -217,8 +214,8 @@ class QsEvaluationController extends Controller
     {
         $user = $request->user();
 
-        if (!$this->isSecretariat($user->id) && !in_array($user->role, ['admin', 'hr-manager'])) {
-            return response()->json(['message' => 'Only the HRMPSB Secretariat can lock QS evaluations.'], 403);
+        if (! $this->isSecretariat($user->id) && ! $user->canAccessAdminModule()) {
+            return response()->json(['message' => 'Only the HRMPSB Secretariat or an admin-level user can lock QS evaluations.'], 403);
         }
 
         $applicationIds = Application::where('vacancy_id', $vacancy->id)->pluck('id');

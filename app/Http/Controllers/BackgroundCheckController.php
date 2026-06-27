@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\BackgroundCheck;
+use App\Models\BackgroundInvestigationReport;
 use App\Models\HrmbsboardComposition;
 use App\Models\Vacancy;
 use App\Services\AuditLog;
@@ -15,7 +16,7 @@ class BackgroundCheckController extends Controller
     private function isSecretariat(int $userId): bool
     {
         return HrmbsboardComposition::where('user_id', $userId)
-            ->where('hrmpsb_role', 'secretariat')
+            ->whereIn('hrmpsb_role', ['secretariat', 'hr-chief'])
             ->where('is_active', true)
             ->exists();
     }
@@ -24,7 +25,7 @@ class BackgroundCheckController extends Controller
     {
         $user = $request->user();
 
-        $isMember = in_array($user->role, ['admin', 'hr-manager', 'hrmpsb-secretariat'])
+        $isMember = $user->canAccessAdminModule()
             || HrmbsboardComposition::where('user_id', $user->id)
                 ->where('is_active', true)
                 ->exists();
@@ -33,8 +34,7 @@ class BackgroundCheckController extends Controller
             return response()->json(['message' => 'Access denied.'], 403);
         }
 
-        $isSecretariat = $this->isSecretariat($user->id)
-            || in_array($user->role, ['admin', 'hr-manager']);
+        $isSecretariat = $this->isSecretariat($user->id) || $user->canAccessAdminModule();
 
         $applications = Application::where('vacancy_id', $vacancy->id)
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
@@ -77,7 +77,7 @@ class BackgroundCheckController extends Controller
             ->where('is_active', true)
             ->exists();
 
-        if (!$isMember && !in_array($user->role, ['admin', 'hr-manager', 'hrmpsb-secretariat'])) {
+        if (!$isMember && !in_array($user->role, ['admin', 'hr-manager', 'hrmpsb-secretariat', 'hr-chief'])) {
             return response()->json(['message' => 'Access denied.'], 403);
         }
 
@@ -120,45 +120,49 @@ class BackgroundCheckController extends Controller
         return response()->json($check, 201);
     }
 
-    public function lock(Request $request, Vacancy $vacancy): JsonResponse
-    {
-        $user = $request->user();
+public function lock(Request $request, Vacancy $vacancy): JsonResponse
+        {
+            $user = $request->user();
 
-        if (!$this->isSecretariat($user->id) && !in_array($user->role, ['admin', 'hr-manager'])) {
-            return response()->json(['message' => 'Only the HRMPSB Secretariat can lock background checks.'], 403);
-        }
-
-        $applicationIds = Application::where('vacancy_id', $vacancy->id)
-            ->whereNotIn('status', ['withdrawn', 'disqualified'])
-            ->pluck('id');
-
-        $count = BackgroundCheck::whereIn('application_id', $applicationIds)
-            ->whereNull('locked_at')
-            ->update(['locked_at' => now()]);
-
-        foreach ($applicationIds as $appId) {
-            $checks = BackgroundCheck::where('application_id', $appId)->get();
-
-            if ($checks->isEmpty()) {
-                continue;
+            if (! $this->isSecretariat($user->id) && ! $user->canAccessAdminModule()) {
+                return response()->json(['message' => 'Only the HRMPSB Secretariat or an admin-level user can lock background checks.'], 403);
             }
 
-            $allClear = $checks->every(fn ($c) =>
-                $c->employment_verified && $c->education_verified
-                && $c->character_ref_verified && $c->nbi_clearance
-                && $c->background_result === 'clear'
-            );
+            $applicationIds = Application::where('vacancy_id', $vacancy->id)
+                ->whereNotIn('status', ['withdrawn', 'disqualified'])
+                ->pluck('id');
 
-            Application::find($appId)?->update([
-                'status' => $allClear ? 'recommended' : 'disqualified',
+            $count = BackgroundCheck::whereIn('application_id', $applicationIds)
+                ->whereNull('locked_at')
+                ->update(['locked_at' => now()]);
+
+            BackgroundInvestigationReport::whereIn('application_id', $applicationIds)
+                ->whereNull('locked_at')
+                ->update(['locked_at' => now()]);
+
+            foreach ($applicationIds as $appId) {
+                $checks = BackgroundCheck::where('application_id', $appId)->get();
+
+                if ($checks->isEmpty()) {
+                    continue;
+                }
+
+                $allClear = $checks->every(fn ($c) =>
+                    $c->employment_verified && $c->education_verified
+                    && $c->character_ref_verified && $c->nbi_clearance
+                    && $c->background_result === 'clear'
+                );
+
+                Application::find($appId)?->update([
+                    'status' => $allClear ? 'recommended' : 'disqualified',
+                ]);
+            }
+
+            AuditLog::record('background_checks_locked', $vacancy);
+
+            return response()->json([
+                'message'      => 'Background checks locked successfully.',
+                'locked_count' => $count,
             ]);
         }
-
-        AuditLog::record('background_checks_locked', $vacancy);
-
-        return response()->json([
-            'message'      => 'Background checks locked successfully.',
-            'locked_count' => $count,
-        ]);
-    }
 }

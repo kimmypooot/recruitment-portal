@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             'name'              => 'Maria Santos',
             'email'             => 'hr.manager@csc.gov.ph',
             'password'          => Hash::make('password'),
-            'role'              => 'hr-manager',
+            'role'              => 'admin',
             'email_verified_at' => now(),
         ]);
 
@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
             'name'              => 'Jose Reyes',
             'email'             => 'hr.officer@csc.gov.ph',
             'password'          => Hash::make('password'),
-            'role'              => 'hr-officer',
+            'role'              => 'admin',
             'email_verified_at' => now(),
         ]);
 

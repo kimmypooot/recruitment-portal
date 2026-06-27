@@ -47,12 +47,17 @@ class UserFactory extends Factory
 
     public function hrOfficer(): static
     {
-        return $this->state(fn (array $attributes) => ['role' => 'hr-officer']);
+        return $this->state(fn (array $attributes) => ['role' => 'admin']);
     }
 
     public function hrManager(): static
     {
-        return $this->state(fn (array $attributes) => ['role' => 'hr-manager']);
+        return $this->state(fn (array $attributes) => ['role' => 'admin']);
+    }
+
+    public function hrmpsb(): static
+    {
+        return $this->state(fn (array $attributes) => ['role' => 'hrmpsb']);
     }
 
     public function admin(): static

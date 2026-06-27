@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\AuditLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -34,10 +35,7 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    private const ALLOWED_ROLES = [
-        'applicant', 'hr-officer', 'hr-manager', 'admin',
-        'hrmpsb-member', 'hrmpsb-secretariat', 'appointing-authority',
-    ];
+    private const ALLOWED_ROLES = ['applicant', 'hrmpsb', 'admin'];
 
     public function store(Request $request): JsonResponse
     {
@@ -63,10 +61,15 @@ class UserController extends Controller
     public function update(Request $request, User $user): JsonResponse
     {
         $data = $request->validate([
-            'name'  => 'sometimes|required|string|max:255',
-            'email' => ['sometimes', 'required', 'email', Rule::unique('users')->ignore($user->id)],
-            'role'  => ['sometimes', 'required', Rule::in(self::ALLOWED_ROLES)],
+            'name'     => 'sometimes|required|string|max:255',
+            'email'    => ['sometimes', 'required', 'email', Rule::unique('users')->ignore($user->id)],
+            'role'     => ['sometimes', 'required', Rule::in(self::ALLOWED_ROLES)],
+            'password' => 'sometimes|required|string|min:8|confirmed',
         ]);
+
+        if ($request->has('password')) {
+            $data['password'] = Hash::make($data['password']);
+        }
 
         $user->update($data);
 

@@ -31,7 +31,7 @@ class BackgroundInvestigationController extends Controller
     private function isAuthorized(int $userId): bool
     {
         $user = \App\Models\User::find($userId);
-        if (in_array($user?->role, ['admin', 'hr-manager', 'hrmpsb-secretariat', 'appointing-authority'])) {
+        if ($user?->canAccessAdminModule()) {
             return true;
         }
 
@@ -48,14 +48,17 @@ class BackgroundInvestigationController extends Controller
             return response()->json(['message' => 'Access denied.'], 403);
         }
 
-        $isSecretariat = $this->isSecretariat($user->id)
-            || in_array($user->role, ['admin', 'hr-manager']);
+        $isSecretariat = $this->isSecretariat($user->id) || $user->canAccessAdminModule();
 
         $applications = Application::where('vacancy_id', $vacancy->id)
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
             ->with(['applicant:id,first_name,last_name,middle_name', 'backgroundInvestigationReports'])
             ->orderBy('id')
             ->get();
+
+        $locked = BackgroundInvestigationReport::whereIn('application_id', $applications->pluck('id'))
+            ->whereNotNull('locked_at')
+            ->exists();
 
         return response()->json([
             'vacancy'       => $vacancy->only(
@@ -64,22 +67,23 @@ class BackgroundInvestigationController extends Controller
             ),
             'applications'  => $applications,
             'is_secretariat' => $isSecretariat,
+            'locked'        => $locked,
         ]);
     }
 
-    public function generateLink(Request $request): JsonResponse
-    {
-        $user = $request->user();
+public function generateLink(Request $request): JsonResponse
+        {
+            $user = $request->user();
 
-        if (!$this->isSecretariat($user->id) && !in_array($user->role, ['admin', 'hr-manager'])) {
-            return response()->json(['message' => 'Only the HRMPSB Secretariat can generate upload links.'], 403);
-        }
+            if (! $this->isSecretariat($user->id) && ! $user->canAccessAdminModule()) {
+                return response()->json(['message' => 'Only the HRMPSB Secretariat or an admin-level user can generate upload links.'], 403);
+            }
 
-        $data = $request->validate([
-            'application_id'    => 'required|exists:applications,id',
-            'investigator_name' => 'required|string|max:255',
-            'investigator_email'=> 'required|email|max:255',
-        ]);
+            $data = $request->validate([
+                'application_id'    => 'required|exists:applications,id',
+                'investigator_name' => 'required|string|max:255',
+                'investigator_email'=> 'required|email|max:255',
+            ]);
 
         $application = Application::with('applicant', 'vacancy')->findOrFail($data['application_id']);
 
@@ -128,13 +132,13 @@ class BackgroundInvestigationController extends Controller
         ], 201);
     }
 
-    public function resendLink(Request $request, BackgroundInvestigationReport $report): JsonResponse
-    {
-        $user = $request->user();
+public function resendLink(Request $request, BackgroundInvestigationReport $report): JsonResponse
+        {
+            $user = $request->user();
 
-        if (!$this->isSecretariat($user->id) && !in_array($user->role, ['admin', 'hr-manager'])) {
-            return response()->json(['message' => 'Only the HRMPSB Secretariat can resend upload links.'], 403);
-        }
+            if (! $this->isSecretariat($user->id) && ! $user->canAccessAdminModule()) {
+                return response()->json(['message' => 'Only the HRMPSB Secretariat or an admin-level user can resend upload links.'], 403);
+            }
 
         if ($report->isSubmitted()) {
             return response()->json(['message' => 'This report has already been submitted. Cannot resend.'], 422);
@@ -167,13 +171,13 @@ class BackgroundInvestigationController extends Controller
         ]);
     }
 
-    public function revokeLink(Request $request, BackgroundInvestigationReport $report): JsonResponse
-    {
-        $user = $request->user();
+public function revokeLink(Request $request, BackgroundInvestigationReport $report): JsonResponse
+        {
+            $user = $request->user();
 
-        if (!$this->isSecretariat($user->id) && !in_array($user->role, ['admin', 'hr-manager'])) {
-            return response()->json(['message' => 'Only the HRMPSB Secretariat can revoke upload links.'], 403);
-        }
+            if (! $this->isSecretariat($user->id) && ! $user->canAccessAdminModule()) {
+                return response()->json(['message' => 'Only the HRMPSB Secretariat or an admin-level user can revoke upload links.'], 403);
+            }
 
         if ($report->isSubmitted()) {
             return response()->json(['message' => 'Cannot revoke a submitted report.'], 422);

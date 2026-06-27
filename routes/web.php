@@ -85,3 +85,12 @@ Route::prefix('hrmpsb')->group(function () {
     Route::get('/background-check/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/BackgroundCheck', ['vacancyId' => (int) $vacancy]));
     Route::get('/applicants/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/Applicants', ['vacancyId' => (int) $vacancy]));
 });
+
+// Appointing Authority pages (separate from HRMPSB — AA is the final decision maker)
+Route::prefix('appointing-authority')->group(function () {
+    Route::get('/dashboard', fn () => Inertia::render('AppointingAuthority/Dashboard'));
+    Route::get('/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/AppointingAuthority', [
+        'vacancyId' => (int) $vacancy,
+        'eoptDefinitions' => \App\Models\EoptResult::getAllDefinitions(),
+    ]));
+});

@@ -555,6 +555,9 @@ import { router } from '@inertiajs/vue3'
 import axios from 'axios'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 const props = defineProps({ vacancyId: Number })
 
@@ -589,10 +592,12 @@ function authHeaders() {
 
 const authUser      = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
 const currentUserId = authUser.id ?? null
-// Secretariat (and admins/managers) can edit all secretariat fields
-const isSecretary   = computed(() =>
-  ['hrmpsb-secretariat', 'admin', 'hr-manager'].includes(authUser.role)
-)
+const myRole        = ref(null)
+
+const isSecretary = computed(() => {
+  if (authUser.role === 'admin') return true
+  return !!(myRole.value && ['secretariat', 'hr-chief'].includes(myRole.value.hrmpsb_role))
+})
 
 // ── Document viewer ──────────────────────────────────────────────────────────
 async function viewDocument(url) {
@@ -707,11 +712,13 @@ async function saveRow(appId) {
       consensus:             d.consensus,
     }, { headers: authHeaders() })
     drafts[appId].dirty = false
+    toast.success('Assessment saved.')
   } catch (e) {
     const msg = e?.response?.data?.errors
       ? Object.values(e.response.data.errors).flat().join(' ')
       : e?.response?.data?.message ?? 'Save failed.'
     saveErrors[appId] = msg
+    toast.error(msg)
   } finally {
     saving[appId] = false
   }
@@ -747,6 +754,7 @@ async function saveMemberAssessment(appId) {
       remarks:           d.remarks || null,
     }, { headers: authHeaders() })
     memberDrafts[appId].dirty = false
+    toast.success('Assessment submitted.')
     // Refresh the row so the overall_qualified badge reflects the new result
     await loadMatrix()
   } catch (e) {
@@ -754,6 +762,7 @@ async function saveMemberAssessment(appId) {
       ?? Object.values(e?.response?.data?.errors ?? {}).flat().join(' ')
       ?? 'Save failed.'
     memberSaveErrors[appId] = msg
+    toast.error(msg)
   } finally {
     memberSaving[appId] = false
   }
@@ -789,7 +798,15 @@ function goBack() {
   router.visit('/hrmpsb/dashboard')
 }
 
-onMounted(loadMatrix)
+onMounted(async () => {
+  try {
+    const { data } = await axios.get('/api/hrmpsb/my-role', { headers: authHeaders() })
+    myRole.value = data.composition
+  } catch {
+    // proceed without board role
+  }
+  await loadMatrix()
+})
 </script>
 
 <!-- ── Inline sub-components ──────────────────────────────────────────────── -->

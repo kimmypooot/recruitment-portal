@@ -31,11 +31,9 @@ class EoptController extends Controller
     {
         $user = $request->user();
 
-        $isSecretariat = $this->isSecretariat($user->id)
-            || in_array($user->role, ['admin', 'hr-manager', 'hrmpsb-secretariat']);
+        $isSecretariat = $this->isSecretariat($user->id) || $user->canAccessAdminModule();
 
-        $isMember = $isSecretariat || $this->isMemberOrAbove($user->id)
-            || in_array($user->role, ['admin', 'hr-manager', 'appointing-authority']);
+        $isMember = $isSecretariat || $this->isMemberOrAbove($user->id);
 
         if (! $isMember) {
             return response()->json(['message' => 'Access denied.'], 403);
@@ -79,8 +77,8 @@ class EoptController extends Controller
     {
         $user = $request->user();
 
-        if (! $this->isSecretariat($user->id) && ! in_array($user->role, ['admin', 'hr-manager', 'hrmpsb-secretariat'])) {
-            return response()->json(['message' => 'Only the secretariat can submit EOPT ratings.'], 403);
+        if (! $this->isSecretariat($user->id) && ! $user->canAccessAdminModule()) {
+            return response()->json(['message' => 'Only the HRMPSB Secretariat or an admin-level user can submit EOPT ratings.'], 403);
         }
 
         $data = $request->validate([

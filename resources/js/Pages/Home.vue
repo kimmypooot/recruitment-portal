@@ -2,9 +2,9 @@
   <PublicLayout>
 
     <Head>
-      <title>Home — CSC RO VIII - Recruitment Portal</title>
+      <title>Home</title>
       <meta name="description" content="Browse open positions at the Civil Service Commission Regional Office VIII. Sign in or register to apply for a career in government service." />
-      <meta property="og:title" content="CSC RO VIII - Recruitment Portal" />
+      <meta property="og:title" content="Open Vacancies — CSC RO VIII - Recruitment Portal" />
       <meta property="og:description" content="Browse open government positions and submit your application online." />
     </Head>
 
@@ -19,7 +19,7 @@
     <template v-if="!redirecting">
 
     <!-- ── Hero ─────────────────────────────────────────────────────────── -->
-    <section class="relative text-white overflow-hidden"
+    <section class="relative text-white overflow-hidden min-h-[320px] sm:min-h-[400px]"
       style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
       <!-- Brand gradient overlay -->
       <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(30,37,112,0.88) 0%, rgba(42,51,143,0.85) 50%, rgba(26,31,94,0.90) 100%);"></div>
@@ -56,6 +56,7 @@
                 v-model="filters.search"
                 @input="onSearchInput"
                 type="text"
+                aria-label="Search position title"
                 placeholder="Search position title..."
                 class="w-full pl-9 pr-4 py-3 rounded-lg text-sm text-gray-900 bg-white placeholder-gray-400 border-0 shadow focus:ring-2 focus:ring-white/50 focus:outline-none" />
             </div>
@@ -69,8 +70,8 @@
       </div>
 
       <!-- Wave divider -->
-      <div class="relative h-8 overflow-hidden">
-        <svg viewBox="0 0 1440 32" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB">
+      <div class="relative h-8 overflow-hidden pointer-events-none">
+        <svg viewBox="0 0 1440 32" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB" aria-hidden="true">
           <path d="M0 32L60 26.7C120 21.3 240 10.7 360 8C480 5.3 600 10.7 720 16C840 21.3 960 26.7 1080 26.7C1200 26.7 1320 21.3 1380 18.7L1440 16V32H0Z"/>
         </svg>
       </div>
@@ -246,25 +247,25 @@
 
     </section>
 
-    <!-- ── Info strip ────────────────────────────────────────────────── -->
-    <!-- <section class="text-white" style="background-color: #2a338f;">
+    <!-- ── Stats strip ──────────────────────────────────────────────── -->
+    <section class="text-white" style="background-color: #2a338f;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center divide-y sm:divide-y-0 sm:divide-x divide-white/20">
           <div class="pb-6 sm:pb-0">
             <p class="text-4xl font-bold text-white">{{ stats.published }}</p>
-            <p class="text-white/60 text-sm mt-1 uppercase tracking-wide font-medium">Open Positions</p>
+            <p class="text-white/75 text-sm mt-1 uppercase tracking-wide font-medium">Open Positions</p>
           </div>
           <div class="py-6 sm:py-0 sm:px-8">
             <p class="text-4xl font-bold text-white">{{ stats.total_applications }}</p>
-            <p class="text-white/60 text-sm mt-1 uppercase tracking-wide font-medium">Applications This Year</p>
+            <p class="text-white/75 text-sm mt-1 uppercase tracking-wide font-medium">Applications This Year</p>
           </div>
           <div class="pt-6 sm:pt-0 sm:px-8">
             <p class="text-4xl font-bold text-white">{{ stats.appointed }}</p>
-            <p class="text-white/60 text-sm mt-1 uppercase tracking-wide font-medium">Appointments Made</p>
+            <p class="text-white/75 text-sm mt-1 uppercase tracking-wide font-medium">Appointments Made</p>
           </div>
         </div>
       </div>
-    </section> -->
+    </section>
 
     </template>
 
@@ -274,10 +275,17 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
-import { debounce } from 'lodash-es'
 import { Head, router } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import VacancyCard from '@/Components/Vacancy/VacancyCard.vue'
+
+function debounce(fn, delay) {
+  let timer
+  return function (...args) {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn.apply(this, args), delay)
+  }
+}
 
 // ── Props from Laravel (Inertia) ──────────────────────────────────────────
 // These are passed by HomeController::index() via Inertia::render()
@@ -382,8 +390,21 @@ onMounted(async () => {
       const role = user?.role ?? ''
       let dest = null
       if (role === 'applicant') dest = '/applicant/dashboard'
-      else if (['hrmpsb-member', 'hrmpsb-secretariat', 'appointing-authority'].includes(role)) dest = '/hrmpsb/dashboard'
-      else if (role) dest = '/admin/dashboard'
+      else if (role === 'hrmpsb') {
+        // Check if user is appointing-authority
+        try {
+          const { data } = await axios.get('/api/hrmpsb/my-role', {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+          if (data.composition?.hrmpsb_role === 'appointing-authority') {
+            dest = '/appointing-authority/dashboard'
+          } else {
+            dest = '/hrmpsb/dashboard'
+          }
+        } catch {
+          dest = '/hrmpsb/dashboard'
+        }
+      } else if (role) dest = '/admin/dashboard'
       if (dest) { router.visit(dest); return }
     } catch {
       localStorage.removeItem('auth_token')

@@ -293,6 +293,9 @@ import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import ApplicantProfileDrawer from '@/Components/Hrmpsb/ApplicantProfileDrawer.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import { formatName } from '@/utils/formatName'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 const props = defineProps({ vacancyId: Number })
 
@@ -465,10 +468,14 @@ async function submitEvaluation(app) {
     const payload = { application_id: app.id, ...form }
     if (app.my_evaluation) {
       await axios.put(`/api/qs-evaluations/${app.my_evaluation.id}`, payload, { headers: authHeaders() })
+      toast.success('Evaluation updated.')
     } else {
       await axios.post('/api/qs-evaluations', payload, { headers: authHeaders() })
+      toast.success('Evaluation submitted.')
     }
     loadData()
+  } catch (e) {
+    toast.error(e.response?.data?.message ?? 'Failed to save evaluation.')
   } finally {
     saving[app.id] = false
   }
@@ -485,9 +492,12 @@ async function doLock() {
   try {
     await axios.patch(`/api/qs-evaluations/${props.vacancyId}/lock`, {}, { headers: authHeaders() })
     showLockConfirm.value = false
+    toast.success('QS evaluations locked successfully.')
     loadData()
   } catch (e) {
-    lockError.value = e.response?.data?.message ?? 'Failed to lock QS evaluations. Please try again.'
+    const msg = e.response?.data?.message ?? 'Failed to lock QS evaluations. Please try again.'
+    lockError.value = msg
+    toast.error(msg)
   } finally {
     locking.value = false
   }

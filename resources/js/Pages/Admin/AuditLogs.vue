@@ -215,13 +215,9 @@ function clearFilters() { filters.search = ''; filters.action_type = ''; filters
 
 function roleBadgeClass(role) {
   return {
-    admin: 'bg-purple-100 text-purple-700',
-    'hr-manager': 'bg-[#2a338f]/10 text-[#2a338f]',
-    'hr-officer': 'bg-teal-100 text-teal-700',
-    applicant: 'bg-gray-100 text-gray-600',
-    'hrmpsb-member': 'bg-amber-100 text-amber-700',
-    'hrmpsb-secretariat': 'bg-orange-100 text-orange-700',
-    'appointing-authority': 'bg-rose-100 text-rose-700',
+    admin:      'bg-purple-100 text-purple-700',
+    hrmpsb:     'bg-amber-100 text-amber-700',
+    applicant:  'bg-gray-100 text-gray-600',
   }[role] ?? 'bg-gray-100 text-gray-600'
 }
 

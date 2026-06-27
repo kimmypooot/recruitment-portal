@@ -292,6 +292,9 @@ import axios from 'axios'
 import { applicationApi, profileApi } from '@/services/api'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 // ── State ─────────────────────────────────────────────────────────────────────
 const applications   = ref([])
@@ -479,12 +482,13 @@ async function doWithdraw() {
       { status: 'withdrawn', remarks: withdrawReason.value || null },
       { headers: authHeaders() },
     )
+    toast.success('Application withdrawn successfully.')
     const idx = applications.value.findIndex(a => a.id === withdrawTarget.value.id)
     if (idx >= 0) applications.value[idx].status = 'withdrawn'
     withdrawTarget.value = null
     withdrawReason.value = ''
   } catch (e) {
-    console.error('Withdraw failed', e)
+    toast.error(e.response?.data?.message ?? 'Failed to withdraw application.')
   } finally {
     withdrawing.value = false
   }

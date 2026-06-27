@@ -16,31 +16,23 @@
       class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/40 p-10 text-center max-w-sm w-full mx-4 transition-all duration-500"
       :class="status === 'processing' ? 'scale-100 opacity-100' : 'scale-100 opacity-100'">
       <!-- Processing state -->
-      <transition name="fade" mode="out-in">
-        <div v-if="status === 'processing'" key="processing" class="space-y-6">
+        <div v-if="status === 'processing'" key="processing">
           <!-- Animated rings -->
-          <div class="relative w-28 h-28 mx-auto">
+          <div class="relative w-28 h-28 mx-auto mb-6">
             <svg class="absolute inset-0 w-28 h-28 animate-spin" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="10" stroke="#e5e7eb" stroke-width="2.5"/>
-              <circle cx="12" cy="12" r="10" stroke="url(#gradient)" stroke-width="2.5"
-                stroke-linecap="round" stroke-dasharray="62.832" stroke-dashoffset="20"
-                class="animate-[spin_1.5s_linear_infinite]"/>
+              <circle cx="12" cy="12" r="10" stroke="#2a338f" stroke-width="2.5"
+                stroke-linecap="round" stroke-dasharray="62.832" stroke-dashoffset="20"/>
             </svg>
             <svg class="absolute inset-2 w-[96px] h-[96px] animate-spin" style="animation-duration: 2s; animation-direction: reverse;" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="8" stroke="#e5e7eb" stroke-width="1.5"/>
               <circle cx="12" cy="12" r="8" stroke="#ec1c2d" stroke-width="1.5"
-                stroke-linecap="round" stroke-dasharray="50.265" stroke-dashoffset="15" opacity="0.6"/>
+                stroke-linecap="round" stroke-dasharray="50.265" stroke-dashoffset="15"/>
             </svg>
             <img src="/images/csc-logo.png" alt="CSC"
               class="absolute w-12 h-12 rounded-full bg-white shadow-sm object-contain p-1.5"
               style="top: 50%; left: 50%; transform: translate(-50%, -50%);"
               @error="e => e.target.style.display = 'none'" />
-            <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#2a338f"/>
-                <stop offset="100%" stop-color="#ec1c2d"/>
-              </linearGradient>
-            </defs>
           </div>
 
           <transition name="fade" mode="out-in">
@@ -56,7 +48,7 @@
           </transition>
 
           <!-- Pulsing dots -->
-          <div class="flex justify-center gap-1.5">
+          <div class="flex justify-center gap-1.5 mt-6">
             <span class="w-2 h-2 rounded-full transition-all duration-300" :class="dotClass(0)" :style="dotStyle(0)"></span>
             <span class="w-2 h-2 rounded-full transition-all duration-300" :class="dotClass(1)" :style="dotStyle(1)"></span>
             <span class="w-2 h-2 rounded-full transition-all duration-300" :class="dotClass(2)" :style="dotStyle(2)"></span>
@@ -100,7 +92,6 @@
             <span class="w-2 h-2 rounded-full bg-green-500 animate-bounce" style="animation-delay: 0.3s;"></span>
           </div>
         </div>
-      </transition>
 
       <!-- Footer branding -->
       <p class="mt-8 text-xs text-gray-400 tracking-wide">CSC RO VIII - Recruitment Portal</p>
@@ -111,6 +102,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '@/services/api'
+import { navigateTo } from '@/utils/navigate'
 
 const appUrl = window.location.origin
 
@@ -173,7 +165,7 @@ onMounted(async () => {
 
   if (linkSuccess) {
     status.value = 'link_success'
-    setTimeout(() => { window.location.href = `${appUrl}/applicant/complete-profile` }, 1500)
+    setTimeout(() => navigateTo(`${appUrl}/applicant/complete-profile`), 1500)
     return
   }
 
@@ -191,19 +183,30 @@ onMounted(async () => {
     // Brief pause to show the welcome message
     await new Promise(r => setTimeout(r, 1200))
 
-    if (user.role === 'applicant') {
+    if (user.role === 'admin') {
+      navigateTo(`${appUrl}/admin/dashboard`)
+    } else if (user.role === 'hrmpsb') {
+      try {
+        const { data: roleData } = await api.get('/hrmpsb/my-role', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (roleData.composition?.hrmpsb_role === 'appointing-authority') {
+          navigateTo(`${appUrl}/appointing-authority/dashboard`)
+        } else {
+          navigateTo(`${appUrl}/hrmpsb/dashboard`)
+        }
+      } catch {
+        navigateTo(`${appUrl}/hrmpsb/dashboard`)
+      }
+    } else {
       try {
         const { data } = await api.get('/profile', {
           headers: { Authorization: `Bearer ${token}` }
         })
-        window.location.href = data.is_complete
-          ? `${appUrl}/applicant/dashboard`
-          : `${appUrl}/applicant/complete-profile`
+        navigateTo(data.is_complete ? `${appUrl}/applicant/dashboard` : `${appUrl}/applicant/complete-profile`)
       } catch {
-        window.location.href = `${appUrl}/applicant/dashboard`
+        navigateTo(`${appUrl}/applicant/dashboard`)
       }
-    } else {
-      window.location.href = `${appUrl}/applicant/dashboard`
     }
     return
   }

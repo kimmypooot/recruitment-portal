@@ -2,12 +2,12 @@
   <PublicLayout>
 
     <Head>
-      <title>Sign In — CSC RO VIII - Recruitment Portal</title>
+      <title>Sign In</title>
       <meta name="description" content="Sign in to your CSC RO VIII - Recruitment Portal account to manage applications, check exam schedules, and track your career progress." />
     </Head>
 
     <!-- Hero (compact) -->
-    <section class="relative text-white overflow-hidden"
+    <section class="relative text-white overflow-hidden min-h-[240px]"
       style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
       <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(30,37,112,0.88) 0%, rgba(42,51,143,0.85) 50%, rgba(26,31,94,0.90) 100%);"></div>
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -19,8 +19,8 @@
           </p>
         </div>
       </div>
-      <div class="relative h-10 overflow-hidden z-10">
-        <svg viewBox="0 0 1440 40" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB">
+      <div class="relative h-10 overflow-hidden z-10 pointer-events-none">
+        <svg viewBox="0 0 1440 40" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB" aria-hidden="true">
           <path d="M0 40L60 33.3C120 26.7 240 13.3 360 10C480 6.7 600 13.3 720 20C840 26.7 960 33.3 1080 33.3C1200 33.3 1320 26.7 1380 23.3L1440 20V40H0Z"/>
         </svg>
       </div>
@@ -86,12 +86,13 @@
                 placeholder="••••••••"
                 class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition pr-10" />
               <button type="button" @click="showPassword = !showPassword"
+                :aria-label="showPassword ? 'Hide password' : 'Show password'"
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <svg v-if="!showPassword" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg v-if="!showPassword" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                 </svg>
-                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
                 </svg>
               </button>
@@ -128,50 +129,152 @@
     </section>
 
   </PublicLayout>
+
+  <!-- Post-login preload overlay (same style as GoogleCallback) -->
+  <Teleport to="body">
+    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100"
+                leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+      <div v-if="showPreload" class="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
+        style="background: linear-gradient(135deg, #f0eef9 0%, #e8eafa 50%, #fdeef0 100%);">
+        <!-- Particles -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+          <div class="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-20"
+            style="background: radial-gradient(circle, #2a338f 0%, transparent 70%); animation: float 8s ease-in-out infinite;"></div>
+          <div class="absolute -bottom-16 -right-16 w-96 h-96 rounded-full opacity-15"
+            style="background: radial-gradient(circle, #ec1c2d 0%, transparent 70%); animation: float 10s ease-in-out infinite reverse;"></div>
+          <div class="absolute top-1/3 right-1/4 w-48 h-48 rounded-full opacity-10"
+            style="background: radial-gradient(circle, #2a338f 0%, transparent 70%); animation: float 12s ease-in-out infinite 2s;"></div>
+        </div>
+
+        <div class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/40 p-10 text-center max-w-sm w-full mx-4">
+          <!-- Animated rings -->
+          <div class="relative w-28 h-28 mx-auto mb-6">
+            <svg class="absolute inset-0 w-28 h-28 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="#e5e7eb" stroke-width="2.5"/>
+              <circle cx="12" cy="12" r="10" stroke="#2a338f" stroke-width="2.5"
+                stroke-linecap="round" stroke-dasharray="62.832" stroke-dashoffset="20"/>
+            </svg>
+            <svg class="absolute inset-2 w-[96px] h-[96px] animate-spin" style="animation-duration:2s;animation-direction:reverse;" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="8" stroke="#e5e7eb" stroke-width="1.5"/>
+              <circle cx="12" cy="12" r="8" stroke="#ec1c2d" stroke-width="1.5"
+                stroke-linecap="round" stroke-dasharray="50.265" stroke-dashoffset="15"/>
+            </svg>
+            <img src="/images/csc-logo.png" alt="CSC"
+              class="absolute w-12 h-12 rounded-full bg-white shadow-sm object-contain p-1.5"
+              style="top:50%;left:50%;transform:translate(-50%,-50%);"
+              @error="e => e.target.style.display='none'" />
+          </div>
+
+          <Transition name="pfade" mode="out-in">
+            <div v-if="preloadWelcome" key="welcome" class="space-y-2">
+              <p class="text-sm font-medium tracking-wide uppercase" style="color:#ec1c2d;">Welcome back</p>
+              <p class="text-2xl font-bold text-gray-900">{{ preloadName }}</p>
+              <p class="text-gray-500 text-sm">{{ preloadSubtitle }}</p>
+            </div>
+            <div v-else key="loading" class="space-y-2">
+              <p class="text-xl font-semibold" style="color:#2a338f;">Signing you in</p>
+              <p class="text-gray-500 text-sm">{{ preloadSubtitle }}</p>
+            </div>
+          </Transition>
+
+          <!-- Pulsing dots -->
+          <div class="flex justify-center gap-1.5 mt-6">
+            <span v-for="i in 3" :key="i" class="w-2 h-2 rounded-full transition-all duration-300"
+              :style="{ backgroundColor: preloadDot === i - 1 ? '#ec1c2d' : '#2a338f',
+                        transform: preloadDot === i - 1 ? 'scale(1.25)' : 'scale(1)' }"></span>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { Head, Link, router } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import axios from 'axios'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
+import { navigateTo } from '@/utils/navigate'
 
 const form = reactive({ email: '', password: '', remember: false })
-const loading = ref(false)
-const error   = ref('')
-const attemptCount = ref(0)
-const showPassword = ref(false)
+const loading       = ref(false)
+const error         = ref('')
+const attemptCount  = ref(0)
+const showPassword  = ref(false)
+
+// Preload overlay state
+const showPreload    = ref(false)
+const preloadWelcome = ref(false)
+const preloadName    = ref('')
+const preloadDot     = ref(0)
+const preloadSubtitle = ref('Please wait a moment…')
+let dotTimer = null
+
+function startDots() {
+  dotTimer = setInterval(() => { preloadDot.value = (preloadDot.value + 1) % 3 }, 400)
+}
 
 async function submit() {
   loading.value = true
   error.value   = ''
+
+  // Show preloader immediately — don't block on the API call
+  showPreload.value = true
+  startDots()
+
   try {
-    const { data } = await axios.post('/api/login', form)
+    // API call and minimum loading-state display run in parallel
+    const [{ data }] = await Promise.all([
+      axios.post('/api/login', form),
+      new Promise(r => setTimeout(r, 400)),
+    ])
+
     attemptCount.value = 0
     localStorage.setItem('auth_token', data.token)
     localStorage.setItem('auth_user', JSON.stringify(data.user))
     const role = data.user?.role
 
-    if (['admin', 'hr-manager', 'hr-officer'].includes(role)) {
-      router.visit('/admin/dashboard')
-    } else if (['hrmpsb-member', 'hrmpsb-secretariat', 'appointing-authority'].includes(role)) {
-      router.visit('/hrmpsb/dashboard')
-    } else {
-      // Applicant: check profile completion
+    preloadName.value    = data.user?.name?.split(' ')[0] ? `${data.user.name.split(' ')[0]}!` : ''
+    preloadWelcome.value = true
+
+    // Welcome display and destination resolution run in parallel
+    const welcomeDelay = new Promise(r => setTimeout(r, 700))
+    if (role === 'admin') {
+      await welcomeDelay
+      navigateTo('/admin/dashboard')
+    } else if (role === 'hrmpsb') {
+      const token = data.token
       try {
-        const { data: profileData } = await axios.get('/api/profile', {
-          headers: { Authorization: `Bearer ${data.token}` }
+        const { data: roleData } = await axios.get('/api/hrmpsb/my-role', {
+          headers: { Authorization: `Bearer ${token}` }
         })
-        if (profileData.is_complete) {
-          router.visit('/applicant/dashboard')
+        if (roleData.composition?.hrmpsb_role === 'appointing-authority') {
+          preloadSubtitle.value = 'Preparing Appointing Authority dashboard…'
+          await welcomeDelay
+          navigateTo('/appointing-authority/dashboard')
         } else {
-          router.visit('/applicant/complete-profile')
+          await welcomeDelay
+          navigateTo('/hrmpsb/dashboard')
         }
       } catch {
-        router.visit('/applicant/complete-profile')
+        await welcomeDelay
+        navigateTo('/hrmpsb/dashboard')
       }
+    } else {
+      // Profile check races against the welcome display time
+      const [profileResult] = await Promise.allSettled([
+        axios.get('/api/profile', { headers: { Authorization: `Bearer ${data.token}` } }),
+        welcomeDelay,
+      ])
+      const dest = profileResult.status === 'fulfilled' && profileResult.value.data.is_complete
+        ? '/applicant/dashboard'
+        : '/applicant/complete-profile'
+      navigateTo(dest)
     }
   } catch (err) {
+    showPreload.value    = false
+    preloadWelcome.value = false
+    clearInterval(dotTimer)
     attemptCount.value++
     const status = err.response?.status
     if (status === 429) {
@@ -186,3 +289,14 @@ async function submit() {
   }
 }
 </script>
+
+<style scoped>
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -30px) scale(1.05); }
+  66%       { transform: translate(-20px, 20px) scale(0.95); }
+}
+.pfade-enter-active, .pfade-leave-active { transition: opacity 0.4s ease, transform 0.4s ease; }
+.pfade-enter-from { opacity: 0; transform: translateY(8px); }
+.pfade-leave-to   { opacity: 0; transform: translateY(-8px); }
+</style>

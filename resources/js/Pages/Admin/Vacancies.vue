@@ -340,13 +340,7 @@
                 </div>
               </div>
 
-              <div v-if="compSaveSuccess"
-                class="mt-3 p-2.5 bg-green-50 border border-green-200 rounded-lg text-xs text-green-700 font-medium flex items-center gap-1.5 flex-shrink-0">
-                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                </svg>
-                Competencies saved.
-              </div>
+
             </div>
 
           </div>
@@ -438,6 +432,9 @@ import { debounce } from 'lodash-es'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 // ── State ────────────────────────────────────────────────────────────────────────
 const loading       = ref(true)
@@ -482,9 +479,12 @@ async function bulkApply() {
       ids: selectedIds.value,
       status: bulkStatus.value,
     }, { headers: authHeaders() })
+    toast.success(`Status updated to "${bulkStatus.value}" for ${selectedIds.value.length} vacancy(ies).`)
     selectedIds.value = []
     bulkStatus.value = ''
     fetchVacancies()
+  } catch (e) {
+    toast.error(e.response?.data?.message ?? 'Bulk update failed.')
   } finally {
     bulkLoading.value = false
   }
@@ -579,10 +579,9 @@ async function saveCompetencies() {
         level: d.level,
       })),
     }, { headers: authHeaders() })
-    compSaveSuccess.value = true
-    setTimeout(() => { compSaveSuccess.value = false }, 4000)
+    toast.success('Competencies saved.')
   } catch (e) {
-    console.error('Failed to save competencies', e)
+    toast.error(e.response?.data?.message ?? 'Failed to save competencies.')
   } finally {
     compSaving.value = false
   }
@@ -646,11 +645,15 @@ async function submitVacancy() {
   try {
     if (editingId.value) {
       await axios.put(`/api/vacancies/${editingId.value}`, form, { headers: authHeaders() })
+      toast.success('Vacancy updated successfully.')
     } else {
       await axios.post('/api/vacancies', form, { headers: authHeaders() })
+      toast.success('Vacancy created successfully.')
     }
     showModal.value = false
     fetchVacancies()
+  } catch (e) {
+    toast.error(e.response?.data?.message ?? 'Failed to save vacancy.')
   } finally {
     saving.value = false
   }
@@ -660,7 +663,11 @@ async function changeStatus(vacancy, action) {
   statusLoading.value = vacancy.id
   try {
     await axios.patch(`/api/vacancies/${vacancy.id}/${action}`, {}, { headers: authHeaders() })
+    const label = action === 'publish' ? 'published' : 'archived'
+    toast.success(`Vacancy "${vacancy.position_title}" ${label}.`)
     fetchVacancies()
+  } catch (e) {
+    toast.error(e.response?.data?.message ?? 'Status change failed.')
   } finally {
     statusLoading.value = null
   }
@@ -672,8 +679,11 @@ async function doDelete() {
   saving.value = true
   try {
     await axios.delete(`/api/vacancies/${deleteTarget.value.id}`, { headers: authHeaders() })
+    toast.success('Vacancy deleted successfully.')
     deleteTarget.value = null
     fetchVacancies()
+  } catch (e) {
+    toast.error(e.response?.data?.message ?? 'Failed to delete vacancy.')
   } finally {
     saving.value = false
   }

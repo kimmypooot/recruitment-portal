@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppointingAuthorityDecision;
 use App\Models\Application;
 use App\Models\BackgroundCheck;
 use App\Models\BackgroundInvestigationReport;
 use App\Models\BeiRating;
+use App\Models\ComparativeAssessmentResult;
 use App\Models\DeliberationResult;
 use App\Models\EoptResult;
 use App\Models\ExamResult;
@@ -42,32 +44,23 @@ class HrmbsboardController extends Controller
     public function assign(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id'     => ['required', Rule::exists('users', 'id')->where('role', 'hrmpsb')],
             'hrmpsb_role' => ['required', Rule::in(array_keys(HrmbsboardComposition::ROLES))],
             'member_type' => 'required|in:principal,alternate',
         ]);
 
         $composition = HrmbsboardComposition::updateOrCreate(
             [
-                'user_id' => $data['user_id'],
+                'user_id'     => $data['user_id'],
                 'hrmpsb_role' => $data['hrmpsb_role'],
             ],
             [
                 'member_type' => $data['member_type'],
-                'is_active' => true,
+                'is_active'   => true,
                 'assigned_by' => $request->user()->id,
                 'assigned_at' => now(),
             ]
         );
-
-        // Auto-set system role so the user lands on the HRMPSB portal on login
-        $systemRole = $data['hrmpsb_role'] === 'secretariat'
-            ? 'hrmpsb-secretariat'
-            : 'hrmpsb-member';
-
-        User::where('id', $data['user_id'])
-            ->whereNotIn('role', ['admin', 'hr-manager'])
-            ->update(['role' => $systemRole]);
 
         AuditLog::record("hrmpsb_assigned:{$data['hrmpsb_role']}", $composition);
 
@@ -153,6 +146,8 @@ class HrmbsboardController extends Controller
                     'background_check_exists' => false,
                     'background_check_locked' => false,
                     'deliberation_exists' => false,
+                    'comparative_assessment_exists' => false,
+                    'appointing_authority_exists' => false,
                 ];
 
                 continue;
@@ -171,9 +166,11 @@ class HrmbsboardController extends Controller
             $bgCheckExists = BackgroundCheck::whereIn('application_id', $appIds)->exists()
                 || BackgroundInvestigationReport::whereIn('application_id', $appIds)->exists();
             $bgCheckLocked = BackgroundCheck::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists()
-                || BackgroundInvestigationReport::whereIn('application_id', $appIds)->whereNotNull('submitted_at')->exists();
+                || BackgroundInvestigationReport::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
             $eoptExists = EoptResult::whereIn('application_id', $appIds)->exists();
-            $deliExists = DeliberationResult::where('vacancy_id', $vacancyId)->exists();
+            $deliExists = DeliberationResult::where('vacancy_id', $vacancyId)->whereNotNull('locked_at')->exists();
+            $carExists = ComparativeAssessmentResult::where('vacancy_id', $vacancyId)->exists();
+            $aaExists = AppointingAuthorityDecision::where('vacancy_id', $vacancyId)->exists();
 
             $stages[$vacancyId] = [
                 'pre_assessment_exists' => $preAssessmentExists,
@@ -190,6 +187,8 @@ class HrmbsboardController extends Controller
                 'background_check_exists' => $bgCheckExists,
                 'background_check_locked' => $bgCheckLocked,
                 'deliberation_exists' => $deliExists,
+                'comparative_assessment_exists' => $carExists,
+                'appointing_authority_exists' => $aaExists,
             ];
         }
 
@@ -204,7 +203,7 @@ class HrmbsboardController extends Controller
     {
         $user = $request->user();
 
-        $isAdmin = in_array($user->role, ['admin', 'hr-manager']);
+        $isAdmin = $user->canAccessAdminModule();
         $isMember = HrmbsboardComposition::where('user_id', $user->id)
             ->where('is_active', true)
             ->exists();
@@ -256,7 +255,7 @@ class HrmbsboardController extends Controller
     {
         $user = $request->user();
 
-        $isAdmin = in_array($user->role, ['admin', 'hr-manager']);
+        $isAdmin = $user->canAccessAdminModule();
         $isMember = HrmbsboardComposition::where('user_id', $user->id)
             ->where('is_active', true)
             ->exists();
@@ -290,7 +289,7 @@ class HrmbsboardController extends Controller
     {
         $user = $request->user();
 
-        $isAdmin = in_array($user->role, ['admin', 'hr-manager']);
+        $isAdmin = $user->canAccessAdminModule();
         $isMember = HrmbsboardComposition::where('user_id', $user->id)
             ->where('is_active', true)
             ->exists();

@@ -211,6 +211,7 @@ const steps = [
   { key: 'eopt',           label: 'EOPT',            phases: ['eopt'] },
   { key: 'background',     label: 'Background Check',phases: ['background'] },
   { key: 'deliberation',   label: 'Deliberation',    phases: ['deliberation'] },
+  { key: 'appointing_authority', label: 'Appointing Authority', phases: ['appointing_authority'] },
 ]
 
 /* ── Computed ────────────────────────────────────────────────────────────── */
@@ -219,9 +220,15 @@ const initials = computed(() => {
   return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?'
 })
 
-const isChairOrSecretary = computed(() =>
-  myRole.value && ['chairperson', 'secretariat'].includes(myRole.value.hrmpsb_role)
-)
+const isChairOrSecretary = computed(() => {
+  if (authUser.role === 'admin') return true
+  return myRole.value && ['chairperson', 'secretariat', 'appointing-authority'].includes(myRole.value.hrmpsb_role)
+})
+
+const canSchedule = computed(() => {
+  if (authUser.role === 'admin') return true
+  return myRole.value && ['secretariat', 'hr-chief'].includes(myRole.value.hrmpsb_role)
+})
 
 const pendingActions = computed(() => {
   return vacancies.value.filter(v => {
@@ -234,27 +241,12 @@ const pendingActions = computed(() => {
     if (s.cbwe_exists && !s.bei_locked) return true
     if (s.bei_locked && !s.eopt_exists) return true
     if (s.eopt_exists && !s.background_check_locked) return true
+    if (s.deliberation_exists && !s.appointing_authority_exists) return true
     return false
   }).length
 })
 
 /* ── Phase meter helpers ──────────────────────────────────────────────────── */
-function phaseMeterClass(step, idx, vacancyId) {
-  const s = stages.value[vacancyId] ?? {}
-  const currentPhaseIdx = steps.findIndex(st => phaseComplete(st, s))
-  if (idx < currentPhaseIdx) return 'bg-green-400'
-  if (idx === currentPhaseIdx) return 'bg-[#1a5276]'
-  return 'bg-gray-200'
-}
-
-function phaseLabelClass(step, idx, vacancyId) {
-  const s = stages.value[vacancyId] ?? {}
-  const currentPhaseIdx = steps.findIndex(st => phaseComplete(st, s))
-  if (idx === currentPhaseIdx) return 'text-[#1a5276] font-semibold'
-  if (idx < currentPhaseIdx) return 'text-green-600'
-  return 'text-gray-300'
-}
-
 function phaseComplete(step, s) {
   const map = {
     pre_assessment: s.pre_assessment_exists,
@@ -265,16 +257,31 @@ function phaseComplete(step, s) {
     eopt:           s.eopt_exists,
     background:     s.background_check_locked,
     deliberation:   s.deliberation_exists,
+    appointing_authority: s.appointing_authority_exists,
   }
   return map[step.key] ?? false
 }
 
-function currentPhaseIdx(vacancyId) {
+function lastCompletedIdx(vacancyId) {
   const s = stages.value[vacancyId] ?? {}
   for (let i = steps.length - 1; i >= 0; i--) {
     if (phaseComplete(steps[i], s)) return i
   }
   return -1
+}
+
+function phaseMeterClass(step, idx, vacancyId) {
+  const last = lastCompletedIdx(vacancyId)
+  if (idx < last) return 'bg-green-400'
+  if (idx === last) return 'bg-[#1a5276]'
+  return 'bg-gray-200'
+}
+
+function phaseLabelClass(step, idx, vacancyId) {
+  const last = lastCompletedIdx(vacancyId)
+  if (idx === last) return 'text-[#1a5276] font-semibold'
+  if (idx < last) return 'text-green-600'
+  return 'text-gray-300'
 }
 
 /* ── Action groups for the dropdown (phase-aware) ────────────────────────── */
@@ -313,63 +320,60 @@ function actionGroups(vacancyId) {
   })
 
   // TWE
-  groups.push({
-    label: 'TWE (Written Exam)',
-    items: [
-      {
-        label: 'Schedule TWE',
-        href: `/hrmpsb/exam-schedule/${vacancyId}?exam_type=TWE`,
-        disabled: !s.qs_locked,
-        tooltip: !s.qs_locked ? 'QS must be locked first' : null,
-        icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-        badge: s.twe_scheduled ? 'Scheduled' : null,
-        badgeCls: 'bg-cyan-100 text-cyan-700',
-        iconCls: s.qs_locked ? 'text-gray-400' : 'text-gray-300',
-      },
-      {
-        label: 'TWE Results',
-        href: `/hrmpsb/exam-results/${vacancyId}?exam_type=TWE`,
-        disabled: !s.qs_locked,
-        tooltip: !s.qs_locked ? 'QS must be locked first' : null,
-        icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-        badge: s.twe_exists ? 'Done' : null,
-        badgeCls: 'bg-green-100 text-green-700',
-        iconCls: s.qs_locked ? 'text-gray-400' : 'text-gray-300',
-      },
-    ],
+  const tweItems = []
+  if (canSchedule.value) {
+    tweItems.push({
+      label: 'Schedule TWE',
+      href: `/hrmpsb/exam-schedule/${vacancyId}?exam_type=TWE`,
+      disabled: !s.qs_locked,
+      tooltip: !s.qs_locked ? 'QS must be locked first' : null,
+      icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+      badge: s.twe_scheduled ? 'Scheduled' : null,
+      badgeCls: 'bg-cyan-100 text-cyan-700',
+      iconCls: s.qs_locked ? 'text-gray-400' : 'text-gray-300',
+    })
+  }
+  tweItems.push({
+    label: 'TWE Results',
+    href: `/hrmpsb/exam-results/${vacancyId}?exam_type=TWE`,
+    disabled: !s.qs_locked,
+    tooltip: !s.qs_locked ? 'QS must be locked first' : null,
+    icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
+    badge: s.twe_exists ? 'Done' : null,
+    badgeCls: 'bg-green-100 text-green-700',
+    iconCls: s.qs_locked ? 'text-gray-400' : 'text-gray-300',
   })
+  groups.push({ label: 'TWE (Written Exam)', items: tweItems })
 
   // CBWE
-  groups.push({
-    label: 'CBWE (Written Exam)',
-    items: [
-      {
-        label: 'Schedule CBWE',
-        href: `/hrmpsb/exam-schedule/${vacancyId}?exam_type=CBWE`,
-        disabled: !s.twe_exists,
-        tooltip: !s.twe_exists ? 'TWE must be completed first' : null,
-        icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-        badge: s.cbwe_scheduled ? 'Scheduled' : null,
-        badgeCls: 'bg-amber-100 text-amber-700',
-        iconCls: s.twe_exists ? 'text-gray-400' : 'text-gray-300',
-      },
-      {
-        label: 'CBWE Results',
-        href: `/hrmpsb/exam-results/${vacancyId}?exam_type=CBWE`,
-        disabled: !s.twe_exists,
-        tooltip: !s.twe_exists ? 'TWE must be completed first' : null,
-        icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-        badge: s.cbwe_exists ? 'Done' : null,
-        badgeCls: 'bg-green-100 text-green-700',
-        iconCls: s.twe_exists ? 'text-gray-400' : 'text-gray-300',
-      },
-    ],
+  const cbweItems = []
+  if (canSchedule.value) {
+    cbweItems.push({
+      label: 'Schedule CBWE',
+      href: `/hrmpsb/exam-schedule/${vacancyId}?exam_type=CBWE`,
+      disabled: !s.twe_exists,
+      tooltip: !s.twe_exists ? 'TWE must be completed first' : null,
+      icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+      badge: s.cbwe_scheduled ? 'Scheduled' : null,
+      badgeCls: 'bg-amber-100 text-amber-700',
+      iconCls: s.twe_exists ? 'text-gray-400' : 'text-gray-300',
+    })
+  }
+  cbweItems.push({
+    label: 'CBWE Results',
+    href: `/hrmpsb/exam-results/${vacancyId}?exam_type=CBWE`,
+    disabled: !s.twe_exists,
+    tooltip: !s.twe_exists ? 'TWE must be completed first' : null,
+    icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
+    badge: s.cbwe_exists ? 'Done' : null,
+    badgeCls: 'bg-green-100 text-green-700',
+    iconCls: s.twe_exists ? 'text-gray-400' : 'text-gray-300',
   })
+  groups.push({ label: 'CBWE (Written Exam)', items: cbweItems })
 
   // BEI
-  const canScheduleBei = ['hrmpsb-secretariat', 'admin'].includes(authUser.role)
   const beiItems = []
-  if (canScheduleBei) {
+  if (canSchedule.value) {
     beiItems.push({
       label: 'Schedule BEI',
       href: `/hrmpsb/bei-schedule/${vacancyId}`,
@@ -439,6 +443,25 @@ function actionGroups(vacancyId) {
     })
   }
 
+  // Appointing Authority
+  if (isChairOrSecretary.value) {
+    groups.push({
+      label: 'Final Decision',
+      items: [
+        {
+          label: 'Appointing Authority',
+          href: `/hrmpsb/appointing-authority/${vacancyId}`,
+          disabled: !s.deliberation_exists,
+          tooltip: !s.deliberation_exists ? 'Deliberation must be completed first' : null,
+          icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+          badge: s.appointing_authority_exists ? 'Done' : null,
+          badgeCls: 'bg-green-100 text-green-700',
+          iconCls: s.deliberation_exists ? 'text-gray-400' : 'text-gray-300',
+        },
+      ],
+    })
+  }
+
   return groups
 }
 
@@ -470,6 +493,7 @@ function scrollToPhase(vacancyId, key) {
       eopt: `/hrmpsb/eopt/${vacancyId}`,
       background: `/hrmpsb/background-check/${vacancyId}`,
       deliberation: `/hrmpsb/deliberation/${vacancyId}`,
+      appointing_authority: `/hrmpsb/appointing-authority/${vacancyId}`,
     }
     if (hrefs[key]) window.location.href = hrefs[key]
   }
@@ -491,6 +515,7 @@ function authHeaders() {
 }
 
 function currentStageBadge(s) {
+  if (s.appointing_authority_exists) return { label: 'Awaiting Appointing Authority', class: 'bg-rose-100 text-rose-700',    dot: 'bg-rose-500' }
   if (s.deliberation_exists)       return { label: 'Deliberation Done',           class: 'bg-indigo-100 text-indigo-700', dot: 'bg-indigo-500' }
   if (s.background_check_locked)   return { label: 'Awaiting Deliberation',       class: 'bg-violet-100 text-violet-700', dot: 'bg-violet-500' }
   if (s.background_check_exists)   return { label: 'BG Check In Progress',       class: 'bg-purple-100 text-purple-700', dot: 'bg-purple-500 animate-pulse' }
@@ -534,8 +559,8 @@ onMounted(() => {
 })
 
 /* ── Data loading ────────────────────────────────────────────────────────── */
-async function loadData() {
-  loading.value = true
+async function loadData(initial = false) {
+  if (initial) loading.value = true
   try {
     const [roleRes, vacRes] = await Promise.all([
       axios.get('/api/hrmpsb/my-role', { headers: authHeaders() }),
@@ -548,24 +573,20 @@ async function loadData() {
     myRole.value     = roleRes.data.composition
     roleLabels.value = roleRes.data.roles ?? {}
     vacancies.value  = vacRes.data.data ?? []
-  } catch (e) {
-    console.error('Failed to load HRMPSB dashboard', e)
-  } finally {
-    loading.value = false
-  }
 
-  if (vacancies.value.length) {
-    try {
+    if (vacancies.value.length) {
       const ids = vacancies.value.map(v => v.id)
       const params = new URLSearchParams()
       ids.forEach(id => params.append('vacancy_ids[]', id))
       const { data } = await axios.get(`/api/hrmpsb/pipeline-stages?${params}`, { headers: authHeaders() })
       stages.value = data
-    } catch (e) {
-      console.error('Failed to load pipeline stages', e)
     }
+  } catch (e) {
+    console.error('Failed to load HRMPSB dashboard data', e)
+  } finally {
+    if (initial) loading.value = false
   }
 }
 
-onMounted(loadData)
+onMounted(() => loadData(true))
 </script>

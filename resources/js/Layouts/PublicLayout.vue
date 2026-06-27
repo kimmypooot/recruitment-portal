@@ -1,4 +1,9 @@
 <template>
+  <a href="#main-content"
+    class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-[#2a338f] focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:outline-none">
+    Skip to content
+  </a>
+
   <div class="min-h-screen flex flex-col bg-gray-50">
 
     <!-- ── Navbar ─────────────────────────────────────────────────────── -->
@@ -28,18 +33,23 @@
           </Link>
 
           <!-- Desktop nav -->
-          <nav class="hidden md:flex items-center gap-1">
+          <nav class="hidden md:flex items-center gap-1" aria-label="Main navigation">
             <Link href="/"
               class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              :class="$page.url === '/' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'">
+              :class="$page.url === '/' ? 'bg-white/10 text-white' : 'text-white/75 hover:text-white hover:bg-white/10'"
+              :aria-current="$page.url === '/' ? 'page' : undefined">
               Vacancies
             </Link>
             <Link href="/how-to-apply"
-              class="px-3 py-2 rounded-md text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+              class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              :class="$page.url === '/how-to-apply' ? 'bg-white/10 text-white' : 'text-white/75 hover:text-white hover:bg-white/10'"
+              :aria-current="$page.url === '/how-to-apply' ? 'page' : undefined">
               How to Apply
             </Link>
             <Link href="/about"
-              class="px-3 py-2 rounded-md text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+              class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              :class="$page.url === '/about' ? 'bg-white/10 text-white' : 'text-white/75 hover:text-white hover:bg-white/10'"
+              :aria-current="$page.url === '/about' ? 'page' : undefined">
               About
             </Link>
           </nav>
@@ -47,15 +57,18 @@
           <!-- Auth buttons + mobile hamburger -->
           <div class="flex items-center gap-2">
             <Link href="/login"
-              class="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors">
+              class="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-white/75 hover:text-white transition-colors">
               Sign In
             </Link>
             <Link href="/register"
               class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium text-[#2a338f] bg-white hover:bg-white/90 rounded-lg transition-colors shadow-sm">
               Register
             </Link>
-            <button @click="mobileOpen = !mobileOpen" class="md:hidden p-2 rounded-lg text-white/70 hover:bg-white/10 transition-colors">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <button @click="mobileOpen = !mobileOpen"
+              :aria-label="mobileOpen ? 'Close navigation menu' : 'Open navigation menu'"
+              :aria-expanded="mobileOpen"
+              class="md:hidden p-2 rounded-lg text-white/75 hover:bg-white/10 transition-colors">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
               </svg>
             </button>
@@ -72,23 +85,28 @@
       leave-active-class="transition-all duration-150 ease-in"
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 -translate-y-2">
-      <nav v-if="mobileOpen" class="md:hidden bg-[#1e2570] border-b border-white/10 px-4 py-3 space-y-1">
+      <nav v-if="mobileOpen" class="md:hidden bg-[#1e2570] border-b border-white/10 px-4 py-3 space-y-1" aria-label="Mobile navigation">
         <Link href="/" @click="mobileOpen = false"
           class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-          :class="$page.url === '/' ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'">
+          :class="$page.url === '/' ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white'"
+          :aria-current="$page.url === '/' ? 'page' : undefined">
           Vacancies
         </Link>
         <Link href="/how-to-apply" @click="mobileOpen = false"
-          class="block px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+          class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+          :class="$page.url === '/how-to-apply' ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white'"
+          :aria-current="$page.url === '/how-to-apply' ? 'page' : undefined">
           How to Apply
         </Link>
         <Link href="/about" @click="mobileOpen = false"
-          class="block px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+          class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+          :class="$page.url === '/about' ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white'"
+          :aria-current="$page.url === '/about' ? 'page' : undefined">
           About
         </Link>
         <hr class="my-2 border-white/10" />
         <Link href="/login" @click="mobileOpen = false"
-          class="block px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+          class="block px-3 py-2 rounded-lg text-sm font-medium text-white/75 hover:bg-white/10 hover:text-white transition-colors">
           Sign In
         </Link>
         <Link href="/register" @click="mobileOpen = false"
@@ -99,7 +117,7 @@
     </Transition>
 
     <!-- ── Page Content (slot) ────────────────────────────────────────── -->
-    <main class="flex-1">
+    <main id="main-content" class="flex-1" tabindex="-1">
       <slot />
     </main>
 
@@ -136,6 +154,8 @@
               <li><Link href="/how-to-apply" class="text-sm text-white/60 hover:text-white transition-colors">How to Apply</Link></li>
               <li><Link href="/register" class="text-sm text-white/60 hover:text-white transition-colors">Register as Applicant</Link></li>
               <li><Link href="/login" class="text-sm text-white/60 hover:text-white transition-colors">Track My Application</Link></li>
+              <li><Link href="/privacy-policy" class="text-sm text-white/60 hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms-of-service" class="text-sm text-white/60 hover:text-white transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
 

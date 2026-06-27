@@ -1,11 +1,7 @@
 export const ROLE_LABELS = {
-  applicant:              'Applicant',
-  'hr-officer':           'HR Officer',
-  'hr-manager':           'HR Manager',
-  admin:                  'Admin',
-  'hrmpsb-member':        'HRMPSB Member',
-  'hrmpsb-secretariat':   'HRMPSB Secretariat',
-  'appointing-authority': 'Appointing Authority',
+  applicant: 'Applicant',
+  hrmpsb:    'HRMPSB',
+  admin:     'Admin',
 }
 
 export function roleLabel(role) {

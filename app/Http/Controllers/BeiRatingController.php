@@ -34,12 +34,11 @@ class BeiRatingController extends Controller
     {
         $user = $request->user();
 
-        $canAdmin = in_array($user->role, ['admin', 'hr-manager']);
-        $isSecretariat = $canAdmin || $this->isSecretariat($user->id);
+        $isSecretariat = $user->canAccessAdminModule() || $this->isSecretariat($user->id);
         $composition = $this->getComposition($user->id);
 
         if (!$isSecretariat && !$composition) {
-            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
+            return response()->json(['message' => 'You are not an active HRMPSB member or HR-Chief.'], 403);
         }
 
         $applications = Application::where('vacancy_id', $vacancy->id)
@@ -144,7 +143,7 @@ class BeiRatingController extends Controller
         }
 
         $composition = $this->getComposition($user->id);
-        if (!$composition && !in_array($user->role, ['admin', 'hr-manager'])) {
+        if (! $composition && ! $user->canAccessAdminModule()) {
             return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
         }
 
@@ -177,8 +176,8 @@ class BeiRatingController extends Controller
     {
         $user = $request->user();
 
-        if (!$this->isSecretariat($user->id) && !in_array($user->role, ['admin', 'hr-manager'])) {
-            return response()->json(['message' => 'Only the HRMPSB Secretariat can lock BEI ratings.'], 403);
+        if (! $this->isSecretariat($user->id) && ! $user->canAccessAdminModule()) {
+            return response()->json(['message' => 'Only the HRMPSB Secretariat or an admin-level user can lock BEI ratings.'], 403);
         }
 
         $applicationIds = Application::where('vacancy_id', $vacancy->id)->pluck('id');

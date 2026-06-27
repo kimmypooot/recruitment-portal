@@ -555,7 +555,6 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } 
 import { Link, router } from '@inertiajs/vue3'
 import { profileApi } from '@/services/api'
 import Cropper from 'cropperjs'
-import 'cropperjs/dist/cropper.css'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 import PersonalInfoTab from './Profile/PersonalInfoTab.vue'
 import QualificationsTab from './Profile/QualificationsTab.vue'

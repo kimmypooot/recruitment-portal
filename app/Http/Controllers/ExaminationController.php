@@ -15,11 +15,11 @@ class ExaminationController extends Controller
     private function isSecretary(Request $request): bool
     {
         $user = $request->user();
-        if (in_array($user->role, ['admin', 'hr-manager'])) {
+        if ($user->canAccessAdminModule()) {
             return true;
         }
         return HrmbsboardComposition::where('user_id', $user->id)
-            ->where('hrmpsb_role', 'secretariat')
+            ->whereIn('hrmpsb_role', ['secretariat', 'hr-chief'])
             ->where('is_active', true)
             ->exists();
     }

@@ -22,6 +22,7 @@ class HrmbsboardComposition extends Model
     public const ROLES = [
         'chairperson'                   => 'Chairperson',
         'secretariat'                   => 'HRMPSB Secretariat',
+        'appointing-authority'          => 'Appointing Authority',
         'director-representative'       => 'Director II Representative',
         'division-chief-representative' => 'Division Chief Representative',
         'hr-chief'                      => 'Chief of HR Division',

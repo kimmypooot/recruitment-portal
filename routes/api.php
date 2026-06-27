@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\AppointingAuthorityController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BackgroundCheckController;
 use App\Http\Controllers\BackgroundInvestigationController;
 use App\Http\Controllers\BeiRatingController;
+use App\Http\Controllers\ComparativeAssessmentController;
 use App\Http\Controllers\CompetencyController;
 use App\Http\Controllers\CsFormController;
 use App\Http\Controllers\DashboardController;
@@ -85,8 +87,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
 });
 
-// HR Officer routes
-Route::middleware(['auth:sanctum', 'role:hr-officer,hr-manager,admin,hrmpsb-secretariat'])->group(function () {
+// HR / Admin management routes (admin role + hrmpsb with secretariat/hr-chief designation)
+Route::middleware(['auth:sanctum', 'admin-access'])->group(function () {
     Route::apiResource('vacancies', VacancyController::class)->except(['index', 'show']);
     Route::patch('/vacancies/bulk-status', [VacancyController::class, 'bulkUpdateStatus']);
     Route::patch('/vacancies/{vacancy}/publish', [VacancyController::class, 'publish']);
@@ -102,16 +104,10 @@ Route::middleware(['auth:sanctum', 'role:hr-officer,hr-manager,admin,hrmpsb-secr
     // CS Forms
     Route::get('/applications/{application}/applicant-profile', [ApplicationController::class, 'applicantProfile']);
     Route::get('/applications/{application}/applicant-documents/{type}', [ApplicationController::class, 'serveApplicantDocument']);
-
-    Route::get('/applications/{application}/forms', [CsFormController::class, 'index']);
-    Route::post('/applications/{application}/forms', [CsFormController::class, 'generate']);
-    Route::get('/forms/{csForm}/download', [CsFormController::class, 'download']);
-    Route::patch('/forms/{csForm}/mark-submitted', [CsFormController::class, 'markSubmitted']);
-    Route::patch('/forms/{csForm}/sign', [CsFormController::class, 'sign']);
 });
 
-// Admin routes
-Route::middleware(['auth:sanctum', 'role:admin,hrmpsb-secretariat'])->prefix('admin')->group(function () {
+// Admin module routes (user management, audit logs, HRMPSB compositions)
+Route::middleware(['auth:sanctum', 'admin-access'])->prefix('admin')->group(function () {
     Route::apiResource('users', UserController::class);
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
     Route::get('/dashboard-stats', [DashboardController::class, 'adminStats']);
@@ -136,13 +132,13 @@ Route::middleware(['auth:sanctum', 'role:admin,hrmpsb-secretariat'])->prefix('ad
 });
 
 // Exports
-Route::middleware(['auth:sanctum', 'role:admin,hr-manager,hrmpsb-secretariat'])->prefix('exports')->group(function () {
+Route::middleware(['auth:sanctum', 'admin-access'])->prefix('exports')->group(function () {
     Route::get('/applicants/{vacancy?}', [ExportController::class, 'applicants']);
     Route::get('/audit-logs', [ExportController::class, 'auditLogs']);
 });
 
-// HRMPSB evaluation routes (members + secretariat + admin)
-Route::middleware(['auth:sanctum', 'role:hrmpsb-member,hrmpsb-secretariat,admin,hr-manager,appointing-authority'])->group(function () {
+// HRMPSB evaluation routes (all hrmpsb users + admin)
+Route::middleware(['auth:sanctum', 'role:hrmpsb,admin'])->group(function () {
     Route::get('/hrmpsb/my-role', [HrmbsboardController::class, 'myRole']);
     Route::get('/hrmpsb/pipeline-stages', [HrmbsboardController::class, 'pipelineStages']);
     Route::get('/hrmpsb/applications/{application}/profile', [HrmbsboardController::class, 'applicantProfile']);
@@ -191,7 +187,24 @@ Route::middleware(['auth:sanctum', 'role:hrmpsb-member,hrmpsb-secretariat,admin,
     // Deliberation
     Route::get('/deliberation/{vacancy}', [DeliberationController::class, 'index']);
     Route::patch('/deliberation/{vacancy}/unmask', [DeliberationController::class, 'unmask']);
+    Route::patch('/deliberation/{vacancy}/lock', [DeliberationController::class, 'lock']);
     Route::post('/deliberation/{vacancy}/decide', [DeliberationController::class, 'decide']);
+
+    // Comparative Assessment Result
+    Route::get('/deliberation/{vacancy}/comparative-assessment', [ComparativeAssessmentController::class, 'index']);
+    Route::post('/deliberation/{vacancy}/comparative-assessment/generate', [ComparativeAssessmentController::class, 'generate']);
+    Route::get('/deliberation/{vacancy}/comparative-assessment/download', [ComparativeAssessmentController::class, 'download']);
+
+    // Appointing Authority
+    Route::get('/deliberation/{vacancy}/appointing-authority', [AppointingAuthorityController::class, 'index']);
+    Route::patch('/deliberation/{vacancy}/appointing-authority/decide', [AppointingAuthorityController::class, 'decide']);
+
+    // CS Forms (accessible by all hrmpsb members including appointing-authority)
+    Route::get('/applications/{application}/forms', [CsFormController::class, 'index']);
+    Route::post('/applications/{application}/forms', [CsFormController::class, 'generate']);
+    Route::get('/forms/{csForm}/download', [CsFormController::class, 'download']);
+    Route::patch('/forms/{csForm}/mark-submitted', [CsFormController::class, 'markSubmitted']);
+    Route::patch('/forms/{csForm}/sign', [CsFormController::class, 'sign']);
 
     // Background Investigation
     Route::get('/background-checks/{vacancy}', [BackgroundCheckController::class, 'index']);

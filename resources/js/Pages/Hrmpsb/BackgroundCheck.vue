@@ -1,6 +1,5 @@
 <template>
   <HrmbsboardLayout title="Background Investigation" :vacancyId="props.vacancyId">
-    <ToastContainer />
     <div class="space-y-4">
 
       <VacancyBanner
@@ -10,8 +9,27 @@
         :loading="loading"
       />
 
-      <div v-if="error" class="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
+      <div v-if="error &amp;&amp; !lockError" class="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
         {{ error }}
+      </div>
+
+      <!-- Lock banner -->
+      <div v-if="locked" class="flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl px-4 py-3">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        Background investigation has been locked. No further actions are allowed.
+      </div>
+
+      <!-- Secretariat lock action -->
+      <div v-if="isSecretariat && !locked" class="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+        <div class="text-sm text-blue-800">
+          <span class="font-semibold">Secretariat view:</span> You can manage investigation links below. Lock when all reports are complete.
+        </div>
+        <button @click="confirmLock" :disabled="locking"
+          class="px-4 py-1.5 text-sm bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg transition-colors disabled:opacity-60">
+          {{ locking ? 'Locking…' : 'Lock Background Check' }}
+        </button>
       </div>
 
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -112,22 +130,25 @@
                 </td>
                 <td class="px-4 py-3 text-center align-top whitespace-nowrap">
                   <button
-                    v-if="isSecretariat && !reportFor(app)"
+                    v-if="isSecretariat && !locked && !reportFor(app)"
                     @click="openGenerateModal(app)"
                     class="text-xs px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
                   >Generate Link</button>
-                  <span v-else-if="isSecretariat && reportFor(app) && !reportFor(app).submitted_at" class="inline-flex items-center gap-1.5">
+                  <span v-else-if="isSecretariat && !locked && reportFor(app) && !reportFor(app).submitted_at" class="inline-flex items-center gap-1.5">
                     <span class="text-xs text-yellow-600">Awaiting submission</span>
                     <button
                       @click="resendLink(reportFor(app))"
-                      :disabled="resending[reportFor(app).id]"
+                      :disabled="resending[reportFor(app).id] || locked"
                       class="text-xs px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 transition"
                     >{{ resending[reportFor(app).id] ? '…' : 'Resend' }}</button>
                     <button
                       @click="revokeLink(reportFor(app))"
-                      :disabled="revoking[reportFor(app).id]"
+                      :disabled="revoking[reportFor(app).id] || locked"
                       class="text-xs px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 transition"
                     >{{ revoking[reportFor(app).id] ? '…' : 'Revoke' }}</button>
+                  </span>
+                  <span v-else-if="reportFor(app) && !reportFor(app).submitted_at" class="text-xs text-gray-400 italic">
+                    Awaiting submission
                   </span>
                 </td>
               </tr>
@@ -173,6 +194,28 @@
         </div>
       </div>
 
+      <!-- Lock confirmation modal -->
+      <div v-if="showLockConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" @click="showLockConfirm = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+          <h3 class="text-base font-semibold text-gray-900 mb-2">Lock Background Investigation?</h3>
+          <p class="text-sm text-gray-500 mb-6">
+            This will permanently lock the background investigation stage and update applicant statuses. This action <strong>cannot be undone</strong>.
+          </p>
+          <p v-if="lockError" class="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            {{ lockError }}
+          </p>
+          <div class="flex justify-end gap-3">
+            <button @click="showLockConfirm = false"
+              class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
+            <button @click="doLock" :disabled="locking"
+              class="px-4 py-2 text-sm bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 disabled:opacity-60">
+              {{ locking ? 'Locking…' : 'Confirm Lock' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="flex justify-between pt-2">
         <a :href="`/hrmpsb/eopt/${vacancyId}`" class="btn-secondary">← EOPT Assessment</a>
         <a :href="`/hrmpsb/deliberation/${vacancyId}`" class="btn-primary">Deliberation →</a>
@@ -185,7 +228,6 @@
 import { ref, reactive, onMounted } from 'vue'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
-import ToastContainer from '@/Components/UI/ToastContainer.vue'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 import api from '@/services/api'
@@ -201,6 +243,10 @@ const error = ref(null)
 const vacancy = ref(null)
 const applications = ref([])
 const isSecretariat = ref(false)
+const locked = ref(false)
+const locking = ref(false)
+const showLockConfirm = ref(false)
+const lockError = ref(null)
 
 const expanded = reactive({})
 
@@ -312,10 +358,33 @@ async function load() {
     vacancy.value = data.vacancy
     applications.value = data.applications
     isSecretariat.value = data.is_secretariat
+    locked.value = data.locked ?? false
   } catch (e) {
     error.value = e.response?.data?.message ?? 'Failed to load data.'
   } finally {
     loading.value = false
+  }
+}
+
+function confirmLock() {
+  lockError.value = null
+  showLockConfirm.value = true
+}
+
+async function doLock() {
+  locking.value = true
+  lockError.value = null
+  try {
+    await api.patch(`/background-checks/${props.vacancyId}/lock`)
+    showLockConfirm.value = false
+    toast.success('Background investigation locked successfully.')
+    await load()
+  } catch (e) {
+    const msg = e.response?.data?.message ?? 'Failed to lock background investigation. Please try again.'
+    lockError.value = msg
+    toast.error(msg)
+  } finally {
+    locking.value = false
   }
 }
 

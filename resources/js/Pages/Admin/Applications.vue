@@ -845,28 +845,6 @@
     </Teleport>
 
     <!-- ── Toast (top-right) ─────────────────────────────────────────────────── -->
-    <Teleport to="body">
-      <Transition enter-active-class="transition ease-out duration-300"
-                  enter-from-class="opacity-0 translate-x-4"
-                  enter-to-class="opacity-100 translate-x-0"
-                  leave-active-class="transition ease-in duration-200"
-                  leave-from-class="opacity-100 translate-x-0"
-                  leave-to-class="opacity-0 translate-x-4">
-        <div v-if="toast.show"
-          class="fixed top-4 right-4 z-[9999] min-w-[280px] max-w-sm px-4 py-3 rounded-xl shadow-lg border flex items-start gap-3 pointer-events-auto"
-          :class="toast.type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
-          <svg v-if="toast.type === 'success'" class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          <svg v-else class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
-          </svg>
-          <p class="text-sm flex-1 leading-snug" :class="toast.type === 'success' ? 'text-green-800' : 'text-red-800'">{{ toast.message }}</p>
-          <button @click="toast.show = false" class="flex-shrink-0 text-current opacity-40 hover:opacity-70">&times;</button>
-        </div>
-      </Transition>
-    </Teleport>
-
   </AdminLayout>
 </template>
 
@@ -879,8 +857,10 @@ import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import AttachmentsModal from './Applications/AttachmentsModal.vue'
 import CredentialsDrawer from './Applications/CredentialsDrawer.vue'
 import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 
 const { alert } = useConfirm()
+const toast = useToast()
 
 // ── State ─────────────────────────────────────────────────────────────────────
 const view               = ref('list')
@@ -909,17 +889,6 @@ const batchSaving        = ref(false)
 const batchProgress      = ref(0)
 const batchTotal         = ref(0)
 const batchError         = ref('')
-const toast             = reactive({ show: false, type: 'success', message: '' })
-let toastTimer          = null
-
-function showToast(type, message) {
-  toast.show = false
-  clearTimeout(toastTimer)
-  toast.type    = type
-  toast.message = message
-  toast.show    = true
-  toastTimer    = setTimeout(() => { toast.show = false }, 4000)
-}
 
 const sortState    = reactive({ field: '', direction: 'asc' })
 const filters      = reactive({ search: '', status: '', page: 1 })
@@ -1250,7 +1219,7 @@ async function doBatchUpdate() {
     batchError.value = `${failed} application${failed !== 1 ? 's' : ''} could not be updated.`
     return
   }
-  showToast('success', `Status updated to "${batchForm.status.replace(/_/g, ' ')}" for ${selectedIds.size} applicant${selectedIds.size !== 1 ? 's' : ''}.`)
+  toast.success(`Status updated to "${batchForm.status.replace(/_/g, ' ')}" for ${selectedIds.size} applicant${selectedIds.size !== 1 ? 's' : ''}.`)
   batchUpdateOpen.value = false
   clearSelection()
   await fetchApplications()
@@ -1385,12 +1354,12 @@ async function doUpdateStatus() {
       }
     }
 
-    showToast('success', `Status updated to "${statusForm.status.replace(/_/g, ' ')}" for ${formatApplicantName(updateTarget.value)}.`)
+    toast.success(`Status updated to "${statusForm.status.replace(/_/g, ' ')}" for ${formatApplicantName(updateTarget.value)}.`)
     updateTarget.value = null
     await fetchApplications()
     await fetchVacancies()
   } catch (e) {
-    showToast('error', e.response?.data?.message ?? 'Failed to update status.')
+    toast.error(e.response?.data?.message ?? 'Failed to update status.')
   } finally {
     saving.value = false
   }
