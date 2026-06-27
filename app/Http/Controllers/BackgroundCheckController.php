@@ -38,7 +38,7 @@ class BackgroundCheckController extends Controller
 
         $applications = Application::where('vacancy_id', $vacancy->id)
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
-            ->with(['applicant:id,first_name,last_name,middle_name', 'backgroundChecks'])
+            ->with(['applicant:id,user_id', 'applicant.user:id,first_name,last_name,middle_name,suffix', 'backgroundChecks'])
             ->orderBy('id')
             ->get();
 
@@ -54,7 +54,7 @@ class BackgroundCheckController extends Controller
 
             if ($isSecretariat) {
                 $app->all_checks = $app->backgroundChecks
-                    ->load('checkedBy:id,name');
+                    ->load('checkedBy:id,first_name,last_name,middle_name,suffix');
             }
         });
 

@@ -26,6 +26,30 @@
         </div>
       </div>
 
+      <!-- Search + sort toolbar -->
+      <div class="flex flex-wrap gap-2 mb-4">
+        <div class="relative flex-1 min-w-48">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input v-model="search" type="text" placeholder="Search by position title…"
+            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" />
+        </div>
+        <select v-model="sortBy"
+          class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="status">By Status</option>
+        </select>
+        <button v-if="search" @click="search = ''"
+          class="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors px-2">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          Clear
+        </button>
+      </div>
+
       <!-- Status filter pills -->
       <div class="flex flex-wrap gap-1.5 mb-6">
         <button v-for="tab in statusTabs" :key="tab.value"
@@ -61,7 +85,8 @@
       <!-- Application cards -->
       <div v-else-if="filteredApplications.length" class="space-y-4">
         <div v-for="app in filteredApplications" :key="app.id"
-          class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:border-[#2a338f]/30 hover:shadow-md transition-all">
+          class="bg-white rounded-xl border border-gray-200 border-l-4 shadow-sm overflow-hidden hover:shadow-md transition-all"
+          :class="borderClass(app.status)">
 
           <!-- Card header -->
           <div class="p-5 flex items-start gap-4">
@@ -79,8 +104,13 @@
             <div class="flex-1 min-w-0">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
-                  <p class="text-base font-semibold text-gray-900 leading-snug truncate">
-                    {{ app.vacancy?.position_title ?? 'Unknown Position' }}
+                  <p class="text-base font-semibold text-gray-900 leading-snug flex items-center gap-2 flex-wrap">
+                    <span class="truncate">{{ app.vacancy?.position_title ?? 'Unknown Position' }}</span>
+                    <span v-if="app.remarks"
+                      class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-semibold rounded-full flex-shrink-0">
+                      <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
+                      HR Note
+                    </span>
                   </p>
                   <p class="text-sm text-gray-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
                     <span>{{ app.vacancy?.place_of_assignment ?? '' }}</span>
@@ -303,6 +333,8 @@ const activeStatus   = ref('all')
 const withdrawTarget  = ref(null)
 const withdrawing     = ref(false)
 const withdrawReason  = ref('')
+const search          = ref('')
+const sortBy          = ref('newest')
 
 watch(activeStatus, () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -402,7 +434,6 @@ const statusTabs = computed(() => {
 })
 
 const filteredApplications = computed(() => {
-  const list = applications.value
   const groupMap = {
     all:          null,
     in_progress:  ['submitted', 'under_review', 'screened', 'qualified'],
@@ -413,7 +444,21 @@ const filteredApplications = computed(() => {
     withdrawn:    ['withdrawn'],
   }
   const group = groupMap[activeStatus.value]
-  return group ? list.filter(a => group.includes(a.status)) : list
+  let list = group ? applications.value.filter(a => group.includes(a.status)) : [...applications.value]
+
+  if (search.value.trim()) {
+    const q = search.value.toLowerCase()
+    list = list.filter(a => a.vacancy?.position_title?.toLowerCase().includes(q))
+  }
+
+  if (sortBy.value === 'oldest')
+    list = [...list].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+  else if (sortBy.value === 'newest')
+    list = [...list].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  else if (sortBy.value === 'status')
+    list = [...list].sort((a, b) => a.status.localeCompare(b.status))
+
+  return list
 })
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -458,6 +503,26 @@ function statusIcon(status) {
   return map[status] ?? { bg: 'bg-gray-50', color: 'text-gray-400', path: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' }
 }
 
+function borderClass(status) {
+  const map = {
+    submitted:      'border-l-amber-400',
+    under_review:   'border-l-purple-400',
+    screened:       'border-l-sky-400',
+    qualified:      'border-l-teal-400',
+    exam_scheduled: 'border-l-orange-400',
+    shortlisted:    'border-l-indigo-400',
+    for_interview:  'border-l-violet-400',
+    interviewed:    'border-l-green-400',
+    recommended:    'border-l-lime-500',
+    appointed:      'border-l-[#2a338f]',
+    completed:      'border-l-green-500',
+    withdrawn:      'border-l-gray-300',
+    failed:         'border-l-red-400',
+    disqualified:   'border-l-red-500',
+  }
+  return map[status] ?? 'border-l-gray-200'
+}
+
 function formatDate(iso) {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -478,8 +543,8 @@ async function doWithdraw() {
   withdrawing.value = true
   try {
     await axios.patch(
-      `/api/applications/${withdrawTarget.value.id}/status`,
-      { status: 'withdrawn', remarks: withdrawReason.value || null },
+      `/api/applications/${withdrawTarget.value.id}/withdraw`,
+      { remarks: withdrawReason.value || null },
       { headers: authHeaders() },
     )
     toast.success('Application withdrawn successfully.')

@@ -11,20 +11,36 @@ class ApplicantProfile extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'user_id', 'photo_path', 'first_name', 'last_name', 'middle_name',
+        'user_id', 'photo_path',
         'gender', 'civil_status', 'birthday', 'religion',
         'address',
         'region', 'province', 'city_municipality', 'barangay',
         'mobile_number', 'eligibility', 'eligibility_other',
         'indigenous_group', 'pwd', 'solo_parent',
-        'pds_path', 'app_letter_path', 'ipcr_path', 'coe_path', 'tor_path',
+        'pds_path', 'pds_uploaded_at',
+        'app_letter_path', 'app_letter_uploaded_at',
+        'ipcr_path', 'ipcr_uploaded_at',
+        'coe_path', 'coe_uploaded_at',
+        'tor_path', 'tor_uploaded_at',
         'profile_completed_at',
     ];
 
+    protected $appends = ['first_name', 'last_name', 'middle_name', 'suffix'];
+
     protected $casts = [
-        'birthday'             => 'date',
-        'profile_completed_at' => 'datetime',
+        'birthday'               => 'date',
+        'profile_completed_at'   => 'datetime',
+        'pds_uploaded_at'        => 'datetime',
+        'app_letter_uploaded_at' => 'datetime',
+        'ipcr_uploaded_at'       => 'datetime',
+        'coe_uploaded_at'        => 'datetime',
+        'tor_uploaded_at'        => 'datetime',
     ];
+
+    public function getFirstNameAttribute(): ?string { return $this->user?->first_name; }
+    public function getLastNameAttribute(): ?string  { return $this->user?->last_name; }
+    public function getMiddleNameAttribute(): ?string { return $this->user?->middle_name; }
+    public function getSuffixAttribute(): ?string    { return $this->user?->suffix; }
 
     public function user(): BelongsTo
     {

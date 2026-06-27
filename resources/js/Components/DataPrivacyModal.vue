@@ -5,10 +5,10 @@
 
       <!-- Step 1: Image Privacy Notice -->
       <div v-if="step === 1"
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden animate-fade-in">
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden animate-fade-in max-h-[92vh]">
 
         <!-- Header -->
-        <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100" style="background-color: #2a338f;">
+        <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100 flex-shrink-0" style="background-color: #2a338f;">
           <img src="/images/csc-logo.png" alt="CSC Logo" class="h-9 w-9 object-contain flex-shrink-0"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
           <div class="w-9 h-9 rounded-lg bg-white/15 items-center justify-center flex-shrink-0 hidden">
@@ -23,11 +23,12 @@
         </div>
 
         <!-- Image area -->
-        <div class="flex-1 flex flex-col items-center justify-center p-6">
+        <div class="flex-1 overflow-y-auto flex flex-col items-center justify-center p-6">
           <img
             src="/images/privacy-notice.jpg"
             alt="CSC Data Privacy Notice"
-            class="w-full rounded-xl object-contain max-h-80"
+            class="w-full rounded-xl object-contain border-2 border-[#2a338f]"
+            style="max-height: 65vh;"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
 
           <!-- Fallback when image is not yet provided -->
@@ -175,21 +176,37 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
-const STORAGE_KEY = 'csc_privacy_accepted_v1'
+const STORAGE_KEY = 'dp_accepted_v1'
 
 const visible = ref(false)
 const step    = ref(1)
 
 onMounted(() => {
-  if (!localStorage.getItem(STORAGE_KEY)) {
+  if (!sessionStorage.getItem(STORAGE_KEY)) {
     visible.value = true
   }
+  window.addEventListener('keydown', onKey)
 })
 
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKey)
+})
+
+function onKey(e) {
+  if (!visible.value) return
+  if (e.key !== 'Enter' && e.key !== ' ') return
+  e.preventDefault()
+  if (step.value === 1) {
+    step.value = 2
+  } else {
+    accept()
+  }
+}
+
 function accept() {
-  localStorage.setItem(STORAGE_KEY, new Date().toISOString())
+  sessionStorage.setItem(STORAGE_KEY, '1')
   visible.value = false
 }
 </script>

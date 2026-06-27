@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\Vacancy;
 use App\Notifications\ApplicationStatusUpdated;
+use App\Notifications\ApplicationSubmitted;
+use App\Notifications\ShortlistResult;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Services\AuditLog;
@@ -72,6 +74,8 @@ class ApplicationController extends Controller
             'submitted_at' => now(),
         ]);
 
+        $request->user()->notify(new ApplicationSubmitted($application->load('vacancy')));
+
         return response()->json($application->load('vacancy'), 201);
     }
 
@@ -86,8 +90,8 @@ class ApplicationController extends Controller
     {
         $query = Application::with([
             'vacancy:id,position_title,place_of_assignment,salary_grade',
-            'applicant:id,user_id,first_name,last_name,middle_name,mobile_number,gender,civil_status,birthday',
-            'applicant.user:id,name,email',
+            'applicant:id,user_id,mobile_number,gender,civil_status,birthday',
+            'applicant.user:id,first_name,last_name,middle_name,suffix,email',
         ]);
 
         if ($request->filled('vacancy_id')) {
@@ -97,7 +101,7 @@ class ApplicationController extends Controller
         if ($request->filled('search')) {
             $q = $request->search;
             $query->where(function ($sub) use ($q) {
-                $sub->whereHas('applicant.user', fn ($u) => $u->where('name', 'like', "%{$q}%")
+                $sub->whereHas('applicant.user', fn ($u) => $u->where(DB::raw("CONCAT(first_name, ' ', last_name)"), 'like', "%{$q}%")
                     ->orWhere('email', 'like', "%{$q}%"));
             });
         }
@@ -172,6 +176,27 @@ class ApplicationController extends Controller
         return Storage::disk('public')->response($path);
     }
 
+    public function withdraw(Request $request, Application $application): JsonResponse
+    {
+        $user    = $request->user();
+        $profile = $user->applicantProfile;
+
+        if (!$profile || $application->applicant_id !== $profile->id) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        $nonWithdrawable = ['withdrawn', 'passed', 'failed', 'appointed', 'completed'];
+        if (in_array($application->status, $nonWithdrawable)) {
+            return response()->json(['message' => 'This application can no longer be withdrawn.'], 422);
+        }
+
+        $oldStatus = $application->status;
+        $application->update(['status' => 'withdrawn', 'reviewed_at' => now()]);
+        AuditLog::record("application_status_changed:{$oldStatus}→withdrawn", $application);
+
+        return response()->json(['message' => 'Application withdrawn successfully.', 'data' => $application->fresh()]);
+    }
+
     public function updateStatus(Request $request, Application $application): JsonResponse
     {
         $request->validate([
@@ -196,6 +221,12 @@ class ApplicationController extends Controller
         $applicantUser = $application->applicant?->user;
         if ($applicantUser) {
             $applicantUser->notify(new ApplicationStatusUpdated($application, $oldStatus, $request->status));
+
+            if ($request->status === 'shortlisted') {
+                $applicantUser->notify(new ShortlistResult($application, true));
+            } elseif ($request->status === 'disqualified') {
+                $applicantUser->notify(new ShortlistResult($application, false));
+            }
         }
 
         return response()->json([

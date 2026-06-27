@@ -43,7 +43,7 @@ class BeiRatingController extends Controller
 
         $applications = Application::where('vacancy_id', $vacancy->id)
             ->with('anonymizationToken')
-            ->with('applicant')
+            ->with('applicant.user')
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
             ->get()
             ->map(function ($app) use ($user, $isSecretariat) {
@@ -77,10 +77,10 @@ class BeiRatingController extends Controller
 
                 if ($isSecretariat) {
                     $base['all_ratings'] = BeiRating::where('application_id', $app->id)
-                        ->with('evaluator:id,name')
+                        ->with('evaluator:id,first_name,last_name,middle_name,suffix')
                         ->get()
                         ->map(fn ($r) => [
-                            'evaluator'         => $r->evaluator?->name,
+                            'evaluator'         => $r->evaluator?->full_name,
                             'competency_scores' => $r->competency_scores,
                             'total_rating'      => $r->total_rating,
                             'locked'            => $r->isLocked(),

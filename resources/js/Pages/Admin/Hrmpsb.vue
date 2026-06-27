@@ -36,7 +36,7 @@
           <tr v-for="c in compositions" :key="c.id" class="hover:bg-gray-50 transition-colors"
             :class="{ 'opacity-50': !c.is_active }">
             <td class="px-5 py-3.5">
-              <div class="font-medium text-gray-900">{{ c.user?.name }}</div>
+              <div class="font-medium text-gray-900">{{ c.user?.full_name }}</div>
               <div class="text-xs text-gray-400">{{ c.user?.email }}</div>
             </td>
             <td class="px-5 py-3.5 text-gray-700">{{ roles[c.hrmpsb_role] ?? c.hrmpsb_role }}</td>
@@ -53,7 +53,7 @@
                 {{ c.is_active ? 'Active' : 'Inactive' }}
               </button>
             </td>
-            <td class="px-5 py-3.5 text-xs text-gray-500">{{ c.assigned_by?.name ?? '—' }}</td>
+            <td class="px-5 py-3.5 text-xs text-gray-500">{{ c.assigned_by?.full_name ?? '—' }}</td>
             <td class="px-5 py-3.5">
               <div class="flex items-center justify-end gap-2">
                 <button @click="toggleType(c)"
@@ -106,7 +106,7 @@
             <select v-model="assignForm.user_id" required
               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
               <option value="">Select user…</option>
-              <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ u.name }}</option>
+              <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ u.full_name }}</option>
             </select>
             <p class="mt-1 text-xs text-gray-400">Only users with the HRMPSB system role are shown. Assign their system role first in Admin → Users.</p>
           </div>
@@ -226,7 +226,7 @@ async function toggleActive(c) {
 }
 
 async function removeMember(c) {
-  const ok = await confirm(`Remove ${c.user?.name} from the HRMPSB?`)
+  const ok = await confirm(`Remove ${c.user?.full_name} from the HRMPSB?`)
   if (!ok) return
   await axios.delete(`/api/admin/hrmpsb/compositions/${c.id}`, { headers: authHeaders() })
   loadCompositions()

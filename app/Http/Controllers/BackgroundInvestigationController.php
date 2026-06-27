@@ -52,7 +52,7 @@ class BackgroundInvestigationController extends Controller
 
         $applications = Application::where('vacancy_id', $vacancy->id)
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
-            ->with(['applicant:id,first_name,last_name,middle_name', 'backgroundInvestigationReports'])
+            ->with(['applicant:id,user_id', 'applicant.user:id,first_name,last_name,middle_name,suffix', 'backgroundInvestigationReports'])
             ->orderBy('id')
             ->get();
 
@@ -85,7 +85,7 @@ public function generateLink(Request $request): JsonResponse
                 'investigator_email'=> 'required|email|max:255',
             ]);
 
-        $application = Application::with('applicant', 'vacancy')->findOrFail($data['application_id']);
+        $application = Application::with('applicant.user', 'vacancy')->findOrFail($data['application_id']);
 
         $existing = BackgroundInvestigationReport::where('application_id', $application->id)
             ->whereNull('submitted_at')
@@ -149,7 +149,7 @@ public function resendLink(Request $request, BackgroundInvestigationReport $repo
             'token_expires_at' => now()->addDays(30),
         ]);
 
-        $application = $report->application()->with('applicant', 'vacancy')->first();
+        $application = $report->application()->with('applicant.user', 'vacancy')->first();
 
         $profile = $application->applicant;
         $mi = $profile->middle_name
@@ -192,7 +192,7 @@ public function revokeLink(Request $request, BackgroundInvestigationReport $repo
 
     public function showUploadForm(string $token): Response|JsonResponse
     {
-        $report = BackgroundInvestigationReport::with('application.applicant', 'application.vacancy')
+        $report = BackgroundInvestigationReport::with('application.applicant.user', 'application.vacancy')
             ->where('token', $token)
             ->first();
 

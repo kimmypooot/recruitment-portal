@@ -3,8 +3,8 @@
     <div class="space-y-6">
 
       <!-- Board role banner -->
-      <div v-if="myRole" class="bg-[#1a5276]/5 border border-[#1a5276]/20 rounded-xl p-5 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-[#1a5276] flex items-center justify-center text-white font-bold text-base flex-shrink-0">
+      <div v-if="myRole" class="bg-[#2a338f]/5 border border-[#2a338f]/20 rounded-xl p-5 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-[#2a338f] flex items-center justify-center text-white font-bold text-base flex-shrink-0">
           {{ initials }}
         </div>
         <div class="flex-1 min-w-0">
@@ -85,7 +85,7 @@
             <!-- Header row -->
             <div class="flex items-start gap-4">
               <!-- SG badge -->
-              <div class="w-10 h-10 rounded-lg bg-[#1a5276] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+              <div class="w-10 h-10 rounded-lg bg-[#2a338f] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                 SG-{{ v.salary_grade }}
               </div>
 
@@ -111,14 +111,14 @@
               <!-- Actions dropdown -->
               <div class="relative flex-shrink-0 flex items-center gap-2" v-if="stages[v.id]">
                 <a :href="`/hrmpsb/applicants/${v.id}`"
-                  class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors border border-[#1a5276] text-[#1a5276] hover:bg-[#1a5276]/5">
+                  class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors border border-[#2a338f] text-[#2a338f] hover:bg-[#2a338f]/5">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
                   Applicants & Docs
                 </a>
                 <button @click.stop="toggleOpen(v.id)"
-                  class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-[#1a5276] text-white hover:bg-[#154360]">
+                  class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-[#2a338f] text-white hover:bg-[#1e2570]">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/>
                   </svg>
@@ -216,7 +216,7 @@ const steps = [
 
 /* ── Computed ────────────────────────────────────────────────────────────── */
 const initials = computed(() => {
-  const name = myRole.value?.user?.name ?? authUser?.name ?? ''
+  const name = myRole.value?.user?.full_name ?? authUser?.full_name ?? ''
   return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?'
 })
 
@@ -273,13 +273,13 @@ function lastCompletedIdx(vacancyId) {
 function phaseMeterClass(step, idx, vacancyId) {
   const last = lastCompletedIdx(vacancyId)
   if (idx < last) return 'bg-green-400'
-  if (idx === last) return 'bg-[#1a5276]'
+  if (idx === last) return 'bg-[#2a338f]'
   return 'bg-gray-200'
 }
 
 function phaseLabelClass(step, idx, vacancyId) {
   const last = lastCompletedIdx(vacancyId)
-  if (idx === last) return 'text-[#1a5276] font-semibold'
+  if (idx === last) return 'text-[#2a338f] font-semibold'
   if (idx < last) return 'text-green-600'
   return 'text-gray-300'
 }
@@ -506,22 +506,27 @@ function authHeaders() {
 }
 
 function currentStageBadge(s) {
-  if (s.appointing_authority_exists) return { label: 'Awaiting Appointing Authority', class: 'bg-rose-100 text-rose-700',    dot: 'bg-rose-500' }
-  if (s.deliberation_exists)       return { label: 'Deliberation Done',           class: 'bg-indigo-100 text-indigo-700', dot: 'bg-indigo-500' }
-  if (s.background_check_locked)   return { label: 'Awaiting Deliberation',       class: 'bg-violet-100 text-violet-700', dot: 'bg-violet-500' }
-  if (s.background_check_exists)   return { label: 'BG Check In Progress',       class: 'bg-purple-100 text-purple-700', dot: 'bg-purple-500 animate-pulse' }
-  if (s.eopt_exists)               return { label: 'EOPT Rated',                  class: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' }
-  if (s.bei_locked)                return { label: 'Awaiting EOPT',               class: 'bg-fuchsia-100 text-fuchsia-700', dot: 'bg-fuchsia-500' }
-  if (s.bei_exists)                return { label: 'BEI In Progress',             class: 'bg-blue-100 text-blue-700',    dot: 'bg-blue-500 animate-pulse' }
-  if (s.bei_scheduled)             return { label: 'BEI Scheduled',               class: 'bg-sky-100 text-sky-700',      dot: 'bg-sky-500' }
-  if (s.cbwe_locked)               return { label: 'CBWE Locked',                 class: 'bg-orange-100 text-orange-700',dot: 'bg-orange-500' }
-  if (s.cbwe_exists)               return { label: 'CBWE In Progress',            class: 'bg-amber-100 text-amber-700',  dot: 'bg-amber-500 animate-pulse' }
-  if (s.twe_exists)                return { label: 'TWE Completed',               class: 'bg-teal-100 text-teal-700',    dot: 'bg-teal-500' }
-  if (s.twe_scheduled)             return { label: 'TWE Scheduled',               class: 'bg-cyan-100 text-cyan-700',    dot: 'bg-cyan-500' }
-  if (s.qs_locked)                 return { label: 'QS Locked',                   class: 'bg-amber-100 text-amber-700',  dot: 'bg-amber-500' }
-  if (s.qs_exists)                 return { label: 'QS In Progress',              class: 'bg-yellow-100 text-yellow-700',dot: 'bg-yellow-500 animate-pulse' }
-  if (s.pre_assessment_exists)     return { label: 'Pre-Assessed',                class: 'bg-slate-100 text-slate-700',  dot: 'bg-slate-500' }
-  return                                  { label: 'Not Started',                  class: 'bg-gray-100 text-gray-500',    dot: 'bg-gray-400' }
+  const inProgress = { class: 'bg-blue-100 text-blue-700',   dot: 'bg-blue-500 animate-pulse' }
+  const scheduled  = { class: 'bg-[#2a338f]/10 text-[#2a338f]', dot: 'bg-[#2a338f]' }
+  const awaiting   = { class: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' }
+  const done       = { class: 'bg-green-100 text-green-700', dot: 'bg-green-500' }
+
+  if (s.appointing_authority_exists) return { label: 'Awaiting Appointment',   ...{ class: 'bg-red-100 text-red-700', dot: 'bg-red-500' } }
+  if (s.deliberation_exists)         return { label: 'Deliberation Done',       ...done }
+  if (s.background_check_locked)     return { label: 'Awaiting Deliberation',   ...awaiting }
+  if (s.background_check_exists)     return { label: 'BG Check In Progress',    ...inProgress }
+  if (s.eopt_exists)                 return { label: 'EOPT Rated',              ...awaiting }
+  if (s.bei_locked)                  return { label: 'Awaiting EOPT',           ...awaiting }
+  if (s.bei_exists)                  return { label: 'BEI In Progress',         ...inProgress }
+  if (s.bei_scheduled)               return { label: 'BEI Scheduled',           ...scheduled }
+  if (s.cbwe_locked)                 return { label: 'CBWE Locked',             ...awaiting }
+  if (s.cbwe_exists)                 return { label: 'CBWE In Progress',        ...inProgress }
+  if (s.twe_exists)                  return { label: 'TWE Completed',           ...done }
+  if (s.twe_scheduled)               return { label: 'TWE Scheduled',           ...scheduled }
+  if (s.qs_locked)                   return { label: 'QS Locked',               ...done }
+  if (s.qs_exists)                   return { label: 'QS In Progress',          ...inProgress }
+  if (s.pre_assessment_exists)       return { label: 'Pre-Assessed',            ...awaiting }
+  return                                    { label: 'Not Started',              class: 'bg-gray-100 text-gray-500', dot: 'bg-gray-400' }
 }
 
 /* ── Auto-refresh ─────────────────────────────────────────────────────────── */

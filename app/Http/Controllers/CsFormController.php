@@ -16,13 +16,13 @@ class CsFormController extends Controller
     public function index(Application $application): JsonResponse
     {
         $forms = CsForm::where('application_id', $application->id)
-            ->with('generatedBy:id,name')
+            ->with('generatedBy:id,first_name,last_name,middle_name,suffix')
             ->get()
             ->map(fn ($f) => [
                 'id'                  => $f->id,
                 'form_type'           => $f->form_type,
                 'form_label'          => CsForm::TYPES[$f->form_type] ?? $f->form_type,
-                'generated_by'        => $f->generatedBy?->name,
+                'generated_by'        => $f->generatedBy?->full_name,
                 'generated_at'        => $f->generated_at,
                 'signed_at'           => $f->signed_at,
                 'submitted_to_csc_at' => $f->submitted_to_csc_at,
@@ -76,7 +76,7 @@ class CsFormController extends Controller
             ], 422);
         }
 
-        $success = $pnpki->sign($csForm, $request->user()->name);
+        $success = $pnpki->sign($csForm, $request->user()->full_name);
 
         return response()->json([
             'message' => $success ? 'Form signed successfully.' : 'Signing failed.',

@@ -43,7 +43,7 @@ class ExamResultController extends Controller
         $passingThreshold = 70.0;
 
         $applications = Application::where('vacancy_id', $vacancy->id)
-            ->with(['anonymizationToken', 'examResults', 'applicant:id,first_name,last_name,middle_name'])
+            ->with(['anonymizationToken', 'examResults', 'applicant:id,user_id', 'applicant.user:id,first_name,last_name,middle_name,suffix'])
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
             ->orderBy('id')
             ->get()

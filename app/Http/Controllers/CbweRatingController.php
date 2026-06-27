@@ -44,7 +44,7 @@ class CbweRatingController extends Controller
         // Load applications that passed QS (status: qualified, exam_scheduled, etc.)
         $applications = Application::where('vacancy_id', $vacancy->id)
             ->with('anonymizationToken')
-            ->with('applicant')
+            ->with('applicant.user')
             ->whereNotIn('status', ['withdrawn', 'disqualified', 'submitted', 'under_review'])
             ->get()
             ->map(function ($app) use ($user, $isSecretariat) {
@@ -61,10 +61,10 @@ class CbweRatingController extends Controller
 
                 if ($isSecretariat) {
                     $base['all_ratings'] = CbweRating::where('application_id', $app->id)
-                        ->with('evaluator:id,name')
+                        ->with('evaluator:id,first_name,last_name,middle_name,suffix')
                         ->get()
                         ->map(fn ($r) => [
-                            'evaluator'         => $r->evaluator?->name,
+                            'evaluator'         => $r->evaluator?->full_name,
                             'competency_scores' => $r->competency_scores,
                             'total_rating'      => $r->total_rating,
                             'locked'            => $r->isLocked(),

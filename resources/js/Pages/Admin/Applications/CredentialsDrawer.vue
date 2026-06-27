@@ -156,8 +156,8 @@ const props = defineProps({
 defineEmits(['close'])
 
 const initials = computed(() => {
-  const name = props.app?.applicant?.user?.name
-  return name?.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase() ?? '?'
+  const user = props.app?.applicant?.user
+  return user ? ((user.first_name?.[0] ?? '') + (user.last_name?.[0] ?? '')).toUpperCase() : '?'
 })
 
 const applicantName = computed(() => {
@@ -167,6 +167,6 @@ const applicantName = computed(() => {
     const middle = p.middle_name ? ' ' + p.middle_name : ''
     return `${p.last_name}, ${p.first_name}${middle}`
   }
-  return p?.user?.name ?? '—'
+  return p?.user?.full_name ?? '—'
 })
 </script>

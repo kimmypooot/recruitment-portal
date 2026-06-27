@@ -36,8 +36,8 @@ class DashboardController extends Controller
     {
         $applications = Application::with([
             'vacancy:id,position_title,place_of_assignment',
-            'applicant:id,user_id,first_name,last_name,middle_name',
-            'applicant.user:id,name',
+            'applicant:id,user_id',
+            'applicant.user:id,first_name,last_name,middle_name,suffix',
         ])
             ->latest()
             ->limit(10)
@@ -59,7 +59,7 @@ class DashboardController extends Controller
     {
         $exams = ExamSchedule::with([
             'application.vacancy:id,position_title,place_of_assignment',
-            'application.applicant.user:id,name',
+            'application.applicant.user:id,first_name,last_name,middle_name,suffix',
         ])
         ->where('scheduled_at', '>=', now())
         ->orderBy('scheduled_at')
@@ -68,7 +68,7 @@ class DashboardController extends Controller
 
         $interviews = InterviewSchedule::with([
             'application.vacancy:id,position_title,place_of_assignment',
-            'application.applicant.user:id,name',
+            'application.applicant.user:id,first_name,last_name,middle_name,suffix',
         ])
         ->where('scheduled_at', '>=', now())
         ->orderBy('scheduled_at')

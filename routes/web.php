@@ -46,7 +46,8 @@ Route::get('/profile/documents/{path}', [ProfileController::class, 'serveDocumen
 Route::get('/profile/photo', [ProfileController::class, 'servePhoto']);
 
 Route::get('/auth/google', [AuthController::class, 'googleRedirect']);
-Route::get('/auth/google/callback', [AuthController::class, 'googleCallback']);
+Route::get('/auth/google/callback', [AuthController::class, 'googleCallback'])
+    ->middleware('throttle:5,1');
 Route::get('/auth/google/callback-handler', fn () => Inertia::render('Auth/GoogleCallback'))
     ->name('auth.google.callback-handler');
 
@@ -68,6 +69,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/reports', fn () => Inertia::render('Admin/Reports'));
     Route::get('/compliance', fn () => Inertia::render('Admin/Compliance'));
     Route::get('/competencies', fn () => Inertia::render('Admin/Competencies'));
+    Route::get('/feedbacks', fn () => Inertia::render('Admin/Feedbacks'));
 });
 
 // HRMPSB evaluation pages — auth enforced by API routes and client-side guards

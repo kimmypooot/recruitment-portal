@@ -5,7 +5,7 @@
   <!-- Banner -->
   <div v-else-if="vacancy" class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
     <!-- Accent bar -->
-    <div class="h-1.5 w-full" style="background: linear-gradient(90deg, #1a5276 0%, #2980b9 100%)" />
+    <div class="h-1.5 w-full" style="background: linear-gradient(90deg, #2a338f 0%, #2980b9 100%)" />
 
     <div class="px-6 py-5">
       <!-- Stage badge + vacancy status -->

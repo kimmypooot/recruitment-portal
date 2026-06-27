@@ -32,7 +32,7 @@ class InterviewScheduled extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->subject("Interview Scheduled — {$this->positionTitle}")
-            ->greeting("Dear {$notifiable->name},")
+            ->greeting("Dear {$notifiable->first_name},")
             ->line("Congratulations on passing the written exam! You are invited to a **Behavioral Event Interview (BEI)** for the position of **{$this->positionTitle}**.")
             ->line('Here are the details of your interview:')
             ->line("- **Date:** {$date}")

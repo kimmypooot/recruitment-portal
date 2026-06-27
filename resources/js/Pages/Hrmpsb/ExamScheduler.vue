@@ -12,13 +12,13 @@
         <div class="mt-4 flex items-center gap-1">
           <a :href="`/hrmpsb/exam-schedule/${props.vacancyId}?exam_type=TWE`"
             class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors"
-            :class="examType === 'TWE' ? 'bg-[#1a5276] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+            :class="examType === 'TWE' ? 'bg-[#2a338f] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
             TWE — Technical Written Exam
           </a>
 
         </div>
         <div class="mt-4 flex items-center gap-2 text-xs text-gray-500">
-          <svg class="w-4 h-4 text-[#1a5276] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg class="w-4 h-4 text-[#2a338f] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
           Schedule the <strong class="text-gray-700">{{ examTypeLabel }}</strong> for all qualified applicants.
@@ -101,7 +101,7 @@
           @click="formOpen = !formOpen"
           class="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors">
           <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-[#1a5276] flex items-center justify-center flex-shrink-0">
+            <div class="w-8 h-8 rounded-lg bg-[#2a338f] flex items-center justify-center flex-shrink-0">
               <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
               </svg>
@@ -168,7 +168,7 @@
           <div v-if="selected.length > 0"
             class="flex items-center gap-3 flex-wrap">
             <div class="flex items-center gap-2 flex-1 min-w-0">
-              <div class="w-5 h-5 rounded bg-[#1a5276] flex items-center justify-center flex-shrink-0">
+              <div class="w-5 h-5 rounded bg-[#2a338f] flex items-center justify-center flex-shrink-0">
                 <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                 </svg>
@@ -272,7 +272,7 @@
                     :checked="allSelected"
                     :indeterminate="someSelected"
                     @change="toggleAll"
-                    class="rounded border-gray-300 text-[#1a5276] focus:ring-[#1a5276] cursor-pointer"
+                    class="rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f] cursor-pointer"
                   />
                 </th>
                 <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider w-12">#</th>
@@ -289,7 +289,7 @@
                 v-for="(app, idx) in applications"
                 :key="app.id"
                 class="hover:bg-gray-50/50 transition-colors cursor-pointer"
-                :class="isSelected(app.id) ? 'bg-[#1a5276]/5' : ''"
+                :class="isSelected(app.id) ? 'bg-[#2a338f]/5' : ''"
                 @click.prevent="handleRowClick($event, idx)"
               >
                 <!-- Checkbox -->
@@ -298,14 +298,14 @@
                     type="checkbox"
                     :checked="isSelected(app.id)"
                     @click="handleCheckbox($event, idx)"
-                    class="rounded border-gray-300 text-[#1a5276] focus:ring-[#1a5276] cursor-pointer"
+                    class="rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f] cursor-pointer"
                   />
                 </td>
 
                 <td class="px-3 py-4 text-sm text-gray-400 font-medium">{{ idx + 1 }}</td>
 
                 <td class="px-3 py-4">
-                  <span class="text-sm font-bold font-mono text-[#1a5276]">{{ app.token }}</span>
+                  <span class="text-sm font-bold font-mono text-[#2a338f]">{{ app.token }}</span>
                   <span class="block text-[10px] font-medium px-1.5 py-0.5 rounded mt-1 inline-flex bg-gray-100 text-gray-500 capitalize">
                     {{ app.status.replace('_', ' ') }}
                   </span>
@@ -329,7 +329,7 @@
                   <div class="flex items-center justify-end gap-3">
                     <button
                       @click="editSchedule(app.id, examType)"
-                      class="text-[11px] font-semibold text-[#1a5276] hover:underline transition-colors">
+                      class="text-[11px] font-semibold text-[#2a338f] hover:underline transition-colors">
                       {{ getSchedule(app.id, examType) ? 'Edit' : 'Set' }}
                     </button>
                     <button
@@ -637,10 +637,10 @@ onMounted(load)
   @apply block text-xs font-semibold text-gray-600 mb-1.5;
 }
 .input {
-  @apply w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#1a5276] focus:border-transparent outline-none transition;
+  @apply w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-transparent outline-none transition;
 }
 .btn-primary {
-  @apply inline-flex items-center px-5 py-2.5 bg-[#1a5276] text-white text-sm font-semibold rounded-xl hover:bg-[#154360] disabled:opacity-50 transition shadow-sm;
+  @apply inline-flex items-center px-5 py-2.5 bg-[#2a338f] text-white text-sm font-semibold rounded-xl hover:bg-[#1e2570] disabled:opacity-50 transition shadow-sm;
 }
 .btn-secondary {
   @apply inline-flex items-center px-5 py-2.5 border border-gray-300 text-sm font-semibold rounded-xl text-gray-700 hover:bg-gray-50 transition;

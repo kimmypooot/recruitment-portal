@@ -234,7 +234,7 @@ async function submit() {
     localStorage.setItem('auth_user', JSON.stringify(data.user))
     const role = data.user?.role
 
-    preloadName.value    = data.user?.name?.split(' ')[0] ? `${data.user.name.split(' ')[0]}!` : ''
+    preloadName.value    = data.user?.first_name ? `${data.user.first_name}!` : ''
     preloadWelcome.value = true
 
     // Welcome display and destination resolution run in parallel

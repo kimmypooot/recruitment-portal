@@ -161,6 +161,7 @@
         :doc-fields="docFields"
         :doc-files="docFiles"
         :doc-paths="docPaths"
+        :doc-timestamps="docTimestamps"
         :auth-token="authToken"
         :is-complete="isComplete"
         :saving="savingDocs"
@@ -621,6 +622,7 @@ const sortedTrainings = computed(() =>
 
 const docFiles = reactive({})
 const docPaths = reactive({})
+const docTimestamps = reactive({})
 
 const authUser  = ref(JSON.parse(localStorage.getItem('auth_user') ?? '{}'))
 const authToken = localStorage.getItem('auth_token') ?? ''
@@ -658,14 +660,19 @@ const tabs = computed(() => [
   },
 ])
 
-const completedChecks = computed(() => {
-  let n = 0
-  tabs.value.forEach(t => { if (t.complete) n++ })
-  return n
-})
-const totalChecks = computed(() => tabs.value.length)
+const profileStepsDone = computed(() => [
+  !!(personal.gender && personal.civil_status && personal.birthday),
+  !!(personal.region && personal.province),
+  !!(personal.mobile_number),
+  !!(experiences.value.length || education.value.length),
+  !!(trainings.value.length),
+  !!(personal.eligibility),
+  !!(docPaths.pds && docPaths.app_letter && docPaths.coe && docPaths.tor),
+])
+const completedChecks = computed(() => profileStepsDone.value.filter(Boolean).length)
+const totalChecks = computed(() => profileStepsDone.value.length)
 const progressPct = computed(() =>
-  totalChecks.value === 0 ? 0 : Math.round((completedChecks.value / totalChecks.value) * 100)
+  Math.round((completedChecks.value / totalChecks.value) * 100)
 )
 
 const docFields = [
@@ -787,6 +794,7 @@ onMounted(async () => {
       trainings.value   = p.trainings ?? []
       ;['pds', 'app_letter', 'ipcr', 'coe', 'tor'].forEach(k => {
         if (p[k + '_path']) docPaths[k] = p[k + '_path']
+        if (p[k + '_uploaded_at']) docTimestamps[k] = p[k + '_uploaded_at']
       })
     }
     isComplete.value = data.is_complete
@@ -852,6 +860,7 @@ async function uploadDocuments() {
     const { data } = await profileApi.uploadDocuments(fd)
     ;['pds', 'app_letter', 'ipcr', 'coe', 'tor'].forEach(k => {
       if (data.profile[k + '_path']) { docPaths[k] = data.profile[k + '_path']; delete docFiles[k] }
+      if (data.profile[k + '_uploaded_at']) docTimestamps[k] = data.profile[k + '_uploaded_at']
     })
     isComplete.value = data.is_complete
     showSaveIndicator()

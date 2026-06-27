@@ -10,8 +10,12 @@
             <path stroke-linecap="round" stroke-linejoin="round" :d="stat.icon"/>
           </svg>
         </div>
-        <div>
-          <p class="text-xs text-gray-500 font-medium">{{ stat.label }}</p>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-1">
+            <p class="text-xs text-gray-500 font-medium">{{ stat.label }}</p>
+            <span v-if="stat.tooltip" :title="stat.tooltip"
+              class="w-3.5 h-3.5 rounded-full bg-gray-100 text-gray-400 text-[9px] flex items-center justify-center cursor-help flex-shrink-0 font-bold leading-none">?</span>
+          </div>
           <p class="text-2xl font-bold text-gray-900 mt-0.5">
             <span v-if="loading" class="inline-block h-6 w-8 bg-gray-200 rounded animate-pulse"></span>
             <span v-else>{{ stat.value }}</span>
@@ -101,11 +105,11 @@
                     alt="" />
                   <div :class="[avatarBg(user.role), user.photo_url ? 'hidden' : '']"
                     class="w-full h-full rounded-full flex items-center justify-center text-xs font-bold">
-                    {{ initials(user.name) }}
+                    {{ initials(user) }}
                   </div>
                 </div>
                 <div class="min-w-0">
-                  <p class="font-medium text-gray-900 truncate">{{ user.name }}</p>
+                  <p class="font-medium text-gray-900 truncate">{{ user.full_name }}</p>
                   <p class="text-xs text-gray-400 truncate">{{ user.email }}</p>
                 </div>
               </div>
@@ -120,7 +124,7 @@
               {{ formatDate(user.created_at) }}
             </td>
             <td class="px-5 py-3.5">
-              <div class="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div class="flex items-center justify-end gap-1.5">
                 <button @click="openEdit(user)"
                   class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#2a338f] bg-[#2a338f]/8 hover:bg-[#2a338f]/15 rounded-md transition-colors">
                   <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -199,7 +203,7 @@
               alt="" />
             <div :class="[avatarBg(form.role), editTarget.photo_url ? 'hidden' : '']"
               class="w-full h-full rounded-full flex items-center justify-center text-sm font-bold">
-              {{ initials(form.name || editTarget.name) }}
+              {{ initials(form.name || editTarget.full_name) }}
             </div>
           </div>
           <div v-else class="w-12 h-12 rounded-full bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
@@ -418,21 +422,25 @@ const visiblePages = computed(() => {
 const statCards = computed(() => [
   {
     label: 'Total Users', value: users.value.length,
+    tooltip: 'All registered system accounts regardless of role.',
     icon:  'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
     iconBg: 'bg-[#2a338f]/10', iconColor: 'text-[#2a338f]',
   },
   {
     label: 'Applicants', value: users.value.filter(u => u.role === 'applicant').length,
+    tooltip: 'Users who can browse vacancies and submit applications.',
     icon:  'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
     iconBg: 'bg-gray-100', iconColor: 'text-gray-500',
   },
   {
     label: 'Admins', value: users.value.filter(u => u.role === 'admin').length,
+    tooltip: 'Full system access including user management and audit logs.',
     icon:  'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
     iconBg: 'bg-purple-50', iconColor: 'text-purple-600',
   },
   {
     label: 'HRMPSB', value: users.value.filter(u => u.role === 'hrmpsb').length,
+    tooltip: 'HRMPSB members with access to evaluations, ratings, and deliberation. Designation assigned separately.',
     icon:  'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
     iconBg: 'bg-amber-50', iconColor: 'text-amber-600',
   },
@@ -473,7 +481,7 @@ function openCreate() {
 function openEdit(user) {
   editTarget.value = user
   modalTab.value   = 'Account'
-  Object.assign(form, { name: user.name, email: user.email, role: user.role ?? 'applicant', password: '', password_confirmation: '' })
+  Object.assign(form, { name: user.full_name, email: user.email, role: user.role ?? 'applicant', password: '', password_confirmation: '' })
   showModal.value = true
 }
 
@@ -519,8 +527,11 @@ async function doDelete() {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────────
-function initials(name) {
-  return name?.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase() ?? '?'
+function initials(user) {
+  if (typeof user === 'object' && user) {
+    return ((user.first_name?.[0] ?? '') + (user.last_name?.[0] ?? '')).toUpperCase() || '?'
+  }
+  return String(user ?? '').split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase() || '?'
 }
 
 function avatarBg(role) {

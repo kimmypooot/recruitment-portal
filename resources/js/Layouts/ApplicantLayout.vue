@@ -118,8 +118,16 @@
               leave-from-class="opacity-100 scale-100"
               leave-to-class="opacity-0 scale-95">
               <div v-if="dropdownOpen"
-                class="absolute right-0 mt-1 w-40 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
+                class="absolute right-0 mt-1 w-48 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
                 <div class="py-1">
+                  <button @click="dropdownOpen = false; showChangePasswordModal = true"
+                    class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
+                    </svg>
+                    Change Password
+                  </button>
+                  <hr class="my-1 border-gray-100" />
                   <button @click="dropdownOpen = false; showLogoutModal = true"
                     class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
                     <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -150,6 +158,127 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5"/>
       </svg>
     </button>
+
+    <!-- Change Password modal -->
+    <Teleport to="body">
+      <div v-if="showChangePasswordModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" @click="closeChangePassword"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-full bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-semibold text-gray-900">{{ isGoogleOnly ? 'Set a Password' : 'Change Password' }}</h3>
+              <p class="text-xs text-gray-500">Min. 8 characters, uppercase, lowercase & number</p>
+            </div>
+          </div>
+
+          <div v-if="isGoogleOnly" class="mb-4 flex items-start gap-2 px-3 py-2.5 rounded-lg bg-blue-50 border border-blue-200">
+            <svg class="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-xs text-blue-700">Your account was created via Google. Set a password to also sign in with your email and password.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div v-if="!isGoogleOnly">
+              <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Current Password</label>
+              <div class="relative">
+                <input v-model="cpForm.current_password" :type="showCurrent ? 'text' : 'password'" placeholder="Enter current password"
+                  class="w-full pl-3 pr-10 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+                  :class="cpErrors.current_password ? 'border-red-400' : 'border-gray-300'" />
+                <button type="button" @click="showCurrent = !showCurrent"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                  <svg v-if="showCurrent" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>
+                  </svg>
+                  <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </button>
+              </div>
+              <p v-if="cpErrors.current_password" class="mt-1 text-xs text-red-500">{{ cpErrors.current_password }}</p>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">New Password</label>
+              <div class="relative">
+                <input v-model="cpForm.password" :type="showNew ? 'text' : 'password'" placeholder="Enter new password"
+                  class="w-full pl-3 pr-10 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+                  :class="cpErrors.password ? 'border-red-400' : 'border-gray-300'" />
+                <button type="button" @click="showNew = !showNew"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                  <svg v-if="showNew" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>
+                  </svg>
+                  <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </button>
+              </div>
+              <p v-if="cpErrors.password" class="mt-1 text-xs text-red-500">{{ cpErrors.password }}</p>
+
+              <!-- Password requirements -->
+              <div class="mt-2 space-y-1">
+                <p v-for="req in passwordRequirements" :key="req.label"
+                  class="flex items-center gap-1.5 text-xs transition-colors"
+                  :class="req.met ? 'text-green-600' : 'text-gray-400'">
+                  <svg v-if="req.met" class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                  </svg>
+                  <svg v-else class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="9"/>
+                  </svg>
+                  {{ req.label }}
+                </p>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Confirm New Password</label>
+              <div class="relative">
+                <input v-model="cpForm.password_confirmation" :type="showConfirm ? 'text' : 'password'" placeholder="Repeat new password"
+                  class="w-full pl-3 pr-10 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+                  :class="cpErrors.password_confirmation ? 'border-red-400' : 'border-gray-300'" />
+                <button type="button" @click="showConfirm = !showConfirm"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                  <svg v-if="showConfirm" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>
+                  </svg>
+                  <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </button>
+              </div>
+              <p v-if="cpErrors.password_confirmation" class="mt-1 text-xs text-red-500">{{ cpErrors.password_confirmation }}</p>
+            </div>
+          </div>
+
+          <p v-if="cpSuccess" class="mt-4 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+            {{ cpSuccess }}
+          </p>
+          <p v-if="cpGeneralError" class="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            {{ cpGeneralError }}
+          </p>
+
+          <div class="flex gap-3 mt-6">
+            <button @click="closeChangePassword"
+              class="flex-1 py-2.5 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+              Cancel
+            </button>
+            <button @click="submitChangePassword" :disabled="cpSaving"
+              class="flex-1 py-2.5 text-sm bg-[#2a338f] hover:bg-[#1e2570] text-white rounded-lg transition-colors font-semibold disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2">
+              <svg v-if="cpSaving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+              </svg>
+              {{ cpSaving ? 'Saving…' : 'Update Password' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Logout confirmation modal -->
     <Teleport to="body">
@@ -245,10 +374,75 @@ const sidebarCollapsed  = ref(false)
 const dropdownOpen      = ref(false)
 const dropdownRef       = ref(null)
 const showBackToTop     = ref(false)
-const showLogoutModal     = ref(false)
+const showLogoutModal         = ref(false)
+const showChangePasswordModal = ref(false)
 const showSignOutPreload  = ref(false)
 const soDot               = ref(0)
 let soTimer = null
+
+const cpForm = ref({ current_password: '', password: '', password_confirmation: '' })
+const cpErrors = ref({})
+const cpGeneralError = ref('')
+const cpSuccess = ref('')
+const cpSaving = ref(false)
+const showCurrent = ref(false)
+const showNew = ref(false)
+const showConfirm = ref(false)
+
+const passwordRequirements = computed(() => {
+  const p = cpForm.value.password
+  return [
+    { label: 'At least 8 characters',      met: p.length >= 8 },
+    { label: 'At least one uppercase letter', met: /[A-Z]/.test(p) },
+    { label: 'At least one lowercase letter', met: /[a-z]/.test(p) },
+    { label: 'At least one number',          met: /[0-9]/.test(p) },
+  ]
+})
+
+function closeChangePassword() {
+  showChangePasswordModal.value = false
+  cpForm.value = { current_password: '', password: '', password_confirmation: '' }
+  cpErrors.value = {}
+  cpGeneralError.value = ''
+  cpSuccess.value = ''
+  showCurrent.value = false
+  showNew.value = false
+  showConfirm.value = false
+}
+
+async function submitChangePassword() {
+  cpErrors.value = {}
+  cpGeneralError.value = ''
+  cpSuccess.value = ''
+
+  if (!isGoogleOnly.value && !cpForm.value.current_password) { cpErrors.value.current_password = 'Current password is required.'; return }
+  if (!cpForm.value.password) { cpErrors.value.password = 'New password is required.'; return }
+  if (cpForm.value.password !== cpForm.value.password_confirmation) {
+    cpErrors.value.password_confirmation = 'Passwords do not match.'
+    return
+  }
+
+  cpSaving.value = true
+  try {
+    await axios.post('/api/change-password', cpForm.value, {
+      headers: { Authorization: `Bearer ${authToken.value}` },
+    })
+    cpSuccess.value = 'Password updated successfully.'
+    cpForm.value = { current_password: '', password: '', password_confirmation: '' }
+    setTimeout(() => closeChangePassword(), 1500)
+  } catch (e) {
+    const data = e.response?.data
+    if (data?.errors) {
+      cpErrors.value = Object.fromEntries(
+        Object.entries(data.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])
+      )
+    } else {
+      cpGeneralError.value = data?.message ?? 'Failed to change password.'
+    }
+  } finally {
+    cpSaving.value = false
+  }
+}
 const page              = usePage()
 const authToken      = ref('')
 const authUser       = ref({})
@@ -259,8 +453,9 @@ function refreshProfileStatus() {
   profileComplete.value = localStorage.getItem('profile_complete') === 'true'
 }
 
-const userName    = computed(() => authUser.value?.name ?? 'Applicant')
-const userInitial = computed(() => (authUser.value?.name ?? 'A')[0].toUpperCase())
+const userName    = computed(() => authUser.value?.full_name ?? 'Applicant')
+const userInitial = computed(() => (authUser.value?.full_name ?? 'A')[0].toUpperCase())
+const isGoogleOnly = computed(() => !!authUser.value?.google_id)
 
 function disabledHint(item) {
   if (item.label === 'My Profile') return false

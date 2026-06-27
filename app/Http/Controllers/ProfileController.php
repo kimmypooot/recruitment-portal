@@ -121,26 +121,33 @@ class ProfileController extends Controller
         $dir     = "profile-documents/{$userId}";
 
         $map = [
-            'pds'        => 'pds_path',
-            'app_letter' => 'app_letter_path',
-            'ipcr'       => 'ipcr_path',
-            'coe'        => 'coe_path',
-            'tor'        => 'tor_path',
+            'pds'        => ['path' => 'pds_path',        'ts' => 'pds_uploaded_at'],
+            'app_letter' => ['path' => 'app_letter_path', 'ts' => 'app_letter_uploaded_at'],
+            'ipcr'       => ['path' => 'ipcr_path',       'ts' => 'ipcr_uploaded_at'],
+            'coe'        => ['path' => 'coe_path',        'ts' => 'coe_uploaded_at'],
+            'tor'        => ['path' => 'tor_path',        'ts' => 'tor_uploaded_at'],
         ];
 
-        foreach ($map as $input => $column) {
+        foreach ($map as $input => $cols) {
             if ($request->hasFile($input)) {
-                if ($profile->$column) {
-                    Storage::disk('public')->delete($profile->$column);
+                $pathCol = $cols['path'];
+                if ($profile->$pathCol) {
+                    Storage::disk('public')->delete($profile->$pathCol);
                 }
-                $profile->$column = $request->file($input)->store($dir, 'public');
+                $profile->$pathCol = $request->file($input)->store($dir, 'public');
+                if ($cols['ts']) {
+                    $profile->{$cols['ts']} = now();
+                }
             }
         }
 
         $profile->save();
 
+        $returnCols = ['pds_path', 'pds_uploaded_at', 'app_letter_path', 'app_letter_uploaded_at',
+                       'ipcr_path', 'ipcr_uploaded_at', 'coe_path', 'coe_uploaded_at', 'tor_path', 'tor_uploaded_at'];
+
         return response()->json([
-            'profile'     => $profile->only(array_values($map)),
+            'profile'     => $profile->only($returnCols),
             'is_complete' => $profile->isComplete(),
         ]);
     }
@@ -306,9 +313,6 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        return ApplicantProfile::firstOrCreate(
-            ['user_id' => $user->id],
-            ['first_name' => '', 'last_name' => $user->name]
-        );
+        return ApplicantProfile::firstOrCreate(['user_id' => $user->id]);
     }
 }

@@ -54,6 +54,11 @@
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-sm font-semibold text-gray-900">Recent Applications</h2>
           <div class="flex items-center gap-2">
+            <span v-if="lastRefreshed"
+              class="text-xs transition-colors duration-500"
+              :class="refreshFlash ? 'text-green-600 font-medium' : 'text-gray-400'">
+              Updated {{ timeAgo(lastRefreshed) }}
+            </span>
             <button @click="autoRefresh = !autoRefresh"
               class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium transition-colors"
               :class="autoRefresh ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'">
@@ -143,6 +148,8 @@ const pipeline        = ref([])
 const recentApplications = ref([])
 const upcoming        = ref({ exams: [], interviews: [] })
 const autoRefresh     = ref(false)
+const lastRefreshed   = ref(null)
+const refreshFlash    = ref(false)
 let refreshInterval   = null
 
 watch(autoRefresh, (val) => {
@@ -257,7 +264,16 @@ function formatApplicantName(app) {
     const middle = p.middle_name ? ' ' + p.middle_name.charAt(0).toUpperCase() + '.' : ''
     return `${p.last_name}, ${p.first_name}${middle}`
   }
-  return p?.user?.name ?? '—'
+  return p?.user?.full_name ?? '—'
+}
+
+function timeAgo(date) {
+  if (!date) return ''
+  const diff = (Date.now() - new Date(date).getTime()) / 1000
+  if (diff < 60)   return 'just now'
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  return `${Math.floor(diff / 86400)}d ago`
 }
 
 function formatDate(str) {
@@ -286,6 +302,11 @@ async function loadDashboard() {
     stats.value              = statsRes.data
     pipeline.value           = pipelineRes.data
     recentApplications.value = recentRes.data
+    lastRefreshed.value = new Date()
+    if (autoRefresh.value) {
+      refreshFlash.value = true
+      setTimeout(() => { refreshFlash.value = false }, 1500)
+    }
   } catch (e) {
     console.error('Dashboard load failed', e)
   } finally {

@@ -38,7 +38,7 @@ class ExaminationScheduled extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->subject("Exam Scheduled — {$this->positionTitle}")
-            ->greeting("Dear {$notifiable->name},")
+            ->greeting("Dear {$notifiable->first_name},")
             ->line("Congratulations! You have qualified for the written examination for the position of **{$this->positionTitle}**.")
             ->line('Here are the details of your exam:')
             ->line("- **Type:** {$examLabel}")

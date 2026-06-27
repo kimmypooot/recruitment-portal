@@ -41,7 +41,7 @@ class EoptController extends Controller
 
         $applications = Application::where('vacancy_id', $vacancy->id)
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
-            ->with(['anonymizationToken', 'applicant', 'eoptResult'])
+            ->with(['anonymizationToken', 'applicant.user', 'eoptResult'])
             ->get()
             ->map(function ($app) use ($isSecretariat) {
                 $token = $app->anonymizationToken;

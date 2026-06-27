@@ -27,8 +27,8 @@ class VacancyResource extends JsonResource
             'deadline_at'            => $this->deadline_at?->toISOString(),
             'applications_count'     => $this->when(isset($this->applications_count), $this->applications_count),
             'posted_by'              => $this->whenLoaded('postedBy', fn () => [
-                'id'   => $this->postedBy->id,
-                'name' => $this->postedBy->name,
+                'id'        => $this->postedBy->id,
+                'full_name' => $this->postedBy->full_name,
             ]),
             'competencies'           => $this->whenLoaded('competencies', fn () =>
                 $this->competencies->map(fn ($vc) => [

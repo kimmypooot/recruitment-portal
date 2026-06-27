@@ -18,7 +18,7 @@ class AppointingAuthorityController extends Controller
         $user = $request->user();
 
         $applications = Application::with([
-            'applicant',
+            'applicant.user',
             'examResults',
             'cbweRatings',
             'beiRatings',
@@ -99,7 +99,7 @@ class AppointingAuthorityController extends Controller
                 $app['aa_decision'] = $decision ? [
                     'action'     => $decision->action,
                     'decided_at' => $decision->decided_at,
-                    'decided_by' => $decision->decidedBy?->name,
+                    'decided_by' => $decision->decidedBy?->full_name,
                     'remarks'    => $decision->remarks,
                 ] : null;
                 return $app;

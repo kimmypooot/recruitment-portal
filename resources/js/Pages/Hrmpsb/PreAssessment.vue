@@ -66,8 +66,16 @@
         <p class="text-sm font-semibold text-gray-500">No applicants found for this position</p>
       </div>
 
+      <!-- Mobile scroll hint -->
+      <div v-else class="flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 border-b border-blue-100 text-xs text-blue-500 sm:hidden">
+        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+        Scroll right to see all columns
+      </div>
+
       <!-- Matrix -->
-      <div v-else class="overflow-auto" style="max-height: 72vh;">
+      <div v-if="rows.length" class="overflow-auto" style="max-height: 72vh;">
         <table class="text-xs border-collapse" style="min-width: max-content;">
 
           <!-- ── Two-row thead ──────────────────────────────────────────────── -->
@@ -176,7 +184,7 @@
                 <th class="border border-gray-200 px-3 py-2 text-center font-medium text-purple-600 bg-purple-50/60 whitespace-nowrap">Certificate of Eligibility</th>
               </template>
               <template v-else>
-                <th class="border border-gray-200 px-3 py-2 text-center font-medium text-purple-600 bg-purple-50/60 text-[10px]">Docs</th>
+                <th class="border border-gray-200 px-3 py-2 text-center font-medium text-purple-600 bg-purple-50/60 text-xs">Docs</th>
               </template>
 
               <!-- Pre-Assessment sub-columns -->
@@ -187,7 +195,7 @@
                 <th class="border border-gray-200 px-3 py-2 text-center font-medium text-teal-600 bg-teal-50/60 whitespace-nowrap">PDS Link</th>
               </template>
               <template v-else>
-                <th class="border border-gray-200 px-3 py-2 text-center font-medium text-teal-600 bg-teal-50/60 text-[10px]">Pre-Asmt</th>
+                <th class="border border-gray-200 px-3 py-2 text-center font-medium text-teal-600 bg-teal-50/60 text-xs">Pre-Asmt</th>
               </template>
 
               <!-- HRMPSB sub-columns -->
@@ -202,7 +210,7 @@
                 <th class="border border-gray-200 px-3 py-2 text-center font-medium text-orange-700 bg-orange-50 whitespace-nowrap font-semibold">Consensus</th>
               </template>
               <template v-else>
-                <th class="border border-gray-200 px-3 py-2 text-center font-medium text-orange-600 bg-orange-50/60 text-[10px]">HRMPSB</th>
+                <th class="border border-gray-200 px-3 py-2 text-center font-medium text-orange-600 bg-orange-50/60 text-xs">HRMPSB</th>
               </template>
 
             </tr>
@@ -470,7 +478,7 @@
                         </svg>
                         {{ memberSaving[row.id] ? 'Saving…' : 'Save Assessment' }}
                       </button>
-                      <p v-if="memberSaveErrors[row.id]" class="text-[9px] text-red-500 leading-tight mt-0.5">
+                      <p v-if="memberSaveErrors[row.id]" class="text-xs text-red-500 leading-tight mt-0.5">
                         {{ memberSaveErrors[row.id] }}
                       </p>
                       <!-- Already saved indicator -->

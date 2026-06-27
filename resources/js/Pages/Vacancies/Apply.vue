@@ -142,7 +142,7 @@
           <div class="px-6 py-5 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
             <div>
               <p class="text-xs text-gray-400 font-medium">Full Name</p>
-              <p class="text-sm font-semibold text-gray-900 mt-0.5">{{ authUser.name ?? '—' }}</p>
+              <p class="text-sm font-semibold text-gray-900 mt-0.5">{{ authUser.full_name ?? '—' }}</p>
             </div>
             <div>
               <p class="text-xs text-gray-400 font-medium">Email Address</p>
@@ -345,11 +345,13 @@
 
     </div>
 
-    <!-- Success modal -->
+    <!-- Success / Feedback modal -->
     <Teleport to="body">
       <div v-if="showSuccess"
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center">
+
+        <!-- Step 1: Success confirmation -->
+        <div v-if="feedbackStep === 'success'" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center">
           <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5">
             <svg class="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
@@ -359,11 +361,63 @@
           <p class="text-sm text-gray-500 mb-6">
             Your application for <span class="font-semibold text-gray-700">{{ vacancy?.position_title }}</span> has been received. We'll notify you of any updates.
           </p>
+          <button @click="feedbackStep = 'form'"
+            class="block w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors mb-3">
+            Share Your Experience
+          </button>
           <Link href="/applicant/dashboard"
-            class="block w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors">
-            Go to Dashboard
+            class="block w-full py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-600 text-sm font-medium rounded-lg transition-colors">
+            Skip, Go to Dashboard
           </Link>
         </div>
+
+        <!-- Step 2: Feedback form -->
+        <div v-else-if="feedbackStep === 'form'" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8">
+          <div class="text-center mb-6">
+            <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-4">
+              <svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">How was your experience?</h3>
+            <p class="text-xs text-gray-500">Your feedback helps us improve the portal.</p>
+          </div>
+
+          <!-- Star rating -->
+          <div class="flex justify-center gap-2 mb-5">
+            <button v-for="star in 5" :key="star" type="button"
+              @click="feedbackRating = star"
+              class="transition-transform hover:scale-110 focus:outline-none">
+              <svg class="w-9 h-9 transition-colors" :class="star <= feedbackRating ? 'text-yellow-400' : 'text-gray-200'"
+                fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </button>
+          </div>
+          <p v-if="feedbackRatingLabel" class="text-center text-xs font-medium text-[#2a338f] mb-4">{{ feedbackRatingLabel }}</p>
+
+          <!-- Comment -->
+          <div class="mb-5">
+            <textarea v-model="feedbackComment" rows="3" maxlength="500"
+              placeholder="Tell us more (optional)…"
+              class="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none resize-none transition"></textarea>
+            <p class="text-right text-xs text-gray-400 mt-1">{{ feedbackComment.length }}/500</p>
+          </div>
+
+          <p v-if="feedbackError" class="text-xs text-red-500 text-center mb-3">{{ feedbackError }}</p>
+
+          <button @click="submitFeedback" :disabled="!feedbackRating || feedbackSaving"
+            class="block w-full py-2.5 text-white text-sm font-semibold rounded-lg transition-colors mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            :class="feedbackRating ? 'bg-[#2a338f] hover:bg-[#1e2570]' : 'bg-gray-300'">
+            <span v-if="feedbackSaving">Submitting…</span>
+            <span v-else>Submit Feedback</span>
+          </button>
+          <Link href="/applicant/dashboard"
+            class="block w-full py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-500 text-sm font-medium rounded-lg transition-colors text-center">
+            Skip
+          </Link>
+        </div>
+
       </div>
     </Teleport>
 
@@ -373,8 +427,14 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
-import { vacancyApi, applicationApi, profileApi } from '@/services/api'
+import { vacancyApi, applicationApi, profileApi, feedbackApi } from '@/services/api'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
+import regionsData from '@/data/regions.json'
+import provincesData from '@/data/provinces.json'
+import citiesJsonData from '@/data/cities.json'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 const props = defineProps({
   vacancyId: { type: Number, required: true },
@@ -387,6 +447,19 @@ const existingApplication = ref(null)
 const isSubmitting     = ref(false)
 const submitError      = ref('')
 const showSuccess      = ref(false)
+const submittedApplicationId = ref(null)
+
+// Feedback state
+const feedbackStep    = ref('success')
+const feedbackRating  = ref(0)
+const feedbackComment = ref('')
+const feedbackSaving  = ref(false)
+const feedbackError   = ref('')
+
+const feedbackRatingLabel = computed(() => {
+  const labels = { 1: 'Poor', 2: 'Fair', 3: 'Good', 4: 'Very Good', 5: 'Excellent' }
+  return labels[feedbackRating.value] ?? ''
+})
 
 const authUser = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
 
@@ -400,10 +473,17 @@ const daysRemaining = computed(() => {
 
 const deadlinePassed = computed(() => daysRemaining.value !== null && daysRemaining.value < 0)
 
+const barangaysData = ref([])
+fetch('/data/barangays.json').then(r => r.json()).then(d => { barangaysData.value = d }).catch(() => {})
+
 const addressLine = computed(() => {
   const p = profile.value
   if (!p) return '—'
-  return [p.barangay, p.city_municipality, p.province, p.region].filter(Boolean).join(', ') || '—'
+  const regionName   = regionsData.find(r => r.reg_code === p.region)?.reg_name ?? p.region
+  const provinceName = provincesData.find(pr => pr.prov_code === p.province)?.prov_name ?? p.province
+  const cityName     = citiesJsonData.find(c => c.city_code === p.city_municipality)?.city_name ?? p.city_municipality
+  const barangayName = barangaysData.value.find(b => b.brgy_code === p.barangay)?.brgy_name ?? p.barangay
+  return [barangayName, cityName, provinceName, regionName].filter(Boolean).join(', ') || '—'
 })
 
 const docList = computed(() => {
@@ -470,12 +550,30 @@ async function submitApplication() {
   isSubmitting.value = true
   submitError.value  = ''
   try {
-    await applicationApi.submit({ vacancy_id: props.vacancyId })
+    const { data } = await applicationApi.submit({ vacancy_id: props.vacancyId })
+    submittedApplicationId.value = data.id
     showSuccess.value = true
   } catch (e) {
     submitError.value = e.response?.data?.message ?? 'Submission failed. Please try again.'
   } finally {
     isSubmitting.value = false
+  }
+}
+
+async function submitFeedback() {
+  if (!feedbackRating.value) return
+  feedbackSaving.value = true
+  feedbackError.value  = ''
+  try {
+    await feedbackApi.submit(submittedApplicationId.value, {
+      rating:  feedbackRating.value,
+      comment: feedbackComment.value || null,
+    })
+    toast.success('Thank you for your feedback!')
+    router.visit('/applicant/dashboard')
+  } catch (e) {
+    feedbackError.value = e.response?.data?.message ?? 'Failed to submit feedback. Please try again.'
+    feedbackSaving.value = false
   }
 }
 

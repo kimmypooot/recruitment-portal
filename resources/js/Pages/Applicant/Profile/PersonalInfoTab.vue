@@ -111,7 +111,7 @@
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Gender <span class="text-red-500 normal-case">*</span>
           </label>
-          <select v-model="personal.gender" @blur="validate('gender')" @input="validate('gender')"
+          <select v-model="personal.gender" @blur="validate('gender')" @change="validate('gender')"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
             :class="errors.gender ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select —</option>
@@ -125,7 +125,7 @@
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Civil Status <span class="text-red-500 normal-case">*</span>
           </label>
-          <select v-model="personal.civil_status" @blur="validate('civil_status')" @input="validate('civil_status')"
+          <select v-model="personal.civil_status" @blur="validate('civil_status')" @change="validate('civil_status')"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
             :class="errors.civil_status ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select —</option>

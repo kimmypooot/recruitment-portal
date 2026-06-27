@@ -49,7 +49,7 @@ class ApplicantsExport implements FromCollection, WithHeadings, WithMapping
         $applicant = $application->applicant;
         $name = $applicant
             ? "{$applicant->last_name}, {$applicant->first_name}"
-            : ($application->applicant->user->name ?? 'N/A');
+            : ($application->applicant->user->full_name ?? 'N/A');
 
         return [
             $name,

@@ -214,7 +214,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100 bg-white">
                           <tr v-for="ev in app.evaluations" :key="ev.id" class="hover:bg-gray-50">
-                            <td class="px-4 py-2.5 font-medium text-gray-800">{{ ev.evaluator?.name ?? '—' }}</td>
+                            <td class="px-4 py-2.5 font-medium text-gray-800">{{ ev.evaluator?.full_name ?? '—' }}</td>
                             <td v-for="criterion in criteria" :key="criterion.key" class="px-3 py-2.5 text-center">
                               <span v-if="ev[criterion.key]" class="text-green-600 font-bold">✓</span>
                               <span v-else class="text-red-400 font-bold">✗</span>
@@ -326,7 +326,7 @@ onMounted(loadData)
 <style scoped>
 @reference "../../../css/app.css";
 .btn-primary {
-  @apply inline-flex items-center px-5 py-2.5 bg-[#1a5276] text-white text-sm font-semibold rounded-xl hover:bg-[#154360] disabled:opacity-50 transition shadow-sm;
+  @apply inline-flex items-center px-5 py-2.5 bg-[#2a338f] text-white text-sm font-semibold rounded-xl hover:bg-[#1e2570] disabled:opacity-50 transition shadow-sm;
 }
 .btn-secondary {
   @apply inline-flex items-center px-5 py-2.5 border border-gray-300 text-sm font-semibold rounded-xl text-gray-700 hover:bg-gray-50 transition;

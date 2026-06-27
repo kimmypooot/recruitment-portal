@@ -32,7 +32,7 @@ class DeliberationController extends Controller
 
         $applications = Application::where('vacancy_id', $vacancy->id)
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
-            ->with(['anonymizationToken', 'applicant', 'examResults', 'beiRatings', 'qsEvaluations', 'backgroundInvestigationReports', 'eoptResult', 'cbweRatings'])
+            ->with(['anonymizationToken', 'applicant.user', 'examResults', 'beiRatings', 'qsEvaluations', 'backgroundInvestigationReports', 'eoptResult', 'cbweRatings'])
             ->get()
             ->map(function ($app) {
                 $token = $app->anonymizationToken;

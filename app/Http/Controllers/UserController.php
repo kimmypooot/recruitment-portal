@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = User::select('id', 'name', 'email', 'role', 'created_at')
+        $query = User::select('id', 'first_name', 'last_name', 'middle_name', 'suffix', 'email', 'role', 'created_at')
             ->with('applicantProfile:user_id,photo_path');
 
         if ($request->filled('role')) {
@@ -40,31 +40,52 @@ class UserController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'role'     => ['required', Rule::in(self::ALLOWED_ROLES)],
+            'first_name' => 'required|string|max:100',
+            'last_name'  => 'required|string|max:100',
+            'middle_name'=> 'nullable|string|max:100',
+            'suffix'     => 'nullable|string|max:20',
+            'email'      => 'required|email|unique:users,email',
+            'password'   => 'required|string|min:8|confirmed',
+            'role'       => ['required', Rule::in(self::ALLOWED_ROLES)],
         ]);
 
         $user = User::create($data);
 
         AuditLog::record('user_created', $user);
 
-        return response()->json($user->only('id', 'name', 'email', 'role'), 201);
+        return response()->json([
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'full_name' => $user->full_name,
+            'email' => $user->email,
+            'role' => $user->role,
+        ], 201);
     }
 
     public function show(User $user): JsonResponse
     {
-        return response()->json($user->only('id', 'name', 'email', 'role', 'created_at'));
+        return response()->json([
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'full_name' => $user->full_name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'created_at' => $user->created_at,
+        ]);
     }
 
     public function update(Request $request, User $user): JsonResponse
     {
         $data = $request->validate([
-            'name'     => 'sometimes|required|string|max:255',
-            'email'    => ['sometimes', 'required', 'email', Rule::unique('users')->ignore($user->id)],
-            'role'     => ['sometimes', 'required', Rule::in(self::ALLOWED_ROLES)],
-            'password' => 'sometimes|required|string|min:8|confirmed',
+            'first_name' => 'sometimes|required|string|max:100',
+            'last_name'  => 'sometimes|required|string|max:100',
+            'middle_name'=> 'nullable|string|max:100',
+            'suffix'     => 'nullable|string|max:20',
+            'email'      => ['sometimes', 'required', 'email', Rule::unique('users')->ignore($user->id)],
+            'role'       => ['sometimes', 'required', Rule::in(self::ALLOWED_ROLES)],
+            'password'   => 'sometimes|required|string|min:8|confirmed',
         ]);
 
         if ($request->has('password')) {
@@ -75,7 +96,14 @@ class UserController extends Controller
 
         AuditLog::record('user_updated', $user);
 
-        return response()->json($user->only('id', 'name', 'email', 'role'));
+        return response()->json([
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'full_name' => $user->full_name,
+            'email' => $user->email,
+            'role' => $user->role,
+        ]);
     }
 
     public function destroy(User $user): JsonResponse

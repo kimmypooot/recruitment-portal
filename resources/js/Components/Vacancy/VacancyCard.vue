@@ -12,14 +12,20 @@
           <StatusBadge :status="vacancy.status" />
         </div>
         <!-- Deadline countdown -->
-        <span v-if="daysRemaining !== null && daysRemaining <= 5 && daysRemaining >= 0"
-          :class="daysRemaining <= 2 ? 'text-red-600' : 'text-amber-600'"
-          class="inline-flex items-center gap-1 text-xs font-semibold">
+        <span v-if="daysRemaining !== null && daysRemaining <= 7 && daysRemaining >= 0"
+          :class="daysRemaining <= 3 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'"
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold">
           <span class="w-1.5 h-1.5 rounded-full animate-pulse"
-            :class="daysRemaining <= 2 ? 'bg-red-500' : 'bg-amber-400'"></span>
-          {{ daysRemaining === 0 ? 'Closes today' : `${daysRemaining}d left` }}
+            :class="daysRemaining <= 3 ? 'bg-red-500' : 'bg-amber-400'"></span>
+          {{ daysRemaining === 0 ? 'Closing today' : `${daysRemaining}d left` }}
         </span>
       </div>
+
+      <!-- Anticipated Vacancy badge -->
+      <span v-if="vacancy.is_anticipated_vacancy"
+        class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-amber-100 text-amber-700 mb-1">
+        Anticipated Vacancy
+      </span>
 
       <!-- Position title -->
       <h3 class="text-base font-semibold text-gray-900 leading-snug mb-1 line-clamp-2">
@@ -27,11 +33,26 @@
       </h3>
 
       <!-- Office / assignment -->
-      <p class="text-sm text-gray-500 mb-4 flex items-center gap-1.5">
+      <p class="text-sm text-gray-500 mb-1 flex items-center gap-1.5">
         <svg class="w-3.5 h-3.5 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
         </svg>
         {{ vacancy.place_of_assignment }}
+      </p>
+
+      <!-- Plantilla No. + Monthly Salary -->
+      <p v-if="vacancy.plantilla_no || vacancy.monthly_salary"
+        class="text-xs text-gray-400 mb-4 flex items-center gap-3">
+        <span v-if="vacancy.plantilla_no" class="inline-flex items-center gap-1">
+          <svg class="w-3.5 h-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          Plantilla No. {{ vacancy.plantilla_no }}
+        </span> |
+        <span v-if="vacancy.monthly_salary" class="inline-flex items-center gap-1">
+          <span class="w-3.5 h-3.5 flex items-center justify-center text-gray-300 text-[11px] font-bold">₱</span>
+          {{ formatSalary(vacancy.monthly_salary) }}
+        </span>
       </p>
 
       <!-- Key requirements -->
@@ -198,7 +219,11 @@ const daysRemaining = computed(() => {
   return ms < 0 ? -1 : Math.ceil(ms / (1000 * 60 * 60 * 24))
 })
 
-const isUrgent = computed(() => daysRemaining.value !== null && daysRemaining.value >= 0 && daysRemaining.value <= 5)
+const isUrgent = computed(() => daysRemaining.value !== null && daysRemaining.value >= 0 && daysRemaining.value <= 7)
+
+function formatSalary(val) {
+  return Number(val).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return 'No deadline set'

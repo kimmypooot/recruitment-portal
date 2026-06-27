@@ -115,6 +115,7 @@ const dotIndex = ref(0)
 
 const errorMap = {
   email_exists:        'This email is already registered. Please sign in with your password, then link Google in your Profile settings.',
+  name_exists:         'An account with this name already exists. Please sign in or contact support if you need help recovering your account.',
   auth_failed:         'Google authentication failed. Please try again.',
   link_user_not_found: 'User not found. Please sign in and try again.',
   link_already_taken:  'This Google account is already linked to another user.',
@@ -172,7 +173,7 @@ onMounted(async () => {
   if (token) {
     localStorage.setItem('auth_token', token)
     const user = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
-    const firstName = user.name?.split(' ')[0] ?? ''
+    const firstName = user.first_name ?? ''
     userName.value = firstName ? `${firstName}!` : '!'
     statusText.value = 'Signing you in…'
     showWelcome.value = true

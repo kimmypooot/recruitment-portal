@@ -19,7 +19,7 @@ class PreAssessmentController extends Controller
         $applications = Application::where('vacancy_id', $vacancy->id)
             ->whereNotIn('status', ['withdrawn'])
             ->with([
-                'applicant',
+                'applicant.user',
                 'applicant.educationalAttainments',
                 'applicant.workExperiences',
                 'applicant.trainings',
@@ -31,11 +31,11 @@ class PreAssessmentController extends Controller
         $appIds = $applications->pluck('id');
 
         $qsEvals = QsEvaluation::whereIn('application_id', $appIds)
-            ->with('evaluator:id,name')
+            ->with('evaluator:id,first_name,last_name,middle_name,suffix')
             ->get()
             ->groupBy('application_id');
 
-        $members = HrmbsboardComposition::with('user:id,name')
+        $members = HrmbsboardComposition::with('user:id,first_name,last_name,middle_name,suffix')
             ->where('is_active', true)
             ->where('hrmpsb_role', '!=', 'secretariat')
             ->orderBy('hrmpsb_role')
@@ -89,7 +89,7 @@ class PreAssessmentController extends Controller
                 'qs_evaluations' => ($qsEvals[$app->id] ?? collect())->map(fn ($e) => [
                     'id'                => $e->id,
                     'evaluator_id'      => $e->evaluator_id,
-                    'evaluator_name'    => $e->evaluator?->name,
+                    'evaluator_name'    => $e->evaluator?->full_name,
                     'overall_qualified' => $e->overall_qualified,
                     'education_meets'   => $e->education_meets,
                     'experience_meets'  => $e->experience_meets,
@@ -115,7 +115,7 @@ class PreAssessmentController extends Controller
             'applications'    => $rows,
             'hrmpsb_members'  => $members->map(fn ($m) => [
                 'user_id' => $m->user_id,
-                'name'    => $m->user?->name ?? '—',
+                'name'    => $m->user?->full_name ?? '—',
                 'role'    => HrmbsboardComposition::ROLES[$m->hrmpsb_role] ?? $m->hrmpsb_role,
             ]),
         ]);

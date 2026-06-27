@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
+use Illuminate\Auth\Notifications\ResetPassword as ResetPasswordNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\URL;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -16,7 +18,14 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasApiTokens;
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'google_id', 'google_avatar'];
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $url = URL::to('/reset-password/' . $token . '?email=' . urlencode($this->email));
+
+        $this->notify(new ResetPasswordNotification($token));
+    }
+
+    protected $fillable = ['first_name', 'last_name', 'middle_name', 'suffix', 'email', 'password', 'role', 'google_id', 'google_avatar'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -31,6 +40,15 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected $appends = ['full_name'];
+
+    public function getFullNameAttribute(): string
+    {
+        $middle = $this->middle_name ? ' ' . $this->middle_name . ' ' : ' ';
+        $suffix = $this->suffix ? ', ' . $this->suffix : '';
+        return $this->first_name . $middle . $this->last_name . $suffix;
     }
 
     public function applicantProfile(): HasOne

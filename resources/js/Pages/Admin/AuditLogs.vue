@@ -2,54 +2,74 @@
   <AdminLayout title="Audit Logs">
 
     <!-- Toolbar -->
-    <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+    <div class="flex flex-col gap-2 mb-4">
 
-      <!-- Search -->
-      <div class="relative flex-1">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input v-model="filters.search" @input="onSearch" type="text"
-          placeholder="Search action, model, or user…"
-          class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" />
+      <!-- Row 1: search + action filter + auto-refresh + count -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+        <div class="relative flex-1">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input v-model="filters.search" @input="onSearch" type="text"
+            placeholder="Search action, model, or user…"
+            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" />
+        </div>
+        <select v-model="filters.action_type" @change="resetAndFetch"
+          class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white sm:min-w-36">
+          <option value="">All Actions</option>
+          <optgroup label="Vacancy">
+            <option value="vacancy_created">Created</option>
+            <option value="vacancy_published">Published</option>
+            <option value="vacancy_archived">Archived</option>
+            <option value="vacancy_deleted">Deleted</option>
+            <option value="vacancy_updated">Updated</option>
+          </optgroup>
+          <optgroup label="Application">
+            <option value="application_status_changed">Status Changed</option>
+          </optgroup>
+          <optgroup label="User">
+            <option value="user_created">User Created</option>
+            <option value="user_updated">User Updated</option>
+          </optgroup>
+        </select>
+        <button @click="autoRefresh = !autoRefresh"
+          class="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap self-start sm:self-auto"
+          :class="autoRefresh ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'">
+          <span class="w-1.5 h-1.5 rounded-full" :class="autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'"></span>
+          {{ autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF' }}
+        </button>
+        <span v-if="!loading" class="text-xs text-gray-400 whitespace-nowrap hidden sm:block">
+          {{ meta.total ?? 0 }} log{{ meta.total !== 1 ? 's' : '' }}
+        </span>
       </div>
 
-      <!-- Action type filter -->
-      <select v-model="filters.action_type" @change="resetAndFetch"
-        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white min-w-36">
-        <option value="">All Actions</option>
-        <optgroup label="Vacancy">
-          <option value="vacancy_created">Created</option>
-          <option value="vacancy_published">Published</option>
-          <option value="vacancy_archived">Archived</option>
-          <option value="vacancy_deleted">Deleted</option>
-          <option value="vacancy_updated">Updated</option>
-        </optgroup>
-        <optgroup label="Application">
-          <option value="application_status_changed">Status Changed</option>
-        </optgroup>
-        <optgroup label="User">
-          <option value="user_created">User Created</option>
-          <option value="user_updated">User Updated</option>
-        </optgroup>
-      </select>
-
-      <!-- Date range filter -->
-      <input v-model="filters.date_from" @change="resetAndFetch" type="date"
-        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white" />
-      <span class="text-xs text-gray-400">–</span>
-      <input v-model="filters.date_to" @change="resetAndFetch" type="date"
-        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white" />
-
-      <button @click="autoRefresh = !autoRefresh"
-        class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
-        :class="autoRefresh ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'">
-        <span class="w-1.5 h-1.5 rounded-full" :class="autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'"></span>
-        {{ autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF' }}
-      </button>
-      <span v-if="!loading" class="text-xs text-gray-400 whitespace-nowrap">
-        {{ meta.total ?? 0 }} log{{ meta.total !== 1 ? 's' : '' }}
-      </span>
+      <!-- Row 2: date range grouped -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+        <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
+          <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <input v-model="filters.date_from" @change="resetAndFetch" type="date"
+            class="text-sm bg-transparent focus:outline-none text-gray-700 w-36" />
+          <span class="text-gray-300 text-xs">—</span>
+          <input v-model="filters.date_to" @change="resetAndFetch" type="date"
+            class="text-sm bg-transparent focus:outline-none text-gray-700 w-36" />
+          <button v-if="filters.date_from || filters.date_to" @click="filters.date_from = ''; filters.date_to = ''; resetAndFetch()"
+            class="text-gray-300 hover:text-gray-500 transition-colors ml-1">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <button v-if="filters.search || filters.action_type || filters.date_from || filters.date_to"
+          @click="clearFilters"
+          class="text-xs text-[#2a338f] hover:underline self-start sm:self-auto">
+          Clear all filters
+        </button>
+        <span v-if="!loading" class="text-xs text-gray-400 sm:hidden">
+          {{ meta.total ?? 0 }} log{{ meta.total !== 1 ? 's' : '' }}
+        </span>
+      </div>
     </div>
 
     <!-- Table -->
@@ -69,9 +89,9 @@
         <thead class="bg-gray-50 border-b border-gray-200">
           <tr class="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider">
             <th class="px-5 py-3">Action</th>
-            <th class="px-5 py-3 hidden md:table-cell">Model</th>
+            <th class="px-5 py-3">Model</th>
             <th class="px-5 py-3">Performed By</th>
-            <th class="px-5 py-3 hidden lg:table-cell text-right">Date &amp; Time</th>
+            <th class="px-5 py-3 text-right">Date &amp; Time</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -82,7 +102,7 @@
                 {{ actionLabel(log.action) }}
               </span>
             </td>
-            <td class="px-5 py-3.5 hidden md:table-cell">
+            <td class="px-5 py-3.5">
               <span class="text-gray-500 text-xs">
                 {{ shortModel(log.auditable_type) }}
                 <span class="text-gray-300 mx-1">#</span>
@@ -104,8 +124,11 @@
                 </span>
               </div>
             </td>
-            <td class="px-5 py-3.5 hidden lg:table-cell text-right text-xs text-gray-400 whitespace-nowrap">
-              {{ formatDateTime(log.created_at) }}
+            <td class="px-5 py-3.5 text-right whitespace-nowrap">
+              <span :title="timeAgo(log.created_at)" class="cursor-default">
+                <span class="block text-xs text-gray-600 font-medium">{{ formatShortDate(log.created_at) }}</span>
+                <span class="block text-[10px] text-gray-400">{{ formatTime(log.created_at) }}</span>
+              </span>
             </td>
           </tr>
 
@@ -138,9 +161,12 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
             </svg>
           </button>
-          <span class="px-3 py-1 text-xs font-medium text-gray-700">
-            {{ meta.current_page }} / {{ meta.last_page }}
-          </span>
+          <button v-for="p in visibleAuditPages" :key="p" @click="typeof p === 'number' && goPage(p)"
+            :disabled="p === '…'"
+            :class="['px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
+              p === meta.current_page ? 'bg-[#2a338f] text-white' : p === '…' ? 'text-gray-300 cursor-default' : 'text-gray-600 hover:bg-gray-100']">
+            {{ p }}
+          </button>
           <button :disabled="meta.current_page === meta.last_page" @click="goPage(meta.current_page + 1)"
             class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -155,7 +181,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { debounce } from 'lodash-es'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
@@ -213,6 +239,15 @@ function resetAndFetch() { filters.page = 1; fetchLogs() }
 function goPage(p) { filters.page = p; fetchLogs() }
 function clearFilters() { filters.search = ''; filters.action_type = ''; filters.date_from = ''; filters.date_to = ''; resetAndFetch() }
 
+const visibleAuditPages = computed(() => {
+  const total = meta.value.last_page ?? 1
+  const cur   = meta.value.current_page ?? 1
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  if (cur <= 4)   return [1, 2, 3, 4, 5, '…', total]
+  if (cur >= total - 3) return [1, '…', total - 4, total - 3, total - 2, total - 1, total]
+  return [1, '…', cur - 1, cur, cur + 1, '…', total]
+})
+
 function roleBadgeClass(role) {
   return {
     admin:      'bg-purple-100 text-purple-700',
@@ -238,6 +273,26 @@ function formatDateTime(str) {
     month: 'short', day: 'numeric', year: 'numeric',
     hour: 'numeric', minute: '2-digit',
   })
+}
+
+function formatShortDate(str) {
+  if (!str) return '—'
+  return new Date(str).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function formatTime(str) {
+  if (!str) return ''
+  return new Date(str).toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' })
+}
+
+function timeAgo(str) {
+  if (!str) return '—'
+  const diff = (Date.now() - new Date(str).getTime()) / 1000
+  if (diff < 60)   return 'just now'
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`
+  return formatDateTime(str)
 }
 
 function actionLabel(action) {

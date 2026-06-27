@@ -350,7 +350,7 @@
                 <td class="px-4 py-4">
                   <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-full bg-[#2a338f]/10 flex items-center justify-center text-[#2a338f] text-xs font-bold flex-shrink-0">
-                      {{ initials(app.applicant?.user?.name) }}
+                      {{ initials(app.applicant?.user) }}
                     </div>
                     <p class="font-semibold text-gray-900 leading-snug">{{ formatApplicantName(app) }}</p>
                   </div>
@@ -472,7 +472,7 @@
         <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-[#2a338f]/10 flex items-center justify-center text-[#2a338f] text-sm font-bold flex-shrink-0">
-              {{ initials(detailTarget.applicant?.user?.name) }}
+              {{ initials(detailTarget.applicant?.user) }}
             </div>
             <div>
               <p class="text-sm font-semibold text-gray-900">{{ formatApplicantName(detailTarget) }}</p>
@@ -932,8 +932,8 @@ const sortedApplications = computed(() => {
     let va, vb
     switch (sortState.field) {
       case 'name':
-        va = (a.applicant?.last_name ?? a.applicant?.user?.name ?? '').toLowerCase()
-        vb = (b.applicant?.last_name ?? b.applicant?.user?.name ?? '').toLowerCase()
+        va = (a.applicant?.last_name ?? a.applicant?.user?.full_name ?? '').toLowerCase()
+        vb = (b.applicant?.last_name ?? b.applicant?.user?.full_name ?? '').toLowerCase()
         break
       case 'gender':
         va = (a.applicant?.gender ?? '').toLowerCase()
@@ -1090,8 +1090,11 @@ function vacancyStatusClass(status) {
   }[status] ?? 'bg-gray-100 text-gray-500'
 }
 
-function initials(name) {
-  return name?.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase() ?? '?'
+function initials(user) {
+  if (typeof user === 'object' && user) {
+    return ((user.first_name?.[0] ?? '') + (user.last_name?.[0] ?? '')).toUpperCase() || '?'
+  }
+  return String(user ?? '').split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase() || '?'
 }
 
 function formatDate(str) {
@@ -1112,7 +1115,7 @@ function formatApplicantName(app) {
     const middle = p.middle_name ? ' ' + p.middle_name : ''
     return `${p.last_name}, ${p.first_name}${middle}`
   }
-  return p?.user?.name ?? '—'
+  return p?.user?.full_name ?? '—'
 }
 
 // ── Data fetching ──────────────────────────────────────────────────────────────

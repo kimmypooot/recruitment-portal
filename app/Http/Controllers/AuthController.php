@@ -10,8 +10,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\NewAccessToken;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
@@ -32,7 +34,8 @@ class AuthController extends Controller
         }
 
         $user  = $request->user();
-        $token = $user->createToken('api-token')->plainTextToken;
+        $expiresAt = $request->boolean('remember') ? null : now()->addHours(2);
+        $token = $user->createToken('api-token', ['*'], $expiresAt)->plainTextToken;
 
         return response()->json(['token' => $token, 'user' => $user]);
     }
@@ -42,6 +45,30 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out successfully.']);
+    }
+
+    public function changePassword(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $isGoogleOnly = (bool) $user->google_id;
+
+        $rules = [
+            'password' => ['required', 'string', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)->letters()->mixedCase()->numbers()],
+        ];
+
+        if (!$isGoogleOnly) {
+            $rules['current_password'] = 'required|string';
+        }
+
+        $request->validate($rules);
+
+        if (!$isGoogleOnly && !Hash::check($request->current_password, $user->password)) {
+            return response()->json(['message' => 'The current password is incorrect.'], 422);
+        }
+
+        $user->update(['password' => Hash::make($request->password)]);
+
+        return response()->json(['message' => $isGoogleOnly ? 'Password set successfully. You can now sign in with your email and password.' : 'Password changed successfully.']);
     }
 
     public function register(Request $request): JsonResponse
@@ -66,26 +93,44 @@ class AuthController extends Controller
 
         $middleName = $data['middle_name'] ?? null;
         $suffix     = $data['suffix'] ?? null;
-        $name = trim(
-            $data['first_name'] . ' ' .
-            ($middleName ? $middleName . ' ' : '') .
-            $data['last_name'] .
-            ($suffix ? ', ' . $suffix : '')
-        );
 
-        $user  = User::create([
-            'name'     => $name,
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role'     => 'applicant',
-        ]);
+        $user = DB::transaction(function () use ($data, $middleName, $suffix, $request) {
+            // Lock the users table to prevent race conditions on duplicate checks
+            $existing = User::lockForUpdate()
+                ->whereRaw('LOWER(first_name) = ? AND LOWER(last_name) = ?', [
+                    strtolower(trim($data['first_name'])),
+                    strtolower(trim($data['last_name'])),
+                ])
+                ->when($data['middle_name'] ?? null, fn ($q, $m) =>
+                    $q->whereRaw('LOWER(middle_name) = ?', [strtolower(trim($m))]
+                ))
+                ->first();
 
-        PrivacyConsent::record($user, $data['privacy_policy_version'], $request);
+            if ($existing) {
+                abort(409, 'An account with this name already exists. Please log in or contact support if you need help recovering your account.');
+            }
 
-        $token = $user->createToken('api-token')->plainTextToken;
+            $user = User::create([
+                'first_name'  => trim($data['first_name']),
+                'last_name'   => trim($data['last_name']),
+                'middle_name' => $middleName ? trim($middleName) : null,
+                'suffix'      => $suffix ? trim($suffix) : null,
+                'email'       => $data['email'],
+                'password'    => Hash::make($data['password']),
+                'role'        => 'applicant',
+            ]);
+
+            PrivacyConsent::record($user, $data['privacy_policy_version'], $request);
+
+            return $user;
+        });
+
+        $token = $user->createToken('api-token', ['*'], null)->plainTextToken;
 
         return response()->json(['token' => $token, 'user' => $user], 201);
     }
+
+    // Re-consent endpoint
 
     // Re-consent endpoint: called when the privacy policy version changes and
     // existing logged-in users must acknowledge the updated policy.
@@ -168,20 +213,43 @@ class AuthController extends Controller
             if ($existing) {
                 $existing->update([
                     'google_avatar' => $googleUser->getAvatar(),
-                    'name' => $googleUser->getName(),
                 ]);
                 return $this->redirectWithToken($existing->fresh());
             }
 
-            // 4. Check if email conflicts with an existing password account
-            $conflict = User::where('email', $googleUser->getEmail())->whereNull('google_id')->first();
-            if ($conflict) {
+            // 4. Check if email already in use by any user (password or Google-linked)
+            $existingEmail = User::where('email', $googleUser->getEmail())->first();
+            if ($existingEmail) {
                 return redirect()->route('auth.google.callback-handler', ['error' => 'email_exists']);
             }
 
-            // 5. Create new user
+            // 5. Parse Google full name into components
+            $fullName = $googleUser->getName();
+            $nameParts = preg_split('/\s+/', trim($fullName));
+            $gFirstName = $nameParts[0] ?? '';
+            $gLastName = count($nameParts) > 1 ? array_pop($nameParts) : '';
+            $gMiddleName = count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : null;
+
+            // 6. Check for name-based duplicate
+            $duplicate = User::lockForUpdate()
+                ->whereRaw('LOWER(first_name) = ? AND LOWER(last_name) = ?', [
+                    strtolower($gFirstName),
+                    strtolower($gLastName),
+                ])
+                ->when($gMiddleName, fn ($q, $m) =>
+                    $q->whereRaw('LOWER(middle_name) = ?', [strtolower($m)]
+                ))
+                ->first();
+
+            if ($duplicate) {
+                return redirect()->route('auth.google.callback-handler', ['error' => 'name_exists']);
+            }
+
+            // 7. Create new user
             $user = User::create([
-                'name'              => $googleUser->getName(),
+                'first_name'        => $gFirstName,
+                'last_name'         => $gLastName,
+                'middle_name'       => $gMiddleName,
                 'email'             => $googleUser->getEmail(),
                 'password'          => Hash::make(Str::random(32)),
                 'role'              => 'applicant',
@@ -250,9 +318,18 @@ class AuthController extends Controller
 
             $user = $user->fresh();
 
-            $userData = base64_encode(json_encode(
-                $user->only(['id', 'name', 'email', 'role', 'google_id', 'google_avatar'])
-            ));
+            $userData = base64_encode(json_encode([
+                'id'          => $user->id,
+                'first_name'  => $user->first_name,
+                'last_name'   => $user->last_name,
+                'middle_name' => $user->middle_name,
+                'suffix'      => $user->suffix,
+                'full_name'   => $user->full_name,
+                'email'       => $user->email,
+                'role'        => $user->role,
+                'google_id'   => $user->google_id,
+                'google_avatar' => $user->google_avatar,
+            ]));
 
             return redirect()->route('auth.google.callback-handler', [
                 'link_success' => 1,
@@ -281,10 +358,19 @@ class AuthController extends Controller
 
     private function redirectWithToken(User $user): RedirectResponse
     {
-        $token = $user->createToken('api-token')->plainTextToken;
-        $userData = base64_encode(json_encode(
-            $user->only(['id', 'name', 'email', 'role', 'google_id', 'google_avatar'])
-        ));
+        $token = $user->createToken('api-token', ['*'], null)->plainTextToken;
+        $userData = base64_encode(json_encode([
+            'id'          => $user->id,
+            'first_name'  => $user->first_name,
+            'last_name'   => $user->last_name,
+            'middle_name' => $user->middle_name,
+            'suffix'      => $user->suffix,
+            'full_name'   => $user->full_name,
+            'email'       => $user->email,
+            'role'        => $user->role,
+            'google_id'   => $user->google_id,
+            'google_avatar' => $user->google_avatar,
+        ]));
         return redirect()->route('auth.google.callback-handler', [
             'token' => $token,
             'user'  => $userData,

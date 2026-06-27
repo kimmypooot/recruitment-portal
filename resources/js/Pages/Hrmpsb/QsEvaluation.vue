@@ -34,8 +34,8 @@
       <button @click="reqExpanded = !reqExpanded"
         class="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-gray-50 transition-colors">
         <div class="flex items-center gap-2.5">
-          <div class="w-7 h-7 rounded-lg bg-[#1a5276]/10 flex items-center justify-center flex-shrink-0">
-            <svg class="w-4 h-4 text-[#1a5276]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <div class="w-7 h-7 rounded-lg bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
           </div>
@@ -89,7 +89,7 @@
             </span>
             <!-- Profile viewer button -->
             <button @click="openProfile(app)"
-              class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#1a5276] bg-[#1a5276]/5 hover:bg-[#1a5276]/10 rounded-md transition-colors border border-[#1a5276]/20">
+              class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#2a338f] bg-[#2a338f]/5 hover:bg-[#2a338f]/10 rounded-md transition-colors border border-[#2a338f]/20">
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -177,7 +177,7 @@
                   :placeholder="remarksRequired(app.id) ? 'Remarks are required when any criterion is not met…' : 'Remarks (optional)'"
                   :disabled="qsLocked"
                   rows="2"
-                  class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-[#1a5276] focus:outline-none resize-none disabled:bg-gray-50 disabled:text-gray-400"
+                  class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none resize-none disabled:bg-gray-50 disabled:text-gray-400"
                   :class="remarksRequired(app.id) && !getForm(app.id).remarks
                     ? 'border-red-300 bg-red-50'
                     : 'border-gray-300'">
@@ -191,7 +191,7 @@
                 v-if="!qsLocked"
                 @click="submitEvaluation(app)"
                 :disabled="saving[app.id] || !isFormValid(app.id)"
-                class="px-4 py-2 text-sm bg-[#1a5276] hover:bg-[#154360] text-white font-semibold rounded-lg disabled:opacity-50 transition-colors whitespace-nowrap">
+                class="px-4 py-2 text-sm bg-[#2a338f] hover:bg-[#1e2570] text-white font-semibold rounded-lg disabled:opacity-50 transition-colors whitespace-nowrap">
                 {{ saving[app.id] ? 'Saving…' : (app.my_evaluation ? 'Update' : 'Submit') }}
               </button>
             </div>
@@ -221,7 +221,7 @@
               </thead>
               <tbody class="divide-y divide-gray-50">
                 <tr v-for="ev in app.evaluations" :key="ev.id" class="text-gray-700">
-                  <td class="py-2 font-medium">{{ ev.evaluator?.name }}</td>
+                  <td class="py-2 font-medium">{{ ev.evaluator?.full_name }}</td>
                   <td class="py-2 text-center">{{ ev.education_meets ? '✓' : '✗' }}</td>
                   <td class="py-2 text-center">{{ ev.experience_meets ? '✓' : '✗' }}</td>
                   <td class="py-2 text-center">{{ ev.training_meets ? '✓' : '✗' }}</td>

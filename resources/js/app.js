@@ -3,7 +3,6 @@ import { createInertiaApp } from '@inertiajs/vue3'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { createPinia } from 'pinia'
 import axios from 'axios'
-import DataPrivacyModal from './Components/DataPrivacyModal.vue'
 import ToastContainer from './Components/UI/ToastContainer.vue'
 import ConfirmDialog from './Components/UI/ConfirmDialog.vue'
 
@@ -33,7 +32,6 @@ createInertiaApp({
     const Root = defineComponent({
       render: () => [
         h(Transition, { name: 'fade', mode: 'out-in' }, () => h(App, props)),
-        h(DataPrivacyModal),
         h(ToastContainer),
         h(ConfirmDialog),
       ],

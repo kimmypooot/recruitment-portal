@@ -13,7 +13,7 @@ class FormGeneratorService
 {
     public function generate(Application $application, string $formType, User $generatedBy): CsForm
     {
-        $application->load(['applicant.workExperiences', 'applicant.educationalAttainments', 'applicant.trainings', 'vacancy']);
+        $application->load(['applicant.user', 'applicant.workExperiences', 'applicant.educationalAttainments', 'applicant.trainings', 'vacancy']);
 
         $view = match ($formType) {
             '33A'   => 'forms.cs-form-33a',

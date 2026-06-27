@@ -113,6 +113,6 @@ const applicantName = computed(() => {
     const middle = p.middle_name ? ' ' + p.middle_name : ''
     return `${p.last_name}, ${p.first_name}${middle}`
   }
-  return p?.user?.name ?? '—'
+  return p?.user?.full_name ?? '—'
 })
 </script>

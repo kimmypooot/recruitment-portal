@@ -1,8 +1,9 @@
 <template>
-  <a href="#main-content"
-    class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-[#2a338f] focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:outline-none">
-    Skip to content
-  </a>
+  <div>
+    <a href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-[#2a338f] focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:outline-none">
+      Skip to content
+    </a>
 
   <div class="min-h-screen flex flex-col bg-gray-50">
 
@@ -143,7 +144,11 @@
               Civil Service Commission Regional Office VIII.<br>
               Serving Eastern Visayas with integrity, competence, and excellence.
             </p>
-            <img src="/images/CORSeal_CSC2.png" alt="NPC DPO Registration" class="h-16 w-auto opacity-80 mt-4" />
+            <div class="flex items-center gap-3 mt-4">
+              <img src="/images/govph_seal.png" alt="GOV PH Seal" class="h-23 w-auto opacity-80" />
+              <img src="/images/CORSeal_CSC2.png" alt="NPC DPO Registration" class="h-25 w-auto opacity-80" />
+              <img src="/images/transparency-seal.png" alt="Transparency Seal" class="h-22 w-auto opacity-80" />
+            </div>
           </div>
 
           <!-- Col 2: Quick links -->
@@ -193,6 +198,7 @@
       </div>
     </footer>
 
+  </div>
   </div>
 </template>
 

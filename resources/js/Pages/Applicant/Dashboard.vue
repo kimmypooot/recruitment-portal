@@ -64,7 +64,7 @@
       <!-- Greeting -->
       <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">{{ greeting }}, {{ firstName }}!</h1>
-        <p class="text-sm text-gray-500 mt-1">Discover and apply for open government positions.</p>
+        <p class="text-sm text-gray-500 mt-1">Discover and apply for open positions at the Civil Service Commission Regional Office VIII.</p>
       </div>
 
       <!-- Quick actions -->
@@ -88,16 +88,19 @@
       <!-- Stat cards -->
       <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <Link v-for="card in statCards" :key="card.label" :href="card.link"
-          class="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4 shadow-sm hover:border-[#2a338f]/30 hover:shadow-md transition-all cursor-pointer">
-          <div :class="card.iconBg" class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5" :class="card.iconColor" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" :d="card.icon"/>
-            </svg>
-          </div>
-          <div>
-            <p class="text-xs text-gray-500 font-medium">{{ card.label }}</p>
-            <p v-if="!loadingApps" class="text-2xl font-bold text-gray-900 mt-0.5">{{ card.value }}</p>
-            <div v-else class="h-7 w-10 bg-gray-200 rounded animate-pulse mt-0.5"></div>
+          class="group relative bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden">
+          <div class="h-1.5 w-full bg-gradient-to-r" :class="card.accent"></div>
+          <div class="p-5 flex items-start gap-4">
+            <div :class="card.iconBg" class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-200">
+              <svg class="w-5 h-5" :class="card.iconColor" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" :d="card.icon"/>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-xs text-gray-500 font-medium truncate">{{ card.label }}</p>
+              <p v-if="!loadingApps" class="text-2xl font-bold text-gray-900 mt-0.5 tabular-nums">{{ card.value }}</p>
+              <div v-else class="h-7 w-10 bg-gray-200 rounded animate-pulse mt-0.5"></div>
+            </div>
           </div>
         </Link>
       </div>
@@ -220,7 +223,9 @@
                   </svg>
                   <span v-else class="w-2 h-2 rounded-full bg-gray-300 block"></span>
                 </div>
-                <span class="text-sm" :class="step.done ? 'text-gray-700 font-medium' : 'text-gray-400'">{{ step.label }}</span>
+                <span class="flex-1 text-sm" :class="step.done ? 'text-gray-700 font-medium' : 'text-gray-400'">{{ step.label }}</span>
+                <Link v-if="!step.done" href="/applicant/complete-profile"
+                  class="text-[10px] text-[#2a338f] hover:underline flex-shrink-0 font-medium">Fix →</Link>
               </div>
             </div>
             <div class="mt-4 pt-4 border-t border-gray-100">
@@ -240,6 +245,35 @@
               {{ isComplete ? 'View / Edit Profile' : 'Update Profile' }}
             </Link>
           </div>
+
+          <!-- Recent Applications -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-sm font-semibold text-gray-900">Recent Applications</h2>
+              <Link href="/applicant/applications" class="text-xs text-[#2a338f] hover:underline font-medium">View all →</Link>
+            </div>
+            <div v-if="!loadingApps && recentApplications.length" class="space-y-3">
+              <div v-for="app in recentApplications" :key="app.id" class="flex items-start gap-2.5">
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-medium text-gray-800 truncate leading-snug">
+                    {{ app.vacancy?.position_title ?? 'Unknown Position' }}
+                  </p>
+                  <p class="text-[10px] text-gray-400 mt-0.5">{{ formatDate(app.submitted_at ?? app.created_at) }}</p>
+                </div>
+                <StatusBadge :status="app.status" class="flex-shrink-0 mt-0.5" />
+              </div>
+            </div>
+            <div v-else-if="loadingApps" class="space-y-3">
+              <div v-for="n in 3" :key="n" class="flex items-center gap-2.5 animate-pulse">
+                <div class="flex-1 space-y-1">
+                  <div class="h-3 bg-gray-100 rounded w-3/4"></div>
+                  <div class="h-2 bg-gray-100 rounded w-1/3"></div>
+                </div>
+                <div class="h-4 w-16 bg-gray-100 rounded-full"></div>
+              </div>
+            </div>
+            <p v-else class="text-xs text-gray-400 text-center py-3">No applications yet.</p>
+          </div>
         </div>
 
       </div>
@@ -258,6 +292,7 @@ import axios from 'axios'
 import { debounce } from 'lodash-es'
 import { applicationApi, profileApi } from '@/services/api'
 import VacancyCard from '@/Components/Vacancy/VacancyCard.vue'
+import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 
 // ── Page loading state ───────────────────────────────────────────────────────
@@ -267,7 +302,7 @@ const pageLoading = ref(true)
 const authUser  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
 const authToken = localStorage.getItem('auth_token') ?? ''
 
-const firstName = computed(() => (authUser?.name ?? 'there').split(' ')[0])
+const firstName = computed(() => authUser?.first_name ?? 'there')
 
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -292,7 +327,7 @@ const appCounts = computed(() => {
     total:   list.length,
     pending: list.filter(a => a.status === 'submitted').length,
     exam:    list.filter(a => a.status === 'exam_scheduled').length,
-    passed:  list.filter(a => a.status === 'passed').length,
+    interview: list.filter(a => a.status === 'for_interview' || a.status === 'interviewed').length,
   }
 })
 
@@ -301,29 +336,44 @@ const statCards = computed(() => [
     label: 'Total Applications', value: appCounts.value.total,
     link: '/applicant/applications',
     icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-    iconBg: 'bg-[#2a338f]/10', iconColor: 'text-[#2a338f]',
+    accent: 'from-[#2a338f] to-[#3b45b0]',
+    iconBg: 'bg-indigo-50', iconColor: 'text-[#2a338f]',
   },
   {
     label: 'Pending Review', value: appCounts.value.pending,
     link: '/applicant/applications?status=submitted',
     icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-    iconBg: 'bg-yellow-50', iconColor: 'text-yellow-600',
+    accent: 'from-amber-400 to-yellow-500',
+    iconBg: 'bg-amber-50', iconColor: 'text-amber-600',
   },
   {
     label: 'Exam Scheduled', value: appCounts.value.exam,
     link: '/applicant/applications?status=exam_scheduled',
     icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-    iconBg: 'bg-purple-50', iconColor: 'text-purple-600',
+    accent: 'from-violet-500 to-purple-600',
+    iconBg: 'bg-violet-50', iconColor: 'text-violet-600',
   },
   {
-    label: 'Passed', value: appCounts.value.passed,
-    link: '/applicant/applications?status=passed',
-    icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-    iconBg: 'bg-green-50', iconColor: 'text-green-600',
+    label: 'Interview Scheduled', value: appCounts.value.interview,
+    link: '/applicant/applications?status=for_interview',
+    icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+    accent: 'from-sky-500 to-cyan-600',
+    iconBg: 'bg-sky-50', iconColor: 'text-sky-600',
   },
 ])
 
 const appliedVacancyIds = computed(() => applications.value.map(a => a.vacancy_id))
+
+const recentApplications = computed(() =>
+  [...applications.value]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 3)
+)
+
+function formatDate(iso) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+}
 
 const profileSteps = computed(() => {
   const p = profile.value
@@ -334,7 +384,7 @@ const profileSteps = computed(() => {
     { label: 'Experience & education',   done: !!(p?.work_experiences?.length || p?.educational_attainments?.length) },
     { label: 'Trainings',                done: !!(p?.trainings?.length) },
     { label: 'Eligibility & other info', done: !!(p?.eligibility) },
-    { label: 'Documents uploaded',       done: !!(p?.pds_path && p?.app_letter_path && p?.coe_path && p?.tor_path && p?.ipcr_path) },
+    { label: 'Documents uploaded',       done: !!(p?.pds_path && p?.app_letter_path && p?.coe_path && p?.tor_path) },
   ]
 })
 

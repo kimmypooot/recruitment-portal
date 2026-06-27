@@ -47,7 +47,7 @@ class QsEvaluationController extends Controller
             ->first();
 
         $applications = Application::where('vacancy_id', $vacancy->id)
-            ->with(['applicant:id,first_name,last_name,middle_name'])
+            ->with(['applicant:id,user_id', 'applicant.user:id,first_name,last_name,middle_name,suffix'])
             ->withCount('documents')
             ->orderBy('id')
             ->get();
@@ -75,7 +75,7 @@ class QsEvaluationController extends Controller
             if ($isSecretariat) {
                 // Secretariat additionally sees all member evaluations consolidated
                 $app->evaluations = QsEvaluation::where('application_id', $app->id)
-                    ->with('evaluator:id,name')
+                    ->with('evaluator:id,first_name,last_name,middle_name,suffix')
                     ->get();
                 $app->evaluation_summary = [
                     'total'        => $app->evaluations->count(),

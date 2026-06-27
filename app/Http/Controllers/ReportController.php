@@ -28,7 +28,7 @@ class ReportController extends Controller
     {
         $vacancyId = $request->query('vacancy_id');
 
-        $query = Application::with(['applicant:id,first_name,last_name,eligibility', 'vacancy:id,position_title'])
+        $query = Application::with(['applicant:id,user_id,eligibility', 'applicant.user:id,first_name,last_name', 'vacancy:id,position_title'])
             ->whereIn('status', ['qualified', 'exam_scheduled', 'interviewed', 'shortlisted', 'recommended', 'appointed']);
 
         if ($vacancyId) {
@@ -56,7 +56,8 @@ class ReportController extends Controller
 
         $applications = Application::where('vacancy_id', $vacancyId)
             ->with([
-                'applicant:id,first_name,last_name,eligibility',
+                'applicant:id,user_id,eligibility',
+                'applicant.user:id,first_name,last_name',
                 'qsEvaluations',
                 'examResults',
                 'beiRatings',
@@ -91,7 +92,7 @@ class ReportController extends Controller
 
     private function appointmentReport(Request $request): JsonResponse
     {
-        $rows = Application::with(['applicant:id,first_name,last_name', 'vacancy:id,position_title,salary_grade'])
+        $rows = Application::with(['applicant:id,user_id', 'applicant.user:id,first_name,last_name', 'vacancy:id,position_title,salary_grade'])
             ->where('status', 'appointed')
             ->get()
             ->map(fn ($app) => [
@@ -131,7 +132,8 @@ class ReportController extends Controller
     private function complianceDeadlines(Request $request): JsonResponse
     {
         $rows = SubmissionTracking::with([
-            'application.applicant:id,first_name,last_name',
+            'application.applicant:id,user_id',
+            'application.applicant.user:id,first_name,last_name',
             'vacancy:id,position_title',
         ])
             ->orderBy('due_at')

@@ -12,7 +12,7 @@
 
     <template v-else>
       <a :href="`/hrmpsb/dashboard`"
-        class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#1a5276] mb-4 transition-colors">
+        class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#2a338f] mb-4 transition-colors">
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
         </svg>
@@ -22,7 +22,7 @@
       <!-- Vacancy header -->
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-[#1a5276] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+          <div class="w-10 h-10 rounded-lg bg-[#2a338f] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
             SG-{{ vacancy.salary_grade }}
           </div>
           <div class="min-w-0">
@@ -69,8 +69,18 @@
               <td class="px-5 py-3.5 text-right text-xs text-gray-400 whitespace-nowrap">{{ formatDate(app.submitted_at) }}</td>
             </tr>
             <tr v-if="!applicants.length">
-              <td :colspan="3 + docTypes.length + 1" class="px-5 py-12 text-center text-sm text-gray-400">
-                No applicants for this position.
+              <td :colspan="3 + docTypes.length + 1" class="px-5 py-16 text-center">
+                <div class="flex flex-col items-center gap-3">
+                  <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+                    <svg class="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-gray-700">No applicants yet</p>
+                    <p class="text-xs text-gray-400 mt-0.5">No applications have been submitted for this position.</p>
+                  </div>
+                </div>
               </td>
             </tr>
           </tbody>

@@ -69,7 +69,7 @@ class VacancyController extends Controller
         $perPage = min((int) ($request->per_page ?? 15), 100);
 
         $vacancies = $query
-            ->with('postedBy:id,name')
+            ->with('postedBy:id,first_name,last_name,middle_name,suffix')
             ->withCount('applications')
             ->paginate($perPage)
             ->withQueryString();

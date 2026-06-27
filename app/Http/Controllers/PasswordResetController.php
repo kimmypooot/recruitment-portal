@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,13 +24,19 @@ class PasswordResetController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
-        $status = Password::sendResetLink($request->only('email'));
+        $user = User::where('email', $request->email)->first();
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return back()->with('message', __($status));
+        if (! $user) {
+            return back()->with('message', 'If your email is registered, you will receive a password reset link shortly.');
         }
 
-        return back()->withErrors(['email' => __($status)]);
+        try {
+            Password::sendResetLink($request->only('email'));
+        } catch (\Exception $e) {
+            // Mail delivery failure — still show the generic message
+        }
+
+        return back()->with('message', 'If your email is registered, you will receive a password reset link shortly.');
     }
 
     public function resetForm(string $token): Response
@@ -44,7 +52,7 @@ class PasswordResetController extends Controller
         $request->validate([
             'token'    => 'required',
             'email'    => 'required|email',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => ['required', 'string', 'confirmed', PasswordRule::min(8)->letters()->mixedCase()->numbers()],
         ]);
 
         $status = Password::reset(

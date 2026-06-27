@@ -92,14 +92,21 @@ Tailwind v4 is used via `@tailwindcss/vite`. The CSS warnings during `npm run bu
 
 API auth uses Laravel Sanctum (token-based). Sanctum token is stored in `localStorage` on the frontend and attached as a `Bearer` token via an axios interceptor in `api.js`. The `User` model has a `role` column with values: `applicant`, `hr-officer`, `hr-manager`, `admin`.
 
+**Token expiry:** Non-remember logins expire after 2 hours (`now()->addHours(2)`). Remember-me logins and Google OAuth tokens never expire (`null`). Password reset requires: min 8 chars, at least one uppercase, one lowercase, one number (`Password::min(8)->letters()->mixedCase()->numbers()`).
+
 No custom role-checking middleware exists. Route groups only apply `auth:sanctum`; role enforcement is manual inside controllers (where it exists at all — see Known Issues).
 
 Google OAuth (`/auth/google`, `/auth/google/callback`) is wired via Laravel Socialite but the `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI` values are empty in `.env`.
+
+### User name columns
+
+`users` has both a composite `name` (legacy, computed as "First Middle Last, Suffix") and separate `first_name`, `last_name`, `middle_name`, `suffix` columns added in the June 27 migration. Registration and Google OAuth both write all five columns. Duplicate detection on registration checks `first_name + last_name (+ middle_name)` inside a `lockForUpdate()` transaction to prevent races.
 
 ### Key model relationships
 
 - `User` → `hasOne(ApplicantProfile)` (applicants only; HR/admin users have no profile)
 - `ApplicantProfile` → `hasMany(Application)` — **`Application.applicant_id` is a FK to `applicant_profiles`, not `users`**
+- `ApplicantProfile.user_id` has a unique constraint (June 27 migration) — one profile per user enforced at DB level
 - `Application` → `hasMany(Document)`, `hasMany(ExamSchedule)`, `hasMany(InterviewSchedule)`
 - `ApplicantProfile` → `hasMany(WorkExperience)`, `hasMany(EducationalAttainment)`, `hasMany(Training)`
 - `Vacancy` → soft-deleted (`SoftDeletes`); `Application` → soft-deleted
@@ -113,7 +120,7 @@ Google OAuth (`/auth/google`, `/auth/google/callback`) is wired via Laravel Soci
 **Application status** (stored as string): `submitted`, `under_review`, `exam_scheduled`, `interviewed`, `passed`, `failed`, `withdrawn`
 — `ApplicationController::updateStatus()` also accepts: `screened`, `qualified`, `disqualified`, `shortlisted`, `for_interview`, `recommended`, `appointed`, `completed`
 
-**Vacancy status**: `draft`, `published`, `closed`, `filled`
+**Vacancy status**: `draft`, `published`, `closed`, `filled` — stored as `VARCHAR(50)`, not an ENUM (changed in June 27 migration; the `down()` method is a no-op, this change is irreversible)
 
 ### Routes summary
 

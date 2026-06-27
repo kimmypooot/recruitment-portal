@@ -14,7 +14,7 @@ class AuditLogController extends Controller
             ->leftJoin('users as u', 'u.id', '=', 'a.user_id')
             ->select(
                 'a.id', 'a.action', 'a.auditable_type', 'a.auditable_id',
-                'a.user_id', 'u.name as user_name', 'u.role as user_role', 'a.created_at'
+                'a.user_id', DB::raw("CONCAT(u.first_name, ' ', u.last_name) as user_name"), 'u.role as user_role', 'a.created_at'
             )
             ->latest('a.created_at');
 
@@ -31,7 +31,7 @@ class AuditLogController extends Controller
             $query->where(function ($sub) use ($q) {
                 $sub->where('a.action', 'like', "%{$q}%")
                     ->orWhere('a.auditable_type', 'like', "%{$q}%")
-                    ->orWhere('u.name', 'like', "%{$q}%");
+                    ->orWhere(DB::raw("CONCAT(u.first_name, ' ', u.last_name)"), 'like', "%{$q}%");
             });
         }
 

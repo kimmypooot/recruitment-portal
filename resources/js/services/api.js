@@ -52,6 +52,11 @@ export const applicationApi = {
     }),
 };
 
+export const feedbackApi = {
+  submit: (applicationId, data) => api.post(`/applications/${applicationId}/feedback`, data),
+  list:   (params)              => api.get('/admin/feedbacks', { params }),
+};
+
 export default api;
 
 export const profileApi = {

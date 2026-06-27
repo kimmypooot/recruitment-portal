@@ -58,7 +58,8 @@
         <div v-for="n in 5" :key="n" class="h-12 bg-gray-100 rounded animate-pulse"></div>
       </div>
 
-      <table v-else class="w-full text-sm">
+      <div v-else class="overflow-x-auto">
+      <table class="w-full min-w-[700px] text-sm">
         <thead class="bg-gray-50 border-b border-gray-200">
           <tr class="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider">
             <th class="px-5 py-3 w-10">
@@ -130,19 +131,48 @@
             </td>
           </tr>
           <tr v-if="!vacancies.length">
-            <td colspan="9" class="px-5 py-12 text-center text-sm text-gray-400">No vacancies found.</td>
+            <td colspan="9" class="px-5 py-16 text-center">
+              <div class="flex flex-col items-center gap-2">
+                <svg class="w-10 h-10 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                <p class="text-sm font-medium text-gray-400">No vacancies found</p>
+                <button v-if="filters.search || filters.status" @click="filters.search = ''; filters.status = ''; fetchVacancies()"
+                  class="text-xs text-[#2a338f] hover:underline">Clear filters</button>
+                <button v-else @click="openCreate"
+                  class="text-xs text-[#2a338f] hover:underline">Create your first vacancy</button>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
+      </div>
 
       <!-- Pagination -->
       <div v-if="meta.last_page > 1" class="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500">
-        <span>Page {{ meta.current_page }} of {{ meta.last_page }}</span>
-        <div class="flex gap-2">
+        <span class="text-xs">
+          Showing <strong class="text-gray-700">{{ meta.from }}</strong>–<strong class="text-gray-700">{{ meta.to }}</strong>
+          of <strong class="text-gray-700">{{ meta.total }}</strong>
+        </span>
+        <div class="flex items-center gap-1">
           <button :disabled="meta.current_page === 1" @click="goPage(meta.current_page - 1)"
-            class="px-3 py-1 rounded border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors">Prev</button>
+            class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
+            </svg>
+          </button>
+          <button v-for="p in visibleVacancyPages" :key="p" @click="typeof p === 'number' && goPage(p)"
+            :disabled="p === '…'"
+            :class="['px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
+              p === meta.current_page ? 'bg-[#2a338f] text-white' : p === '…' ? 'text-gray-300 cursor-default' : 'text-gray-600 hover:bg-gray-100']">
+            {{ p }}
+          </button>
           <button :disabled="meta.current_page === meta.last_page" @click="goPage(meta.current_page + 1)"
-            class="px-3 py-1 rounded border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors">Next</button>
+            class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+            </svg>
+          </button>
         </div>
       </div>
     </div>
@@ -269,15 +299,26 @@
           <div v-else-if="modalTab === 'competencies'" class="grid grid-cols-2 divide-x divide-gray-100" style="min-height: 400px;">
 
             <!-- Left: master list -->
-            <div class="p-5 overflow-y-auto" style="max-height: 56vh;">
+            <div class="flex flex-col overflow-hidden" style="max-height: 56vh;">
+              <div class="p-3 border-b border-gray-100 flex-shrink-0">
+                <div class="relative">
+                  <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                  <input v-model="compSearch" type="text" placeholder="Search competencies…"
+                    class="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                </div>
+              </div>
+              <div class="p-4 overflow-y-auto flex-1">
               <p class="text-xs text-gray-400 mb-3">Click a competency to toggle it. Assigned ones are highlighted.</p>
-              <div v-for="groupName in groupOrder" :key="groupName" class="mb-4">
+              <div v-for="groupName in groupOrder" :key="groupName" class="mb-4"
+                v-show="filteredCompetenciesByGroup[groupName]?.length">
                 <div class="flex items-center gap-2 mb-2">
                   <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ groupName }}</span>
                   <span class="flex-1 h-px bg-gray-100"></span>
                 </div>
                 <div class="space-y-1">
-                  <div v-for="comp in competenciesByGroup[groupName]" :key="comp.competency_key"
+                  <div v-for="comp in filteredCompetenciesByGroup[groupName]" :key="comp.competency_key"
                     @click="toggleCompetency(comp)"
                     :class="[
                       'flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer transition-all text-sm select-none',
@@ -294,6 +335,9 @@
                     <span class="truncate leading-tight">{{ comp.competency_name }}</span>
                   </div>
                 </div>
+              </div>
+              <p v-if="compSearch && !Object.values(filteredCompetenciesByGroup).some(g => g.length)"
+                class="text-xs text-gray-400 text-center py-6">No competencies match "{{ compSearch }}"</p>
               </div>
             </div>
 
@@ -409,7 +453,7 @@
       <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
         <h3 class="text-base font-semibold text-gray-900 mb-2">Delete Vacancy?</h3>
         <p class="text-sm text-gray-500 mb-6">
-          "<strong>{{ deleteTarget.position_title }}</strong>" will be archived. Previous data will be preserved.
+          "<strong>{{ deleteTarget.position_title }}</strong>" will be permanently deleted.
         </p>
         <div class="flex justify-end gap-3">
           <button @click="deleteTarget = null"
@@ -453,6 +497,15 @@ const bulkLoading   = ref(false)
 const selectAll = computed(() =>
   vacancies.value.length > 0 && selectedIds.value.length === vacancies.value.length
 )
+
+const visibleVacancyPages = computed(() => {
+  const total = meta.value.last_page ?? 1
+  const cur   = meta.value.current_page ?? 1
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  if (cur <= 4)   return [1, 2, 3, 4, 5, '…', total]
+  if (cur >= total - 3) return [1, '…', total - 4, total - 3, total - 2, total - 1, total]
+  return [1, '…', cur - 1, cur, cur + 1, '…', total]
+})
 
 function toggleSelectAll() {
   if (selectAll.value) {
@@ -522,11 +575,24 @@ const allCompetencies   = ref([])
 const draftAssignments  = ref([])
 const compSaving        = ref(false)
 const compSaveSuccess   = ref(false)
+const compSearch        = ref('')
 
 const competenciesByGroup = computed(() => {
   const map = {}
   for (const g of groupOrder) {
     map[g] = allCompetencies.value.filter(c => c.competency_group === g)
+  }
+  return map
+})
+
+const filteredCompetenciesByGroup = computed(() => {
+  const q = compSearch.value.toLowerCase().trim()
+  if (!q) return competenciesByGroup.value
+  const map = {}
+  for (const g of groupOrder) {
+    map[g] = (competenciesByGroup.value[g] ?? []).filter(c =>
+      c.competency_name.toLowerCase().includes(q)
+    )
   }
   return map
 })
@@ -554,6 +620,7 @@ function removeAssignment(key) {
 
 async function loadVacancyCompetencies(vacancyId) {
   draftAssignments.value = []
+  compSearch.value = ''
   try {
     const { data } = await axios.get(`/api/admin/competencies/vacancy/${vacancyId}`, {
       headers: authHeaders(),

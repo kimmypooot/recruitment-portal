@@ -16,7 +16,7 @@ class AlertOverdueSubmissions extends Command
     {
         $overdue = SubmissionTracking::where('status', 'pending')
             ->where('due_at', '<', now())
-            ->with(['application.applicant:id,first_name,last_name', 'vacancy:id,position_title'])
+            ->with(['application.applicant:id,user_id', 'application.applicant.user:id,first_name,last_name', 'vacancy:id,position_title'])
             ->get();
 
         if ($overdue->isEmpty()) {
@@ -52,7 +52,7 @@ class AlertOverdueSubmissions extends Command
             ->whereBetween('due_at', [now(), now()->addDays(5)])
             ->whereNull('last_notified_at')
             ->orWhere('last_notified_at', '<', now()->subDays(2))
-            ->with(['application.applicant:id,first_name,last_name', 'vacancy:id,position_title'])
+            ->with(['application.applicant:id,user_id', 'application.applicant.user:id,first_name,last_name', 'vacancy:id,position_title'])
             ->get();
 
         if ($upcoming->isNotEmpty()) {

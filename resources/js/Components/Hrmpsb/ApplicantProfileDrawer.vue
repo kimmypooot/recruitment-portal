@@ -22,7 +22,7 @@
       class="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-white shadow-2xl flex flex-col">
 
       <!-- Header -->
-      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 bg-[#1a5276] text-white flex-shrink-0">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 bg-[#2a338f] text-white flex-shrink-0">
         <div>
           <p class="text-xs font-semibold uppercase tracking-wider text-white/70">Applicant Credentials</p>
           <p v-if="profile && profile.unmasked" class="text-base font-bold mt-0.5">{{ profile.name }}</p>
@@ -59,7 +59,7 @@
         <div>
           <p class="text-sm font-semibold text-red-700 mb-1">Failed to load profile</p>
           <p class="text-xs text-gray-400">{{ error }}</p>
-          <button @click="load" class="mt-3 text-xs text-[#1a5276] hover:underline">Retry</button>
+          <button @click="load" class="mt-3 text-xs text-[#2a338f] hover:underline">Retry</button>
         </div>
       </div>
 
@@ -101,7 +101,7 @@
                     class="flex-shrink-0 flex items-center gap-1 text-xs px-2.5 py-1 rounded-md font-medium transition-colors"
                     :class="viewingDoc === key
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-[#1a5276]/10 text-[#1a5276] hover:bg-[#1a5276]/20'">
+                      : 'bg-[#2a338f]/10 text-[#2a338f] hover:bg-[#2a338f]/20'">
                     <svg v-if="viewingDoc === key"
                       class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>

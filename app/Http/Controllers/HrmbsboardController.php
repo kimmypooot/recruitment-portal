@@ -32,7 +32,7 @@ class HrmbsboardController extends Controller
 
     public function compositions(): JsonResponse
     {
-        $compositions = HrmbsboardComposition::with(['user:id,name,email,role', 'assignedBy:id,name'])
+        $compositions = HrmbsboardComposition::with(['user:id,first_name,last_name,middle_name,suffix,email,role', 'assignedBy:id,first_name,last_name,middle_name,suffix'])
             ->orderBy('hrmpsb_role')
             ->get();
 
@@ -65,7 +65,7 @@ class HrmbsboardController extends Controller
 
         AuditLog::record("hrmpsb_assigned:{$data['hrmpsb_role']}", $composition);
 
-        return response()->json($composition->load('user:id,name,email,role'), 201);
+        return response()->json($composition->load('user:id,first_name,last_name,middle_name,suffix,email,role'), 201);
     }
 
     public function remove(HrmbsboardComposition $composition): JsonResponse
@@ -99,7 +99,7 @@ class HrmbsboardController extends Controller
 
     public function myRole(Request $request): JsonResponse
     {
-        $composition = HrmbsboardComposition::with('user:id,name,email')
+        $composition = HrmbsboardComposition::with('user:id,first_name,last_name,middle_name,suffix,email')
             ->where('user_id', $request->user()->id)
             ->where('is_active', true)
             ->first();
@@ -107,7 +107,14 @@ class HrmbsboardController extends Controller
         return response()->json([
             'composition' => $composition,
             'roles' => HrmbsboardComposition::ROLES,
-            'user' => $request->user()->only('id', 'name', 'email', 'role'),
+            'user' => [
+                'id'         => $request->user()->id,
+                'first_name' => $request->user()->first_name,
+                'last_name'  => $request->user()->last_name,
+                'full_name'  => $request->user()->full_name,
+                'email'      => $request->user()->email,
+                'role'       => $request->user()->role,
+            ],
         ]);
     }
 
@@ -303,7 +310,7 @@ class HrmbsboardController extends Controller
         }
 
         $applications = $vacancy->applications()
-            ->with(['applicant.user:id,name'])
+            ->with(['applicant:id,user_id', 'applicant.user:id,first_name,last_name,middle_name,suffix'])
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
             ->orderBy('created_at')
             ->get()

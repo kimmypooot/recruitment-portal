@@ -1,4 +1,5 @@
 <template>
+  <DataPrivacyModal />
   <PublicLayout>
 
     <Head>
@@ -19,60 +20,70 @@
     <template v-if="!redirecting">
 
     <!-- ── Hero ─────────────────────────────────────────────────────────── -->
-    <section class="relative text-white overflow-hidden min-h-[320px] sm:min-h-[400px]"
+    <section class="relative text-white overflow-hidden"
       style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
       <!-- Brand gradient overlay -->
-      <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(30,37,112,0.88) 0%, rgba(42,51,143,0.85) 50%, rgba(26,31,94,0.90) 100%);"></div>
-      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-        <div class="max-w-2xl">
+      <div class="absolute inset-0" style="background: linear-gradient(160deg, rgba(26,31,94,0.93) 0%, rgba(42,51,143,0.87) 55%, rgba(30,37,112,0.95) 100%);"></div>
 
-          <!-- 3 banner images -->
-          <div class="flex items-center gap-3 mb-6">
-            <img src="/images/csc-logo.png" alt="CSC Logo" class="h-16 sm:h-20 w-auto" />
-            <img src="/images/bagong_pilipinas.png" alt="Bagong Pilipinas" class="h-16 sm:h-20 w-auto" />
-            <img src="/images/lingkod_bayani.png" alt="Lingkod Bayani" class="h-16 sm:h-20 w-auto" />
-          </div>
+      <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center">
 
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-5 border border-white/20 bg-white/10 text-white/90">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#ec1c2d]"></span>
-            {{ stats.published }} open position{{ stats.published !== 1 ? 's' : '' }} available
-          </div>
-          <h1 class="text-2xl sm:text-3xl lg:text-5xl font-bold leading-tight mb-4">
-            CSC RO VIII<br>
-            <span class="text-white/70">Recruitment Portal</span>
-          </h1>
-          <p class="text-white/80 text-base sm:text-lg leading-relaxed mb-8 max-w-xl">
-            Browse open positions at the Civil Service Commission Regional Office VIII.
-            Sign in or create a free account to apply for a career in government service.
-          </p>
-
-          <!-- Inline search -->
-          <div class="flex gap-2 max-w-lg">
-            <div class="flex-1 relative">
-              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-              <input
-                v-model="filters.search"
-                @input="onSearchInput"
-                type="text"
-                aria-label="Search position title"
-                placeholder="Search position title..."
-                class="w-full pl-9 pr-4 py-3 rounded-lg text-sm text-gray-900 bg-white placeholder-gray-400 border-0 shadow focus:ring-2 focus:ring-white/50 focus:outline-none" />
-            </div>
-            <button
-              @click="fetchVacancies"
-              class="px-5 py-3 bg-[#ec1c2d] hover:bg-[#c9111f] text-white font-semibold text-sm rounded-lg shadow transition-colors">
-              Search
-            </button>
-          </div>
+        <!-- Logos -->
+        <div class="flex items-center justify-center gap-4 sm:gap-6 mb-8">
+          <img src="/images/csc-logo.png"        alt="CSC Logo"        class="h-16 sm:h-20 w-auto drop-shadow-md" />
+          <img src="/images/bagong_pilipinas.png" alt="Bagong Pilipinas" class="h-16 sm:h-20 w-auto drop-shadow-md" />
+          <img src="/images/lingkod_bayani.png"   alt="Lingkod Bayani"  class="h-16 sm:h-20 w-auto drop-shadow-md" />
         </div>
+
+        <!-- Eyebrow badge -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase mb-6 border border-white/20 bg-white/10 text-white/85 backdrop-blur-sm">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#ec1c2d] animate-pulse"></span>
+          {{ stats.published }} open position{{ stats.published !== 1 ? 's' : '' }} available
+        </div>
+
+        <!-- Headline -->
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mb-4">
+          CSC RO VIII
+          <span class="block text-white/60 font-semibold text-[1.6rem] sm:text-[2rem] lg:text-[2.65rem] mt-1 tracking-normal">
+            Recruitment Portal
+          </span>
+        </h1>
+
+        <!-- Subheadline -->
+        <p class="text-white/75 text-base sm:text-lg leading-relaxed mb-10 max-w-xl mx-auto">
+          Explore career opportunities at the
+          <span class="hidden sm:inline"><br></span>
+          <span class="font-semibold text-white">Civil Service Commission Regional Office VIII</span>.
+          <span class="hidden sm:inline"><br></span>
+          Sign in or create a free account to submit your application.
+        </p>
+
+        <!-- Search bar -->
+        <div class="flex gap-2 max-w-lg mx-auto">
+          <div class="flex-1 relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input
+              v-model="filters.search"
+              @input="onSearchInput"
+              type="text"
+              aria-label="Search position title"
+              placeholder="Search position title..."
+              class="w-full pl-9 pr-4 py-3 rounded-xl text-sm text-gray-900 bg-white placeholder-gray-400 border-0 shadow-lg focus:ring-2 focus:ring-white/60 focus:outline-none" />
+          </div>
+          <button
+            @click="fetchVacancies"
+            class="px-5 py-3 min-w-[5rem] bg-[#ec1c2d] hover:bg-[#c9111f] active:bg-[#b00f1b] text-white font-semibold text-sm rounded-xl shadow-lg transition-colors">
+            Search
+          </button>
+        </div>
+
       </div>
 
       <!-- Wave divider -->
-      <div class="relative h-8 overflow-hidden pointer-events-none">
-        <svg viewBox="0 0 1440 32" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB" aria-hidden="true">
-          <path d="M0 32L60 26.7C120 21.3 240 10.7 360 8C480 5.3 600 10.7 720 16C840 21.3 960 26.7 1080 26.7C1200 26.7 1320 21.3 1380 18.7L1440 16V32H0Z"/>
+      <div class="relative h-10 overflow-hidden pointer-events-none">
+        <svg viewBox="0 0 1440 40" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB" aria-hidden="true">
+          <path d="M0 40L60 36C120 32 240 20 360 18C480 16 600 24 720 28C840 32 960 30 1080 24C1200 20 1320 24 1380 28L1440 32V40H0Z"/>
         </svg>
       </div>
     </section>
@@ -83,34 +94,49 @@
         <div class="flex flex-wrap items-center gap-3">
 
           <!-- Salary Grade filter -->
-          <select
-            v-model="filters.salary_grade"
-            @change="fetchVacancies"
-            class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
-            <option value="">All Salary Grades</option>
-            <option v-for="sg in salaryGrades" :key="sg" :value="sg">SG-{{ sg }}</option>
-          </select>
+          <div class="relative">
+            <select
+              v-model="filters.salary_grade"
+              @change="fetchVacancies"
+              class="appearance-none text-sm border border-gray-300 rounded-lg pl-3 pr-8 py-2 bg-white text-gray-700 shadow-sm cursor-pointer focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
+              <option value="">All Salary Grades</option>
+              <option v-for="sg in salaryGrades" :key="sg" :value="sg">SG-{{ sg }}</option>
+            </select>
+            <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
 
           <!-- Place of Assignment filter -->
-          <select
-            v-model="filters.place"
-            @change="fetchVacancies"
-            class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
-            <option value="">All Offices</option>
-            <option v-for="place in uniquePlaces" :key="place" :value="place">{{ place }}</option>
-          </select>
+          <div class="relative">
+            <select
+              v-model="filters.place"
+              @change="fetchVacancies"
+              class="appearance-none text-sm border border-gray-300 rounded-lg pl-3 pr-8 py-2 bg-white text-gray-700 shadow-sm cursor-pointer focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
+              <option value="">All Offices</option>
+              <option v-for="place in uniquePlaces" :key="place" :value="place">{{ place }}</option>
+            </select>
+            <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
 
           <!-- Sort -->
-          <select
-            v-model="filters.sort"
-            @change="fetchVacancies"
-            class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
-            <option value="deadline_asc">Deadline: Soonest First</option>
-            <option value="deadline_desc">Deadline: Latest First</option>
-            <option value="sg_desc">Salary Grade: Highest First</option>
-            <option value="sg_asc">Salary Grade: Lowest First</option>
-            <option value="newest">Recently Posted</option>
-          </select>
+          <div class="relative">
+            <select
+              v-model="filters.sort"
+              @change="fetchVacancies"
+              class="appearance-none text-sm border border-gray-300 rounded-lg pl-3 pr-8 py-2 bg-white text-gray-700 shadow-sm cursor-pointer focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
+              <option value="deadline_asc">Deadline: Soonest First</option>
+              <option value="deadline_desc">Deadline: Latest First</option>
+              <option value="sg_desc">Salary Grade: Highest First</option>
+              <option value="sg_asc">Salary Grade: Lowest First</option>
+              <option value="newest">Recently Posted</option>
+            </select>
+            <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
 
           <!-- Active filter count + clear -->
           <button
@@ -247,6 +273,52 @@
 
     </section>
 
+    <!-- ── Testimonials marquee ─────────────────────────────────────── -->
+    <section v-if="testimonials.length >= 3 && vacancies.length > 0" class="py-14 bg-gray-50 border-t border-gray-100" style="overflow: hidden; max-width: 100vw;">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center">
+        <p class="text-xs font-semibold uppercase tracking-widest text-[#ec1c2d] mb-2">What Applicants Say</p>
+        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Real experiences, real people</h2>
+        <p class="text-sm text-gray-500 mt-2">Feedback submitted by applicants after applying through this portal.</p>
+      </div>
+
+      <!-- Single scrolling row -->
+      <div class="relative w-full" style="overflow: hidden;">
+        <div ref="marqueeTrack"
+          class="flex"
+          style="width: max-content; will-change: transform;"
+          @mouseenter="pauseMarquee"
+          @mouseleave="resumeMarquee">
+          <div v-for="(t, i) in [...testimonials, ...testimonials]" :key="'t-' + i"
+            class="flex-shrink-0 w-72 sm:w-80 mx-3 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-3">
+            <!-- Stars -->
+            <div class="flex items-center gap-0.5">
+              <svg v-for="s in 5" :key="s" class="w-4 h-4"
+                :class="s <= t.rating ? 'text-yellow-400' : 'text-gray-200'"
+                fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+            <!-- Comment -->
+            <p class="text-sm text-gray-700 leading-relaxed line-clamp-3 flex-1">"{{ t.comment }}"</p>
+            <!-- Author -->
+            <div class="flex items-center gap-2.5 pt-2 border-t border-gray-100">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                :style="{ backgroundColor: avatarColor(i) }">
+                {{ t.display_name[0]?.toUpperCase() ?? '?' }}
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-gray-800">{{ t.display_name }}</p>
+                <p class="text-xs text-gray-400 truncate max-w-[180px]">Applied for {{ t.position_title }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Fade edges -->
+        <div class="pointer-events-none absolute inset-y-0 left-0 w-24 z-10" style="background: linear-gradient(to right, #f9fafb, transparent);"></div>
+        <div class="pointer-events-none absolute inset-y-0 right-0 w-24 z-10" style="background: linear-gradient(to left, #f9fafb, transparent);"></div>
+      </div>
+    </section>
+
     <!-- ── Stats strip ──────────────────────────────────────────────── -->
     <section class="text-white" style="background-color: #2a338f;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -273,11 +345,46 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import axios from 'axios'
 import { Head, router } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import VacancyCard from '@/Components/Vacancy/VacancyCard.vue'
+import DataPrivacyModal from '@/Components/DataPrivacyModal.vue'
+
+const AVATAR_COLORS = ['#2a338f','#7c3aed','#0891b2','#059669','#d97706','#dc2626','#db2777','#0284c7','#65a30d']
+function avatarColor(i) { return AVATAR_COLORS[i % AVATAR_COLORS.length] }
+
+// ── Testimonials state (must be declared before watch) ────────────────────
+const testimonials = ref([])
+
+// ── Marquee (rAF-based) ───────────────────────────────────────────────────
+const marqueeTrack = ref(null)
+let marqueeOffset  = 0
+let marqueeRaf     = null
+let marqueePaused  = false
+
+function tickMarquee() {
+  const el = marqueeTrack.value
+  if (el && !marqueePaused) {
+    const halfWidth = el.scrollWidth / 2
+    marqueeOffset += 0.5
+    if (marqueeOffset >= halfWidth) marqueeOffset = 0
+    el.style.transform = `translateX(-${marqueeOffset}px)`
+  }
+  marqueeRaf = requestAnimationFrame(tickMarquee)
+}
+
+function pauseMarquee()  { marqueePaused = true  }
+function resumeMarquee() { marqueePaused = false }
+
+// Start the loop once testimonials are loaded and rendered
+watch(testimonials, async (val) => {
+  if (val.length >= 3) {
+    await nextTick()
+    if (!marqueeRaf) marqueeRaf = requestAnimationFrame(tickMarquee)
+  }
+})
 
 function debounce(fn, delay) {
   let timer
@@ -298,7 +405,7 @@ const props = defineProps({
 })
 
 // ── State ─────────────────────────────────────────────────────────────────
-const redirecting = ref(true)
+const redirecting  = ref(true)
 const vacancies   = ref(props.initialVacancies.data ?? [])
 const isLoading   = ref(!props.initialVacancies.data?.length)
 const pagination  = ref({
@@ -381,7 +488,14 @@ function clearFilters() {
   fetchVacancies()
 }
 
+onUnmounted(() => {
+  if (marqueeRaf) cancelAnimationFrame(marqueeRaf)
+})
+
 onMounted(async () => {
+  // Fetch public testimonials (fire-and-forget; section hides itself if empty)
+  axios.get('/api/testimonials').then(({ data }) => { testimonials.value = data }).catch(() => {})
+
   const token = localStorage.getItem('auth_token')
   if (token) {
     try {
@@ -415,3 +529,4 @@ onMounted(async () => {
   if (!props.initialVacancies.data?.length) fetchVacancies()
 })
 </script>
+

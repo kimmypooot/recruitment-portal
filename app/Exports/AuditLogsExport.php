@@ -28,7 +28,7 @@ class AuditLogsExport implements FromCollection, WithHeadings, WithMapping
     public function map($log): array
     {
         return [
-            $log->user?->name ?? 'System',
+            $log->user?->full_name ?? 'System',
             $log->action,
             $log->model_type,
             $log->details ?? '',

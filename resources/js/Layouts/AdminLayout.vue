@@ -243,9 +243,9 @@ const authToken      = ref('')
 const authUser       = ref({})
 const myRole         = ref(null)
 
-const userName    = computed(() => authUser.value?.name ?? 'Admin')
+const userName    = computed(() => authUser.value?.full_name ?? 'Admin')
 const userEmail   = computed(() => authUser.value?.email ?? '')
-const userInitial = computed(() => (authUser.value?.name ?? 'A')[0].toUpperCase())
+const userInitial = computed(() => (authUser.value?.full_name ?? 'A')[0].toUpperCase())
 const canSwitchToHrmpsb = computed(() => {
   const role = authUser.value?.role
   return role === 'admin' || role === 'hrmpsb'
@@ -310,6 +310,7 @@ const navGroups = computed(() => {
       items: [
         { label: 'Vacancies', href: '/admin/vacancies', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
         { label: 'Applications', href: '/admin/applications', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
+        { label: 'Feedbacks', href: '/admin/feedbacks', icon: 'M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z' },
         { label: 'HRMPSB', href: '/admin/hrmpsb', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
       ],
     },

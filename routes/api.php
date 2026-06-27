@@ -28,11 +28,13 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VacancyCompetencyController;
 use App\Http\Controllers\VacancyController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\FeedbackController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::get('/vacancies', [VacancyController::class, 'index']);
 Route::get('/vacancies/{vacancy}', [VacancyController::class, 'show']);
+Route::get('/testimonials', [FeedbackController::class, 'testimonials']);
 Route::get('/competencies', [VacancyCompetencyController::class, 'index']);
 
 // Authentication — throttled to prevent brute-force and registration spam
@@ -42,6 +44,7 @@ Route::middleware('throttle:3,60')->post('/register', [AuthController::class, 'r
 // Privacy consent re-acknowledgment (for existing users when policy updates)
 Route::middleware(['auth:sanctum'])->post('/privacy-consent', [AuthController::class, 'recordConsent']);
 Route::middleware(['auth:sanctum'])->post('/logout', [AuthController::class, 'logout']);
+Route::middleware(['auth:sanctum'])->post('/change-password', [AuthController::class, 'changePassword']);
 Route::middleware(['auth:sanctum'])->post('/auth/google/link', [AuthController::class, 'googleLinkApi']);
 Route::middleware(['auth:sanctum'])->post('/auth/google/unlink', [AuthController::class, 'googleUnlink']);
 
@@ -60,6 +63,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/my-applications', [ApplicationController::class, 'index']);
     Route::middleware('throttle:10,1')->post('/applications', [ApplicationController::class, 'store']);
     Route::get('/applications/{application}', [ApplicationController::class, 'show']);
+    Route::patch('/applications/{application}/withdraw', [ApplicationController::class, 'withdraw']);
     Route::post('/applications/{application}/documents', [DocumentController::class, 'store']);
 
     // Profile
@@ -86,6 +90,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
+
+    // Feedback
+    Route::post('/applications/{application}/feedback', [FeedbackController::class, 'store']);
 });
 
 // HR / Admin management routes (admin role + hrmpsb with secretariat/hr-chief designation)
@@ -112,6 +119,7 @@ Route::middleware(['auth:sanctum', 'admin-access'])->prefix('admin')->group(func
     Route::apiResource('users', UserController::class);
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
     Route::get('/dashboard-stats', [DashboardController::class, 'adminStats']);
+    Route::get('/feedbacks', [FeedbackController::class, 'index']);
 
     // Competency library management (admin)
     Route::get('/competencies', [CompetencyController::class, 'index']);
@@ -224,5 +232,4 @@ Route::middleware(['auth:sanctum', 'role:hrmpsb,admin'])->group(function () {
     Route::delete('/background-investigation/revoke-link/{report}', [BackgroundInvestigationController::class, 'revokeLink']);
 });
 
-// PSGC data (public)
-Route::get('/psgc/barangays/{cityCode}', [PsgcController::class, 'barangays']);
+

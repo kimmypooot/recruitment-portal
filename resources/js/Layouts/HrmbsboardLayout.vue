@@ -5,7 +5,7 @@
     <aside
       :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0']"
       class="fixed inset-y-0 left-0 z-50 w-64 text-white flex flex-col transition-transform duration-200"
-      style="background-color: #1a5276;">
+      style="background-color: #2a338f;">
 
       <!-- Logo -->
       <div class="flex items-center gap-3 px-5 py-5 border-b border-white/10">
@@ -101,7 +101,7 @@
           <button @click="dropdownOpen = !dropdownOpen" aria-label="User menu"
             class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
             <div class="relative w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden"
-              style="background-color: #1a5276;">
+              style="background-color: #2a338f;">
               <span>{{ userInitial }}</span>
               <img :src="`/profile/photo?token=${authToken}`"
                 class="absolute inset-0 w-full h-full object-cover"
@@ -292,9 +292,9 @@ const requiredStage = {
   '/hrmpsb/applicants/':            { flag: null,                         reason: null },
 }
 
-const userName    = computed(() => authUser.value?.name ?? 'HRMPSB Member')
+const userName    = computed(() => authUser.value?.full_name ?? 'HRMPSB Member')
 const userEmail   = computed(() => authUser.value?.email ?? '')
-const userInitial = computed(() => (authUser.value?.name ?? 'H')[0].toUpperCase())
+const userInitial = computed(() => (authUser.value?.full_name ?? 'H')[0].toUpperCase())
 const canSchedule = computed(() => {
   const role = authUser.value?.role
   if (role === 'admin') return true
