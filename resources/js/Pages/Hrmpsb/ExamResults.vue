@@ -15,11 +15,7 @@
             :class="examType === 'TWE' ? 'bg-[#1a5276] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
             TWE — Technical Written Exam
           </a>
-          <a :href="`/hrmpsb/exam-results/${props.vacancyId}?exam_type=CBWE`"
-            class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors"
-            :class="examType === 'CBWE' ? 'bg-[#1a5276] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
-            CBWE — Competency-Based Written Exam
-          </a>
+
         </div>
         <!-- Passing threshold note -->
         <div class="mt-4 flex items-center gap-2 text-xs text-gray-500">
@@ -69,7 +65,7 @@
             </div>
             <div class="text-left">
               <p class="text-sm font-semibold text-gray-900">Encode Examination Score</p>
-              <p class="text-xs text-gray-400 mt-0.5">HRMPSB Member — enter raw score and max items for TWE or CBWE</p>
+              <p class="text-xs text-gray-400 mt-0.5">HRMPSB Member — enter raw score and max items for TWE</p>
             </div>
           </div>
           <svg class="w-4 h-4 text-gray-400 transition-transform flex-shrink-0"
@@ -96,7 +92,6 @@
                 <label class="field-label">Examination Type</label>
                 <select v-model="form.exam_type" class="input" required>
                   <option value="TWE">TWE — Technical Written Examination</option>
-                  <option value="CBWE">CBWE — Competency-Based Written Examination</option>
                 </select>
               </div>
               <div>
@@ -345,11 +340,8 @@
           </svg>
           QS Results
         </a>
-        <a :href="`/hrmpsb/bei-rating/${props.vacancyId}`" class="btn-primary">
-          BEI Rating
-          <svg class="w-4 h-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
-          </svg>
+        <a :href="`/hrmpsb/cbwe-rating/${props.vacancyId}`" class="btn-primary">
+          CBWE Rating →
         </a>
       </div>
 
@@ -369,10 +361,8 @@ const { confirm } = useConfirm()
 const props = defineProps({ vacancyId: Number, exam_type: { type: String, default: 'TWE' } })
 
 const examType = computed(() => props.exam_type ?? 'TWE')
-const stageNumber = computed(() => examType.value === 'TWE' ? 3 : 4)
-const stageLabel = computed(() => examType.value === 'TWE'
-  ? 'Qualifying Exam (TWE)'
-  : 'Qualifying Exam (CBWE)')
+const stageNumber = 2
+const stageLabel = 'Qualifying Exam (TWE)'
 
 const loading          = ref(true)
 const submitting       = ref(false)

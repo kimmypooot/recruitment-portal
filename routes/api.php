@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BackgroundCheckController;
 use App\Http\Controllers\BackgroundInvestigationController;
 use App\Http\Controllers\BeiRatingController;
+use App\Http\Controllers\CbweRatingController;
 use App\Http\Controllers\ComparativeAssessmentController;
 use App\Http\Controllers\CompetencyController;
 use App\Http\Controllers\CsFormController;
@@ -175,6 +176,11 @@ Route::middleware(['auth:sanctum', 'role:hrmpsb,admin'])->group(function () {
     Route::get('/bei-ratings/{vacancy}', [BeiRatingController::class, 'index']);
     Route::post('/bei-ratings', [BeiRatingController::class, 'store']);
     Route::patch('/bei-ratings/{vacancy}/lock', [BeiRatingController::class, 'lock']);
+
+    // CBWE Ratings (competency-based evaluation, replaces written CBWE exam)
+    Route::get('/cbwe-ratings/{vacancy}', [CbweRatingController::class, 'index']);
+    Route::post('/cbwe-ratings', [CbweRatingController::class, 'store']);
+    Route::patch('/cbwe-ratings/{vacancy}/lock', [CbweRatingController::class, 'lock']);
 
     // EOPT
     Route::get('/eopt/{vacancy}', [EoptController::class, 'index']);

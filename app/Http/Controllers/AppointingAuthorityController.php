@@ -20,6 +20,7 @@ class AppointingAuthorityController extends Controller
         $applications = Application::with([
             'applicant',
             'examResults',
+            'cbweRatings',
             'beiRatings',
             'qsEvaluations',
             'backgroundInvestigationReports',
@@ -55,6 +56,9 @@ class AppointingAuthorityController extends Controller
                   'name'        => $this->formatApplicantName($app->applicant) ?: '—',
                   'qs_result'   => $qsResult,
                   'exam_scores' => $exams,
+                  'cbwe_average' => $app->cbweRatings->whereNotNull('total_rating')->count() > 0
+                      ? round($app->cbweRatings->avg('total_rating'), 2)
+                      : null,
                   'bei_average' => $beiAverage,
                   'background_investigation' => $app->backgroundInvestigationReports->first() ? [
                       'submitted'       => (bool) $app->backgroundInvestigationReports->first()?->submitted_at,

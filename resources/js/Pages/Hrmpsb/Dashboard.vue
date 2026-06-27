@@ -237,8 +237,8 @@ const pendingActions = computed(() => {
     if (!s.pre_assessment_exists) return true
     if (!s.qs_locked) return true
     if (s.qs_locked && !s.twe_exists) return true
-    if (s.twe_exists && !s.cbwe_exists) return true
-    if (s.cbwe_exists && !s.bei_locked) return true
+    if (s.twe_exists && !s.cbwe_locked) return true
+    if (s.cbwe_locked && !s.bei_locked) return true
     if (s.bei_locked && !s.eopt_exists) return true
     if (s.eopt_exists && !s.background_check_locked) return true
     if (s.deliberation_exists && !s.appointing_authority_exists) return true
@@ -252,7 +252,7 @@ function phaseComplete(step, s) {
     pre_assessment: s.pre_assessment_exists,
     qs:             s.qs_locked,
     twe:            s.twe_exists,
-    cbwe:           s.cbwe_exists,
+    cbwe:           s.cbwe_locked,
     bei:            s.bei_locked,
     eopt:           s.eopt_exists,
     background:     s.background_check_locked,
@@ -346,30 +346,21 @@ function actionGroups(vacancyId) {
   groups.push({ label: 'TWE (Written Exam)', items: tweItems })
 
   // CBWE
-  const cbweItems = []
-  if (canSchedule.value) {
-    cbweItems.push({
-      label: 'Schedule CBWE',
-      href: `/hrmpsb/exam-schedule/${vacancyId}?exam_type=CBWE`,
-      disabled: !s.twe_exists,
-      tooltip: !s.twe_exists ? 'TWE must be completed first' : null,
-      icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-      badge: s.cbwe_scheduled ? 'Scheduled' : null,
-      badgeCls: 'bg-amber-100 text-amber-700',
-      iconCls: s.twe_exists ? 'text-gray-400' : 'text-gray-300',
-    })
-  }
-  cbweItems.push({
-    label: 'CBWE Results',
-    href: `/hrmpsb/exam-results/${vacancyId}?exam_type=CBWE`,
-    disabled: !s.twe_exists,
-    tooltip: !s.twe_exists ? 'TWE must be completed first' : null,
-    icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-    badge: s.cbwe_exists ? 'Done' : null,
-    badgeCls: 'bg-green-100 text-green-700',
-    iconCls: s.twe_exists ? 'text-gray-400' : 'text-gray-300',
+  groups.push({
+    label: 'CBWE',
+    items: [
+      {
+        label: 'CBWE Rating',
+        href: `/hrmpsb/cbwe-rating/${vacancyId}`,
+        disabled: !s.twe_exists,
+        tooltip: !s.twe_exists ? 'TWE must be completed first' : null,
+        icon: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z',
+        badge: s.cbwe_locked ? 'Locked' : s.cbwe_exists ? 'In Progress' : null,
+        badgeCls: s.cbwe_locked ? 'bg-blue-100 text-blue-700' : s.cbwe_exists ? 'bg-amber-100 text-amber-700' : undefined,
+        iconCls: s.twe_exists ? 'text-gray-400' : 'text-gray-300',
+      },
+    ],
   })
-  groups.push({ label: 'CBWE (Written Exam)', items: cbweItems })
 
   // BEI
   const beiItems = []
@@ -377,19 +368,19 @@ function actionGroups(vacancyId) {
     beiItems.push({
       label: 'Schedule BEI',
       href: `/hrmpsb/bei-schedule/${vacancyId}`,
-      disabled: !s.cbwe_exists,
-      tooltip: !s.cbwe_exists ? 'CBWE must be completed first' : null,
+      disabled: !s.cbwe_locked,
+      tooltip: !s.cbwe_locked ? 'CBWE must be locked first' : null,
       icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
       badge: s.bei_scheduled ? 'Scheduled' : null,
       badgeCls: 'bg-sky-100 text-sky-700',
-      iconCls: s.cbwe_exists ? 'text-gray-400' : 'text-gray-300',
+    iconCls: s.cbwe_locked ? 'text-gray-400' : 'text-gray-300',
     })
   }
   beiItems.push({
     label: 'BEI Rating',
     href: `/hrmpsb/bei-rating/${vacancyId}`,
-    disabled: !s.qs_locked || !s.cbwe_exists,
-    tooltip: !s.qs_locked ? 'QS must be locked first' : !s.cbwe_exists ? 'CBWE must be completed first' : null,
+    disabled: !s.qs_locked || !s.cbwe_locked,
+    tooltip: !s.qs_locked ? 'QS must be locked first' : !s.cbwe_locked ? 'CBWE must be locked first' : null,
     icon: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z',
     badge: s.bei_locked ? 'Locked' : s.bei_exists ? 'In Progress' : null,
     badgeCls: s.bei_locked ? 'bg-blue-100 text-blue-700' : s.bei_exists ? 'bg-amber-100 text-amber-700' : undefined,
@@ -477,7 +468,7 @@ function scrollToPhase(vacancyId, key) {
     pre_assessment: s.pre_assessment_exists,
     qs: s.qs_locked,
     twe: s.twe_exists,
-    cbwe: s.cbwe_exists,
+    cbwe: s.cbwe_locked,
     bei: s.bei_locked,
     eopt: s.eopt_exists,
     background: s.background_check_locked,
@@ -488,7 +479,7 @@ function scrollToPhase(vacancyId, key) {
       pre_assessment: `/hrmpsb/pre-assessment/${vacancyId}`,
       qs: `/hrmpsb/qs-evaluation/${vacancyId}`,
       twe: `/hrmpsb/exam-schedule/${vacancyId}?exam_type=TWE`,
-      cbwe: `/hrmpsb/exam-schedule/${vacancyId}?exam_type=CBWE`,
+      cbwe: `/hrmpsb/cbwe-rating/${vacancyId}`,
       bei: `/hrmpsb/bei-rating/${vacancyId}`,
       eopt: `/hrmpsb/eopt/${vacancyId}`,
       background: `/hrmpsb/background-check/${vacancyId}`,
@@ -523,8 +514,8 @@ function currentStageBadge(s) {
   if (s.bei_locked)                return { label: 'Awaiting EOPT',               class: 'bg-fuchsia-100 text-fuchsia-700', dot: 'bg-fuchsia-500' }
   if (s.bei_exists)                return { label: 'BEI In Progress',             class: 'bg-blue-100 text-blue-700',    dot: 'bg-blue-500 animate-pulse' }
   if (s.bei_scheduled)             return { label: 'BEI Scheduled',               class: 'bg-sky-100 text-sky-700',      dot: 'bg-sky-500' }
-  if (s.cbwe_exists)               return { label: 'CBWE Completed',              class: 'bg-orange-100 text-orange-700',dot: 'bg-orange-500' }
-  if (s.cbwe_scheduled)            return { label: 'CBWE Scheduled',              class: 'bg-amber-100 text-amber-700',  dot: 'bg-amber-500' }
+  if (s.cbwe_locked)               return { label: 'CBWE Locked',                 class: 'bg-orange-100 text-orange-700',dot: 'bg-orange-500' }
+  if (s.cbwe_exists)               return { label: 'CBWE In Progress',            class: 'bg-amber-100 text-amber-700',  dot: 'bg-amber-500 animate-pulse' }
   if (s.twe_exists)                return { label: 'TWE Completed',               class: 'bg-teal-100 text-teal-700',    dot: 'bg-teal-500' }
   if (s.twe_scheduled)             return { label: 'TWE Scheduled',               class: 'bg-cyan-100 text-cyan-700',    dot: 'bg-cyan-500' }
   if (s.qs_locked)                 return { label: 'QS Locked',                   class: 'bg-amber-100 text-amber-700',  dot: 'bg-amber-500' }

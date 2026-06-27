@@ -7,6 +7,7 @@ use App\Models\Application;
 use App\Models\BackgroundCheck;
 use App\Models\BackgroundInvestigationReport;
 use App\Models\BeiRating;
+use App\Models\CbweRating;
 use App\Models\ComparativeAssessmentResult;
 use App\Models\DeliberationResult;
 use App\Models\EoptResult;
@@ -139,6 +140,7 @@ class HrmbsboardController extends Controller
                     'twe_exists' => false,
                     'cbwe_scheduled' => false,
                     'cbwe_exists' => false,
+                    'cbwe_locked' => false,
                     'bei_scheduled' => false,
                     'bei_exists' => false,
                     'bei_locked' => false,
@@ -159,7 +161,8 @@ class HrmbsboardController extends Controller
             $tweScheduled = ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->exists();
             $tweExists = ExamResult::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->exists();
             $cbweScheduled = ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'CBWE')->exists();
-            $cbweExists = ExamResult::whereIn('application_id', $appIds)->where('exam_type', 'CBWE')->exists();
+            $cbweExists = CbweRating::whereIn('application_id', $appIds)->exists();
+            $cbweLocked = CbweRating::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
             $beiScheduled = InterviewSchedule::whereIn('application_id', $appIds)->exists();
             $beiExists = BeiRating::whereIn('application_id', $appIds)->exists();
             $beiLocked = BeiRating::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
@@ -180,6 +183,7 @@ class HrmbsboardController extends Controller
                 'twe_exists' => $tweExists,
                 'cbwe_scheduled' => $cbweScheduled,
                 'cbwe_exists' => $cbweExists,
+                'cbwe_locked' => $cbweLocked,
                 'bei_scheduled' => $beiScheduled,
                 'bei_exists' => $beiExists,
                 'bei_locked' => $beiLocked,

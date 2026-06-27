@@ -82,6 +82,7 @@ Route::prefix('hrmpsb')->group(function () {
     Route::get('/pre-assessment/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/PreAssessment', ['vacancyId' => (int) $vacancy]));
     Route::get('/exam-schedule/{vacancy}', fn ($vacancy, Request $r) => Inertia::render('Hrmpsb/ExamScheduler', ['vacancyId' => (int) $vacancy, 'exam_type' => $r->query('exam_type', 'TWE')]));
     Route::get('/bei-schedule/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/BeiScheduler', ['vacancyId' => (int) $vacancy]));
+    Route::get('/cbwe-rating/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/CbweRating', ['vacancyId' => (int) $vacancy]));
     Route::get('/background-check/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/BackgroundCheck', ['vacancyId' => (int) $vacancy]));
     Route::get('/applicants/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/Applicants', ['vacancyId' => (int) $vacancy]));
 });

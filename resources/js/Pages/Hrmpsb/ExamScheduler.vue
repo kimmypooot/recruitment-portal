@@ -15,11 +15,7 @@
             :class="examType === 'TWE' ? 'bg-[#1a5276] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
             TWE — Technical Written Exam
           </a>
-          <a :href="`/hrmpsb/exam-schedule/${props.vacancyId}?exam_type=CBWE`"
-            class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors"
-            :class="examType === 'CBWE' ? 'bg-[#1a5276] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
-            CBWE — Competency-Based Written Exam
-          </a>
+
         </div>
         <div class="mt-4 flex items-center gap-2 text-xs text-gray-500">
           <svg class="w-4 h-4 text-[#1a5276] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -66,13 +62,7 @@
         <div v-show="batchOpen" class="border-t border-gray-100 px-6 pb-6 pt-5">
           <form @submit.prevent="submitBatch">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              <div>
-                <label class="field-label">Examination Type</label>
-                <select v-model="batchForm.exam_type" class="input" required>
-                  <option value="TWE">TWE — Technical Written Examination</option>
-                  <option value="CBWE">CBWE — Competency-Based Written Examination</option>
-                </select>
-              </div>
+
               <div>
                 <label class="field-label">Date &amp; Time</label>
                 <input v-model="batchForm.scheduled_at" type="datetime-local" class="input" required />
@@ -140,13 +130,7 @@
                   </option>
                 </select>
               </div>
-              <div>
-                <label class="field-label">Examination Type</label>
-                <select v-model="form.exam_type" class="input" :disabled="!!editingId" required>
-                  <option value="TWE">TWE — Technical Written Examination</option>
-                  <option value="CBWE">CBWE — Competency-Based Written Examination</option>
-                </select>
-              </div>
+
               <div>
                 <label class="field-label">Date &amp; Time</label>
                 <input v-model="form.scheduled_at" type="datetime-local" class="input" required />
@@ -401,11 +385,9 @@ const { confirm, alert } = useConfirm()
 const props = defineProps({ vacancyId: Number, exam_type: { type: String, default: 'TWE' } })
 
 const examType = computed(() => props.exam_type ?? 'TWE')
-const examTypeLabel = computed(() => examType.value === 'TWE' ? 'Technical Written Examination (TWE)' : 'Competency-Based Written Examination (CBWE)')
-const stageNumber = computed(() => examType.value === 'TWE' ? 3 : 4)
-const stageLabel = computed(() => examType.value === 'TWE'
-  ? 'Qualifying Exam (TWE)'
-  : 'Qualifying Exam (CBWE)')
+const examTypeLabel = 'Technical Written Examination (TWE)'
+const stageNumber = 2
+const stageLabel = 'Qualifying Exam (TWE)'
 
 const loading       = ref(true)
 const vacancy       = ref(null)

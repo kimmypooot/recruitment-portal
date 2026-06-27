@@ -32,7 +32,7 @@ class DeliberationController extends Controller
 
         $applications = Application::where('vacancy_id', $vacancy->id)
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
-            ->with(['anonymizationToken', 'applicant', 'examResults', 'beiRatings', 'qsEvaluations', 'backgroundInvestigationReports', 'eoptResult'])
+            ->with(['anonymizationToken', 'applicant', 'examResults', 'beiRatings', 'qsEvaluations', 'backgroundInvestigationReports', 'eoptResult', 'cbweRatings'])
             ->get()
             ->map(function ($app) {
                 $token = $app->anonymizationToken;
@@ -76,6 +76,9 @@ class DeliberationController extends Controller
                     'status' => $app->status,
                     'qs_result' => $qsResult,
                     'exam_scores' => $exams,
+                    'cbwe_average' => $app->cbweRatings->whereNotNull('total_rating')->count() > 0
+                        ? round($app->cbweRatings->avg('total_rating'), 2)
+                        : null,
                     'bei_average' => $beiAverage,
                     'eopt' => $eopt ? [
                         'emotional_stability' => $eopt->emotional_stability,

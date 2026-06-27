@@ -110,7 +110,7 @@
                 <th class="px-4 py-3 text-left font-medium text-gray-600">Applicant</th>
                 <th class="px-4 py-3 text-center font-medium text-gray-600">QS</th>
                 <th class="px-4 py-3 text-center font-medium text-gray-600">TWE</th>
-                <th class="px-4 py-3 text-center font-medium text-gray-600">CBWE</th>
+                <th class="px-4 py-3 text-center font-medium text-gray-600">CBWE Avg</th>
                 <th class="px-4 py-3 text-center font-medium text-gray-600">BEI Avg</th>
                 <th class="px-4 py-3 text-center font-medium text-gray-600">BI</th>
                 <th class="px-4 py-3 text-center font-medium text-gray-600">EOPT</th>
@@ -145,7 +145,7 @@
                   {{ app.exam_scores?.TWE?.percentage != null ? app.exam_scores.TWE.percentage + '%' : '—' }}
                 </td>
                 <td class="px-4 py-3 text-center">
-                  {{ app.exam_scores?.CBWE?.percentage != null ? app.exam_scores.CBWE.percentage + '%' : '—' }}
+                  {{ app.cbwe_average ?? '—' }}
                 </td>
                 <td class="px-4 py-3 text-center font-semibold">
                   {{ app.bei_average ?? '—' }}

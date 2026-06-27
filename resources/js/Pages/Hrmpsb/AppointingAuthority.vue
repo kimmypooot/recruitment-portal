@@ -40,7 +40,7 @@
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Applicant</th>
               <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">QS</th>
               <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">TWE</th>
-              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">CBWE</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">CBWE Avg</th>
               <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">BEI</th>
               <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">BI</th>
               <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">EOPT</th>
@@ -73,8 +73,8 @@
                 <td class="px-4 py-3 text-center font-medium" :class="(app.exam_scores?.TWE?.percentage ?? 0) >= 70 ? 'text-gray-900' : 'text-gray-400'">
                   {{ app.exam_scores?.TWE?.percentage != null ? app.exam_scores.TWE.percentage + '%' : '—' }}
                 </td>
-                <td class="px-4 py-3 text-center font-medium" :class="(app.exam_scores?.CBWE?.percentage ?? 0) >= 70 ? 'text-gray-900' : 'text-gray-400'">
-                  {{ app.exam_scores?.CBWE?.percentage != null ? app.exam_scores.CBWE.percentage + '%' : '—' }}
+              <td class="px-4 py-3 text-center font-semibold text-gray-800">
+                {{ app.cbwe_average ?? '—' }}
                 </td>
                 <td class="px-4 py-3 text-center font-semibold text-gray-800">{{ app.bei_average ?? '—' }}</td>
                 <td class="px-4 py-3 text-center">

@@ -77,6 +77,11 @@ class Application extends Model
         return $this->hasMany(BeiRating::class);
     }
 
+    public function cbweRatings(): HasMany
+    {
+        return $this->hasMany(CbweRating::class);
+    }
+
     public function deliberationResults(): HasMany
     {
         return $this->hasMany(DeliberationResult::class);

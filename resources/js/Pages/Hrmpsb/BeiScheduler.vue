@@ -27,7 +27,7 @@
         <div>
           <p class="text-sm font-semibold text-amber-800">No exam passers yet</p>
           <p class="text-xs text-amber-700 mt-0.5">
-            Examination scores must be encoded and applicants must pass both TWE and CBWE
+            Applicants must pass the TWE exam and complete their CBWE rating
             before BEI scheduling is available.
           </p>
         </div>
@@ -268,7 +268,7 @@
                 <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider w-12">#</th>
                 <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Blind Code</th>
                 <th class="px-3 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">TWE %</th>
-                <th class="px-3 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">CBWE %</th>
+                <th class="px-3 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">CBWE Avg</th>
                 <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">BEI Schedule</th>
                 <th v-if="canSchedule" class="pl-3 pr-6 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
@@ -310,12 +310,11 @@
                   <span v-else class="text-gray-300 text-sm">—</span>
                 </td>
 
-                <!-- CBWE score -->
+                <!-- CBWE average -->
                 <td class="px-3 py-4 text-center">
-                  <span v-if="getExamScore(app, 'CBWE') !== null"
-                    class="text-sm font-bold"
-                    :class="getExamScore(app, 'CBWE') >= passingThreshold ? 'text-green-700' : 'text-red-600'">
-                    {{ getExamScore(app, 'CBWE') }}%
+                  <span v-if="app.cbwe_average != null"
+                    class="text-sm font-semibold text-gray-800">
+                    {{ app.cbwe_average }}
                   </span>
                   <span v-else class="text-gray-300 text-sm">—</span>
                 </td>

@@ -1,0 +1,382 @@
+<template>
+  <HrmbsboardLayout title="CBWE Rating" :vacancyId="props.vacancyId">
+    <div class="space-y-4">
+
+      <!-- Vacancy Banner -->
+      <VacancyBanner
+        :vacancy="vacancy"
+        :stage="3"
+        stageLabel="Competency-Based Work Evaluation (CBWE)"
+        :loading="loading"
+      />
+
+      <!-- Lock / secretariat actions -->
+      <div class="flex items-center justify-between">
+        <div></div>
+        <button
+          v-if="isSecretariat && !allLocked"
+          @click="confirmLock = true"
+          class="btn-danger"
+        >Lock All CBWE Ratings</button>
+      </div>
+
+      <!-- Lock Confirmation -->
+      <div v-if="confirmLock" class="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-center justify-between">
+        <p class="text-sm text-amber-800 font-medium">
+          Locking CBWE ratings is irreversible. All evaluators will lose edit access.
+        </p>
+        <div class="flex gap-2">
+          <button @click="confirmLock = false" class="btn-secondary">Cancel</button>
+          <button @click="lockRatings" :disabled="locking" class="btn-danger">
+            {{ locking ? 'Locking…' : 'Confirm Lock' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Locked Banner -->
+      <div v-if="allLocked" class="bg-green-50 border border-green-200 rounded-xl p-3 text-sm text-green-800 font-medium">
+        CBWE ratings are locked.
+      </div>
+
+      <!-- No competencies warning -->
+      <div v-if="!loading && !competencyCount"
+        class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+        <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+        <div>
+          <p class="text-sm font-semibold text-amber-800">No core competencies assigned to this position</p>
+          <p class="text-xs text-amber-700 mt-0.5">
+            An administrator must assign the core CBWE competencies (Exemplifying Integrity, Delivering Service Excellence, Solving Problems and Making Decisions) to this vacancy before ratings can be submitted.
+          </p>
+        </div>
+      </div>
+
+      <!-- Applicant Tabs -->
+      <div v-if="applications.length && competencyCount" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
+        <!-- Tab list -->
+        <div class="flex overflow-x-auto border-b border-gray-200 bg-gray-50 px-4 gap-2 pt-3">
+          <button
+            v-for="app in applications"
+            :key="app.id"
+            @click="selectedId = app.id"
+            class="px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap transition"
+            :class="selectedId === app.id
+              ? 'bg-white border border-b-white border-gray-200 text-indigo-700 -mb-px'
+              : 'text-gray-500 hover:text-gray-700'"
+          >
+            <span class="font-mono">{{ app.token }}</span>
+            <span v-if="app.unmasked" class="ml-1 text-gray-500">({{ app.name }})</span>
+          </button>
+        </div>
+
+        <!-- Selected applicant panel -->
+        <div v-if="selected" class="p-6">
+
+          <!-- Submitted view -->
+          <div v-if="!isSecretariat && selected.my_rating" class="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <p class="text-sm font-semibold text-green-800">Rating submitted</p>
+                <p class="text-xs text-green-600">Your average: <span class="font-bold">{{ selected.my_rating?.total_rating ?? '—' }}</span></p>
+              </div>
+            </div>
+            <span v-if="selected.my_rating?.locked_at"
+              class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700">Locked</span>
+          </div>
+
+          <!-- Secretariat: consolidated view -->
+          <div v-if="isSecretariat" class="space-y-4">
+            <h3 class="font-semibold text-gray-800">All Evaluator Ratings</h3>
+            <div v-if="selected.all_ratings?.length" class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left text-gray-600 whitespace-nowrap">Evaluator</th>
+                    <th v-for="(comp, key) in competencies" :key="key"
+                      class="px-3 py-2 text-center text-gray-600 text-xs whitespace-nowrap">
+                      <div>{{ comp.name }}</div>
+                      <div class="text-[10px] font-normal text-gray-400 mt-0.5">L{{ comp.level }}</div>
+                    </th>
+                    <th class="px-3 py-2 text-center text-gray-600 whitespace-nowrap">Average</th>
+                    <th class="px-3 py-2 text-center text-gray-600 whitespace-nowrap">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr v-for="rating in selected.all_ratings" :key="rating.evaluator"
+                    class="hover:bg-gray-50">
+                    <td class="px-3 py-2 font-medium text-gray-800 whitespace-nowrap">{{ rating.evaluator }}</td>
+                    <td v-for="(comp, key) in competencies" :key="key" class="px-3 py-2 text-center">
+                      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold"
+                        :class="scoreClass(rating.competency_scores?.[key])">
+                        {{ rating.competency_scores?.[key] ?? '—' }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-2 text-center font-semibold text-indigo-700">
+                      {{ rating.total_rating ?? '—' }}
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                      <span v-if="rating.locked"
+                        class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700">
+                        Locked
+                      </span>
+                      <span v-else
+                        class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700">
+                        Draft
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p v-else class="text-gray-400 text-sm">No ratings submitted yet.</p>
+          </div>
+
+          <!-- Member: own rating form -->
+          <div v-else>
+            <h3 class="font-semibold text-gray-800 mb-2">Your CBWE Rating</h3>
+
+            <div class="mb-5 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700 leading-relaxed">
+              <p>Rate each core competency on a scale of 1 (lowest) to 5 (highest). You can update your rating anytime before it is locked.</p>
+            </div>
+
+            <form v-if="!allLocked" @submit.prevent="openPreview" class="space-y-6">
+              <div v-for="(comp, key) in competencies" :key="key"
+                class="flex items-start gap-4 p-3 rounded-lg border border-gray-100 bg-gray-50/50 hover:bg-indigo-50 hover:border-indigo-300 transition-colors">
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-800">{{ comp.name }}</p>
+                  <p class="text-[11px] text-gray-400 mt-0.5">
+                    Required level:
+                    <span class="font-semibold text-indigo-600">{{ levelLabel(comp.level) }}</span>
+                  </p>
+                  <p v-if="comp.description" class="text-[11px] text-gray-400 mt-0.5 leading-snug">{{ comp.description }}</p>
+                </div>
+                <div class="flex gap-1.5 shrink-0">
+                  <button v-for="n in 5" :key="n" type="button"
+                    @click="ratingForm.competency_scores[key] = n"
+                    class="w-9 h-9 rounded-full border text-sm font-bold transition-all"
+                    :class="ratingForm.competency_scores[key] === n
+                      ? scoreButtonActive(n)
+                      : 'border-gray-300 text-gray-500 hover:border-indigo-400 hover:text-indigo-600'"
+                  >{{ n }}</button>
+                </div>
+              </div>
+
+              <!-- Remarks -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Remarks <span class="text-gray-400 font-normal">(optional)</span></label>
+                <textarea v-model="ratingForm.remarks" rows="3" class="input w-full"
+                  placeholder="Any notes on the applicant's competency demonstration…"></textarea>
+              </div>
+
+              <!-- Average summary -->
+              <div v-if="scoredCount" class="flex items-center gap-3 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                <span class="text-sm text-indigo-700 font-medium">Running average:</span>
+                <span class="text-lg font-bold text-indigo-700">{{ runningAverage }}</span>
+                <span class="text-xs text-indigo-400">({{ scoredCount }} / {{ competencyCount }} rated)</span>
+              </div>
+
+              <div class="flex justify-end gap-3">
+                <button type="submit" :disabled="submitting || scoredCount < competencyCount" class="btn-primary">
+                  {{ submitting ? 'Submitting…' : 'Submit Rating' }}
+                </button>
+              </div>
+              <p v-if="scoredCount < competencyCount" class="text-xs text-amber-600 text-right -mt-3">
+                Rate all {{ competencyCount }} competencies before submitting.
+              </p>
+            </form>
+
+            <!-- Preview Modal -->
+            <div v-if="showPreview" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="showPreview = false">
+              <div class="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-lg mx-4 max-h-[85vh] overflow-y-auto">
+                <div class="p-6">
+                  <h3 class="text-lg font-bold text-gray-900 mb-4">Preview Your CBWE Rating</h3>
+                  <div v-for="(comp, key) in competencies" :key="key"
+                    class="flex items-center justify-between px-3 py-2 rounded-lg border border-gray-100 mb-1">
+                    <span class="text-sm text-gray-700">{{ comp.name }}</span>
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold"
+                      :class="scoreClass(ratingForm.competency_scores[key])">
+                      {{ ratingForm.competency_scores[key] ?? '—' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3 p-3 bg-indigo-50 rounded-lg border border-indigo-100 my-4">
+                    <span class="text-sm text-indigo-700 font-medium">Average:</span>
+                    <span class="text-lg font-bold text-indigo-700">{{ runningAverage }}</span>
+                    <span class="text-xs text-indigo-400">({{ scoredCount }} / {{ competencyCount }})</span>
+                  </div>
+                  <div v-if="ratingForm.remarks" class="mb-4">
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Remarks</p>
+                    <p class="text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2">{{ ratingForm.remarks }}</p>
+                  </div>
+                  <div class="flex justify-end gap-3 pt-3 border-t border-gray-200">
+                    <button type="button" @click="showPreview = false" class="btn-secondary">Cancel</button>
+                    <button type="button" @click="confirmSubmit" :disabled="submitting" class="btn-primary">
+                      {{ submitting ? 'Submitting…' : 'Confirm Submit' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p v-else-if="!loading && competencyCount" class="text-gray-400 text-sm">
+        No qualified applicants to rate.
+      </p>
+
+      <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+
+      <!-- Navigation -->
+      <div class="flex justify-between pt-2">
+        <a :href="`/hrmpsb/exam-results/${vacancyId}?exam_type=TWE`" class="btn-secondary">← TWE Results</a>
+        <a :href="`/hrmpsb/bei-schedule/${vacancyId}`" class="btn-primary">BEI Schedule →</a>
+      </div>
+    </div>
+  </HrmbsboardLayout>
+</template>
+
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
+import api from '@/services/api'
+import { useToast } from '@/composables/useToast'
+
+const props = defineProps({ vacancyId: Number })
+const toast = useToast()
+
+const loading       = ref(true)
+const submitting    = ref(false)
+const locking       = ref(false)
+const confirmLock   = ref(false)
+const showPreview   = ref(false)
+const error         = ref(null)
+const vacancy       = ref(null)
+const applications  = ref([])
+const competencies  = ref({})
+const isSecretariat = ref(false)
+const allLocked     = ref(false)
+const selectedId    = ref(null)
+
+const selected = computed(() => applications.value.find(a => a.id === selectedId.value) ?? null)
+
+const ratingForm = ref({ competency_scores: {}, remarks: '' })
+
+const competencyCount = computed(() => Object.keys(competencies.value).length)
+
+const scoredCount = computed(() =>
+  Object.values(ratingForm.value.competency_scores).filter(v => v >= 1).length
+)
+
+const runningAverage = computed(() => {
+  const scores = Object.values(ratingForm.value.competency_scores).filter(v => v >= 1)
+  if (!scores.length) return '—'
+  return (scores.reduce((s, v) => s + v, 0) / scores.length).toFixed(2)
+})
+
+const LEVEL_LABELS = { 1: 'Basic', 2: 'Intermediate', 3: 'Advanced', 4: 'Superior' }
+function levelLabel(n) { return LEVEL_LABELS[n] ?? `Level ${n}` }
+
+function scoreClass(score) {
+  if (!score) return 'bg-gray-100 text-gray-500'
+  if (score >= 4) return 'bg-green-100 text-green-800'
+  if (score >= 3) return 'bg-blue-100 text-blue-800'
+  return 'bg-amber-100 text-amber-800'
+}
+
+function scoreButtonActive(n) {
+  if (n >= 4) return 'bg-green-500 text-white border-green-500'
+  if (n >= 3) return 'bg-blue-500 text-white border-blue-500'
+  return 'bg-amber-400 text-white border-amber-400'
+}
+
+async function load() {
+  loading.value = true
+  try {
+    const { data } = await api.get(`/cbwe-ratings/${props.vacancyId}`)
+    vacancy.value       = data.vacancy
+    applications.value  = data.applications
+    competencies.value  = data.competencies ?? {}
+    isSecretariat.value = data.is_secretariat
+    allLocked.value     = data.all_locked
+    if (applications.value.length && !selectedId.value) {
+      selectedId.value = applications.value[0].id
+    }
+  } catch (e) {
+    error.value = e.response?.data?.message ?? 'Failed to load CBWE data.'
+  } finally {
+    loading.value = false
+  }
+}
+
+watch(selectedId, (id) => {
+  if (!id) return
+  const existing = applications.value.find(a => a.id === id)?.my_rating
+  ratingForm.value = {
+    competency_scores: existing?.competency_scores ?? {},
+    remarks:           existing?.remarks           ?? '',
+  }
+})
+
+function openPreview() {
+  showPreview.value = true
+}
+
+async function confirmSubmit() {
+  submitting.value = true
+  showPreview.value = false
+  error.value = null
+  try {
+    await api.post('/cbwe-ratings', {
+      application_id: selectedId.value,
+      ...ratingForm.value,
+    })
+    await load()
+    toast.success('CBWE rating submitted successfully.')
+  } catch (e) {
+    toast.error(e.response?.data?.message ?? 'Failed to submit rating.')
+  } finally {
+    submitting.value = false
+  }
+}
+
+async function lockRatings() {
+  locking.value = true
+  error.value = null
+  try {
+    await api.patch(`/cbwe-ratings/${props.vacancyId}/lock`)
+    confirmLock.value = false
+    toast.success('CBWE ratings locked successfully.')
+    await load()
+  } catch (e) {
+    const msg = e.response?.data?.message ?? 'Failed to lock ratings.'
+    error.value = msg
+    toast.error(msg)
+  } finally {
+    locking.value = false
+  }
+}
+
+onMounted(load)
+</script>
+
+<style scoped>
+@reference "../../../css/app.css";
+.input {
+  @apply border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent;
+}
+.btn-primary {
+  @apply inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition;
+}
+.btn-secondary {
+  @apply inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition;
+}
+.btn-danger {
+  @apply inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 transition;
+}
+</style>

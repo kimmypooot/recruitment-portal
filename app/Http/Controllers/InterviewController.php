@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\CbweRating;
 use App\Models\ExamResult;
 use App\Models\HrmbsboardComposition;
 use App\Models\InterviewSchedule;
@@ -30,10 +31,16 @@ class InterviewController extends Controller
     private function examPasserIds($appIds): \Illuminate\Support\Collection
     {
         $results = ExamResult::whereIn('application_id', $appIds)->get()->groupBy('application_id');
+        $cbweIds = CbweRating::whereIn('application_id', $appIds)
+            ->whereNotNull('locked_at')
+            ->distinct()
+            ->pluck('application_id');
 
-        return $appIds->filter(function ($id) use ($results) {
+        return $appIds->filter(function ($id) use ($results, $cbweIds) {
             $group = $results->get($id, collect());
-            return $group->isNotEmpty() && $group->every(fn ($r) => $r->percentage >= self::PASSING_THRESHOLD);
+            $passedTwe = $group->isNotEmpty() && $group->every(fn ($r) => $r->percentage >= self::PASSING_THRESHOLD);
+            $completedCbwe = $cbweIds->contains($id);
+            return $passedTwe && $completedCbwe;
         })->values();
     }
 
@@ -99,7 +106,7 @@ class InterviewController extends Controller
             ->get();
 
         $applications = Application::whereIn('id', $passerIds)
-            ->with(['anonymizationToken', 'examResults'])
+            ->with(['anonymizationToken', 'examResults', 'cbweRatings'])
             ->orderBy('id')
             ->get()
             ->map(fn ($app) => [
@@ -111,6 +118,9 @@ class InterviewController extends Controller
                     'percentage' => $r->percentage,
                     'passed'     => $r->percentage >= self::PASSING_THRESHOLD,
                 ]),
+                'cbwe_average' => $app->cbweRatings->whereNotNull('locked_at')->count() > 0
+                    ? round($app->cbweRatings->whereNotNull('locked_at')->avg('total_rating'), 2)
+                    : null,
             ]);
 
         return response()->json([
