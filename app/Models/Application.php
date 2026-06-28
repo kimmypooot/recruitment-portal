@@ -97,11 +97,6 @@ class Application extends Model
         return $this->hasMany(CsForm::class);
     }
 
-    public function submissionTracking(): HasOne
-    {
-        return $this->hasOne(SubmissionTracking::class);
-    }
-
     public function preAssessment(): HasOne
     {
         return $this->hasOne(PreAssessment::class);

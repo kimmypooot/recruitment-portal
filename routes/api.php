@@ -212,6 +212,7 @@ Route::middleware(['auth:sanctum', 'role:hrmpsb,admin'])->group(function () {
     // Appointing Authority
     Route::get('/deliberation/{vacancy}/appointing-authority', [AppointingAuthorityController::class, 'index']);
     Route::patch('/deliberation/{vacancy}/appointing-authority/decide', [AppointingAuthorityController::class, 'decide']);
+    Route::get('/hrmpsb/appointing-authority/decisions', [AppointingAuthorityController::class, 'secretariatDecisions']);
 
     // CS Forms (accessible by all hrmpsb members including appointing-authority)
     Route::get('/applications/{application}/forms', [CsFormController::class, 'index']);

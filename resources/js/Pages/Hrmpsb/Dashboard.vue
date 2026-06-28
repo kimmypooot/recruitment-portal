@@ -112,7 +112,7 @@
               </div>
 
               <!-- Bottom: Actions (below on mobile, right side on desktop) -->
-              <div v-if="stages[v.id]" class="flex items-center gap-2 flex-wrap justify-end sm:flex-shrink-0">
+              <div v-if="stages[v.id]" class="relative flex items-center gap-2 flex-wrap justify-end sm:flex-shrink-0">
                 <a :href="`/hrmpsb/applicants/${v.id}`"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors border border-[#2a338f] text-[#2a338f] hover:bg-[#2a338f]/5 whitespace-nowrap">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -446,7 +446,7 @@ function actionGroups(vacancyId) {
       items: [
         {
           label: 'Appointing Authority',
-          href: `/hrmpsb/appointing-authority/${vacancyId}`,
+          href: `/appointing-authority/${vacancyId}`,
           disabled: !s.deliberation_exists,
           tooltip: !s.deliberation_exists ? 'Deliberation must be completed first' : null,
           icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
@@ -489,7 +489,7 @@ function scrollToPhase(vacancyId, key) {
       eopt: `/hrmpsb/eopt/${vacancyId}`,
       background: `/hrmpsb/background-check/${vacancyId}`,
       deliberation: `/hrmpsb/deliberation/${vacancyId}`,
-      appointing_authority: `/hrmpsb/appointing-authority/${vacancyId}`,
+      appointing_authority: `/appointing-authority/${vacancyId}`,
     }
     if (hrefs[key]) window.location.href = hrefs[key]
   }

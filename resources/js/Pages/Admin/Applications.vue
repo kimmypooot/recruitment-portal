@@ -377,7 +377,7 @@
                 </td>
 
                 <!-- Email Address -->
-                <td class="px-4 py-4 text-xs text-gray-600 truncate max-w-[180px]">
+                <td class="px-4 py-4 text-xs text-gray-600 truncate max-w-[180px]" :title="app.applicant?.user?.email ?? ''">
                   {{ app.applicant?.user?.email ?? '—' }}
                 </td>
 
@@ -1112,7 +1112,7 @@ function formatMoney(amount) {
 function formatApplicantName(app) {
   const p = app?.applicant
   if (p?.last_name && p?.first_name) {
-    const middle = p.middle_name ? ' ' + p.middle_name : ''
+    const middle = p.middle_name ? ' ' + p.middle_name.charAt(0).toUpperCase() + '.' : ''
     return `${p.last_name}, ${p.first_name}${middle}`
   }
   return p?.user?.full_name ?? '—'
@@ -1150,6 +1150,8 @@ async function fetchApplications() {
     })
     applications.value = data.data ?? []
     meta.value         = data.meta ?? {}
+  } catch (e) {
+    toast.error(e?.response?.data?.message ?? 'Failed to load applications.')
   } finally {
     loading.value = false
   }
@@ -1348,12 +1350,17 @@ async function doUpdateStatus() {
     if (scheduleForm.scheduled_at && scheduleForm.venue) {
       const endpoint = statusForm.status === 'exam_scheduled' ? '/api/examinations' : '/api/interviews'
       if (statusForm.status === 'exam_scheduled' || statusForm.status === 'for_interview') {
-        await axios.post(endpoint, {
-          application_id: updateTarget.value.id,
-          scheduled_at:   scheduleForm.scheduled_at,
-          venue:          scheduleForm.venue,
-          notes:          scheduleForm.notes || undefined,
-        }, { headers: authHeaders() }).catch(() => {})
+        try {
+          await axios.post(endpoint, {
+            application_id: updateTarget.value.id,
+            scheduled_at:   scheduleForm.scheduled_at,
+            venue:          scheduleForm.venue,
+            notes:          scheduleForm.notes || undefined,
+          }, { headers: authHeaders() })
+        } catch (e) {
+          toast.error('Status updated but failed to create schedule: ' + (e.response?.data?.message ?? 'unknown error'))
+          return
+        }
       }
     }
 

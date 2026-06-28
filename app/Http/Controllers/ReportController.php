@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApplicantProfile;
 use App\Models\Application;
-use App\Models\SubmissionTracking;
 use App\Models\Vacancy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
@@ -19,7 +18,11 @@ class ReportController extends Controller
             'comparative-assessment' => $this->comparativeAssessment($request),
             'appointment-report'     => $this->appointmentReport($request),
             'pipeline-summary'       => $this->pipelineSummary($request),
-            'compliance-deadlines'   => $this->complianceDeadlines($request),
+            'demographics-age'       => $this->demographicsAge($request),
+            'demographics-gender'    => $this->demographicsGender($request),
+            'demographics-civil-status' => $this->demographicsCivilStatus($request),
+            'demographics-region'    => $this->demographicsRegion($request),
+            'demographics-special'   => $this->demographicsSpecial($request),
             default                  => response()->json(['message' => "Unknown report type: {$type}."], 422),
         };
     }
@@ -128,26 +131,135 @@ class ReportController extends Controller
             'generated'  => now()->toDateTimeString(),
         ]);
     }
+    // ── Demographic Reports ─────────────────────────────────────────────────
 
-    private function complianceDeadlines(Request $request): JsonResponse
+    private function baseProfileQuery(Request $request): \Illuminate\Database\Eloquent\Builder
     {
-        $rows = SubmissionTracking::with([
-            'application.applicant:id,user_id',
-            'application.applicant.user:id,first_name,last_name',
-            'vacancy:id,position_title',
-        ])
-            ->orderBy('due_at')
-            ->get()
-            ->map(fn ($t) => [
-                'application_id' => $t->application_id,
-                'appointee'      => trim(($t->application->applicant->first_name ?? '') . ' ' . ($t->application->applicant->last_name ?? '')),
-                'position'       => $t->vacancy->position_title ?? '—',
-                'due_at'         => $t->due_at?->format('Y-m-d'),
-                'days_remaining' => $t->daysRemaining(),
-                'status'         => $t->isOverdue() ? 'overdue' : $t->status,
-                'submitted_at'   => $t->submitted_at?->format('Y-m-d'),
-            ]);
+        $query = ApplicantProfile::query();
 
-        return response()->json(['report' => 'compliance-deadlines', 'rows' => $rows]);
+        $vacancyId = $request->query('vacancy_id');
+        if ($vacancyId) {
+            $query->whereHas('applications', fn ($q) => $q->where('vacancy_id', $vacancyId));
+        }
+
+        return $query;
+    }
+
+    private function demographicsAge(Request $request): JsonResponse
+    {
+        $query = $this->baseProfileQuery($request);
+        $profiles = $query->select('birthday')->whereNotNull('birthday')->get();
+
+        $groups = ['18-25' => 0, '26-35' => 0, '36-45' => 0, '46-55' => 0, '56+' => 0, 'Unknown' => 0];
+        foreach ($profiles as $p) {
+            $age = $p->birthday?->age;
+            if (!$age || $age < 18) { $groups['Unknown']++; continue; }
+            if ($age <= 25) $groups['18-25']++;
+            elseif ($age <= 35) $groups['26-35']++;
+            elseif ($age <= 45) $groups['36-45']++;
+            elseif ($age <= 55) $groups['46-55']++;
+            else $groups['56+']++;
+        }
+
+        $total = array_sum($groups);
+        $result = collect($groups)->map(fn ($count, $label) => [
+            'label'      => $label,
+            'count'      => $count,
+            'percentage' => $total ? round($count / $total * 100, 1) : 0,
+        ])->values();
+
+        return response()->json(['report' => 'demographics-age', 'rows' => $result, 'total' => $total]);
+    }
+
+    private function demographicsGender(Request $request): JsonResponse
+    {
+        $query = $this->baseProfileQuery($request);
+        $rows = $query->select('gender')
+            ->selectRaw('COUNT(*) as count')
+            ->whereNotNull('gender')
+            ->groupBy('gender')
+            ->orderByDesc('count')
+            ->get();
+
+        $total = $rows->sum('count');
+        $result = $rows->map(fn ($r) => [
+            'label'      => $r->gender,
+            'count'      => (int) $r->count,
+            'percentage' => $total ? round($r->count / $total * 100, 1) : 0,
+        ]);
+
+        return response()->json(['report' => 'demographics-gender', 'rows' => $result, 'total' => $total]);
+    }
+
+    private function demographicsCivilStatus(Request $request): JsonResponse
+    {
+        $query = $this->baseProfileQuery($request);
+        $rows = $query->select('civil_status')
+            ->selectRaw('COUNT(*) as count')
+            ->whereNotNull('civil_status')
+            ->groupBy('civil_status')
+            ->orderByDesc('count')
+            ->get();
+
+        $total = $rows->sum('count');
+        $result = $rows->map(fn ($r) => [
+            'label'      => $r->civil_status,
+            'count'      => (int) $r->count,
+            'percentage' => $total ? round($r->count / $total * 100, 1) : 0,
+        ]);
+
+        return response()->json(['report' => 'demographics-civil-status', 'rows' => $result, 'total' => $total]);
+    }
+
+    private function demographicsRegion(Request $request): JsonResponse
+    {
+        $query = $this->baseProfileQuery($request);
+        $rows = $query->select('region')
+            ->selectRaw('COUNT(*) as count')
+            ->whereNotNull('region')
+            ->groupBy('region')
+            ->orderByDesc('count')
+            ->get();
+
+        $total = $rows->sum('count');
+        $result = $rows->map(fn ($r) => [
+            'label'      => $r->region,
+            'count'      => (int) $r->count,
+            'percentage' => $total ? round($r->count / $total * 100, 1) : 0,
+        ]);
+
+        return response()->json(['report' => 'demographics-region', 'rows' => $result, 'total' => $total]);
+    }
+
+    private function demographicsSpecial(Request $request): JsonResponse
+    {
+        $query = $this->baseProfileQuery($request);
+        $total = $query->count();
+
+        $categories = [];
+        foreach (['indigenous_group', 'pwd', 'solo_parent'] as $field) {
+            $count = (clone $query)->where($field, 'Yes')->count();
+            $label = match ($field) {
+                'indigenous_group' => 'Indigenous Peoples',
+                'pwd'              => 'Persons with Disability',
+                'solo_parent'      => 'Solo Parent',
+                default            => $field,
+            };
+            $categories[] = [
+                'label'      => $label,
+                'field'      => $field,
+                'count'      => $count,
+                'percentage' => $total ? round($count / $total * 100, 1) : 0,
+            ];
+        }
+
+        $categories[] = [
+            'label'      => 'None of the Above',
+            'field'      => 'none',
+            'count'      => max(0, $total - collect($categories)->sum('count')),
+            'percentage' => $total ? round(max(0, $total - collect($categories)->sum('count')) / $total * 100, 1) : 0,
+        ];
+
+        return response()->json(['report' => 'demographics-special', 'rows' => $categories, 'total' => $total]);
     }
 }

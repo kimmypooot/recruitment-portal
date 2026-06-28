@@ -67,7 +67,6 @@ Route::prefix('admin')->group(function () {
     Route::get('/audit-logs', fn () => Inertia::render('Admin/AuditLogs'));
     Route::get('/hrmpsb', fn () => Inertia::render('Admin/Hrmpsb'));
     Route::get('/reports', fn () => Inertia::render('Admin/Reports'));
-    Route::get('/compliance', fn () => Inertia::render('Admin/Compliance'));
     Route::get('/competencies', fn () => Inertia::render('Admin/Competencies'));
     Route::get('/feedbacks', fn () => Inertia::render('Admin/Feedbacks'));
 });
@@ -87,6 +86,7 @@ Route::prefix('hrmpsb')->group(function () {
     Route::get('/cbwe-rating/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/CbweRating', ['vacancyId' => (int) $vacancy]));
     Route::get('/background-check/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/BackgroundCheck', ['vacancyId' => (int) $vacancy]));
     Route::get('/applicants/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/Applicants', ['vacancyId' => (int) $vacancy]));
+    Route::get('/aa-decisions', fn () => Inertia::render('Hrmpsb/AaDecisions'));
 });
 
 // Appointing Authority pages (separate from HRMPSB — AA is the final decision maker)

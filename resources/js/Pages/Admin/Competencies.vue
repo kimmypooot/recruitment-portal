@@ -10,7 +10,7 @@
             Define the competencies available for BEI rating across all positions.
           </p>
         </div>
-        <button @click="openCreate" class="btn-primary">
+        <button @click="openCreate" class="inline-flex items-center px-4 py-2 bg-[#2a338f] text-white text-sm font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-50 transition-colors">
           <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
@@ -110,7 +110,7 @@
       leave-active-class="transition ease-in duration-100"
       leave-from-class="opacity-100"
       leave-to-class="opacity-0">
-      <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+      <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
         @click.self="closeModal">
 
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg"
@@ -132,44 +132,44 @@
           <form @submit.prevent="saveCompetency" class="px-6 py-5 space-y-4">
 
             <div>
-              <label class="field-label">Competency Name <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Competency Name <span class="text-red-500">*</span></label>
               <input v-model="form.competency_name" type="text" required autofocus
                 placeholder="e.g. Professionalism and Ethics"
-                class="field-input" :class="{ 'border-red-300': formErrors.competency_name }"/>
-              <p v-if="formErrors.competency_name" class="field-error">{{ formErrors.competency_name[0] }}</p>
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" :class="{ 'border-red-300': formErrors.competency_name }"/>
+              <p v-if="formErrors.competency_name" class="text-xs text-red-600 mt-1">{{ formErrors.competency_name[0] }}</p>
               <p v-if="modal.mode === 'edit'" class="text-[11px] text-gray-400 mt-1">
                 Key: <code class="font-mono">{{ modal.competency?.competency_key }}</code> (cannot be changed)
               </p>
             </div>
 
             <div>
-              <label class="field-label">Group <span class="text-red-500">*</span></label>
-              <select v-model="form.competency_group" required class="field-input">
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Group <span class="text-red-500">*</span></label>
+              <select v-model="form.competency_group" required class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
                 <option value="">— Select group —</option>
                 <option v-for="g in groupOrder" :key="g" :value="g">{{ g }}</option>
               </select>
-              <p v-if="formErrors.competency_group" class="field-error">{{ formErrors.competency_group[0] }}</p>
+              <p v-if="formErrors.competency_group" class="text-xs text-red-600 mt-1">{{ formErrors.competency_group[0] }}</p>
             </div>
 
             <div>
-              <label class="field-label">Sort Order</label>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Sort Order</label>
               <input v-model.number="form.sort_order" type="number" min="0" max="255"
                 placeholder="0"
-                class="field-input w-28"/>
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none w-28"/>
               <p class="text-[11px] text-gray-400 mt-1">Lower numbers appear first within the group.</p>
             </div>
 
             <div>
-              <label class="field-label">Description <span class="text-gray-400 font-normal">(optional)</span></label>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Description <span class="text-gray-400 font-normal">(optional)</span></label>
               <textarea v-model="form.description" rows="3"
                 placeholder="Brief description of what this competency assesses…"
-                class="field-input resize-none"></textarea>
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none resize-none"></textarea>
             </div>
 
             <!-- Modal footer -->
             <div class="flex justify-end gap-3 pt-2">
-              <button type="button" @click="closeModal" class="btn-secondary">Cancel</button>
-              <button type="submit" :disabled="modal.saving" class="btn-primary">
+              <button type="button" @click="closeModal" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
+              <button type="submit" :disabled="modal.saving" class="inline-flex items-center px-4 py-2 bg-[#2a338f] text-white text-sm font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-50 transition-colors">
                 <svg v-if="modal.saving" class="w-4 h-4 mr-1.5 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
@@ -190,7 +190,7 @@
       leave-active-class="transition ease-in duration-100"
       leave-from-class="opacity-100"
       leave-to-class="opacity-0">
-      <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+      <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
         @click.self="deleteTarget = null">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
           <div class="flex items-start gap-4">
@@ -212,8 +212,8 @@
             {{ deleteError }}
           </p>
           <div class="flex justify-end gap-3">
-            <button @click="deleteTarget = null; deleteError = null" class="btn-secondary">Cancel</button>
-            <button @click="deleteCompetency" :disabled="deleting" class="btn-danger">
+            <button @click="deleteTarget = null; deleteError = null" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
+            <button @click="deleteCompetency" :disabled="deleting" class="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors">
               {{ deleting ? 'Deleting…' : 'Delete' }}
             </button>
           </div>
@@ -228,6 +228,9 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 // Hardcoded order; can be replaced with import { COMPETENCY_GROUPS } from '@/utils/constants' if server order matches
 const groupOrder = ['Core', 'Organizational', 'Leadership', 'Technical']
@@ -330,11 +333,12 @@ async function saveCompetency() {
       await axios.put(`/api/admin/competencies/${modal.competency.id}`, payload, { headers: authHeaders() })
     }
     modal.open = false
+    toast.success(modal.mode === 'create' ? 'Competency created.' : 'Competency updated.')
     await load()
   } catch (e) {
     formErrors.value = e?.response?.data?.errors ?? {}
     if (!Object.keys(formErrors.value).length) {
-      error.value = e?.response?.data?.message ?? 'Save failed.'
+      toast.error(e?.response?.data?.message ?? 'Save failed.')
     }
   } finally {
     modal.saving = false
@@ -354,9 +358,11 @@ async function deleteCompetency() {
   try {
     await axios.delete(`/api/admin/competencies/${deleteTarget.value.id}`, { headers: authHeaders() })
     deleteTarget.value = null
+    toast.error('Competency deleted.')
     await load()
   } catch (e) {
     deleteError.value = e?.response?.data?.message ?? 'Delete failed.'
+    toast.error(deleteError.value)
   } finally {
     deleting.value = false
   }
@@ -374,25 +380,3 @@ function groupChipClass(group) {
 
 onMounted(load)
 </script>
-
-<style scoped>
-@reference "../../../css/app.css";
-.field-label {
-  @apply block text-sm font-semibold text-gray-700 mb-1.5;
-}
-.field-input {
-  @apply w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none;
-}
-.field-error {
-  @apply text-xs text-red-600 mt-1;
-}
-.btn-primary {
-  @apply inline-flex items-center px-4 py-2 bg-[#2a338f] text-white text-sm font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-50 transition-colors;
-}
-.btn-secondary {
-  @apply inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors;
-}
-.btn-danger {
-  @apply inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors;
-}
-</style>

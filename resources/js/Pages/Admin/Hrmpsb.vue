@@ -92,7 +92,7 @@
 
     <!-- Assign member modal -->
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/50" @click="showModal = false"></div>
+      <div class="absolute inset-0 bg-black/60" @click="showModal = false"></div>
       <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <h3 class="text-base font-semibold text-gray-900">Add HRMPSB Member</h3>
@@ -154,6 +154,9 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 const { confirm } = useConfirm()
 
@@ -209,29 +212,46 @@ async function submitAssign() {
   try {
     await axios.post('/api/admin/hrmpsb/compositions', assignForm, { headers: authHeaders() })
     showModal.value = false
+    toast.success('Member added to board.')
     loadCompositions()
   } catch (e) {
     assignError.value = e.response?.data?.message ?? 'Failed to add member.'
+    toast.error(assignError.value)
   } finally {
     saving.value = false
   }
 }
 
 async function toggleType(c) {
-  await axios.patch(`/api/admin/hrmpsb/compositions/${c.id}/toggle-type`, {}, { headers: authHeaders() })
-  loadCompositions()
+  try {
+    await axios.patch(`/api/admin/hrmpsb/compositions/${c.id}/toggle-type`, {}, { headers: authHeaders() })
+    toast.success(`${c.user?.full_name} switched to ${c.member_type === 'principal' ? 'Alternate' : 'Principal'}.`)
+    loadCompositions()
+  } catch (e) {
+    toast.error(e?.response?.data?.message ?? 'Failed to toggle type.')
+  }
 }
 
 async function toggleActive(c) {
-  await axios.patch(`/api/admin/hrmpsb/compositions/${c.id}/toggle-active`, {}, { headers: authHeaders() })
-  loadCompositions()
+  try {
+    await axios.patch(`/api/admin/hrmpsb/compositions/${c.id}/toggle-active`, {}, { headers: authHeaders() })
+    toast.success(`${c.user?.full_name} ${c.is_active ? 'deactivated' : 'activated'}.`)
+    loadCompositions()
+  } catch (e) {
+    toast.error(e?.response?.data?.message ?? 'Failed to toggle status.')
+  }
 }
 
 async function removeMember(c) {
   const ok = await confirm(`Remove ${c.user?.full_name} from the HRMPSB?`)
   if (!ok) return
-  await axios.delete(`/api/admin/hrmpsb/compositions/${c.id}`, { headers: authHeaders() })
-  loadCompositions()
+  try {
+    await axios.delete(`/api/admin/hrmpsb/compositions/${c.id}`, { headers: authHeaders() })
+    toast.error(`${c.user?.full_name} removed from board.`)
+    loadCompositions()
+  } catch (e) {
+    toast.error(e?.response?.data?.message ?? 'Failed to remove member.')
+  }
 }
 
 onMounted(() => { loadCompositions(); loadUsers() })

@@ -221,13 +221,13 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
         @mousedown.self="expModal.open = false">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-          <div class="flex items-center justify-between px-7 py-5 border-b border-gray-100 flex-shrink-0">
-            <div>
-              <h3 class="text-base font-semibold text-gray-900">{{ expModal.editingId ? 'Edit Work Experience' : 'Add Work Experience' }}</h3>
+          <div class="flex items-start justify-between gap-3 px-7 py-5 border-b border-gray-100 flex-shrink-0">
+            <div class="min-w-0">
+              <h3 class="text-base font-semibold text-gray-900 truncate">{{ expModal.editingId ? 'Edit Work Experience' : 'Add Work Experience' }}</h3>
               <p class="text-xs text-gray-500 mt-0.5">Fields marked <span class="text-red-500">*</span> are required</p>
             </div>
             <button @click="expModal.open = false"
-              class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+              class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 self-start">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -283,7 +283,7 @@
             </label>
             <p v-if="expModal.error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{{ expModal.error }}</p>
           </div>
-          <div class="flex items-center justify-end gap-3 px-7 py-4 border-t border-gray-100 flex-shrink-0">
+          <div class="flex items-center justify-end gap-3 px-7 py-4 border-t border-gray-100 flex-shrink-0 flex-wrap">
             <button @click="expModal.open = false"
               class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">Cancel</button>
             <button @click="saveExperience" :disabled="expModal.saving"
@@ -305,13 +305,13 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
         @mousedown.self="eduModal.open = false">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-          <div class="flex items-center justify-between px-7 py-5 border-b border-gray-100 flex-shrink-0">
-            <div>
-              <h3 class="text-base font-semibold text-gray-900">{{ eduModal.editingId ? 'Edit Education' : 'Add Educational Attainment' }}</h3>
+          <div class="flex items-start justify-between gap-3 px-7 py-5 border-b border-gray-100 flex-shrink-0">
+            <div class="min-w-0">
+              <h3 class="text-base font-semibold text-gray-900 truncate">{{ eduModal.editingId ? 'Edit Education' : 'Add Educational Attainment' }}</h3>
               <p class="text-xs text-gray-500 mt-0.5">Fields marked <span class="text-red-500">*</span> are required</p>
             </div>
             <button @click="eduModal.open = false"
-              class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+              class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 self-start">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -378,7 +378,7 @@
             </div>
             <p v-if="eduModal.error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{{ eduModal.error }}</p>
           </div>
-          <div class="flex items-center justify-end gap-3 px-7 py-4 border-t border-gray-100 flex-shrink-0">
+          <div class="flex items-center justify-end gap-3 px-7 py-4 border-t border-gray-100 flex-shrink-0 flex-wrap">
             <button @click="eduModal.open = false"
               class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">Cancel</button>
             <button @click="saveEducation" :disabled="eduModal.saving"
@@ -400,13 +400,13 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
         @mousedown.self="trainingModal.open = false">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-          <div class="flex items-center justify-between px-7 py-5 border-b border-gray-100 flex-shrink-0">
-            <div>
-              <h3 class="text-base font-semibold text-gray-900">{{ trainingModal.editingId ? 'Edit Training' : 'Add Training' }}</h3>
+          <div class="flex items-start justify-between gap-3 px-7 py-5 border-b border-gray-100 flex-shrink-0">
+            <div class="min-w-0">
+              <h3 class="text-base font-semibold text-gray-900 truncate">{{ trainingModal.editingId ? 'Edit Training' : 'Add Training' }}</h3>
               <p class="text-xs text-gray-500 mt-0.5">Fields marked <span class="text-red-500">*</span> are required</p>
             </div>
             <button @click="trainingModal.open = false"
-              class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+              class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 self-start">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -452,7 +452,7 @@
             </div>
             <p v-if="trainingModal.error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{{ trainingModal.error }}</p>
           </div>
-          <div class="flex items-center justify-end gap-3 px-7 py-4 border-t border-gray-100 flex-shrink-0">
+          <div class="flex items-center justify-end gap-3 px-7 py-4 border-t border-gray-100 flex-shrink-0 flex-wrap">
             <button @click="trainingModal.open = false"
               class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">Cancel</button>
             <button @click="saveTraining" :disabled="trainingModal.saving"
@@ -520,13 +520,13 @@
               <p v-if="photoModal.error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{{ photoModal.error }}</p>
             </div>
             <div v-else class="px-7 py-5 space-y-4">
-              <div class="rounded-xl overflow-hidden bg-gray-900" style="height: 360px;">
+              <div class="rounded-xl overflow-hidden bg-gray-900 min-h-[200px] max-h-[55vh]" style="height: 55vw;">
                 <img ref="cropperImgRef" :src="photoModal.imgSrc" class="block max-w-full" alt="Crop preview" />
               </div>
-              <div class="flex items-center justify-between">
+              <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <p class="text-xs text-gray-400">Crop box is freely resizable — no fixed aspect ratio enforced.</p>
                 <button @click="photoModal.step = 'select'; destroyCropper()"
-                  class="text-xs text-[#2a338f] hover:underline font-medium">← Choose different photo</button>
+                  class="text-xs text-[#2a338f] hover:underline font-medium whitespace-nowrap">← Choose different photo</button>
               </div>
               <p v-if="photoModal.error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{{ photoModal.error }}</p>
             </div>
@@ -563,7 +563,9 @@ import PersonalInfoTab from './Profile/PersonalInfoTab.vue'
 import QualificationsTab from './Profile/QualificationsTab.vue'
 import DocumentsTab from './Profile/DocumentsTab.vue'
 import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 const { confirm, alert } = useConfirm()
+const toast = useToast()
 
 const DRAFT_KEY = () => `csc_profile_draft_${authUser.value.id ?? 'anonymous'}`
 
@@ -906,6 +908,7 @@ async function saveExperience() {
       experiences.value.push(data)
     }
     expModal.open = false
+    toast.success(expModal.editingId ? 'Work experience updated.' : 'Work experience added.')
   } catch (e) {
     expModal.error = e.response?.data?.message ?? 'Failed to save.'
   } finally {
@@ -918,6 +921,7 @@ async function deleteExperience(id) {
   if (!ok) return
   await profileApi.deleteExperience(id)
   experiences.value = experiences.value.filter(e => e.id !== id)
+  toast.error('Work experience removed.')
 }
 
 // ─── Education ────────────────────────────────────────────────────────────────
@@ -958,6 +962,7 @@ async function saveEducation() {
       education.value.push(data)
     }
     eduModal.open = false
+    toast.success(eduModal.editingId ? 'Education record updated.' : 'Education record added.')
   } catch (e) {
     eduModal.error = e.response?.data?.message ?? 'Failed to save.'
   } finally {
@@ -970,6 +975,7 @@ async function deleteEducation(id) {
   if (!ok2) return
   await profileApi.deleteEducation(id)
   education.value = education.value.filter(e => e.id !== id)
+  toast.error('Education record removed.')
 }
 
 // ─── Training ─────────────────────────────────────────────────────────────────
@@ -1001,6 +1007,7 @@ async function saveTraining() {
       trainings.value.push(data)
     }
     trainingModal.open = false
+    toast.success(trainingModal.editingId ? 'Training updated.' : 'Training added.')
   } catch (e) {
     trainingModal.error = e.response?.data?.message ?? 'Failed to save.'
   } finally {
@@ -1013,6 +1020,7 @@ async function deleteTraining(id) {
   if (!ok3) return
   await profileApi.deleteTraining(id)
   trainings.value = trainings.value.filter(t => t.id !== id)
+  toast.error('Training removed.')
 }
 
 // ─── Photo ────────────────────────────────────────────────────────────────────

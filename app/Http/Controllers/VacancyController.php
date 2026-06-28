@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\VacancyResource;
 use App\Http\Requests\StoreVacancyRequest;
-use App\Models\ComplianceDeadline;
 use App\Services\AuditLog;
 
 class VacancyController extends Controller
@@ -148,13 +147,8 @@ class VacancyController extends Controller
         $vacancy->update([
             'status'       => 'published',
             'published_at' => $publishedAt,
-            'deadline_at'  => $deadline, // enforce 10-calendar-day rule per CSC policy
+            'deadline_at'  => $deadline,
         ]);
-
-        ComplianceDeadline::updateOrCreate(
-            ['vacancy_id' => $vacancy->id, 'deadline_type' => 'publication'],
-            ['due_at' => $deadline, 'completed_at' => null]
-        );
 
         AuditLog::record('published', $vacancy);
 

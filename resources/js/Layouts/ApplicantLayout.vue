@@ -64,7 +64,7 @@
 
       <!-- Footer -->
       <div class="px-3 py-4 border-t border-white/10">
-        <button @click="showLogoutModal = true" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors">
+        <button @click="sidebarOpen = false; showLogoutModal = true" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors">
           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
           </svg>
@@ -143,13 +143,13 @@
       </header>
 
       <!-- Page content -->
-      <main class="flex-1 pb-14">
+      <main class="flex-1">
         <slot />
       </main>
 
-    </div>
+      <AppFooter />
 
-    <AppFooter :sidebar-collapsed="sidebarCollapsed" />
+    </div>
 
     <!-- Back to top button -->
     <button v-if="showBackToTop" @click="scrollToTop"

@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\AppointingAuthorityDecision;
 use App\Models\Application;
+use App\Models\HrmbsboardComposition;
 use App\Models\Vacancy;
+use App\Notifications\AppointmentSelectedByAa;
 use App\Services\AuditLog;
 use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class AppointingAuthorityController extends Controller
 {
@@ -144,7 +147,20 @@ class AppointingAuthorityController extends Controller
         );
 
         if ($data['action'] === 'appointed') {
-            $application->update(['status' => 'appointed']);
+            $applicantName = $this->formatApplicantName($application->applicant) ?: 'An applicant';
+
+            $secretariat = HrmbsboardComposition::where('hrmpsb_role', 'secretariat')
+                ->where('is_active', true)
+                ->get()
+                ->pluck('user');
+
+            if ($secretariat->isNotEmpty()) {
+                Notification::send($secretariat, new AppointmentSelectedByAa(
+                    $application,
+                    $vacancy,
+                    $applicantName,
+                ));
+            }
         }
 
         AuditLog::record('appointing_authority_decision', $application);
@@ -152,5 +168,42 @@ class AppointingAuthorityController extends Controller
         return response()->json([
             'message' => 'Decision recorded successfully.',
         ]);
+    }
+
+    public function secretariatDecisions(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $isSecretariat = HrmbsboardComposition::where('user_id', $user->id)
+            ->where('hrmpsb_role', 'secretariat')
+            ->where('is_active', true)
+            ->exists();
+
+        if (! $user->canAccessAdminModule() && ! $isSecretariat) {
+            return response()->json(['message' => 'Access denied.'], 403);
+        }
+
+        $decisions = AppointingAuthorityDecision::with([
+            'vacancy',
+            'application.applicant.user',
+            'decidedBy',
+        ])->get()
+        ->groupBy('vacancy_id')
+        ->map(fn ($items, $vacancyId) => [
+            'vacancy' => $items->first()->vacancy?->only([
+                'id', 'position_title', 'plantilla_no', 'salary_grade', 'place_of_assignment',
+            ]),
+            'decisions' => $items->map(fn ($d) => [
+                'application_id' => $d->application_id,
+                'applicant_name' => $d->application?->applicant
+                    ? $this->formatApplicantName($d->application->applicant)
+                    : '—',
+                'action'     => $d->action,
+                'decided_by' => $d->decidedBy?->full_name ?? '—',
+                'decided_at' => $d->decided_at,
+            ]),
+        ])->values();
+
+        return response()->json(['vacancies' => $decisions]);
     }
 }

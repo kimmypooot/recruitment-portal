@@ -22,7 +22,7 @@
       </div>
 
       <!-- Navigation -->
-      <nav class="flex-1 px-3 py-4 overflow-y-auto space-y-4">
+      <nav class="sidebar-nav flex-1 px-3 py-4 overflow-y-auto space-y-4">
         <div v-for="group in navGroups" :key="group.label">
           <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest px-3 mb-1.5">
             {{ group.label }}
@@ -127,13 +127,13 @@
       </header>
 
       <!-- Page content -->
-      <main class="flex-1 overflow-auto p-4 sm:p-6 pb-14">
+      <main class="flex-1 p-4 sm:p-6">
         <slot />
       </main>
 
-    </div>
+      <AppFooter />
 
-    <AppFooter :sidebar-collapsed="sidebarCollapsed" />
+    </div>
 
     <!-- Logout confirmation modal -->
     <Teleport to="body">
@@ -208,6 +208,11 @@
 </template>
 
 <style scoped>
+.sidebar-nav::-webkit-scrollbar { width: 5px; }
+.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+.sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+.sidebar-nav { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent; }
 @keyframes float {
   0%, 100% { transform: translate(0, 0) scale(1); }
   33%       { transform: translate(30px, -30px) scale(1.05); }
@@ -319,7 +324,6 @@ const navGroups = computed(() => {
       items: [
         { label: 'Users', href: '/admin/users', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
         { label: 'Reports', href: '/admin/reports', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-        { label: 'Compliance', href: '/admin/compliance', icon: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z' },
       ],
     },
     {
@@ -344,6 +348,7 @@ function isActive(href) {
 }
 
 function logout() {
+  sidebarOpen.value = false
   showLogoutModal.value = true
 }
 

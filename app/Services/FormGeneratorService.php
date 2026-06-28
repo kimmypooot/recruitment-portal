@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Application;
 use App\Models\CsForm;
-use App\Models\SubmissionTracking;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
@@ -42,18 +41,6 @@ class FormGeneratorService
             ]
         );
 
-        // Create 30-day CSC submission deadline on appointment forms
-        if ($formType === '33A') {
-            SubmissionTracking::updateOrCreate(
-                ['application_id' => $application->id, 'deadline_type' => 'csc_submission'],
-                [
-                    'vacancy_id' => $application->vacancy_id,
-                    'due_at'     => now()->addDays(30),
-                    'status'     => 'pending',
-                ]
-            );
-        }
-
         AuditLog::record("cs_form_generated:{$formType}", $application);
 
         return $form;
@@ -62,10 +49,6 @@ class FormGeneratorService
     public function markSubmitted(CsForm $form): void
     {
         $form->update(['submitted_to_csc_at' => now()]);
-
-        SubmissionTracking::where('application_id', $form->application_id)
-            ->where('deadline_type', 'csc_submission')
-            ->update(['status' => 'submitted', 'submitted_at' => now()]);
 
         AuditLog::record('cs_form_submitted_to_csc', $form->application);
     }

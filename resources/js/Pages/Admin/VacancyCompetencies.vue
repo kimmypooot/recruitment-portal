@@ -130,14 +130,7 @@
             </div>
           </div>
 
-          <!-- Save feedback -->
-          <div v-if="saveSuccess"
-            class="m-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 font-medium flex items-center gap-2">
-            <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-            </svg>
-            Competency requirements saved successfully.
-          </div>
+          <!-- Save feedback via toast -->
         </div>
 
       </div>
@@ -158,6 +151,9 @@ import { ref, computed, onMounted } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 const groupOrder = ['Core', 'Organizational', 'Leadership', 'Technical']
 
@@ -190,7 +186,6 @@ function onVacancySearch() {
 const allCompetencies   = ref([])
 const draftAssignments  = ref([])   // [{ competency_key, competency_name, competency_group, level }]
 const saving            = ref(false)
-const saveSuccess       = ref(false)
 
 const competenciesByGroup = computed(() => {
   const map = {}
@@ -228,7 +223,6 @@ function removeAssignment(key) {
 async function loadVacancyCompetencies() {
   if (!selectedVacancyId.value) return
   draftAssignments.value = []
-  saveSuccess.value = false
   try {
     const { data } = await axios.get(`/api/admin/competencies/vacancy/${selectedVacancyId.value}`, {
       headers: authHeaders(),
@@ -240,13 +234,12 @@ async function loadVacancyCompetencies() {
       level:            vc.competency_level,
     }))
   } catch (e) {
-    console.error('Failed to load competencies', e)
+    toast.error('Failed to load competencies for this vacancy.')
   }
 }
 
 async function saveAssignments() {
   saving.value = true
-  saveSuccess.value = false
   try {
     await axios.post(`/api/admin/competencies/vacancy/${selectedVacancyId.value}/sync`, {
       competencies: draftAssignments.value.map(d => ({
@@ -254,10 +247,9 @@ async function saveAssignments() {
         level: d.level,
       })),
     }, { headers: authHeaders() })
-    saveSuccess.value = true
-    setTimeout(() => { saveSuccess.value = false }, 4000)
+    toast.success('Competency requirements saved.')
   } catch (e) {
-    console.error('Failed to save', e)
+    toast.error(e?.response?.data?.message ?? 'Failed to save competencies.')
   } finally {
     saving.value = false
   }

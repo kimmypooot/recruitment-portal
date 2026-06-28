@@ -1,242 +1,286 @@
 <template>
-  <AdminLayout title="Reports">
+  <AdminLayout title="Demographic Reports">
     <div class="space-y-6">
 
       <!-- Header -->
-      <div>
-        <h1 class="text-xl font-bold text-gray-900">Reports & Exports</h1>
-        <p class="text-sm text-gray-500 mt-1">Generate and download recruitment reports.</p>
-      </div>
-
-      <!-- Vacancy filter (used by applicable reports) -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Filter by Vacancy (optional)</label>
-        <select v-model="selectedVacancyId" class="w-full sm:w-80 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
-          <option value="">All vacancies</option>
-          <option v-for="v in vacancies" :key="v.id" :value="v.id">{{ v.position_title }} ({{ v.status }})</option>
-        </select>
-      </div>
-
-      <!-- Report cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-        <div v-for="report in reports" :key="report.type"
-          class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col gap-4">
-          <div class="flex items-start gap-3">
-            <div :class="report.iconBg" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5" :class="report.iconColor" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" :d="report.icon"/>
-              </svg>
-            </div>
-            <div>
-              <p class="text-sm font-semibold text-gray-900">{{ report.label }}</p>
-              <p class="text-xs text-gray-500 mt-0.5">{{ report.description }}</p>
-            </div>
-          </div>
-
-          <!-- Preview table -->
-          <div v-if="previews[report.type]" class="overflow-x-auto max-h-48 overflow-y-auto border border-gray-100 rounded-lg">
-            <table class="min-w-full text-xs">
-              <thead class="bg-gray-50 sticky top-0">
-                <tr>
-                  <th v-for="col in previewCols(report.type)" :key="col"
-                    class="px-3 py-1.5 text-left font-medium text-gray-500 whitespace-nowrap">{{ col }}</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-100">
-                <tr v-for="(row, i) in previews[report.type]" :key="i" class="hover:bg-gray-50">
-                  <td v-for="col in previewCols(report.type)" :key="col"
-                    class="px-3 py-1.5 text-gray-700 whitespace-nowrap">{{ row[colKey(report.type, col)] ?? '—' }}</td>
-                </tr>
-                <tr v-if="!previews[report.type].length">
-                  <td :colspan="previewCols(report.type).length" class="px-3 py-4 text-center text-gray-400">No data.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="flex gap-2 mt-auto">
-            <button @click="loadPreview(report.type)"
-              :disabled="loading[report.type]"
-              class="flex-1 px-3 py-1.5 text-xs font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition">
-              {{ loading[report.type] ? 'Loading…' : 'Preview' }}
-            </button>
-            <button @click="exportJson(report.type)"
-              :disabled="!previews[report.type]"
-              class="flex-1 px-3 py-1.5 text-xs font-medium bg-[#2a338f] text-white rounded-lg hover:bg-[#1e2570] disabled:opacity-50 transition">
-              Export JSON
-            </button>
-          </div>
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900">Demographic Reports</h1>
+          <p class="text-sm text-gray-500 mt-1">Applicant demographics breakdown across all or selected vacancies.</p>
+        </div>
+        <div v-if="!loading && totalProfiles > 0" class="flex items-center gap-2 px-3 py-1.5 bg-[#2a338f]/5 text-[#2a338f] rounded-lg text-sm font-medium">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          {{ totalProfiles }} applicant{{ totalProfiles !== 1 ? 's' : '' }} with profiles
         </div>
       </div>
 
-      <!-- CS Form Generator -->
+      <!-- Error -->
+      <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{{ error }}</div>
+
+      <!-- Filter bar -->
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-        <h2 class="text-sm font-semibold text-gray-900 mb-4">CS Form Generator</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-xs font-medium text-gray-700 mb-1">Application (Appointed)</label>
-            <select v-model="formApp" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
-              <option value="">Select application…</option>
-              <option v-for="a in appointedApps" :key="a.id" :value="a.id">
-                {{ a.applicant_name }} — {{ a.position }}
+        <div class="flex flex-wrap items-end gap-4">
+          <div class="min-w-56">
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Position</label>
+            <select v-model="selectedPosition" @change="onPositionChange"
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              <option value="">All Positions</option>
+              <option v-for="title in uniquePositions" :key="title" :value="title">{{ title }}</option>
+            </select>
+          </div>
+
+          <div class="min-w-56">
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Date Published</label>
+            <select v-model="selectedVacancyId" @change="loadAll" :disabled="!selectedPosition"
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+              <option value="">All Postings</option>
+              <option v-for="v in positionVacancies" :key="v.id" :value="v.id">
+                {{ formatPublicationRange(v.published_at, v.deadline_at) }}
               </option>
             </select>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-700 mb-1">Form Type</label>
-            <select v-model="formType" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
-              <option value="">Select form…</option>
-              <option value="33A">CS Form 33-A (Permanent Appointment)</option>
-              <option value="33B">CS Form 33-B (Casual/Contractual)</option>
-              <option value="form1">CS Form 1 — Personal Data Sheet (2025)</option>
-            </select>
-          </div>
-          <div class="flex items-end">
-            <button @click="generateForm" :disabled="!formApp || !formType || generating"
-              class="w-full px-4 py-2 text-sm bg-[#2a338f] text-white font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-50 transition">
-              {{ generating ? 'Generating…' : 'Generate PDF' }}
-            </button>
-          </div>
-        </div>
-        <p v-if="formMessage" :class="formError ? 'text-red-600' : 'text-green-700'" class="mt-2 text-sm">{{ formMessage }}</p>
 
-        <!-- Generated forms list -->
-        <div v-if="generatedForms.length" class="mt-4 border border-gray-100 rounded-lg overflow-hidden">
-          <table class="min-w-full text-xs">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-4 py-2 text-left text-gray-500 font-medium">Form</th>
-                <th class="px-4 py-2 text-left text-gray-500 font-medium">Generated</th>
-                <th class="px-4 py-2 text-left text-gray-500 font-medium">Signed</th>
-                <th class="px-4 py-2 text-left text-gray-500 font-medium">Submitted</th>
-                <th class="px-4 py-2 text-right text-gray-500 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr v-for="f in generatedForms" :key="f.id" class="hover:bg-gray-50">
-                <td class="px-4 py-2 font-medium text-gray-800">{{ f.form_label }}</td>
-                <td class="px-4 py-2 text-gray-500">{{ formatDate(f.generated_at) }}</td>
-                <td class="px-4 py-2">
-                  <span v-if="f.signed_at" class="text-green-600 font-medium">✓ Signed</span>
-                  <span v-else class="text-gray-400">—</span>
-                </td>
-                <td class="px-4 py-2">
-                  <span v-if="f.submitted_to_csc_at" class="text-green-600 font-medium">✓ Submitted</span>
-                  <span v-else class="text-gray-400">—</span>
-                </td>
-                <td class="px-4 py-2 text-right">
-                  <div class="flex gap-2 justify-end">
-                    <a :href="`/api/forms/${f.id}/download`" target="_blank"
-                      class="px-2.5 py-1 text-xs font-medium text-[#2a338f] bg-[#2a338f]/10 hover:bg-[#2a338f]/20 rounded-md transition">Download</a>
-                    <button v-if="!f.submitted_to_csc_at" @click="markSubmitted(f.id)"
-                      class="px-2.5 py-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-md transition">Mark Submitted</button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <button @click="clearFilters"
+            v-if="selectedPosition || selectedVacancyId"
+            class="px-3 py-2 text-xs font-medium text-gray-500 hover:text-red-600 transition-colors whitespace-nowrap">
+            Clear filters
+          </button>
         </div>
       </div>
 
-      <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+      <!-- Loading -->
+      <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div v-for="n in 5" :key="n" class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-4">
+          <div class="h-4 bg-gray-100 rounded w-32 animate-pulse"></div>
+          <div class="space-y-2">
+            <div v-for="m in 4" :key="m" class="flex items-center gap-3">
+              <div class="h-3 bg-gray-100 rounded w-20 animate-pulse"></div>
+              <div class="flex-1 h-3 bg-gray-100 rounded animate-pulse"></div>
+              <div class="h-3 bg-gray-100 rounded w-10 animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demographic cards grid -->
+      <div v-else-if="!loading && reports.length" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div v-for="report in reports" :key="report.type"
+          class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col">
+
+          <!-- Card header -->
+          <div class="flex items-start justify-between gap-3 mb-4">
+            <div class="flex items-center gap-3 min-w-0">
+              <div :class="report.iconBg" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5" :class="report.iconColor" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" :d="report.icon"/>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-gray-900">{{ report.label }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">{{ report.description }}</p>
+              </div>
+            </div>
+            <span class="text-xs font-medium text-gray-400 whitespace-nowrap shrink-0">{{ report.total }}</span>
+          </div>
+
+          <!-- Bar chart -->
+          <div class="flex-1 space-y-2.5">
+            <div v-for="(row, i) in report.rows" :key="i"
+              class="flex items-center gap-3 group">
+              <span class="text-xs text-gray-600 w-28 shrink-0 truncate" :title="row.label">{{ row.label }}</span>
+              <div class="flex-1 h-5 bg-gray-50 rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-700 ease-out"
+                  :style="{ width: Math.max(row.percentage, row.count > 0 ? 2 : 0) + '%' }"
+                  :class="barColor(i)"></div>
+              </div>
+              <span class="text-xs font-semibold text-gray-700 w-12 text-right shrink-0">{{ row.count }}</span>
+              <span class="text-xs text-gray-400 w-10 text-right shrink-0">{{ row.percentage }}%</span>
+            </div>
+          </div>
+
+          <!-- Export button -->
+          <button @click="exportCsv(report)"
+            class="mt-4 w-full px-3 py-1.5 text-xs font-medium border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div v-else-if="!loading && !reports.length"
+        class="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center py-24 text-center">
+        <svg class="w-14 h-14 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <p class="text-sm font-semibold text-gray-600 mb-1">No demographic data available</p>
+        <p class="text-xs text-gray-400">Applicants need to complete their profiles for demographic data to appear.</p>
+      </div>
+
     </div>
   </AdminLayout>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 
-const vacancies      = ref([])
-const appointedApps  = ref([])
-const selectedVacancyId = ref('')
-const previews       = ref({})
-const loading        = ref({})
-const error          = ref('')
-const formApp        = ref('')
-const formType       = ref('')
-const generating     = ref(false)
-const formMessage    = ref('')
-const formError      = ref(false)
-const generatedForms = ref([])
+const vacancies           = ref([])
+const selectedPosition    = ref('')
+const selectedVacancyId   = ref('')
+const loading             = ref(true)
+const error               = ref(null)
+const reports             = ref([])
+const totalProfiles       = ref(0)
+
+const uniquePositions = computed(() => {
+  const titles = new Set(vacancies.value.map(v => v.position_title).filter(Boolean))
+  return [...titles].sort()
+})
+
+const positionVacancies = computed(() => {
+  if (!selectedPosition.value) return []
+  return vacancies.value.filter(v => v.position_title === selectedPosition.value)
+})
+
+function onPositionChange() {
+  selectedVacancyId.value = ''
+  loadAll()
+}
+
+const BAR_COLORS = [
+  'bg-[#2a338f]',
+  'bg-blue-500',
+  'bg-cyan-500',
+  'bg-teal-500',
+  'bg-emerald-500',
+  'bg-green-500',
+  'bg-yellow-500',
+  'bg-amber-500',
+  'bg-orange-500',
+  'bg-red-500',
+  'bg-pink-500',
+  'bg-purple-500',
+  'bg-violet-500',
+  'bg-indigo-500',
+  'bg-gray-400',
+]
+
+function barColor(i) {
+  return BAR_COLORS[i % BAR_COLORS.length]
+}
+
+const DEMOGRAPHIC_REPORTS = [
+  {
+    type: 'demographics-age',
+    label: 'Age Group',
+    description: 'Distribution by age bracket',
+    icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
+    iconBg: 'bg-violet-100', iconColor: 'text-violet-700',
+  },
+  {
+    type: 'demographics-gender',
+    label: 'Sex / Gender',
+    description: 'Distribution by gender identity',
+    icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+    iconBg: 'bg-pink-100', iconColor: 'text-pink-700',
+  },
+  {
+    type: 'demographics-civil-status',
+    label: 'Civil Status',
+    description: 'Distribution by civil status',
+    icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z',
+    iconBg: 'bg-red-100', iconColor: 'text-red-700',
+  },
+  {
+    type: 'demographics-region',
+    label: 'Region',
+    description: 'Distribution by geographic region',
+    icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z',
+    iconBg: 'bg-emerald-100', iconColor: 'text-emerald-700',
+  },
+  {
+    type: 'demographics-special',
+    label: 'Special Categories',
+    description: 'Indigenous, PWD, Solo Parent',
+    icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+    iconBg: 'bg-amber-100', iconColor: 'text-amber-700',
+  },
+]
+
+function clearFilters() {
+  selectedPosition.value = ''
+  selectedVacancyId.value = ''
+  loadAll()
+}
+
+function formatPublicationRange(published, deadline) {
+  if (!published) return 'Unpublished'
+  const from = new Date(published)
+  const to = deadline ? new Date(deadline) : null
+  const opts = { month: 'short', day: 'numeric', year: 'numeric' }
+  if (!to || from.toDateString() === to.toDateString()) {
+    return from.toLocaleDateString('en-US', opts)
+  }
+  const sameMonth = from.getMonth() === to.getMonth() && from.getFullYear() === to.getFullYear()
+  if (sameMonth) {
+    return `${from.toLocaleDateString('en-US', { month: 'short' })} ${from.getDate()}–${to.getDate()}, ${from.getFullYear()}`
+  }
+  return `${from.toLocaleDateString('en-US', opts)} – ${to.toLocaleDateString('en-US', opts)}`
+}
 
 function authHeaders() {
   const token = localStorage.getItem('auth_token')
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
-const reports = [
-  {
-    type: 'qualified-list',
-    label: 'Qualified Applicants',
-    description: 'All applicants who passed QS screening.',
-    icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-    iconBg: 'bg-green-100', iconColor: 'text-green-700',
-  },
-  {
-    type: 'comparative-assessment',
-    label: 'Comparative Assessment',
-    description: 'QS, exam scores, and BEI ratings side by side.',
-    icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
-    iconBg: 'bg-blue-100', iconColor: 'text-blue-700',
-  },
-  {
-    type: 'appointment-report',
-    label: 'Appointment Report',
-    description: 'All issued appointments with position and SG.',
-    icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-    iconBg: 'bg-purple-100', iconColor: 'text-purple-700',
-  },
-  {
-    type: 'pipeline-summary',
-    label: 'Pipeline Summary',
-    description: 'Applications and vacancies by status.',
-    icon: 'M4 6h16M4 10h16M4 14h16M4 18h16',
-    iconBg: 'bg-amber-100', iconColor: 'text-amber-700',
-  },
-  {
-    type: 'compliance-deadlines',
-    label: 'Compliance Deadlines',
-    description: '30-day CSC submission deadlines and status.',
-    icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-    iconBg: 'bg-red-100', iconColor: 'text-red-700',
-  },
-]
-
-const COL_MAPS = {
-  'qualified-list':         { 'Applicant': 'applicant', 'Position': 'position', 'Eligibility': 'eligibility', 'Status': 'status' },
-  'comparative-assessment': { 'Token': 'token', 'Name': 'name', 'QS': 'qs', 'TWE': 'twe', 'CBWE': 'cbwe', 'BEI Avg': 'bei_avg', 'Status': 'status' },
-  'appointment-report':     { 'Appointee': 'appointee', 'Position': 'position', 'SG': 'salary_grade', 'Date': 'appointed_at' },
-  'pipeline-summary':       { 'Status': 'status', 'Count': 'count' },
-  'compliance-deadlines':   { 'Appointee': 'appointee', 'Position': 'position', 'Due': 'due_at', 'Days Left': 'days_remaining', 'Status': 'status' },
-}
-
-function previewCols(type) { return Object.keys(COL_MAPS[type] ?? {}) }
-function colKey(type, col) { return COL_MAPS[type]?.[col] ?? col.toLowerCase() }
-
-async function loadPreview(type) {
-  loading.value[type] = true
+async function loadReport(type) {
   try {
     const params = {}
     if (selectedVacancyId.value) params.vacancy_id = selectedVacancyId.value
     const { data } = await axios.get(`/api/reports/${type}`, { headers: authHeaders(), params })
-    previews.value[type] = data.rows ?? data.pipeline ?? []
+    return data
   } catch (e) {
-    error.value = e.response?.data?.message ?? 'Failed to load report.'
-  } finally {
-    loading.value[type] = false
+    throw new Error(e.response?.data?.message ?? `Failed to load ${type}.`)
   }
 }
 
-function exportJson(type) {
-  const data = previews.value[type]
-  if (!data) return
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-  const url  = URL.createObjectURL(blob)
-  const a    = document.createElement('a')
+async function loadAll() {
+  loading.value = true
+  error.value = null
+  reports.value = []
+
+  try {
+    const results = await Promise.all(
+      DEMOGRAPHIC_REPORTS.map(async (def) => {
+        const data = await loadReport(def.type)
+        return { ...def, rows: data.rows ?? [], total: data.total ?? 0 }
+      })
+    )
+    reports.value = results
+    totalProfiles.value = Math.max(...results.map(r => r.total), 0)
+  } catch (e) {
+    error.value = e.message
+  } finally {
+    loading.value = false
+  }
+}
+
+function exportCsv(report) {
+  if (!report.rows.length) return
+  const headers = ['Category', 'Count', 'Percentage']
+  const lines = report.rows.map(r => `"${r.label}",${r.count},${r.percentage}`)
+  const csv = [headers.join(','), ...lines].join('\n')
+  const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
   a.href = url
-  a.download = `${type}-${new Date().toISOString().slice(0, 10)}.json`
+  a.download = `${report.type}-${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   URL.revokeObjectURL(url)
 }
@@ -246,53 +290,8 @@ async function loadVacancies() {
   vacancies.value = data.data ?? data
 }
 
-async function loadAppointedApps() {
-  try {
-    const { data } = await axios.get('/api/applications', { headers: authHeaders(), params: { status: 'appointed' } })
-    const apps = data.data ?? data
-    appointedApps.value = apps.map(a => ({
-      id:             a.id,
-      applicant_name: a.applicant ? `${a.applicant.first_name ?? ''} ${a.applicant.last_name ?? ''}`.trim() : '—',
-      position:       a.vacancy?.position_title ?? '—',
-    }))
-  } catch { /* non-critical */ }
-}
-
-async function loadGeneratedForms() {
-  if (!formApp.value) return
-  try {
-    const { data } = await axios.get(`/api/applications/${formApp.value}/forms`, { headers: authHeaders() })
-    generatedForms.value = data.forms ?? []
-  } catch { generatedForms.value = [] }
-}
-
-async function generateForm() {
-  generating.value = true
-  formMessage.value = ''
-  formError.value = false
-  try {
-    const { data } = await axios.post(`/api/applications/${formApp.value}/forms`, { form_type: formType.value }, { headers: authHeaders() })
-    formMessage.value = data.message
-    await loadGeneratedForms()
-  } catch (e) {
-    formMessage.value = e.response?.data?.message ?? 'Failed to generate form.'
-    formError.value = true
-  } finally {
-    generating.value = false
-  }
-}
-
-async function markSubmitted(formId) {
-  await axios.patch(`/api/forms/${formId}/mark-submitted`, {}, { headers: authHeaders() })
-  await loadGeneratedForms()
-}
-
-function formatDate(str) {
-  if (!str) return '—'
-  return new Date(str).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
-}
-
-watch(formApp, loadGeneratedForms)
-
-onMounted(() => { loadVacancies(); loadAppointedApps() })
+onMounted(async () => {
+  await loadVacancies()
+  loadAll()
+})
 </script>

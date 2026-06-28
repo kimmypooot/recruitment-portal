@@ -117,6 +117,7 @@
             <option value="">— Select —</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
+            <option value="LGBTQIA+">LGBTQIA+</option>
           </select>
           <p v-if="errors.gender" class="mt-1 text-xs text-red-500">{{ errors.gender }}</p>
         </div>

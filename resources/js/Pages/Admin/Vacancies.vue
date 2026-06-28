@@ -453,7 +453,7 @@
       <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
         <h3 class="text-base font-semibold text-gray-900 mb-2">Delete Vacancy?</h3>
         <p class="text-sm text-gray-500 mb-6">
-          "<strong>{{ deleteTarget.position_title }}</strong>" will be permanently deleted.
+          "<strong>{{ deleteTarget.position_title }}</strong>" will be deleted. This action can be reversed from an archive.
         </p>
         <div class="flex justify-end gap-3">
           <button @click="deleteTarget = null"
@@ -477,8 +477,10 @@ import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import { useToast } from '@/composables/useToast'
+import { useConfirm } from '@/composables/useConfirm'
 
 const toast = useToast()
+const { confirm } = useConfirm()
 
 // ── State ────────────────────────────────────────────────────────────────────────
 const loading       = ref(true)
@@ -727,6 +729,9 @@ async function submitVacancy() {
 }
 
 async function changeStatus(vacancy, action) {
+  const verb = action === 'publish' ? 'publish' : 'archive'
+  const ok = await confirm(`${verb === 'publish' ? 'Publish' : 'Archive'} "${vacancy.position_title}"?`)
+  if (!ok) return
   statusLoading.value = vacancy.id
   try {
     await axios.patch(`/api/vacancies/${vacancy.id}/${action}`, {}, { headers: authHeaders() })
@@ -746,7 +751,7 @@ async function doDelete() {
   saving.value = true
   try {
     await axios.delete(`/api/vacancies/${deleteTarget.value.id}`, { headers: authHeaders() })
-    toast.success('Vacancy deleted successfully.')
+    toast.success('Vacancy deleted.')
     deleteTarget.value = null
     fetchVacancies()
   } catch (e) {

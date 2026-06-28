@@ -54,7 +54,7 @@
         <!-- Forward to Appointing Authority -->
         <a
           v-if="locked && carExists"
-          :href="`/hrmpsb/appointing-authority/${vacancyId}`"
+          :href="`/appointing-authority/${vacancyId}`"
           class="btn-primary"
         >Forward to Appointing Authority →</a>
       </div>

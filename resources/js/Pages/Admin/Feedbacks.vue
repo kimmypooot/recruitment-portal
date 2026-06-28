@@ -13,6 +13,9 @@
         </div>
       </div>
 
+      <!-- Error -->
+      <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{{ error }}</div>
+
       <!-- Stat section -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
@@ -236,22 +239,21 @@
           </p>
           <div class="flex items-center gap-1">
             <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
-              class="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+              class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
               </svg>
             </button>
-            <button v-for="p in pageRange" :key="p" @click="goToPage(p)"
-              class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors"
-              :class="p === currentPage
-                ? 'bg-[#2a338f] text-white shadow-sm'
-                : 'border border-gray-200 text-gray-600 hover:bg-white'">
+            <button v-for="p in visiblePages" :key="p" @click="typeof p === 'number' && goToPage(p)"
+              :disabled="p === '…'"
+              :class="['px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
+                p === currentPage ? 'bg-[#2a338f] text-white' : p === '…' ? 'text-gray-300 cursor-default' : 'text-gray-600 hover:bg-gray-100']">
               {{ p }}
             </button>
             <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
-              class="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
               </svg>
             </button>
           </div>
@@ -268,6 +270,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { feedbackApi } from '@/services/api'
 
 const loading     = ref(true)
+const error       = ref(null)
 const feedbacks   = ref([])
 const stats       = ref({})
 const currentPage = ref(1)
@@ -287,12 +290,13 @@ const hasActiveFilter = computed(() =>
   filters.search || filters.rating || filters.date_from || filters.date_to
 )
 
-const pageRange = computed(() => {
-  const range = []
-  const start = Math.max(1, currentPage.value - 2)
-  const end   = Math.min(totalPages.value, start + 4)
-  for (let i = start; i <= end; i++) range.push(i)
-  return range
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const cur   = currentPage.value
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  if (cur <= 4)   return [1, 2, 3, 4, 5, '…', total]
+  if (cur >= total - 3) return [1, '…', total - 4, total - 3, total - 2, total - 1, total]
+  return [1, '…', cur - 1, cur, cur + 1, '…', total]
 })
 
 async function loadFeedbacks() {
@@ -306,6 +310,7 @@ async function loadFeedbacks() {
     stats.value      = data.stats
   } catch {
     feedbacks.value = []
+    error.value = 'Failed to load feedbacks.'
   } finally {
     loading.value = false
   }

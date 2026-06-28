@@ -13,7 +13,6 @@ class ApplicantProfile extends Model
     protected $fillable = [
         'user_id', 'photo_path',
         'gender', 'civil_status', 'birthday', 'religion',
-        'address',
         'region', 'province', 'city_municipality', 'barangay',
         'mobile_number', 'eligibility', 'eligibility_other',
         'indigenous_group', 'pwd', 'solo_parent',

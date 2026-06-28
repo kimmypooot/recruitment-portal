@@ -43,7 +43,7 @@ class CsFormGenerationTest extends TestCase
         $this->application = Application::create([
             'vacancy_id'   => $vacancy->id,
             'applicant_id' => $profile->id,
-            'status'       => 'passed',
+            'status'       => 'recommended',
             'submitted_at' => now(),
         ]);
     }
@@ -111,42 +111,6 @@ class CsFormGenerationTest extends TestCase
             'application_id' => $this->application->id,
             'form_type'      => '33A',
         ])->count(), 'Regenerating should upsert, not duplicate');
-    }
-
-    public function test_33a_generation_creates_submission_tracking_deadline(): void
-    {
-        $service = new FormGeneratorService();
-        $service->generate($this->application, '33A', $this->hrManager);
-
-        $this->assertDatabaseHas('submission_tracking', [
-            'application_id' => $this->application->id,
-            'deadline_type'  => 'csc_submission',
-            'status'         => 'pending',
-        ]);
-    }
-
-    public function test_33b_generation_does_not_create_submission_tracking(): void
-    {
-        $service = new FormGeneratorService();
-        $service->generate($this->application, '33B', $this->hrManager);
-
-        $this->assertDatabaseMissing('submission_tracking', [
-            'application_id' => $this->application->id,
-            'deadline_type'  => 'csc_submission',
-        ]);
-    }
-
-    public function test_mark_submitted_updates_form_and_tracking(): void
-    {
-        $service = new FormGeneratorService();
-        $form = $service->generate($this->application, '33A', $this->hrManager);
-        $service->markSubmitted($form);
-
-        $this->assertNotNull($form->fresh()->submitted_to_csc_at);
-        $this->assertDatabaseHas('submission_tracking', [
-            'application_id' => $this->application->id,
-            'status'         => 'submitted',
-        ]);
     }
 
     // ── HTTP endpoint tests ────────────────────────────────────────────────

@@ -53,12 +53,6 @@ class Vacancy extends Model
         return $this->hasMany(Application::class);
     }
 
-    // Compliance deadlines tracked for this vacancy
-    public function complianceDeadlines(): HasMany
-    {
-        return $this->hasMany(ComplianceDeadline::class);
-    }
-
     // Final deliberation results for this vacancy
     public function deliberationResults(): HasMany
     {

@@ -1,6 +1,16 @@
 <template>
   <AdminLayout title="Dashboard">
 
+    <!-- Error banner -->
+    <div v-if="loadError"
+      class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 flex items-center gap-3">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      </svg>
+      <span>{{ loadError }}</span>
+      <button @click="loadDashboard" class="ml-auto text-sm font-medium text-red-700 underline hover:no-underline">Retry</button>
+    </div>
+
     <!-- Stat cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6">
       <Link v-for="card in statCards" :key="card.label" :href="card.link"
@@ -84,7 +94,7 @@
             <tbody class="divide-y divide-gray-50">
               <tr v-for="app in recentApplications" :key="app.id" class="hover:bg-gray-50 transition-colors">
                 <td class="py-2.5 px-5 sm:px-0 pr-4 text-gray-900 font-medium whitespace-nowrap">{{ formatApplicantName(app) }}</td>
-                <td class="py-2.5 pr-4 text-gray-600 truncate max-w-[160px] sm:max-w-[200px]">{{ app.vacancy?.position_title ?? '—' }}</td>
+                <td class="py-2.5 pr-4 text-gray-600 truncate max-w-[160px] sm:max-w-[200px]" :title="app.vacancy?.position_title ?? ''">{{ app.vacancy?.position_title ?? '—' }}</td>
                 <td class="py-2.5 pr-4">
                   <StatusBadge :status="app.status" />
                 </td>
@@ -143,6 +153,7 @@ import StatusBadge from '@/Components/UI/StatusBadge.vue'
 
 const loading         = ref(true)
 const scheduleLoading = ref(true)
+const loadError       = ref(null)
 const stats           = ref({})
 const pipeline        = ref([])
 const recentApplications = ref([])
@@ -293,6 +304,7 @@ function formatDateTime(iso) {
 async function loadDashboard() {
   loading.value = true
   scheduleLoading.value = true
+  loadError.value = null
   try {
     const [statsRes, pipelineRes, recentRes] = await Promise.all([
       api.get('/dashboard/stats'),
@@ -308,7 +320,7 @@ async function loadDashboard() {
       setTimeout(() => { refreshFlash.value = false }, 1500)
     }
   } catch (e) {
-    console.error('Dashboard load failed', e)
+    loadError.value = e?.response?.data?.message ?? 'Failed to load dashboard data.'
   } finally {
     loading.value = false
   }

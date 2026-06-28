@@ -110,7 +110,7 @@
                   </div>
                 </div>
                 <div class="min-w-0">
-                  <p class="font-medium text-gray-900 truncate">{{ user.full_name }}</p>
+                  <p class="font-medium text-gray-900 truncate">{{ user.last_name }}, {{ user.first_name }}{{ user.middle_name ? ' ' + user.middle_name.charAt(0).toUpperCase() + '.' : '' }}{{ user.suffix ? ', ' + user.suffix : '' }}</p>
                   <p class="text-xs text-gray-400 truncate">{{ user.email }}</p>
                 </div>
               </div>
@@ -205,7 +205,7 @@
               alt="" />
             <div :class="[avatarBg(form.role), editTarget.photo_url ? 'hidden' : '']"
               class="w-full h-full rounded-full flex items-center justify-center text-sm font-bold">
-              {{ initials(form.name || editTarget.full_name) }}
+              {{ initials({ first_name: form.first_name, last_name: form.last_name }) || initials(editTarget) }}
             </div>
           </div>
           <div v-else class="w-12 h-12 rounded-full bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
@@ -244,10 +244,34 @@
 
             <!-- Account tab -->
             <template v-if="modalTab === 'Account'">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
-                <input v-model="form.name" required type="text" autocomplete="off"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">First Name <span class="text-red-500">*</span></label>
+                  <input v-model="form.first_name" required type="text" autocomplete="off"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Last Name <span class="text-red-500">*</span></label>
+                  <input v-model="form.last_name" required type="text" autocomplete="off"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
+                  <input v-model="form.middle_name" type="text" autocomplete="off" placeholder="Optional"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Suffix</label>
+                  <select v-model="form.suffix"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+                    <option value="">None</option>
+                    <option>Jr.</option>
+                    <option>Sr.</option>
+                    <option>II</option>
+                    <option>III</option>
+                    <option>IV</option>
+                  </select>
+                </div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Email Address <span class="text-red-500">*</span></label>
@@ -339,7 +363,7 @@
           </div>
         </div>
         <div class="bg-gray-50 rounded-lg p-3 mb-5">
-          <p class="text-sm font-medium text-gray-900">{{ deleteTarget.name }}</p>
+          <p class="text-sm font-medium text-gray-900">{{ deleteTarget.full_name }}</p>
           <p class="text-xs text-gray-400 mt-0.5">{{ deleteTarget.email }}</p>
           <span :class="roleClass(deleteTarget.role)"
             class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold mt-2">
@@ -388,7 +412,8 @@ const currentPage  = ref(1)
 const perPage      = 15
 
 const form = reactive({
-  name: '', email: '', role: 'applicant', password: '', password_confirmation: '',
+  first_name: '', last_name: '', middle_name: '', suffix: '',
+  email: '', role: 'applicant', password: '', password_confirmation: '',
 })
 
 // ── Computed ─────────────────────────────────────────────────────────────────────
@@ -398,7 +423,7 @@ const filteredUsers = computed(() => {
   const q = search.value.toLowerCase().trim()
   if (q) {
     list = list.filter(u =>
-      u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+      (u.full_name ?? '').toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
     )
   }
 
@@ -476,14 +501,23 @@ function onRoleChange() { currentPage.value = 1; fetchUsers() }
 function openCreate() {
   editTarget.value = null
   modalTab.value   = 'Account'
-  Object.assign(form, { name: '', email: '', role: 'applicant', password: '', password_confirmation: '' })
+  Object.assign(form, { first_name: '', last_name: '', middle_name: '', suffix: '', email: '', role: 'applicant', password: '', password_confirmation: '' })
   showModal.value = true
 }
 
 function openEdit(user) {
   editTarget.value = user
   modalTab.value   = 'Account'
-  Object.assign(form, { name: user.full_name, email: user.email, role: user.role ?? 'applicant', password: '', password_confirmation: '' })
+  Object.assign(form, {
+    first_name: user.first_name ?? '',
+    last_name: user.last_name ?? '',
+    middle_name: user.middle_name ?? '',
+    suffix: user.suffix ?? '',
+    email: user.email,
+    role: user.role ?? 'applicant',
+    password: '',
+    password_confirmation: '',
+  })
   showModal.value = true
 }
 
@@ -493,12 +527,28 @@ async function submitUser() {
   saving.value = true
   try {
     if (editTarget.value) {
-      const payload = { name: form.name, email: form.email, role: form.role }
+      const payload = {
+        first_name: form.first_name,
+        last_name: form.last_name,
+        middle_name: form.middle_name || null,
+        suffix: form.suffix || null,
+        email: form.email,
+        role: form.role,
+      }
       if (form.password) { payload.password = form.password; payload.password_confirmation = form.password_confirmation }
       await axios.put(`/api/admin/users/${editTarget.value.id}`, payload, { headers: authHeaders() })
       toast.success('User updated successfully.')
     } else {
-      await axios.post('/api/admin/users', form, { headers: authHeaders() })
+      await axios.post('/api/admin/users', {
+        first_name: form.first_name,
+        last_name: form.last_name,
+        middle_name: form.middle_name || null,
+        suffix: form.suffix || null,
+        email: form.email,
+        role: form.role,
+        password: form.password,
+        password_confirmation: form.password_confirmation,
+      }, { headers: authHeaders() })
       toast.success('User created successfully.')
     }
     showModal.value = false
@@ -518,7 +568,7 @@ async function doDelete() {
   try {
     await axios.delete(`/api/admin/users/${deleteTarget.value.id}`, { headers: authHeaders() })
     deleteTarget.value = null
-    toast.success('User deleted successfully.')
+    toast.error('User deleted.')
     fetchUsers()
   } catch (e) {
     const msg = e.response?.data?.message ?? 'Failed to delete user.'

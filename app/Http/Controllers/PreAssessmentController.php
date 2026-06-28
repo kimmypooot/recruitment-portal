@@ -6,6 +6,7 @@ use App\Models\Application;
 use App\Models\HrmbsboardComposition;
 use App\Models\PreAssessment;
 use App\Models\QsEvaluation;
+use App\Models\User;
 use App\Models\Vacancy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,17 @@ use Illuminate\Http\Request;
 class PreAssessmentController extends Controller
 {
     use \App\Traits\FormatsApplicantName;
+
+    private function formatNameWithMiddleInitial(?User $user): string
+    {
+        if (! $user) return '—';
+
+        $mi = $user->middle_name
+            ? ' ' . strtoupper(substr($user->middle_name, 0, 1)) . '.'
+            : '';
+
+        return trim("{$user->first_name}{$mi} {$user->last_name}");
+    }
 
     public function index(Vacancy $vacancy): JsonResponse
     {
@@ -89,7 +101,7 @@ class PreAssessmentController extends Controller
                 'qs_evaluations' => ($qsEvals[$app->id] ?? collect())->map(fn ($e) => [
                     'id'                => $e->id,
                     'evaluator_id'      => $e->evaluator_id,
-                    'evaluator_name'    => $e->evaluator?->full_name,
+                    'evaluator_name'    => $this->formatNameWithMiddleInitial($e->evaluator),
                     'overall_qualified' => $e->overall_qualified,
                     'education_meets'   => $e->education_meets,
                     'experience_meets'  => $e->experience_meets,
@@ -115,7 +127,7 @@ class PreAssessmentController extends Controller
             'applications'    => $rows,
             'hrmpsb_members'  => $members->map(fn ($m) => [
                 'user_id' => $m->user_id,
-                'name'    => $m->user?->full_name ?? '—',
+                'name'    => $this->formatNameWithMiddleInitial($m->user),
                 'role'    => HrmbsboardComposition::ROLES[$m->hrmpsb_role] ?? $m->hrmpsb_role,
             ]),
         ]);

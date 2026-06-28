@@ -50,10 +50,10 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
           <input v-model="filters.date_from" @change="resetAndFetch" type="date"
-            class="text-sm bg-transparent focus:outline-none text-gray-700 w-36" />
+            class="text-sm bg-transparent focus:outline-none text-gray-700 w-32 sm:w-36" />
           <span class="text-gray-300 text-xs">—</span>
           <input v-model="filters.date_to" @change="resetAndFetch" type="date"
-            class="text-sm bg-transparent focus:outline-none text-gray-700 w-36" />
+            class="text-sm bg-transparent focus:outline-none text-gray-700 w-32 sm:w-36" />
           <button v-if="filters.date_from || filters.date_to" @click="filters.date_from = ''; filters.date_to = ''; resetAndFetch()"
             class="text-gray-300 hover:text-gray-500 transition-colors ml-1">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -115,7 +115,7 @@
                 <div class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold flex-shrink-0">
                   {{ initials(log.user_name) }}
                 </div>
-                <span class="text-gray-700 text-xs truncate max-w-[130px]">
+                <span class="text-gray-700 text-xs truncate max-w-[130px]" :title="log.user_name ?? 'System'">
                   {{ log.user_name ?? 'System' }}
                 </span>
                 <span v-if="log.user_role"
@@ -231,6 +231,9 @@ async function fetchLogs() {
     })
     logs.value = data.data ?? []
     meta.value = data.meta ?? {}
+  } catch {
+    logs.value = []
+    meta.value = {}
   } finally {
     loading.value = false
   }
