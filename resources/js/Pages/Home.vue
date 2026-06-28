@@ -69,7 +69,14 @@
               type="text"
               aria-label="Search position title"
               placeholder="Search position title..."
-              class="w-full pl-9 pr-4 py-3 rounded-xl text-sm text-gray-900 bg-white placeholder-gray-400 border-0 shadow-lg focus:ring-2 focus:ring-white/60 focus:outline-none" />
+              class="w-full pl-9 pr-9 py-3 rounded-xl text-sm text-gray-900 bg-white placeholder-gray-400 border-0 shadow-lg focus:ring-2 focus:ring-white/60 focus:outline-none" />
+            <button v-if="filters.search" @click="clearSearch"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-gray-400 hover:text-gray-700 transition-colors"
+              aria-label="Clear search">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
           </div>
           <button
             @click="fetchVacancies"
@@ -164,6 +171,23 @@
 
     <!-- ── Vacancy Grid ───────────────────────────────────────────────── -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+      <!-- Error banner -->
+      <div v-if="fetchError" class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="text-sm text-red-700">{{ fetchError }}</p>
+        </div>
+        <button @click="fetchVacancies"
+          class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 hover:text-red-900 bg-red-100 hover:bg-red-200 rounded-lg transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Retry
+        </button>
+      </div>
 
       <!-- Loading skeleton -->
       <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -408,6 +432,7 @@ const props = defineProps({
 const redirecting  = ref(true)
 const vacancies   = ref(props.initialVacancies.data ?? [])
 const isLoading   = ref(!props.initialVacancies.data?.length)
+const fetchError  = ref('')
 const pagination  = ref({
   total:        props.initialVacancies.meta?.total        ?? 0,
   current_page: props.initialVacancies.meta?.current_page ?? 1,
@@ -446,7 +471,14 @@ const visiblePages = computed(() => {
 })
 
 // ── Data fetching ─────────────────────────────────────────────────────────
+function clearSearch() {
+  filters.search = ''
+  filters.page = 1
+  fetchVacancies()
+}
+
 async function fetchVacancies() {
+  fetchError.value = ''
   isLoading.value = true
   try {
     const { data } = await axios.get('/api/vacancies', {
@@ -461,7 +493,7 @@ async function fetchVacancies() {
     vacancies.value  = data.data
     pagination.value = data.meta
   } catch (err) {
-    console.error('Failed to fetch vacancies:', err)
+    fetchError.value = err.response?.data?.message || 'Failed to load vacancies. Please try again.'
   } finally {
     isLoading.value = false
   }
