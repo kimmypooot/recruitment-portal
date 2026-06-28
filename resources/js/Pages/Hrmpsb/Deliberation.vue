@@ -1,6 +1,6 @@
 <template>
   <HrmbsboardLayout title="Final Deliberation" :vacancyId="props.vacancyId">
-    <div class="space-y-6">
+    <div class="space-y-6 pb-20 sm:pb-6">
 
       <!-- Vacancy Banner -->
       <VacancyBanner
@@ -11,7 +11,7 @@
       />
 
       <!-- Actions row -->
-      <div class="flex items-center justify-end gap-3">
+      <div class="flex items-center justify-end gap-3 flex-wrap">
         <!-- Lock button -->
         <button
           v-if="canLock && !locked"
@@ -68,7 +68,7 @@
       </div>
 
       <!-- Lock confirmation -->
-      <div v-if="showLockConfirm" class="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-center justify-between">
+      <div v-if="showLockConfirm" class="bg-amber-50 border border-amber-300 rounded-xl p-4 flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <p class="text-sm text-amber-800 font-medium">
           Locking will prevent any further changes to deliberation results and decisions. This action cannot be undone.
         </p>
@@ -81,7 +81,7 @@
       </div>
 
       <!-- Unmask confirmation -->
-      <div v-if="confirmUnmask" class="bg-red-50 border border-red-300 rounded-xl p-4 flex items-center justify-between">
+      <div v-if="confirmUnmask" class="bg-red-50 border border-red-300 rounded-xl p-4 flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <p class="text-sm text-red-800 font-medium">
           This will reveal all applicant identities to all deliberation participants. This action cannot be undone.
         </p>

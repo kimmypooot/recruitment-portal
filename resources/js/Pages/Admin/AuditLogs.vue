@@ -85,7 +85,8 @@
         </div>
       </div>
 
-      <table v-else class="w-full text-sm">
+      <div v-else class="overflow-x-auto">
+      <table class="w-full text-sm">
         <thead class="bg-gray-50 border-b border-gray-200">
           <tr class="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider">
             <th class="px-5 py-3">Action</th>
@@ -146,6 +147,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
 
       <!-- Pagination -->
       <div v-if="!loading && meta.last_page > 1"

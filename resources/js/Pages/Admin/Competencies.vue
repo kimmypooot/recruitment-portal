@@ -3,7 +3,7 @@
     <div class="space-y-6">
 
       <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 class="text-2xl font-bold text-gray-900">Competency Library</h1>
           <p class="text-sm text-gray-500 mt-1">
@@ -67,7 +67,7 @@
                 </span>
 
                 <!-- Actions (appear on hover) -->
-                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
                   <button @click="openEdit(comp)"
                     class="p-1.5 text-gray-400 hover:text-[#2a338f] hover:bg-indigo-50 rounded-lg transition-colors"
                     title="Edit">

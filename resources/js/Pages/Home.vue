@@ -222,7 +222,7 @@
       <!-- ── Pagination ──────────────────────────────────────────────── -->
       <div
         v-if="!isLoading && pagination.last_page > 1"
-        class="mt-10 flex items-center justify-between">
+        class="mt-10 flex items-center justify-between flex-wrap gap-3">
 
         <!-- Page info -->
         <p class="text-sm text-gray-500">

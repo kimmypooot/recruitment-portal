@@ -1,6 +1,6 @@
 <template>
   <HrmbsboardLayout title="Background Investigation" :vacancyId="props.vacancyId">
-    <div class="space-y-4">
+    <div class="space-y-4 pb-20 sm:pb-6">
 
       <VacancyBanner
         :vacancy="vacancy"
@@ -22,7 +22,7 @@
       </div>
 
       <!-- Secretariat lock action -->
-      <div v-if="isSecretariat && !locked" class="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+      <div v-if="isSecretariat && !locked" class="flex-col sm:flex-row items-start sm:items-center justify-between bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 gap-3">
         <div class="text-sm text-blue-800">
           <span class="font-semibold">Secretariat view:</span> You can manage investigation links below. Lock when all reports are complete.
         </div>
@@ -33,7 +33,7 @@
       </div>
 
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-2">
           <h2 class="font-semibold text-gray-800">Applicant Background Investigation Reports</h2>
         </div>
 

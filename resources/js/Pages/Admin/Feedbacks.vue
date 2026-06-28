@@ -3,7 +3,7 @@
     <div class="space-y-6">
 
       <!-- Page header -->
-      <div class="flex items-start justify-between gap-4">
+      <div class="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 class="text-xl font-bold text-gray-900">Applicant Feedbacks</h1>
           <p class="text-sm text-gray-500 mt-0.5">Experience ratings submitted by applicants after applying for a position.</p>
@@ -78,13 +78,17 @@
           </div>
 
           <!-- Date range -->
-          <div class="flex items-center gap-2">
-            <span class="text-xs text-gray-400 whitespace-nowrap">From</span>
-            <input v-model="filters.date_from" type="date" @change="loadFeedbacks"
-              class="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none text-gray-600" />
-            <span class="text-xs text-gray-400">to</span>
-            <input v-model="filters.date_to" type="date" @change="loadFeedbacks"
-              class="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none text-gray-600" />
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <span class="text-xs text-gray-400 whitespace-nowrap">From</span>
+              <input v-model="filters.date_from" type="date" @change="loadFeedbacks"
+                class="flex-1 sm:flex-none text-sm border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none text-gray-600 min-w-0 w-full sm:w-auto" />
+            </div>
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <span class="text-xs text-gray-400 whitespace-nowrap">to</span>
+              <input v-model="filters.date_to" type="date" @change="loadFeedbacks"
+                class="flex-1 sm:flex-none text-sm border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none text-gray-600 min-w-0 w-full sm:w-auto" />
+            </div>
           </div>
 
           <button v-if="hasActiveFilter" @click="clearFilters"

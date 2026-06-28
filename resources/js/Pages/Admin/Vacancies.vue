@@ -25,7 +25,7 @@
     </div>
 
     <!-- Bulk action bar -->
-    <div v-if="selectedIds.length" class="flex items-center gap-3 px-5 py-3 bg-[#2a338f]/5 border border-[#2a338f]/20 rounded-lg mb-4">
+    <div v-if="selectedIds.length" class="flex items-center gap-3 flex-wrap px-5 py-3 bg-[#2a338f]/5 border border-[#2a338f]/20 rounded-lg mb-4">
       <span class="text-sm font-medium text-gray-700">{{ selectedIds.length }} selected</span>
       <div class="flex-1"></div>
       <select v-model="bulkStatus"

@@ -165,7 +165,7 @@
     <template v-else>
 
       <!-- Breadcrumb + back -->
-      <div class="flex items-center gap-2 mb-4">
+      <div class="flex items-center gap-2 flex-wrap mb-4">
         <button @click="backToList"
           class="flex items-center gap-1.5 text-sm text-[#2a338f] font-medium hover:underline">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -264,7 +264,7 @@
 
         <!-- Selection bar -->
         <div v-if="!loading && selectedIds.size > 0"
-          class="px-5 py-2.5 bg-[#2a338f]/5 border-b border-[#2a338f]/10 flex items-center gap-3 flex-shrink-0">
+          class="px-5 py-2.5 bg-[#2a338f]/5 border-b border-[#2a338f]/10 flex items-center gap-3 flex-wrap flex-shrink-0">
           <span class="text-xs font-semibold text-[#2a338f]">
             {{ selectedIds.size }} applicant{{ selectedIds.size !== 1 ? 's' : '' }} selected
           </span>

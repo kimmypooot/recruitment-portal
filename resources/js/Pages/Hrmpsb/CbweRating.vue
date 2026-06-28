@@ -1,6 +1,6 @@
 <template>
   <HrmbsboardLayout title="CBWE Rating" :vacancyId="props.vacancyId">
-    <div class="space-y-4">
+    <div class="space-y-4 pb-20 sm:pb-6">
 
       <!-- Vacancy Banner -->
       <VacancyBanner
@@ -21,7 +21,7 @@
       </div>
 
       <!-- Lock Confirmation -->
-      <div v-if="confirmLock" class="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-center justify-between">
+      <div v-if="confirmLock" class="bg-amber-50 border border-amber-300 rounded-xl p-4 flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <p class="text-sm text-amber-800 font-medium">
           Locking CBWE ratings is irreversible. All evaluators will lose edit access.
         </p>

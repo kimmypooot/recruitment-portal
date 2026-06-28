@@ -1,9 +1,9 @@
 <template>
   <HrmbsboardLayout title="Dashboard">
-    <div class="space-y-6">
+    <div class="space-y-6 pb-20 sm:pb-6">
 
       <!-- Board role banner -->
-      <div v-if="myRole" class="bg-[#2a338f]/5 border border-[#2a338f]/20 rounded-xl p-5 flex items-center gap-4">
+      <div v-if="myRole" class="bg-[#2a338f]/5 border border-[#2a338f]/20 rounded-xl p-5 flex items-center gap-4 flex-wrap">
         <div class="w-12 h-12 rounded-full bg-[#2a338f] flex items-center justify-center text-white font-bold text-base flex-shrink-0">
           {{ initials }}
         </div>
@@ -13,10 +13,10 @@
           <p class="text-xs text-gray-500 capitalize mt-0.5">{{ myRole.member_type }} member</p>
         </div>
         <span v-if="pendingActions > 0"
-          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 whitespace-nowrap">
           {{ pendingActions }} action{{ pendingActions !== 1 ? 's' : '' }} pending
         </span>
-        <span v-else class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+        <span v-else class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 whitespace-nowrap">
           <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse block"></span>
           Active
         </span>
@@ -35,13 +35,13 @@
       </div>
 
       <!-- Section header -->
-      <div class="flex items-center justify-between">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h2 class="text-sm font-semibold text-gray-900">Vacancies for Evaluation</h2>
           <p class="text-xs text-gray-400 mt-0.5">Published and closed positions requiring HRMPSB action</p>
         </div>
         <div class="flex items-center gap-3">
-          <span v-if="!loading" class="text-xs text-gray-400 font-medium">
+          <span v-if="!loading" class="text-xs text-gray-400 font-medium whitespace-nowrap">
             {{ vacancies.length }} position{{ vacancies.length !== 1 ? 's' : '' }}
           </span>
           <button @click="autoRefresh = !autoRefresh"
@@ -83,42 +83,45 @@
 
           <div class="px-5 py-4">
             <!-- Header row -->
-            <div class="flex items-start gap-4">
-              <!-- SG badge -->
-              <div class="w-10 h-10 rounded-lg bg-[#2a338f] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
-                SG-{{ v.salary_grade }}
-              </div>
-
-              <!-- Meta -->
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <h3 class="text-sm font-semibold text-gray-900">{{ v.position_title }}</h3>
-                  <span :class="v.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'"
-                    class="px-2 py-0.5 rounded-full text-[10px] font-medium capitalize">{{ v.status }}</span>
+            <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+              <!-- Top: SG badge + meta + stage badge -->
+              <div class="flex items-start gap-4 flex-1 min-w-0">
+                <!-- SG badge -->
+                <div class="w-10 h-10 rounded-lg bg-[#2a338f] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                  SG-{{ v.salary_grade }}
                 </div>
-                <p class="text-xs text-gray-500 mt-0.5 truncate">{{ v.place_of_assignment }} &middot; {{ v.plantilla_no ?? '—' }} &middot; Published {{ formatDate(v.published_at) }}</p>
+
+                <!-- Meta -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h3 class="text-sm font-semibold text-gray-900">{{ v.position_title }}</h3>
+                    <span :class="v.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-medium capitalize">{{ v.status }}</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-0.5 truncate">{{ v.place_of_assignment }} &middot; {{ v.plantilla_no ?? '—' }} &middot; Published {{ formatDate(v.published_at) }}</p>
+                </div>
+
+                <!-- Stage badge (desktop only) -->
+                <div v-if="stages[v.id]" class="flex-shrink-0 hidden sm:block">
+                  <span :class="currentStageBadge(stages[v.id]).class"
+                    class="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap">
+                    <span class="w-1.5 h-1.5 rounded-full inline-block" :class="currentStageBadge(stages[v.id]).dot"></span>
+                    {{ currentStageBadge(stages[v.id]).label }}
+                  </span>
+                </div>
               </div>
 
-              <!-- Stage badge -->
-              <div v-if="stages[v.id]" class="flex-shrink-0 hidden sm:block">
-                <span :class="currentStageBadge(stages[v.id]).class"
-                  class="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap">
-                  <span class="w-1.5 h-1.5 rounded-full inline-block" :class="currentStageBadge(stages[v.id]).dot"></span>
-                  {{ currentStageBadge(stages[v.id]).label }}
-                </span>
-              </div>
-
-              <!-- Actions dropdown -->
-              <div class="relative flex-shrink-0 flex items-center gap-2" v-if="stages[v.id]">
+              <!-- Bottom: Actions (below on mobile, right side on desktop) -->
+              <div v-if="stages[v.id]" class="flex items-center gap-2 flex-wrap justify-end sm:flex-shrink-0">
                 <a :href="`/hrmpsb/applicants/${v.id}`"
-                  class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors border border-[#2a338f] text-[#2a338f] hover:bg-[#2a338f]/5">
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors border border-[#2a338f] text-[#2a338f] hover:bg-[#2a338f]/5 whitespace-nowrap">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
                   Applicants & Docs
                 </a>
                 <button @click.stop="toggleOpen(v.id)"
-                  class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-[#2a338f] text-white hover:bg-[#1e2570]">
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-[#2a338f] text-white hover:bg-[#1e2570] whitespace-nowrap">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/>
                   </svg>
@@ -160,7 +163,8 @@
             </div>
 
             <!-- Phase meter -->
-            <div v-if="stages[v.id]" class="mt-3">
+            <div v-if="stages[v.id]" class="mt-3 overflow-x-auto">
+              <div class="min-w-[500px]">
               <div class="flex items-center gap-0.5 mb-1.5">
                 <div v-for="(step, idx) in steps" :key="step.key"
                   @click="scrollToPhase(v.id, step.key)"
@@ -175,6 +179,7 @@
                   :class="phaseLabelClass(step, idx, v.id)">
                   {{ step.label }}
                 </span>
+              </div>
               </div>
             </div>
           </div>

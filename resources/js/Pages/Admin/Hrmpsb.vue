@@ -1,7 +1,7 @@
 <template>
   <AdminLayout title="HRMPSB Management">
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
       <div>
         <h2 class="text-lg font-semibold text-gray-900">Board Composition</h2>
         <p class="text-sm text-gray-500 mt-0.5">Fixed membership — applies to all vacancies. Reconstitute by updating members here.</p>
@@ -21,7 +21,8 @@
         <div v-for="n in 5" :key="n" class="h-10 bg-gray-100 rounded animate-pulse"></div>
       </div>
 
-      <table v-else class="w-full text-sm">
+      <div v-else class="overflow-x-auto">
+      <table class="w-full text-sm">
         <thead class="bg-gray-50 border-b border-gray-200">
           <tr class="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider">
             <th class="px-5 py-3">Member</th>
@@ -74,6 +75,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
 
     <!-- Role coverage summary -->

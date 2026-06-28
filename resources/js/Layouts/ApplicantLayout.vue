@@ -10,7 +10,7 @@
     <!-- Sidebar -->
     <aside
       :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0']"
-      class="fixed inset-y-0 left-0 z-50 w-64 text-white flex flex-col transition-transform duration-200"
+      class="fixed inset-y-0 left-0 z-[60] w-64 text-white flex flex-col transition-transform duration-200"
       style="background-color: #2a338f;">
 
       <!-- Logo -->
@@ -153,7 +153,7 @@
 
     <!-- Back to top button -->
     <button v-if="showBackToTop" @click="scrollToTop"
-      class="fixed bottom-6 right-6 z-40 w-10 h-10 rounded-full bg-[#2a338f] text-white shadow-lg hover:bg-[#1e2570] flex items-center justify-center transition-all duration-200">
+      class="fixed bottom-6 right-6 z-[60] w-10 h-10 rounded-full bg-[#2a338f] text-white shadow-lg hover:bg-[#1e2570] flex items-center justify-center transition-all duration-200">
       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5"/>
       </svg>
@@ -359,7 +359,7 @@
 </style>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, provide, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import NotificationBell from '@/Components/UI/NotificationBell.vue'
@@ -371,6 +371,8 @@ useIdleTimer()
 
 const sidebarOpen       = ref(false)
 const sidebarCollapsed  = ref(false)
+
+provide('sidebarCollapsed', sidebarCollapsed)
 const dropdownOpen      = ref(false)
 const dropdownRef       = ref(null)
 const showBackToTop     = ref(false)

@@ -25,7 +25,7 @@
 
     <div v-else class="space-y-3">
       <div v-for="v in vacancies" :key="v.id"
-        class="bg-white rounded-xl border border-gray-200 p-5 flex items-center justify-between gap-4 hover:shadow-sm transition">
+        class="bg-white rounded-xl border border-gray-200 p-5 flex items-center justify-between gap-4 flex-wrap hover:shadow-sm transition">
         <div class="min-w-0">
           <h3 class="font-semibold text-gray-900 truncate">{{ v.position_title }}</h3>
           <p class="text-sm text-gray-400 mt-0.5">

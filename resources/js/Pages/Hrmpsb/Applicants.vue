@@ -1,6 +1,6 @@
 <template>
   <HrmbsboardLayout title="Applicants &amp; Documents">
-    <div v-if="loading" class="space-y-4">
+    <div v-if="loading" class="space-y-4 pb-20 sm:pb-6">
       <div v-for="n in 5" :key="n" class="h-14 bg-white rounded-xl border border-gray-200 animate-pulse"></div>
     </div>
 
@@ -11,6 +11,7 @@
     </template>
 
     <template v-else>
+      <div class="pb-20 sm:pb-6">
       <a :href="`/hrmpsb/dashboard`"
         class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#2a338f] mb-4 transition-colors">
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -35,6 +36,7 @@
 
       <!-- Applicants table -->
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead class="bg-gray-50 border-b border-gray-200">
             <tr class="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider">
@@ -85,6 +87,7 @@
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
 
       <!-- Doc legend -->
@@ -93,6 +96,7 @@
           <span class="w-2.5 h-2.5 rounded-full" :class="doc.color"></span>
           {{ doc.label }}
         </span>
+      </div>
       </div>
     </template>
   </HrmbsboardLayout>

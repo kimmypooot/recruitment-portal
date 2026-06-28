@@ -1,6 +1,6 @@
 <template>
   <HrmbsboardLayout title="BEI Scheduler" :vacancyId="props.vacancyId">
-    <div class="space-y-6">
+    <div class="space-y-6 pb-20 sm:pb-6">
 
       <!-- Vacancy Banner -->
       <VacancyBanner

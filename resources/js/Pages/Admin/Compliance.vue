@@ -3,7 +3,7 @@
     <div class="space-y-6">
 
       <!-- Header -->
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 class="text-xl font-bold text-gray-900">Compliance Tracking</h1>
           <p class="text-sm text-gray-500 mt-1">30-day CSC appointment submission deadlines.</p>
@@ -35,7 +35,7 @@
 
       <!-- Table -->
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-3">
           <h2 class="text-sm font-semibold text-gray-800">Submission Deadlines</h2>
           <div class="flex gap-2">
             <button v-for="f in filters" :key="f.value" @click="activeFilter = f.value"
@@ -50,7 +50,8 @@
           <div v-for="n in 4" :key="n" class="h-12 bg-gray-100 rounded animate-pulse"></div>
         </div>
 
-        <table v-else class="min-w-full divide-y divide-gray-100 text-sm">
+        <div v-else class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-100 text-sm">
           <thead class="bg-gray-50">
             <tr class="text-xs text-gray-500 font-semibold uppercase tracking-wider text-left">
               <th class="px-5 py-3">Appointee</th>
@@ -92,6 +93,7 @@
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
 
     </div>

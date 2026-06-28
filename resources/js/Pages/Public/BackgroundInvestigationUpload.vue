@@ -87,7 +87,7 @@
         <!-- Progress steps -->
         <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden mb-6">
           <div class="px-6 sm:px-8 py-4 border-b border-gray-100">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between gap-3 flex-wrap">
               <h2 class="text-sm font-semibold text-gray-900">Report Form</h2>
               <span class="text-xs text-gray-400">Step {{ currentStep }} of 3</span>
             </div>
@@ -100,7 +100,7 @@
           <form @submit.prevent="submitReport" class="p-6 sm:p-8 space-y-8">
             <!-- Step 1: Competencies -->
             <div v-if="currentStep === 1">
-              <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center justify-between gap-3 flex-wrap mb-1">
                 <label class="text-sm font-semibold text-gray-800">
                   I. On Competencies <span class="text-red-500">*</span>
                 </label>
@@ -135,7 +135,7 @@
 
             <!-- Step 2: Performance -->
             <div v-if="currentStep === 2">
-              <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center justify-between gap-3 flex-wrap mb-1">
                 <label class="text-sm font-semibold text-gray-800">
                   II. On Performance &amp; Other Relevant Information <span class="text-red-500">*</span>
                 </label>
@@ -169,7 +169,7 @@
 
             <!-- Step 3: File Upload & Submit -->
             <div v-if="currentStep === 3">
-              <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center justify-between gap-3 flex-wrap mb-1">
                 <label class="text-sm font-semibold text-gray-800">
                   Upload Report (PDF) <span class="text-red-500">*</span>
                 </label>
@@ -228,7 +228,7 @@
             </div>
 
             <!-- Navigation buttons -->
-            <div class="flex items-center justify-between pt-2">
+            <div class="flex items-center justify-between pt-2 gap-3 flex-wrap">
               <button v-if="currentStep > 1" type="button" @click="currentStep--"
                 class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">
                 ← Back

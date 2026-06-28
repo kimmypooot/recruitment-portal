@@ -36,7 +36,7 @@
 
         <!-- ── Vacancy Summary Card ─────────────────────────────────── -->
         <div class="bg-[#2a338f] text-white rounded-xl p-6 mb-6">
-          <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p class="text-xs font-semibold uppercase tracking-wider text-white/70 mb-1">Applying for</p>
               <h2 class="text-xl font-bold leading-snug">{{ vacancy.position_title }}</h2>

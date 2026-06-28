@@ -1,6 +1,6 @@
 <template>
   <HrmbsboardLayout title="BEI Rating" :vacancyId="props.vacancyId">
-    <div class="space-y-4">
+    <div class="space-y-4 pb-20 sm:pb-6">
 
       <!-- Vacancy Banner -->
       <VacancyBanner
@@ -21,7 +21,7 @@
       </div>
 
       <!-- Lock Confirmation -->
-      <div v-if="confirmLock" class="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-center justify-between">
+      <div v-if="confirmLock" class="bg-amber-50 border border-amber-300 rounded-xl p-4 flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <p class="text-sm text-amber-800 font-medium">
           Locking BEI ratings is irreversible. All evaluators will lose edit access.
         </p>
@@ -92,7 +92,7 @@
           <!-- ── Documents ── -->
           <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
             <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Submitted Documents</h4>
-            <div class="grid grid-cols-5 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
               <button
                 v-for="doc in documentTypes"
                 :key="doc.key"

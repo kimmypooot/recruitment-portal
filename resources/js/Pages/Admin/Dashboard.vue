@@ -2,18 +2,18 @@
   <AdminLayout title="Dashboard">
 
     <!-- Stat cards -->
-    <div class="grid grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6">
       <Link v-for="card in statCards" :key="card.label" :href="card.link"
-        class="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4 shadow-sm hover:border-[#2a338f]/30 hover:shadow-md transition-all cursor-pointer">
-        <div :class="card.iconBg" class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0">
-          <svg class="w-5 h-5" :class="card.iconColor" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        class="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 flex items-center sm:items-start gap-3 sm:gap-4 shadow-sm hover:border-[#2a338f]/30 hover:shadow-md transition-all cursor-pointer">
+        <div :class="card.iconBg" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" :class="card.iconColor" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" :d="card.icon"/>
           </svg>
         </div>
-        <div>
+        <div class="min-w-0">
           <p class="text-xs text-gray-500 font-medium">{{ card.label }}</p>
-          <p v-if="!loading" class="text-2xl font-bold text-gray-900 mt-0.5">{{ card.value }}</p>
-          <div v-else class="h-7 w-14 bg-gray-200 rounded animate-pulse mt-0.5"></div>
+          <p v-if="!loading" class="text-xl sm:text-2xl font-bold text-gray-900 mt-0.5">{{ card.value }}</p>
+          <div v-else class="h-6 sm:h-7 w-12 sm:w-14 bg-gray-200 rounded animate-pulse mt-0.5"></div>
           <p v-if="card.sub" class="text-xs text-gray-400 mt-0.5">{{ card.sub }}</p>
         </div>
       </Link>
@@ -51,9 +51,9 @@
 
       <!-- Recent Applications (2/3) -->
       <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <h2 class="text-sm font-semibold text-gray-900">Recent Applications</h2>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <span v-if="lastRefreshed"
               class="text-xs transition-colors duration-500"
               :class="refreshFlash ? 'text-green-600 font-medium' : 'text-gray-400'">
@@ -71,24 +71,24 @@
         <div v-if="loading" class="space-y-3">
           <div v-for="n in 5" :key="n" class="h-10 bg-gray-100 rounded animate-pulse"></div>
         </div>
-        <div v-else-if="recentApplications.length" class="overflow-x-auto">
+        <div v-else-if="recentApplications.length" class="-mx-5 sm:mx-0 overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="text-left text-xs text-gray-400 border-b border-gray-100">
-                <th class="pb-2 font-medium">Applicant</th>
-                <th class="pb-2 font-medium">Position</th>
+                <th class="pb-2 px-5 sm:px-0 font-medium">Applicant</th>
+                <th class="pb-2 font-medium min-w-[120px]">Position</th>
                 <th class="pb-2 font-medium">Status</th>
-                <th class="pb-2 font-medium">Date</th>
+                <th class="pb-2 px-5 sm:px-0 font-medium">Date</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
               <tr v-for="app in recentApplications" :key="app.id" class="hover:bg-gray-50 transition-colors">
-                <td class="py-2.5 pr-4 text-gray-900 font-medium">{{ formatApplicantName(app) }}</td>
-                <td class="py-2.5 pr-4 text-gray-600 truncate max-w-[140px]">{{ app.vacancy?.position_title ?? '—' }}</td>
+                <td class="py-2.5 px-5 sm:px-0 pr-4 text-gray-900 font-medium whitespace-nowrap">{{ formatApplicantName(app) }}</td>
+                <td class="py-2.5 pr-4 text-gray-600 truncate max-w-[160px] sm:max-w-[200px]">{{ app.vacancy?.position_title ?? '—' }}</td>
                 <td class="py-2.5 pr-4">
                   <StatusBadge :status="app.status" />
                 </td>
-                <td class="py-2.5 text-gray-400 whitespace-nowrap text-xs">{{ formatDate(app.created_at) }}</td>
+                <td class="py-2.5 px-5 sm:px-0 text-gray-400 whitespace-nowrap text-xs">{{ formatDate(app.created_at) }}</td>
               </tr>
             </tbody>
           </table>

@@ -3,7 +3,7 @@
     :class="sidebarCollapsed ? 'lg:left-0' : 'lg:left-64'">
     <div class="flex items-center justify-between gap-2 text-xs text-gray-400 flex-wrap">
       <span>&copy; {{ year }} Civil Service Commission Regional Office VIII. All rights reserved</span>
-      <span>v2.5.0</span>
+      <span class="hidden sm:inline">v2.5.0</span>
     </div>
   </footer>
 </template>

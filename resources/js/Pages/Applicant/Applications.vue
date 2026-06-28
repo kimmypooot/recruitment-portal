@@ -3,12 +3,12 @@
     <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
 
       <!-- Page header -->
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 class="text-2xl font-bold text-gray-900">My Applications</h1>
           <p class="text-sm text-gray-500 mt-1">Track the status of all your submitted applications.</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-shrink-0">
           <button @click="fetchApplications"
             class="inline-flex items-center gap-2 px-3.5 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

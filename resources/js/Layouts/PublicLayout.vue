@@ -192,8 +192,8 @@
         </div>
 
         <div class="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-2">
-          <p class="text-xs text-white/40">© {{ new Date().getFullYear() }} Civil Service Commission. All rights reserved.</p>
-          <p class="text-xs text-white/40">Republic of the Philippines</p>
+          <p class="text-xs text-white/40 whitespace-nowrap">© {{ new Date().getFullYear() }} Civil Service Commission. All rights reserved.</p>
+          <p class="text-xs text-white/40 whitespace-nowrap">Republic of the Philippines</p>
         </div>
       </div>
     </footer>

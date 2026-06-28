@@ -1,6 +1,6 @@
 <template>
   <HrmbsboardLayout :title="`QS Evaluation — ${vacancy?.position_title ?? '…'}`" :vacancyId="props.vacancyId">
-    <div class="space-y-6">
+    <div class="space-y-6 pb-20 sm:pb-6">
 
     <!-- Vacancy Banner -->
     <VacancyBanner
@@ -19,7 +19,7 @@
     </div>
 
     <!-- Secretariat lock action -->
-    <div v-if="isSecretariat && !qsLocked" class="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+    <div v-if="isSecretariat && !qsLocked" class="flex-col sm:flex-row items-start sm:items-center justify-between bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 gap-3">
       <div class="text-sm text-blue-800">
         <span class="font-semibold">Secretariat view:</span> You can see all evaluators' inputs. Lock when all evaluations are complete.
       </div>
@@ -208,7 +208,8 @@
           <div v-if="isSecretariat && app.evaluations?.length > 0"
             class="border-t border-gray-100 pt-4 mt-2">
             <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">All Member Evaluations</p>
-            <table class="w-full text-xs">
+            <div class="overflow-x-auto">
+            <table class="w-full text-xs min-w-[400px]">
               <thead>
                 <tr class="text-gray-500 font-semibold uppercase tracking-wider border-b border-gray-100">
                   <th class="pb-2 text-left">Evaluator</th>
@@ -234,6 +235,7 @@
                 </tr>
               </tbody>
             </table>
+            </div>
             <div class="mt-2 text-xs text-gray-500 flex items-center gap-3">
               <span>{{ app.evaluation_summary?.qualified }} qualified / {{ app.evaluation_summary?.total }} evaluators</span>
               <span v-if="app.evaluation_summary?.total > 0"

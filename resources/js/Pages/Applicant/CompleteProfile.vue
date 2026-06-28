@@ -1,6 +1,6 @@
 <template>
   <ApplicantLayout>
-    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 pb-36">
 
       <!-- Full-page skeleton overlay -->
       <div v-if="pageLoading" class="animate-pulse space-y-6">
@@ -80,7 +80,7 @@
 
       <!-- Progress bar -->
       <div class="mb-6">
-        <div class="flex items-center justify-between mb-1.5">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-1.5">
           <span class="text-sm font-medium text-gray-700">Profile completion</span>
           <span class="text-sm font-semibold" :class="progressPct === 100 ? 'text-green-600' : 'text-[#2a338f]'">
             {{ progressPct }}%
@@ -171,7 +171,8 @@
 
       <!-- Sticky save bar -->
       <div v-if="activeTab !== 'documents'"
-        class="fixed bottom-10 left-0 right-0 z-20 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-md">
+        class="fixed bottom-14 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-md transition-all duration-500"
+        :class="sidebarCollapsed ? 'left-0' : 'left-0 lg:left-64'">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-end gap-4">
           <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -192,7 +193,8 @@
 
       <!-- Document upload bar (separate because docs use FormData upload) -->
       <div v-if="activeTab === 'documents'"
-        class="fixed bottom-10 left-0 right-0 z-20 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-md">
+        class="fixed bottom-14 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-md transition-all duration-500"
+        :class="sidebarCollapsed ? 'left-0' : 'left-0 lg:left-64'">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-end gap-4">
           <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -552,7 +554,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, reactive, computed, watch, inject, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { profileApi } from '@/services/api'
 import Cropper from 'cropperjs'
@@ -626,6 +628,8 @@ const docTimestamps = reactive({})
 
 const authUser  = ref(JSON.parse(localStorage.getItem('auth_user') ?? '{}'))
 const authToken = localStorage.getItem('auth_token') ?? ''
+
+const sidebarCollapsed = inject('sidebarCollapsed', false)
 
 function refreshAuthUser() {
   const updated = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
