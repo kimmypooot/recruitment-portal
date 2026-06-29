@@ -172,6 +172,7 @@ onMounted(async () => {
 
   if (token) {
     localStorage.setItem('auth_token', token)
+    localStorage.setItem('auth_token_created_at', String(Date.now()))
     const user = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
     const firstName = user.first_name ?? ''
     userName.value = firstName ? `${firstName}!` : '!'

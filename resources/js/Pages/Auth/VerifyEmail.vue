@@ -33,29 +33,47 @@
           </svg>
         </div>
 
-        <h2 class="text-lg font-semibold text-gray-900 mb-2">Verify your email address</h2>
-        <p class="text-sm text-gray-500 mb-6">
-          We sent a verification link to your email address. Click the link to activate your account.
-        </p>
+        <template v-if="isVerified">
+          <div class="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h2 class="text-lg font-semibold text-gray-900 mb-2">Email verified</h2>
+          <p class="text-sm text-gray-500 mb-6">
+            Your email address has been verified. You can now proceed with your application.
+          </p>
+          <Link href="/applicant/dashboard"
+            class="inline-block w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white font-semibold text-sm rounded-lg shadow-sm transition-colors text-center mb-3">
+            Go to Dashboard
+          </Link>
+        </template>
 
-        <div v-if="page.props.flash?.message" class="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">
-          {{ page.props.flash.message }}
-        </div>
+        <template v-else>
+          <h2 class="text-lg font-semibold text-gray-900 mb-2">Verify your email address</h2>
+          <p class="text-sm text-gray-500 mb-6">
+            We sent a verification link to your email address. Click the link to activate your account.
+          </p>
 
-        <div v-if="verificationSent" class="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">
-          A new verification link has been sent to your email.
-        </div>
+          <div v-if="page.props.flash?.message" class="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">
+            {{ page.props.flash.message }}
+          </div>
 
-        <button
-          @click="resend"
-          :disabled="sending"
-          class="w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white font-semibold text-sm rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed mb-3">
-          {{ sending ? 'Sending…' : 'Resend Verification Email' }}
-        </button>
+          <div v-if="verificationSent" class="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">
+            A new verification link has been sent to your email.
+          </div>
 
-        <button @click="logout" class="w-full py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
-          Sign out
-        </button>
+          <button
+            @click="resend"
+            :disabled="sending"
+            class="w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white font-semibold text-sm rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed mb-3">
+            {{ sending ? 'Sending…' : 'Resend Verification Email' }}
+          </button>
+
+          <button @click="logout" class="w-full py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+            Sign out
+          </button>
+        </template>
 
       </div>
     </section>
@@ -64,21 +82,27 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Head, router, usePage } from '@inertiajs/vue3'
+import { ref, computed } from 'vue'
+import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
+import api from '@/services/api.js'
 
 const page = usePage()
 const sending = ref(false)
 const verificationSent = ref(false)
+const authUser = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+const isVerified = computed(() => !!authUser.email_verified_at)
 
-function resend() {
+async function resend() {
   sending.value = true
-  router.post('/email/verification-notification', {}, {
-    preserveScroll: true,
-    onSuccess: () => { verificationSent.value = true },
-    onFinish: () => { sending.value = false },
-  })
+  try {
+    await api.post('/email/verification-notification')
+    verificationSent.value = true
+  } catch {
+    // silently fail — the user can retry
+  } finally {
+    sending.value = false
+  }
 }
 
 function logout() {

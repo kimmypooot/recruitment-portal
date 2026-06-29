@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Laravel\Sanctum\NewAccessToken;
+use Illuminate\Validation\Rules\Password;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
@@ -21,19 +21,19 @@ class AuthController extends Controller
     public function login(Request $request): JsonResponse
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required|string',
             'remember' => 'nullable|boolean',
         ]);
 
-        if (!Auth::attempt(
+        if (! Auth::attempt(
             $request->only('email', 'password'),
             $request->boolean('remember')
         )) {
             return response()->json(['message' => 'Invalid credentials.'], 401);
         }
 
-        $user  = $request->user();
+        $user = $request->user();
         $expiresAt = $request->boolean('remember') ? null : now()->addHours(2);
         $token = $user->createToken('api-token', ['*'], $expiresAt)->plainTextToken;
 
@@ -53,16 +53,16 @@ class AuthController extends Controller
         $isGoogleOnly = (bool) $user->google_id;
 
         $rules = [
-            'password' => ['required', 'string', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)->letters()->mixedCase()->numbers()],
+            'password' => ['required', 'string', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()],
         ];
 
-        if (!$isGoogleOnly) {
+        if (! $isGoogleOnly) {
             $rules['current_password'] = 'required|string';
         }
 
         $request->validate($rules);
 
-        if (!$isGoogleOnly && !Hash::check($request->current_password, $user->password)) {
+        if (! $isGoogleOnly && ! Hash::check($request->current_password, $user->password)) {
             return response()->json(['message' => 'The current password is incorrect.'], 422);
         }
 
@@ -74,12 +74,12 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'last_name'              => 'required|string|max:100',
-            'first_name'             => 'required|string|max:100',
-            'middle_name'            => 'nullable|string|max:100',
-            'suffix'                 => 'nullable|string|max:20',
-            'email'                  => 'required|email|unique:users',
-            'password'               => [
+            'last_name' => 'required|string|max:100',
+            'first_name' => 'required|string|max:100',
+            'middle_name' => 'nullable|string|max:100',
+            'suffix' => 'nullable|string|max:20',
+            'email' => 'required|email|unique:users',
+            'password' => [
                 'required', 'string', 'confirmed',
                 'min:8',
                 'regex:/[A-Z]/',
@@ -92,7 +92,7 @@ class AuthController extends Controller
         ]);
 
         $middleName = $data['middle_name'] ?? null;
-        $suffix     = $data['suffix'] ?? null;
+        $suffix = $data['suffix'] ?? null;
 
         $user = DB::transaction(function () use ($data, $middleName, $suffix, $request) {
             // Lock the users table to prevent race conditions on duplicate checks
@@ -101,8 +101,7 @@ class AuthController extends Controller
                     strtolower(trim($data['first_name'])),
                     strtolower(trim($data['last_name'])),
                 ])
-                ->when($data['middle_name'] ?? null, fn ($q, $m) =>
-                    $q->whereRaw('LOWER(middle_name) = ?', [strtolower(trim($m))]
+                ->when($data['middle_name'] ?? null, fn ($q, $m) => $q->whereRaw('LOWER(middle_name) = ?', [strtolower(trim($m))]
                 ))
                 ->first();
 
@@ -111,19 +110,21 @@ class AuthController extends Controller
             }
 
             $user = User::create([
-                'first_name'  => trim($data['first_name']),
-                'last_name'   => trim($data['last_name']),
+                'first_name' => trim($data['first_name']),
+                'last_name' => trim($data['last_name']),
                 'middle_name' => $middleName ? trim($middleName) : null,
-                'suffix'      => $suffix ? trim($suffix) : null,
-                'email'       => $data['email'],
-                'password'    => Hash::make($data['password']),
-                'role'        => 'applicant',
+                'suffix' => $suffix ? trim($suffix) : null,
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role' => 'applicant',
             ]);
 
             PrivacyConsent::record($user, $data['privacy_policy_version'], $request);
 
             return $user;
         });
+
+        $user->sendEmailVerificationNotification();
 
         $token = $user->createToken('api-token', ['*'], null)->plainTextToken;
 
@@ -147,19 +148,24 @@ class AuthController extends Controller
 
     // ── Email verification ────────────────────────────────────────────────
 
-    public function verifyEmail(Request $request): RedirectResponse
+    public function verifyEmail(string $id, string $hash): RedirectResponse
     {
-        $user = $request->user();
+        $user = User::findOrFail($id);
+
+        if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+            abort(403);
+        }
 
         if ($user->hasVerifiedEmail()) {
-            return redirect()->intended('/applicant/dashboard');
+            return redirect()->intended('/login')
+                ->with('message', 'Email already verified.');
         }
 
         if ($user->markEmailAsVerified()) {
             event(new Verified($user));
         }
 
-        return redirect()->intended('/applicant/dashboard')
+        return redirect()->intended('/login')
             ->with('message', 'Email verified successfully.');
     }
 
@@ -174,6 +180,19 @@ class AuthController extends Controller
         $user->sendEmailVerificationNotification();
 
         return back()->with('message', 'Verification link sent.');
+    }
+
+    public function resendVerificationApi(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email already verified.']);
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return response()->json(['message' => 'Verification link sent.']);
     }
 
     // ── Google OAuth: Login flow ──────────────────────────────────────────
@@ -214,6 +233,7 @@ class AuthController extends Controller
                 $existing->update([
                     'google_avatar' => $googleUser->getAvatar(),
                 ]);
+
                 return $this->redirectWithToken($existing->fresh());
             }
 
@@ -236,8 +256,7 @@ class AuthController extends Controller
                     strtolower($gFirstName),
                     strtolower($gLastName),
                 ])
-                ->when($gMiddleName, fn ($q, $m) =>
-                    $q->whereRaw('LOWER(middle_name) = ?', [strtolower($m)]
+                ->when($gMiddleName, fn ($q, $m) => $q->whereRaw('LOWER(middle_name) = ?', [strtolower($m)]
                 ))
                 ->first();
 
@@ -247,15 +266,15 @@ class AuthController extends Controller
 
             // 7. Create new user
             $user = User::create([
-                'first_name'        => $gFirstName,
-                'last_name'         => $gLastName,
-                'middle_name'       => $gMiddleName,
-                'email'             => $googleUser->getEmail(),
-                'password'          => Hash::make(Str::random(32)),
-                'role'              => 'applicant',
+                'first_name' => $gFirstName,
+                'last_name' => $gLastName,
+                'middle_name' => $gMiddleName,
+                'email' => $googleUser->getEmail(),
+                'password' => Hash::make(Str::random(32)),
+                'role' => 'applicant',
                 'email_verified_at' => now(),
-                'google_id'         => $googleUser->getId(),
-                'google_avatar'     => $googleUser->getAvatar(),
+                'google_id' => $googleUser->getId(),
+                'google_avatar' => $googleUser->getAvatar(),
             ]);
 
             return $this->redirectWithToken($user);
@@ -279,7 +298,7 @@ class AuthController extends Controller
         }
 
         $state = encrypt(json_encode([
-            'action'  => 'link',
+            'action' => 'link',
             'user_id' => $user->id,
             'expires' => now()->addMinutes(10)->timestamp,
         ]));
@@ -302,7 +321,7 @@ class AuthController extends Controller
             $googleUser = Socialite::driver('google')->stateless()->user();
 
             $user = User::find($userId);
-            if (!$user) {
+            if (! $user) {
                 return redirect()->route('auth.google.callback-handler', ['error' => 'link_user_not_found']);
             }
 
@@ -312,28 +331,28 @@ class AuthController extends Controller
             }
 
             $user->update([
-                'google_id'     => $googleUser->getId(),
+                'google_id' => $googleUser->getId(),
                 'google_avatar' => $googleUser->getAvatar(),
             ]);
 
             $user = $user->fresh();
 
             $userData = base64_encode(json_encode([
-                'id'          => $user->id,
-                'first_name'  => $user->first_name,
-                'last_name'   => $user->last_name,
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
                 'middle_name' => $user->middle_name,
-                'suffix'      => $user->suffix,
-                'full_name'   => $user->full_name,
-                'email'       => $user->email,
-                'role'        => $user->role,
-                'google_id'   => $user->google_id,
+                'suffix' => $user->suffix,
+                'full_name' => $user->full_name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'google_id' => $user->google_id,
                 'google_avatar' => $user->google_avatar,
             ]));
 
             return redirect()->route('auth.google.callback-handler', [
                 'link_success' => 1,
-                'user'         => $userData,
+                'user' => $userData,
             ]);
         } catch (\Exception $e) {
             return redirect()->route('auth.google.callback-handler', ['error' => 'link_failed']);
@@ -347,7 +366,7 @@ class AuthController extends Controller
     {
         $user = $request->user();
         $user->update([
-            'google_id'     => null,
+            'google_id' => null,
             'google_avatar' => null,
         ]);
 
@@ -360,20 +379,21 @@ class AuthController extends Controller
     {
         $token = $user->createToken('api-token', ['*'], null)->plainTextToken;
         $userData = base64_encode(json_encode([
-            'id'          => $user->id,
-            'first_name'  => $user->first_name,
-            'last_name'   => $user->last_name,
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
             'middle_name' => $user->middle_name,
-            'suffix'      => $user->suffix,
-            'full_name'   => $user->full_name,
-            'email'       => $user->email,
-            'role'        => $user->role,
-            'google_id'   => $user->google_id,
+            'suffix' => $user->suffix,
+            'full_name' => $user->full_name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'google_id' => $user->google_id,
             'google_avatar' => $user->google_avatar,
         ]));
+
         return redirect()->route('auth.google.callback-handler', [
             'token' => $token,
-            'user'  => $userData,
+            'user' => $userData,
         ]);
     }
 }

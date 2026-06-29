@@ -34,7 +34,8 @@ class CsFormGenerationTest extends TestCase
             'place_of_assignment' => 'CSC RO VIII',
         ]);
 
-        $profile = ApplicantProfile::factory()->complete()->create([
+        $profile = ApplicantProfile::factory()->complete()->create();
+        $profile->user->update([
             'first_name'  => 'Juan',
             'last_name'   => 'dela Cruz',
             'middle_name' => 'Santos',
@@ -43,7 +44,7 @@ class CsFormGenerationTest extends TestCase
         $this->application = Application::create([
             'vacancy_id'   => $vacancy->id,
             'applicant_id' => $profile->id,
-            'status'       => 'recommended',
+            'status'       => 'submitted',
             'submitted_at' => now(),
         ]);
     }

@@ -54,11 +54,15 @@
           </div>
         </div>
 
+        <!-- Flash banner (success) -->
+        <div v-if="page.props.flash?.message" role="alert" class="mb-5 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700 flex items-center gap-2">
+          <Icon name="check" size="4" class="flex-shrink-0" />
+          <span>{{ page.props.flash.message }}</span>
+        </div>
+
         <!-- Error banner -->
-        <div v-if="error" class="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 flex items-center gap-2">
-          <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
+        <div v-if="error" role="alert" class="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 flex items-center gap-2">
+          <Icon name="alert" size="4" class="flex-shrink-0" />
           <span v-html="error"></span>
         </div>
 
@@ -72,7 +76,7 @@
               autocomplete="email"
               required
               placeholder="you@example.com"
-              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
           </div>
 
           <div>
@@ -84,17 +88,12 @@
                 autocomplete="current-password"
                 required
                 placeholder="••••••••"
-                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition pr-10" />
+                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition pr-10" />
               <button type="button" @click="showPassword = !showPassword"
                 :aria-label="showPassword ? 'Hide password' : 'Show password'"
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <svg v-if="!showPassword" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                </svg>
-                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
-                </svg>
+                <Icon v-if="!showPassword" name="eye" size="4" aria-hidden="true" />
+                <Icon v-else name="eyeOff" size="4" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -104,16 +103,16 @@
               <input
                 v-model="form.remember"
                 type="checkbox"
-                class="w-4 h-4 rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f] accent-[#2a338f]" />
+                class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary" />
               <span class="text-sm text-gray-600">Remember me</span>
             </label>
-            <Link href="/forgot-password" class="text-sm text-[#2a338f] font-medium hover:underline">Forgot password?</Link>
+            <Link href="/forgot-password" class="text-sm text-primary font-medium hover:underline">Forgot password?</Link>
           </div>
 
           <button
             type="submit"
             :disabled="loading"
-            class="w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white font-semibold text-sm rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+            class="w-full py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
             {{ loading ? 'Signing in…' : 'Sign in' }}
           </button>
 
@@ -121,7 +120,7 @@
 
         <p class="mt-6 text-center text-sm text-gray-500">
           Don't have an account?
-          <Link href="/register" class="text-[#2a338f] font-medium hover:underline">Create one</Link>
+          <Link href="/register" class="text-primary font-medium hover:underline">Create one</Link>
         </p>
 
       </div>
@@ -191,12 +190,14 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
+import Icon from '@/Components/UI/Icon.vue'
 import { navigateTo } from '@/utils/navigate'
 
-const form = reactive({ email: '', password: '', remember: false })
+const page  = usePage()
+const form  = reactive({ email: '', password: '', remember: false })
 const loading       = ref(false)
 const error         = ref('')
 const attemptCount  = ref(0)
@@ -231,6 +232,7 @@ async function submit() {
 
     attemptCount.value = 0
     localStorage.setItem('auth_token', data.token)
+    localStorage.setItem('auth_token_created_at', String(Date.now()))
     localStorage.setItem('auth_user', JSON.stringify(data.user))
     const role = data.user?.role
 

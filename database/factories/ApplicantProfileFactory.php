@@ -14,9 +14,7 @@ class ApplicantProfileFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id'        => User::factory()->applicant(),
-            'mobile_number'  => '09' . fake()->numerify('#########'),
-            'address'        => fake()->address(),
+            'user_id' => User::factory()->applicant(),
         ];
     }
 

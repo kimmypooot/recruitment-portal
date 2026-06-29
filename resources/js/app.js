@@ -5,10 +5,11 @@ import { createPinia } from 'pinia'
 import axios from 'axios'
 import ToastContainer from './Components/UI/ToastContainer.vue'
 import ConfirmDialog from './Components/UI/ConfirmDialog.vue'
+import ProgressBar from './Components/UI/ProgressBar.vue'
+import { useToast } from '@/composables/useToast'
+import { useSessionExpiry } from '@/composables/useSessionExpiry'
+import { useIdleTimer } from '@/composables/useIdleTimer'
 
-// Rewrite root-relative axios URLs to absolute URLs using window.location.origin
-// so calls work regardless of whether Laravel is served at a subdirectory
-// (XAMPP) or at root (php artisan serve).
 const origin = window.location.origin
 axios.interceptors.request.use((config) => {
   if (config.url?.startsWith('/')) {
@@ -30,16 +31,42 @@ createInertiaApp({
 
   setup({ el, App, props, plugin }) {
     const Root = defineComponent({
+      setup() {
+        useSessionExpiry()
+        useIdleTimer()
+      },
       render: () => [
+        h(ProgressBar),
         h(Transition, { name: 'fade', mode: 'out-in' }, () => h(App, props)),
         h(ToastContainer),
         h(ConfirmDialog),
       ],
     })
 
-    createApp(Root)
+    const app = createApp(Root)
       .use(plugin)
       .use(pinia)
-      .mount(el)
+
+    app.config.errorHandler = (err, instance, info) => {
+      const toast = useToast()
+      toast.error('An unexpected error occurred. Please try again.')
+      console.error('Global error:', err)
+      console.error('Component:', instance)
+      console.error('Info:', info)
+    }
+
+    document.addEventListener('inertia:error', (event) => {
+      const { status } = event.detail.response
+      const toast = useToast()
+      if (status === 419) {
+        toast.warning('Your session has expired. Please log in again.')
+      } else if (status === 403) {
+        toast.error('You do not have permission to perform this action.')
+      }
+    })
+
+    app.mount(el)
+
+    return app
   },
 })

@@ -4,23 +4,20 @@
 
       <!-- Loading state -->
       <div v-if="loading" class="space-y-4">
-        <div class="h-8 w-64 bg-gray-200 rounded animate-pulse"></div>
-        <div class="h-40 bg-gray-100 rounded-xl animate-pulse"></div>
-        <div class="h-56 bg-gray-100 rounded-xl animate-pulse"></div>
+        <SkeletonLoader variant="text" :lines="1" :widths="['33%']" />
+        <SkeletonLoader variant="card" />
+        <SkeletonLoader variant="card" />
+        <SkeletonLoader variant="card" />
       </div>
 
       <template v-else-if="vacancy && profile">
 
         <!-- Breadcrumb -->
         <nav class="flex items-center gap-2 text-xs text-gray-400 mb-6">
-          <Link href="/applicant/dashboard?tab=vacancies" class="hover:text-[#2a338f] transition-colors">Vacancies</Link>
-          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-          </svg>
+          <Link href="/applicant/dashboard?tab=vacancies" class="hover:text-primary transition-colors">Vacancies</Link>
+          <Icon name="chevronRight" size="3" />
           <span class="text-gray-600 font-medium truncate">{{ vacancy.position_title }}</span>
-          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-          </svg>
+          <Icon name="chevronRight" size="3" />
           <span class="text-gray-600 font-medium">Review & Submit</span>
         </nav>
 
@@ -29,21 +26,19 @@
           <h1 class="text-2xl font-bold text-gray-900">Review Your Application</h1>
           <p class="text-sm text-gray-500 mt-1">
             Confirm your details below. To make changes,
-            <Link href="/applicant/complete-profile" class="text-[#2a338f] hover:underline font-medium">update your profile</Link>
+              <Link href="/applicant/complete-profile" class="text-primary hover:underline font-medium">update your profile</Link>
             first.
           </p>
         </div>
 
         <!-- ── Vacancy Summary Card ─────────────────────────────────── -->
-        <div class="bg-[#2a338f] text-white rounded-xl p-6 mb-6">
+        <div class="bg-primary text-white rounded-xl p-6 mb-6">
           <div class="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p class="text-xs font-semibold uppercase tracking-wider text-white/70 mb-1">Applying for</p>
               <h2 class="text-xl font-bold leading-snug">{{ vacancy.position_title }}</h2>
               <p class="text-white/70 text-sm mt-1 flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                </svg>
+                <Icon name="building" size="3.5" class="flex-shrink-0" />
                 {{ vacancy.place_of_assignment }}
               </p>
             </div>
@@ -82,12 +77,10 @@
         </div>
 
         <!-- ── Deadline Passed Banner ─────────────────────────────── -->
-        <div v-if="deadlinePassed && !existingApplication"
+        <div v-if="deadlinePassed && !existingApplication" role="alert"
           class="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 flex items-start gap-4">
           <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-            </svg>
+            <Icon name="alert" size="5" color="text-red-500" />
           </div>
           <div class="flex-1">
             <p class="text-sm font-semibold text-red-800">Application deadline has passed</p>
@@ -101,9 +94,7 @@
         <div v-if="existingApplication"
           class="mb-6 rounded-xl border border-green-200 bg-green-50 p-5 flex items-start gap-4">
           <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-            </svg>
+            <Icon name="check" size="5" color="text-green-600" />
           </div>
           <div class="flex-1">
             <p class="text-sm font-semibold text-green-800">You've already applied for this position</p>
@@ -124,19 +115,15 @@
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-[#2a338f]/10 flex items-center justify-center">
-                <svg class="w-4 h-4 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
+              <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Icon name="user" size="4" color="text-primary" />
               </div>
               <p class="text-sm font-semibold text-gray-900">Personal Information</p>
             </div>
             <Link href="/applicant/complete-profile?tab=personal"
-              class="text-xs text-[#2a338f] hover:underline font-medium flex items-center gap-1">
+              class="text-xs text-primary hover:underline font-medium flex items-center gap-1">
               Edit
-              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-              </svg>
+              <Icon name="chevronRight" size="3" />
             </Link>
           </div>
           <div class="px-6 py-5 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
@@ -176,18 +163,14 @@
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
-                <svg class="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
-                </svg>
+                <Icon name="academicCap" size="4" color="text-purple-600" />
               </div>
               <p class="text-sm font-semibold text-gray-900">Qualifications</p>
             </div>
             <Link href="/applicant/complete-profile?tab=qualifications"
-              class="text-xs text-[#2a338f] hover:underline font-medium flex items-center gap-1">
+              class="text-xs text-primary hover:underline font-medium flex items-center gap-1">
               Edit
-              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-              </svg>
+              <Icon name="chevronRight" size="3" />
             </Link>
           </div>
           <div class="px-6 py-5 space-y-5">
@@ -209,7 +192,7 @@
                     <p class="text-xs text-gray-500 mt-0.5">{{ exp.department_agency }} · {{ formatDateRange(exp.date_from, exp.is_present ? null : exp.date_to, exp.is_present) }}</p>
                   </div>
                   <span v-if="exp.government_service"
-                    class="flex-shrink-0 text-xs font-medium px-2 py-0.5 bg-[#2a338f]/10 text-[#2a338f] rounded-full">Gov't</span>
+                    class="flex-shrink-0 text-xs font-medium px-2 py-0.5 bg-primary/10 text-primary rounded-full">Gov't</span>
                 </div>
                 <p v-if="(profile.work_experiences ?? []).length > 3"
                   class="text-xs text-gray-400 pl-3">
@@ -240,29 +223,22 @@
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
-                <svg class="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                </svg>
+                <Icon name="paperclip" size="4" color="text-red-600" />
               </div>
               <p class="text-sm font-semibold text-gray-900">Uploaded Documents</p>
             </div>
             <Link href="/applicant/complete-profile?tab=documents"
-              class="text-xs text-[#2a338f] hover:underline font-medium flex items-center gap-1">
+              class="text-xs text-primary hover:underline font-medium flex items-center gap-1">
               Edit
-              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-              </svg>
+              <Icon name="chevronRight" size="3" />
             </Link>
           </div>
           <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div v-for="doc in docList" :key="doc.key"
               class="flex items-center gap-3 py-2.5 px-3 rounded-lg"
               :class="doc.uploaded ? 'bg-green-50' : 'bg-red-50'">
-              <svg class="w-4 h-4 flex-shrink-0" :class="doc.uploaded ? 'text-green-500' : 'text-red-400'"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path v-if="doc.uploaded" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                <path v-else stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
+              <Icon v-if="doc.uploaded" name="check" size="4" color="text-green-500" class="flex-shrink-0" />
+              <Icon v-else name="close" size="4" color="text-red-400" class="flex-shrink-0" />
               <div class="min-w-0 flex-1">
                 <p class="text-xs font-semibold" :class="doc.uploaded ? 'text-green-800' : 'text-red-700'">{{ doc.label }}</p>
                 <p class="text-xs mt-0.5" :class="doc.uploaded ? 'text-green-600' : 'text-red-500'">
@@ -274,10 +250,7 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 class="flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-green-700 bg-white border border-green-200 rounded-lg hover:bg-green-100 transition-colors">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                </svg>
+                <Icon name="eye" size="3.5" />
                 View
               </a>
             </div>
@@ -288,11 +261,9 @@
         <div v-if="!existingApplication">
 
           <!-- Missing required docs warning -->
-          <div v-if="missingRequiredDocs.length"
+          <div v-if="missingRequiredDocs.length" role="alert"
             class="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
-            <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-            </svg>
+            <Icon name="alert" size="5" color="text-amber-500" class="flex-shrink-0 mt-0.5" />
             <div>
               <p class="text-sm font-semibold text-amber-800">Missing required documents</p>
               <p class="text-xs text-amber-700 mt-0.5">
@@ -306,7 +277,7 @@
           </div>
 
           <!-- Error -->
-          <div v-if="submitError"
+          <div v-if="submitError" role="alert"
             class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {{ submitError }}
           </div>
@@ -324,11 +295,8 @@
               <button
                 @click="submitApplication"
                 :disabled="isSubmitting || missingRequiredDocs.length > 0 || deadlinePassed"
-                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg v-if="isSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                </svg>
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <Icon v-if="isSubmitting" name="refresh" size="4" class="animate-spin" />
                 {{ isSubmitting ? 'Submitting…' : 'Submit Application' }}
               </button>
             </div>
@@ -340,7 +308,7 @@
       <!-- Error state -->
       <div v-else-if="!loading" class="text-center py-24">
         <p class="text-gray-500 text-sm">Unable to load vacancy details. Please try again.</p>
-        <Link href="/" class="mt-4 inline-block text-[#2a338f] hover:underline text-sm font-medium">Back to vacancies</Link>
+        <Link href="/" class="mt-4 inline-block text-primary hover:underline text-sm font-medium">Back to vacancies</Link>
       </div>
 
     </div>
@@ -353,16 +321,14 @@
         <!-- Step 1: Success confirmation -->
         <div v-if="feedbackStep === 'success'" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center">
           <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5">
-            <svg class="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-            </svg>
+            <Icon name="check" size="8" color="text-green-600" />
           </div>
           <h3 class="text-lg font-bold text-gray-900 mb-2">Application Submitted!</h3>
           <p class="text-sm text-gray-500 mb-6">
             Your application for <span class="font-semibold text-gray-700">{{ vacancy?.position_title }}</span> has been received. We'll notify you of any updates.
           </p>
           <button @click="feedbackStep = 'form'"
-            class="block w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors mb-3">
+            class="block w-full py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors mb-3">
             Share Your Experience
           </button>
           <Link href="/applicant/dashboard"
@@ -375,9 +341,7 @@
         <div v-else-if="feedbackStep === 'form'" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8">
           <div class="text-center mb-6">
             <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-4">
-              <svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
+              <Icon name="star" size="6" color="text-yellow-500" />
             </div>
             <h3 class="text-lg font-bold text-gray-900 mb-1">How was your experience?</h3>
             <p class="text-xs text-gray-500">Your feedback helps us improve the portal.</p>
@@ -394,13 +358,13 @@
               </svg>
             </button>
           </div>
-          <p v-if="feedbackRatingLabel" class="text-center text-xs font-medium text-[#2a338f] mb-4">{{ feedbackRatingLabel }}</p>
+          <p v-if="feedbackRatingLabel" class="text-center text-xs font-medium text-primary mb-4">{{ feedbackRatingLabel }}</p>
 
           <!-- Comment -->
           <div class="mb-5">
             <textarea v-model="feedbackComment" rows="3" maxlength="500"
               placeholder="Tell us more (optional)…"
-              class="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none resize-none transition"></textarea>
+              class="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none resize-none transition"></textarea>
             <p class="text-right text-xs text-gray-400 mt-1">{{ feedbackComment.length }}/500</p>
           </div>
 
@@ -408,7 +372,7 @@
 
           <button @click="submitFeedback" :disabled="!feedbackRating || feedbackSaving"
             class="block w-full py-2.5 text-white text-sm font-semibold rounded-lg transition-colors mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
-            :class="feedbackRating ? 'bg-[#2a338f] hover:bg-[#1e2570]' : 'bg-gray-300'">
+            :class="feedbackRating ? 'bg-primary hover:bg-primary-dark' : 'bg-gray-300'">
             <span v-if="feedbackSaving">Submitting…</span>
             <span v-else>Submit Feedback</span>
           </button>
@@ -429,6 +393,9 @@ import { ref, computed, onMounted } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { vacancyApi, applicationApi, profileApi, feedbackApi } from '@/services/api'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
+import Icon from '@/Components/UI/Icon.vue'
+import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
+import { formatDate, formatDateLong, formatDateTime, formatDateRange } from '@/utils/dates'
 import regionsData from '@/data/regions.json'
 import provincesData from '@/data/provinces.json'
 import citiesJsonData from '@/data/cities.json'
@@ -488,8 +455,7 @@ const addressLine = computed(() => {
 
 const docList = computed(() => {
   const p = profile.value ?? {}
-  const token = localStorage.getItem('auth_token') ?? ''
-  const url = (path) => path ? `/profile/documents/${path}?token=${token}` : null
+  const url = (path) => path ? `/profile/documents/${path}` : null
   return [
     { key: 'pds',        label: 'Personal Data Sheet (PDS)', required: true,  uploaded: !!p.pds_path,        url: url(p.pds_path) },
     { key: 'app_letter', label: 'Application Letter',        required: true,  uploaded: !!p.app_letter_path, url: url(p.app_letter_path) },
@@ -577,44 +543,5 @@ async function submitFeedback() {
   }
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString('en-PH', {
-    year: 'numeric', month: 'long', day: 'numeric',
-  })
-}
 
-function formatDateRange(from, to, isPresent = false) {
-  if (!from) return '—'
-
-  const MONTHS = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.',
-                  'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.']
-
-  const parse = (str) => {
-    const [y, m, d] = str.split('-').map(Number)
-    return { y, m: m - 1, d }
-  }
-
-  const f = parse(from)
-  const fromStr = `${MONTHS[f.m]} ${f.d}`
-
-  if (isPresent) return `${fromStr}, ${f.y} – Present`
-  if (!to)       return `${fromStr}, ${f.y}`
-
-  const t = parse(to)
-
-  // Same month & year: "Jan. 1-3, 2020"
-  if (f.m === t.m && f.y === t.y) {
-    if (f.d === t.d) return `${fromStr}, ${f.y}`
-    return `${MONTHS[f.m]} ${f.d}-${t.d}, ${f.y}`
-  }
-
-  // Different month, same year: "Jan. 30 - Feb. 2, 2020"
-  if (f.y === t.y) {
-    return `${fromStr} - ${MONTHS[t.m]} ${t.d}, ${f.y}`
-  }
-
-  // Different years: "Jan. 1, 2020 - Feb. 3, 2021"
-  return `${fromStr}, ${f.y} - ${MONTHS[t.m]} ${t.d}, ${t.y}`
-}
 </script>

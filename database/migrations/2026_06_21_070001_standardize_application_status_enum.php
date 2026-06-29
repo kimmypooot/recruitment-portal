@@ -13,7 +13,8 @@ return new class extends Migration
 
     public function up(): void
     {
-        // SQLite does not enforce ENUMs; only run the column change on MySQL
+        // SQLite does not support ALTER COLUMN to update CHECK constraints;
+        // only remap values so the canonical set is used in production (MySQL).
         if (DB::getDriverName() !== 'mysql') {
             DB::table('applications')->where('status', 'passed')->update(['status' => 'recommended']);
             DB::table('applications')->where('status', 'failed')->update(['status' => 'disqualified']);

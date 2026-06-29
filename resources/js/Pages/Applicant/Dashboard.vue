@@ -3,54 +3,18 @@
     <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
 
       <!-- Full-page skeleton overlay (shown while data loads) -->
-      <div v-if="pageLoading" class="animate-pulse">
-        <div class="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4 flex items-start gap-3">
-          <div class="w-5 h-5 bg-gray-200 rounded flex-shrink-0 mt-0.5"></div>
-          <div class="flex-1 space-y-2">
-            <div class="h-4 bg-gray-200 rounded w-64"></div>
-            <div class="h-3 bg-gray-100 rounded w-96"></div>
-          </div>
-          <div class="h-8 w-28 bg-gray-200 rounded-lg flex-shrink-0"></div>
-        </div>
-        <div class="mb-6 space-y-2">
-          <div class="h-7 bg-gray-200 rounded w-72"></div>
-          <div class="h-4 bg-gray-100 rounded w-56"></div>
-        </div>
-        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-          <div v-for="n in 4" :key="n" class="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4 shadow-sm">
-            <div class="w-11 h-11 rounded-xl bg-gray-200 flex-shrink-0"></div>
-            <div class="flex-1 space-y-2">
-              <div class="h-3 bg-gray-200 rounded w-16"></div>
-              <div class="h-7 bg-gray-200 rounded w-10"></div>
-            </div>
-          </div>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div v-for="n in 6" :key="n" class="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
-            <div class="flex gap-2 mb-3"><div class="h-5 w-12 bg-gray-200 rounded-md"></div><div class="h-5 w-16 bg-gray-200 rounded-full"></div></div>
-            <div class="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
-            <div class="h-4 bg-gray-200 rounded mb-4 w-1/2"></div>
-            <div class="space-y-2">
-              <div class="h-3 bg-gray-100 rounded w-full"></div>
-              <div class="h-3 bg-gray-100 rounded w-5/6"></div>
-            </div>
-            <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-              <div class="h-3 w-24 bg-gray-200 rounded"></div>
-              <div class="h-8 w-24 bg-gray-200 rounded-lg"></div>
-            </div>
-          </div>
-        </div>
+      <div v-if="pageLoading" class="space-y-6">
+        <SkeletonLoader variant="stat-card" :count="4" wrapper-class="grid grid-cols-2 xl:grid-cols-4 gap-4" />
+        <SkeletonLoader variant="card" :count="6" wrapper-class="grid grid-cols-1 sm:grid-cols-2 gap-5" />
       </div>
 
       <!-- Real content -->
       <div v-if="!pageLoading">
 
       <!-- Profile incomplete banner -->
-      <div v-if="!isComplete"
+      <div v-if="!isComplete" role="alert"
         class="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
-        <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-        </svg>
+        <Icon name="alert" size="5" color="text-amber-500" class="flex-shrink-0 mt-0.5" />
         <div class="flex-1">
           <p class="text-sm font-semibold text-amber-800">Complete your profile before applying</p>
           <p class="text-xs text-amber-700 mt-0.5">Fill out your personal details, address, experience, and upload required documents before submitting an application.</p>
@@ -64,23 +28,31 @@
       <!-- Greeting -->
       <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">{{ greeting }}, {{ firstName }}!</h1>
-        <p class="text-sm text-gray-500 mt-1">Discover and apply for open positions at the Civil Service Commission Regional Office VIII.</p>
+        <div class="flex flex-wrap items-center gap-2 mt-2">
+          <p class="text-sm text-gray-500">Discover and apply for open positions at the Civil Service Commission Regional Office VIII.</p>
+          <span v-if="authUser.email_verified_at"
+            class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-full">
+            <Icon name="check" size="3" color="text-green-700" />
+            Email Verified
+          </span>
+          <span v-else
+            class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full">
+            <Icon name="alert" size="3" color="text-amber-700" />
+            Email Not Verified
+          </span>
+        </div>
       </div>
 
       <!-- Quick actions -->
       <div class="flex flex-wrap gap-2 mb-6">
         <Link href="/applicant/dashboard"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
+          class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
+          <Icon name="search" size="4" />
           Browse Vacancies
         </Link>
         <Link href="/applicant/applications"
           class="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-          </svg>
+          <Icon name="document" size="4" />
           View My Applications
         </Link>
       </div>
@@ -113,20 +85,18 @@
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
           <div class="flex flex-wrap gap-3">
             <div class="flex-1 min-w-48 relative">
-              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
+              <Icon name="search" size="4" color="text-gray-400" class="absolute left-3 top-1/2 -translate-y-1/2" />
               <input v-model="vacancyFilters.search" @input="onVacancySearch"
                 type="text" placeholder="Search position title..."
-                class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" />
+                class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none" />
             </div>
             <select v-model="vacancyFilters.salary_grade" @change="fetchDashboardVacancies"
-              class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
+              class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-primary focus:outline-none">
               <option value="">All Salary Grades</option>
               <option v-for="sg in salaryGrades" :key="sg" :value="sg">SG-{{ sg }}</option>
             </select>
             <select v-model="vacancyFilters.sort" @change="fetchDashboardVacancies"
-              class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
+              class="text-sm border border-gray-300 rounded-lg px-3 pr-8 py-2 bg-white text-gray-700 focus:ring-2 focus:ring-primary focus:outline-none">
               <option value="deadline_asc">Deadline: Soonest First</option>
               <option value="deadline_desc">Deadline: Latest First</option>
               <option value="sg_desc">Salary Grade: Highest</option>
@@ -134,9 +104,7 @@
             </select>
             <button v-if="hasVacancyFilters" @click="clearVacancyFilters"
               class="text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
+              <Icon name="close" size="3.5" />
               Clear
             </button>
             <span class="ml-auto text-sm text-gray-400 self-center">
@@ -147,19 +115,7 @@
 
         <!-- Vacancy grid -->
         <div v-if="loadingVacancies" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div v-for="n in 6" :key="n" class="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
-            <div class="flex gap-2 mb-3"><div class="h-5 w-12 bg-gray-200 rounded-md"></div><div class="h-5 w-16 bg-gray-200 rounded-full"></div></div>
-            <div class="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
-            <div class="h-4 bg-gray-200 rounded mb-4 w-1/2"></div>
-            <div class="space-y-2">
-              <div class="h-3 bg-gray-100 rounded w-full"></div>
-              <div class="h-3 bg-gray-100 rounded w-5/6"></div>
-            </div>
-            <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-              <div class="h-3 w-24 bg-gray-200 rounded"></div>
-              <div class="h-8 w-24 bg-gray-200 rounded-lg"></div>
-            </div>
-          </div>
+          <SkeletonLoader v-for="n in 6" :key="n" variant="card" />
         </div>
 
         <div v-else-if="dashboardVacancies.length" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -173,40 +129,19 @@
           <p class="text-sm font-semibold text-gray-900 mb-1">No vacancies found</p>
           <p class="text-xs text-gray-400">{{ hasVacancyFilters ? 'Try clearing your filters.' : 'No open positions at this time. Check back soon.' }}</p>
           <button v-if="hasVacancyFilters" @click="clearVacancyFilters"
-            class="mt-4 px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors">
+            class="mt-4 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors">
             Clear filters
           </button>
         </div>
 
-        <!-- Pagination -->
-        <div v-if="!loadingVacancies && vacancyPagination.last_page > 1"
-          class="mt-8 flex items-center justify-between">
-          <p class="text-sm text-gray-500">
-            Showing <span class="font-medium text-gray-700">{{ vacancyPagination.from }}</span>–<span class="font-medium text-gray-700">{{ vacancyPagination.to }}</span>
-            of <span class="font-medium text-gray-700">{{ vacancyPagination.total }}</span>
-          </p>
-          <div class="flex items-center gap-1">
-            <button :disabled="vacancyPagination.current_page === 1" @click="vacancyPage(vacancyPagination.current_page - 1)"
-              class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
-              </svg>
-            </button>
-            <template v-for="page in vacancyVisiblePages" :key="page">
-              <span v-if="page === '...'" class="px-2 text-gray-400 text-sm">…</span>
-              <button v-else @click="vacancyPage(page)"
-                :class="['w-9 h-9 rounded-lg text-sm font-medium transition-colors', page === vacancyPagination.current_page ? 'bg-[#2a338f] text-white' : 'text-gray-700 hover:bg-gray-100']">
-                {{ page }}
-              </button>
-            </template>
-            <button :disabled="vacancyPagination.current_page === vacancyPagination.last_page" @click="vacancyPage(vacancyPagination.current_page + 1)"
-              class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-              </svg>
-            </button>
-          </div>
-        </div>
+        <Pagination
+          v-if="!loadingVacancies && vacancyPagination.last_page > 1"
+          :current-page="vacancyPagination.current_page"
+          :last-page="vacancyPagination.last_page"
+          :total="vacancyPagination.total"
+          :from="vacancyPagination.from"
+          :to="vacancyPagination.to"
+          @page-change="vacancyPage" />
 
         </div>
 
@@ -218,14 +153,12 @@
               <div v-for="step in profileSteps" :key="step.label" class="flex items-center gap-3">
                 <div :class="step.done ? 'bg-green-100' : 'bg-gray-100'"
                   class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg v-if="step.done" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                  </svg>
+                  <Icon v-if="step.done" name="check" size="4" color="text-green-600" />
                   <span v-else class="w-2 h-2 rounded-full bg-gray-300 block"></span>
                 </div>
                 <span class="flex-1 text-sm" :class="step.done ? 'text-gray-700 font-medium' : 'text-gray-400'">{{ step.label }}</span>
                 <Link v-if="!step.done" href="/applicant/complete-profile"
-                  class="text-[10px] text-[#2a338f] hover:underline flex-shrink-0 font-medium">Fix →</Link>
+                  class="text-[10px] text-primary hover:underline flex-shrink-0 font-medium">Fix →</Link>
               </div>
             </div>
             <div class="mt-4 pt-4 border-t border-gray-100">
@@ -235,13 +168,13 @@
               </div>
               <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div class="h-2 rounded-full transition-all duration-500"
-                  :class="completionPct === 100 ? 'bg-green-500' : 'bg-[#2a338f]'"
+                  :class="completionPct === 100 ? 'bg-green-500' : 'bg-primary'"
                   :style="{ width: completionPct + '%' }"></div>
               </div>
             </div>
             <Link :href="'/applicant/complete-profile'"
               class="mt-4 flex items-center justify-center gap-1.5 w-full py-2 text-sm font-semibold rounded-lg transition-colors"
-              :class="isComplete ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' : 'bg-[#2a338f] hover:bg-[#1e2570] text-white'">
+              :class="isComplete ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' : 'bg-primary hover:bg-primary-dark text-white'">
               {{ isComplete ? 'View / Edit Profile' : 'Update Profile' }}
             </Link>
           </div>
@@ -250,7 +183,7 @@
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
             <div class="flex items-center justify-between mb-3">
               <h2 class="text-sm font-semibold text-gray-900">Recent Applications</h2>
-              <Link href="/applicant/applications" class="text-xs text-[#2a338f] hover:underline font-medium">View all →</Link>
+              <Link href="/applicant/applications" class="text-xs text-primary hover:underline font-medium">View all →</Link>
             </div>
             <div v-if="!loadingApps && recentApplications.length" class="space-y-3">
               <div v-for="app in recentApplications" :key="app.id" class="flex items-start gap-2.5">
@@ -264,12 +197,9 @@
               </div>
             </div>
             <div v-else-if="loadingApps" class="space-y-3">
-              <div v-for="n in 3" :key="n" class="flex items-center gap-2.5 animate-pulse">
-                <div class="flex-1 space-y-1">
-                  <div class="h-3 bg-gray-100 rounded w-3/4"></div>
-                  <div class="h-2 bg-gray-100 rounded w-1/3"></div>
-                </div>
-                <div class="h-4 w-16 bg-gray-100 rounded-full"></div>
+              <div v-for="n in 3" :key="n" class="flex items-center gap-2.5">
+                <SkeletonLoader variant="text" :lines="2" :widths="['75%', '33%']" wrapper-class="flex-1" />
+                <div class="h-4 w-16 bg-gray-100 rounded-full animate-pulse flex-shrink-0"></div>
               </div>
             </div>
             <p v-else class="text-xs text-gray-400 text-center py-3">No applications yet.</p>
@@ -294,13 +224,16 @@ import { applicationApi, profileApi } from '@/services/api'
 import VacancyCard from '@/Components/Vacancy/VacancyCard.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
+import Icon from '@/Components/UI/Icon.vue'
+import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
+import Pagination from '@/Components/UI/Pagination.vue'
+import { formatDate, formatDateLong, formatDateTime, formatDateRange, daysRemaining } from '@/utils/dates'
 
 // ── Page loading state ───────────────────────────────────────────────────────
 const pageLoading = ref(true)
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 const authUser  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
-const authToken = localStorage.getItem('auth_token') ?? ''
 
 const firstName = computed(() => authUser?.first_name ?? 'there')
 
@@ -310,10 +243,6 @@ const greeting = computed(() => {
   if (h < 18) return 'Good afternoon'
   return 'Good evening'
 })
-
-function authHeaders() {
-  return authToken ? { Authorization: `Bearer ${authToken}` } : {}
-}
 
 // ── Applications ─────────────────────────────────────────────────────────────
 const applications = ref([])
@@ -336,8 +265,8 @@ const statCards = computed(() => [
     label: 'Total Applications', value: appCounts.value.total,
     link: '/applicant/applications',
     icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-    accent: 'from-[#2a338f] to-[#3b45b0]',
-    iconBg: 'bg-indigo-50', iconColor: 'text-[#2a338f]',
+    accent: 'from-primary to-[#3b45b0]',
+    iconBg: 'bg-indigo-50', iconColor: 'text-primary',
   },
   {
     label: 'Pending Review', value: appCounts.value.pending,
@@ -369,11 +298,6 @@ const recentApplications = computed(() =>
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 3)
 )
-
-function formatDate(iso) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
-}
 
 const profileSteps = computed(() => {
   const p = profile.value
@@ -407,19 +331,10 @@ const hasVacancyFilters = computed(() =>
   vacancyFilters.search || vacancyFilters.salary_grade || vacancyFilters.sort !== 'deadline_asc'
 )
 
-const vacancyVisiblePages = computed(() => {
-  const { current_page: cur, last_page: last } = vacancyPagination.value
-  if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1)
-  if (cur <= 4)  return [1, 2, 3, 4, 5, '...', last]
-  if (cur >= last - 3) return [1, '...', last - 4, last - 3, last - 2, last - 1, last]
-  return [1, '...', cur - 1, cur, cur + 1, '...', last]
-})
-
 async function fetchDashboardVacancies() {
   loadingVacancies.value = true
   try {
     const { data } = await axios.get('/api/vacancies', {
-      headers: authHeaders(),
       params: {
         search:       vacancyFilters.search       || undefined,
         salary_grade: vacancyFilters.salary_grade || undefined,

@@ -91,6 +91,8 @@ class VacancyController extends Controller
      */
     public function update(Request $request, Vacancy $vacancy): JsonResponse
     {
+        $this->authorize('update', $vacancy);
+
         $data = $request->validate([
             'position_title'         => 'sometimes|required|string|max:255',
             'plantilla_no'           => 'sometimes|required|string|max:100',

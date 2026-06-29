@@ -1,7 +1,13 @@
 <template>
+  <div>
+    <a href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:outline-none">
+      Skip to content
+    </a>
+
   <div class="min-h-screen bg-gray-50">
     <!-- Top bar -->
-    <header class="bg-[#0f2a44] text-white shadow-md">
+    <header class="bg-primary text-white shadow-md">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-14">
           <div class="flex items-center gap-3">
@@ -14,9 +20,7 @@
           </div>
           <button @click="showLogoutModal = true"
             class="text-xs text-white/60 hover:text-white flex items-center gap-1.5 bg-white/8 hover:bg-white/15 px-3 py-1.5 rounded-lg transition-all duration-200">
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
+            <Icon name="logout" class="w-3.5 h-3.5" />
             Sign Out
           </button>
         </div>
@@ -41,7 +45,7 @@
     </header>
 
     <!-- Main -->
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main id="main-content" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6" tabindex="-1">
       <slot />
     </main>
 
@@ -51,9 +55,7 @@
         <div class="absolute inset-0 bg-black/50" @click="showLogoutModal = false"></div>
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
           <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-            <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-            </svg>
+            <Icon name="logout" class="w-6 h-6 text-red-500" />
           </div>
           <h3 class="text-base font-semibold text-gray-900 mb-1">Sign out</h3>
           <p class="text-sm text-gray-500 mb-6">Are you sure you want to sign out of your account?</p>
@@ -117,6 +119,7 @@
       </Transition>
     </Teleport>
   </div>
+  </div>
 </template>
 
 <script setup>
@@ -124,6 +127,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import api from '@/services/api'
 import axios from 'axios'
+import Icon from '@/Components/UI/Icon.vue'
 import { navigateTo } from '@/utils/navigate'
 
 const page = usePage()

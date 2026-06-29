@@ -1,16 +1,16 @@
 <template>
   <div>
     <a href="#main-content"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-[#2a338f] focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:outline-none">
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:outline-none">
       Skip to content
     </a>
 
   <div class="min-h-screen flex flex-col bg-gray-50">
 
     <!-- ── Navbar ─────────────────────────────────────────────────────── -->
-    <header class="bg-[#2a338f] sticky top-0 z-50 shadow-sm">
+    <header class="bg-primary sticky top-0 z-50 shadow-sm">
       <!-- CSC red brand stripe -->
-      <div class="h-1 w-full bg-[#ec1c2d]"></div>
+      <div class="h-1 w-full bg-accent"></div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
 
@@ -62,16 +62,14 @@
               Sign In
             </Link>
             <Link href="/register"
-              class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium text-[#2a338f] bg-white hover:bg-white/90 rounded-lg transition-colors shadow-sm">
+              class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium text-primary bg-white hover:bg-white/90 rounded-lg transition-colors shadow-sm">
               Register
             </Link>
             <button @click="mobileOpen = !mobileOpen"
               :aria-label="mobileOpen ? 'Close navigation menu' : 'Open navigation menu'"
               :aria-expanded="mobileOpen"
               class="md:hidden p-2 rounded-lg text-white/75 hover:bg-white/10 transition-colors">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-              </svg>
+              <Icon name="menu" class="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -86,7 +84,7 @@
       leave-active-class="transition-all duration-150 ease-in"
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 -translate-y-2">
-      <nav v-if="mobileOpen" class="md:hidden bg-[#1e2570] border-b border-white/10 px-4 py-3 space-y-1" aria-label="Mobile navigation">
+      <nav v-if="mobileOpen" class="md:hidden bg-primary-dark border-b border-white/10 px-4 py-3 space-y-1" aria-label="Mobile navigation">
         <Link href="/" @click="mobileOpen = false"
           class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors"
           :class="$page.url === '/' ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white'"
@@ -111,7 +109,7 @@
           Sign In
         </Link>
         <Link href="/register" @click="mobileOpen = false"
-          class="block px-3 py-2 rounded-lg text-sm font-medium text-[#2a338f] bg-white hover:bg-white/90 transition-colors text-center rounded-lg">
+          class="block px-3 py-2 rounded-lg text-sm font-medium text-primary bg-white hover:bg-white/90 transition-colors text-center rounded-lg">
           Register
         </Link>
       </nav>
@@ -123,7 +121,7 @@
     </main>
 
     <!-- ── Footer ─────────────────────────────────────────────────────── -->
-    <footer class="bg-[#1e2570]">
+    <footer class="bg-primary-dark">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
@@ -169,22 +167,15 @@
             <h3 class="text-xs font-semibold text-white uppercase tracking-wider mb-3">Contact</h3>
             <ul class="space-y-2 text-sm text-white/60">
               <li class="flex items-start gap-2">
-                <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
+                <Icon name="mail" class="w-4 h-4 mt-0.5 flex-shrink-0 text-white/40" />
                 ro08.hrd@csc.gov.ph
               </li>
               <li class="flex items-start gap-2">
-                <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                </svg>
+                <Icon name="phone" class="w-4 h-4 mt-0.5 flex-shrink-0 text-white/40" />
                 (053) 888-1811
               </li>
               <li class="flex items-start gap-2">
-                <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
+                <Icon name="location" class="w-4 h-4 mt-0.5 flex-shrink-0 text-white/40" />
                 Civil Service Commission Regional Office VIII - Human Resource Division
               </li>
             </ul>
@@ -205,6 +196,7 @@
 <script setup>
 import { ref } from 'vue'
 import { Link } from '@inertiajs/vue3'
+import Icon from '@/Components/UI/Icon.vue'
 
 const mobileOpen = ref(false)
 </script>

@@ -41,7 +41,25 @@
           {{ page.props.errors.email }}
         </div>
 
-        <form @submit.prevent="submit" class="space-y-5">
+        <template v-if="submitted">
+          <div class="text-center">
+            <div class="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+              <svg class="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-2">Check your email</h2>
+            <p class="text-sm text-gray-500 mb-3">
+              If your email is registered, you will receive a password reset link shortly.
+            </p>
+            <button @click="submitted = false"
+              class="text-sm text-[#2a338f] font-medium hover:underline">
+              Send again
+            </button>
+          </div>
+        </template>
+
+        <form v-else @submit.prevent="submit" class="space-y-5">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
             <input
@@ -79,11 +97,13 @@ import PublicLayout from '@/Layouts/PublicLayout.vue'
 const page = usePage()
 const form = reactive({ email: '' })
 const loading = ref(false)
+const submitted = ref(false)
 
 async function submit() {
   loading.value = true
   router.post('/forgot-password', form, {
     preserveScroll: true,
+    onSuccess: () => { submitted.value = true },
     onFinish: () => { loading.value = false },
   })
 }

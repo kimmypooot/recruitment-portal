@@ -10,11 +10,15 @@
   --color-primary: #2a338f;
   --color-primary-dark: #1e2570;
   --color-primary-light: rgba(42, 51, 143, 0.1);
+  --color-primary-lighter: rgba(42, 51, 143, 0.05);
+  --color-accent: #ec1c2d;
+  --color-accent-dark: #c9111f;
 }
 
 :root {
   --color-primary: #2a338f;
   --color-primary-dark: #1e2570;
+  --color-accent: #ec1c2d;
 }
 
 .fade-enter-active,
@@ -24,4 +28,10 @@
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+@media print {
+  header, footer, aside, nav, .no-print { display: none !important; }
+  body { background: white !important; }
+  .print-break-inside { break-inside: avoid; }
 }

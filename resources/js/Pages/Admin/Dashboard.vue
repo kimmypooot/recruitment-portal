@@ -2,28 +2,24 @@
   <AdminLayout title="Dashboard">
 
     <!-- Error banner -->
-    <div v-if="loadError"
+    <div v-if="loadError" role="alert"
       class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 flex items-center gap-3">
-      <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-      </svg>
+      <Icon name="alert" size="5" class="flex-shrink-0 text-red-500" />
       <span>{{ loadError }}</span>
       <button @click="loadDashboard" class="ml-auto text-sm font-medium text-red-700 underline hover:no-underline">Retry</button>
     </div>
 
     <!-- Stat cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6">
+    <SkeletonLoader v-if="loading" variant="stat-card" :count="4" wrapper-class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6" />
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6">
       <Link v-for="card in statCards" :key="card.label" :href="card.link"
-        class="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 flex items-center sm:items-start gap-3 sm:gap-4 shadow-sm hover:border-[#2a338f]/30 hover:shadow-md transition-all cursor-pointer">
+        class="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 flex items-center sm:items-start gap-3 sm:gap-4 shadow-sm hover:border-primary/30 hover:shadow-md transition-all cursor-pointer">
         <div :class="card.iconBg" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0">
-          <svg class="w-4 h-4 sm:w-5 sm:h-5" :class="card.iconColor" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" :d="card.icon"/>
-          </svg>
+          <Icon :name="card.icon" size="5" :class="card.iconColor" />
         </div>
         <div class="min-w-0">
           <p class="text-xs text-gray-500 font-medium">{{ card.label }}</p>
-          <p v-if="!loading" class="text-xl sm:text-2xl font-bold text-gray-900 mt-0.5">{{ card.value }}</p>
-          <div v-else class="h-6 sm:h-7 w-12 sm:w-14 bg-gray-200 rounded animate-pulse mt-0.5"></div>
+          <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-0.5">{{ card.value }}</p>
           <p v-if="card.sub" class="text-xs text-gray-400 mt-0.5">{{ card.sub }}</p>
         </div>
       </Link>
@@ -32,9 +28,7 @@
     <!-- Pipeline summary chips -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
       <h2 class="text-sm font-semibold text-gray-900 mb-3">Application Pipeline</h2>
-      <div v-if="loading" class="flex flex-wrap gap-2">
-        <div v-for="n in 8" :key="n" class="h-7 w-24 bg-gray-100 rounded-full animate-pulse"></div>
-      </div>
+      <SkeletonLoader v-if="loading" variant="custom" :count="8" wrapper-class="flex flex-wrap gap-2" />
       <div v-else-if="sortedPipeline.length" class="flex flex-wrap gap-2">
         <div v-for="item in sortedPipeline" :key="item.status"
           :class="statusChipClass(item.status)"
@@ -75,12 +69,10 @@
               <span class="w-1.5 h-1.5 rounded-full" :class="autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'"></span>
               {{ autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF' }}
             </button>
-            <Link href="/admin/applications" class="text-xs text-[#2a338f] hover:underline font-medium">View all</Link>
+            <Link href="/admin/applications" class="text-xs text-primary hover:underline font-medium">View all</Link>
           </div>
         </div>
-        <div v-if="loading" class="space-y-3">
-          <div v-for="n in 5" :key="n" class="h-10 bg-gray-100 rounded animate-pulse"></div>
-        </div>
+        <SkeletonLoader v-if="loading" variant="custom" :count="5" />
         <div v-else-if="recentApplications.length" class="-mx-5 sm:mx-0 overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
@@ -109,9 +101,7 @@
       <!-- Upcoming Schedules (1/3) -->
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
         <h2 class="text-sm font-semibold text-gray-900 mb-4">Upcoming Schedules</h2>
-        <div v-if="scheduleLoading" class="space-y-2.5">
-          <div v-for="n in 4" :key="n" class="h-[60px] bg-gray-100 rounded-lg animate-pulse"></div>
-        </div>
+        <SkeletonLoader v-if="scheduleLoading" variant="custom" :count="4" />
         <div v-else-if="upcomingAll.length" class="space-y-2.5">
           <div v-for="item in upcomingAll" :key="item.type + item.id"
             class="rounded-lg border p-3 text-xs"
@@ -131,9 +121,7 @@
         </div>
         <div v-else class="flex flex-col items-center justify-center py-10 text-center">
           <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-            <svg class="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
+            <Icon name="calendar" size="5" class="text-gray-300" />
           </div>
           <p class="text-sm text-gray-400">No upcoming schedules</p>
         </div>
@@ -150,6 +138,10 @@ import { Link } from '@inertiajs/vue3'
 import api from '@/services/api'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
+import Icon from '@/Components/UI/Icon.vue'
+import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
+import { STATUS_ORDER, statusLabel, statusChipClass } from '@/config/statusConfig'
+import { formatDate, formatDateTime, timeAgo } from '@/utils/dates'
 
 const loading         = ref(true)
 const scheduleLoading = ref(true)
@@ -176,49 +168,6 @@ onBeforeUnmount(() => {
 })
 
 // ── Pipeline ──────────────────────────────────────────────────────────────────
-const STATUS_ORDER = [
-  'submitted', 'under_review', 'screened', 'qualified', 'disqualified',
-  'exam_scheduled', 'shortlisted', 'for_interview', 'interviewed',
-  'recommended', 'appointed', 'completed', 'withdrawn',
-]
-const STATUS_LABELS = {
-  submitted:      'Submitted',
-  under_review:   'Under Review',
-  screened:       'Screened',
-  qualified:      'Qualified',
-  disqualified:   'Disqualified',
-  exam_scheduled: 'Exam Scheduled',
-  shortlisted:    'Shortlisted',
-  for_interview:  'For Interview',
-  interviewed:    'Interviewed',
-  recommended:    'Recommended',
-  appointed:      'Appointed',
-  completed:      'Completed',
-  withdrawn:      'Withdrawn',
-}
-const STATUS_CHIP = {
-  submitted:      'bg-yellow-50 text-yellow-700 border-yellow-200',
-  under_review:   'bg-purple-50 text-purple-700 border-purple-200',
-  screened:       'bg-sky-50 text-sky-700 border-sky-200',
-  qualified:      'bg-teal-50 text-teal-700 border-teal-200',
-  disqualified:   'bg-red-50 text-red-600 border-red-200',
-  exam_scheduled: 'bg-orange-50 text-orange-700 border-orange-200',
-  shortlisted:    'bg-indigo-50 text-indigo-700 border-indigo-200',
-  for_interview:  'bg-violet-50 text-violet-700 border-violet-200',
-  interviewed:    'bg-cyan-50 text-cyan-700 border-cyan-200',
-  recommended:    'bg-lime-50 text-lime-700 border-lime-200',
-  appointed:      'bg-[#2a338f]/10 text-[#2a338f] border-[#2a338f]/20',
-  completed:      'bg-green-50 text-green-700 border-green-200',
-  withdrawn:      'bg-gray-50 text-gray-500 border-gray-200',
-}
-
-function statusLabel(status) {
-  return STATUS_LABELS[status] ?? status.replaceAll('_', ' ')
-}
-function statusChipClass(status) {
-  return STATUS_CHIP[status] ?? 'bg-gray-50 text-gray-500 border-gray-200'
-}
-
 const sortedPipeline = computed(() =>
   [...pipeline.value].sort((a, b) => {
     const ai = STATUS_ORDER.indexOf(a.status)
@@ -242,28 +191,28 @@ const statCards = computed(() => [
     label: 'Total Vacancies', value: stats.value.vacancies?.total ?? 0,
     sub: `${stats.value.vacancies?.published ?? 0} published`,
     link: '/admin/vacancies',
-    icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-    iconBg: 'bg-[#2a338f]/10', iconColor: 'text-[#2a338f]',
+    icon: 'briefcase',
+    iconBg: 'bg-primary/10', iconColor: 'text-primary',
   },
   {
     label: 'Closing Soon', value: stats.value.vacancies?.closing_soon ?? 0,
     sub: 'within 7 days',
     link: '/admin/vacancies?status=published',
-    icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+    icon: 'clock',
     iconBg: 'bg-yellow-100', iconColor: 'text-yellow-700',
   },
   {
     label: 'Total Applications', value: stats.value.applications?.total ?? 0,
     sub: `${stats.value.applications?.this_month ?? 0} this month`,
     link: '/admin/applications',
-    icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+    icon: 'document',
     iconBg: 'bg-green-100', iconColor: 'text-green-700',
   },
   {
     label: 'Pending Review', value: stats.value.applications?.pending ?? 0,
     sub: 'awaiting action',
     link: '/admin/applications?status=submitted',
-    icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
+    icon: 'alert',
     iconBg: 'bg-red-100', iconColor: 'text-red-700',
   },
 ])
@@ -278,27 +227,7 @@ function formatApplicantName(app) {
   return p?.user?.full_name ?? '—'
 }
 
-function timeAgo(date) {
-  if (!date) return ''
-  const diff = (Date.now() - new Date(date).getTime()) / 1000
-  if (diff < 60)   return 'just now'
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return `${Math.floor(diff / 86400)}d ago`
-}
 
-function formatDate(str) {
-  if (!str) return '—'
-  return new Date(str).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
-}
-
-function formatDateTime(iso) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleString('en-PH', {
-    month: 'short', day: 'numeric',
-    hour: 'numeric', minute: '2-digit', hour12: true,
-  })
-}
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 async function loadDashboard() {

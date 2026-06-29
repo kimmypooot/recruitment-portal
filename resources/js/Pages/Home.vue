@@ -12,7 +12,7 @@
     <!-- Redirect guard: show minimal loader while checking auth -->
     <div v-if="redirecting" class="min-h-[60vh] flex items-center justify-center">
       <div class="flex flex-col items-center gap-3">
-        <div class="w-8 h-8 border-2 border-[#2a338f] border-t-transparent rounded-full animate-spin"></div>
+        <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
         <p class="text-sm text-gray-400">Loading...</p>
       </div>
     </div>
@@ -36,7 +36,7 @@
 
         <!-- Eyebrow badge -->
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase mb-6 border border-white/20 bg-white/10 text-white/85 backdrop-blur-sm">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#ec1c2d] animate-pulse"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
           {{ stats.published }} open position{{ stats.published !== 1 ? 's' : '' }} available
         </div>
 
@@ -60,9 +60,7 @@
         <!-- Search bar -->
         <div class="flex gap-2 max-w-lg mx-auto">
           <div class="flex-1 relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
+            <Icon name="search" size="4" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               v-model="filters.search"
               @input="onSearchInput"
@@ -73,14 +71,12 @@
             <button v-if="filters.search" @click="clearSearch"
               class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-gray-400 hover:text-gray-700 transition-colors"
               aria-label="Clear search">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
+              <Icon name="close" size="4" />
             </button>
           </div>
           <button
             @click="fetchVacancies"
-            class="px-5 py-3 min-w-[5rem] bg-[#ec1c2d] hover:bg-[#c9111f] active:bg-[#b00f1b] text-white font-semibold text-sm rounded-xl shadow-lg transition-colors">
+            class="px-5 py-3 min-w-[5rem] bg-accent hover:bg-accent-dark active:bg-[#b00f1b] text-white font-semibold text-sm rounded-xl shadow-lg transition-colors">
             Search
           </button>
         </div>
@@ -105,13 +101,11 @@
             <select
               v-model="filters.salary_grade"
               @change="fetchVacancies"
-              class="appearance-none text-sm border border-gray-300 rounded-lg pl-3 pr-8 py-2 bg-white text-gray-700 shadow-sm cursor-pointer focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
+              class="appearance-none text-sm border border-gray-300 rounded-lg pl-3 pr-8 py-2 bg-white text-gray-700 shadow-sm cursor-pointer focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none">
               <option value="">All Salary Grades</option>
               <option v-for="sg in salaryGrades" :key="sg" :value="sg">SG-{{ sg }}</option>
             </select>
-            <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-            </svg>
+            <Icon name="chevronDown" size="3.5" class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
 
           <!-- Place of Assignment filter -->
@@ -119,13 +113,11 @@
             <select
               v-model="filters.place"
               @change="fetchVacancies"
-              class="appearance-none text-sm border border-gray-300 rounded-lg pl-3 pr-8 py-2 bg-white text-gray-700 shadow-sm cursor-pointer focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
+              class="appearance-none text-sm border border-gray-300 rounded-lg pl-3 pr-8 py-2 bg-white text-gray-700 shadow-sm cursor-pointer focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none">
               <option value="">All Offices</option>
               <option v-for="place in uniquePlaces" :key="place" :value="place">{{ place }}</option>
             </select>
-            <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-            </svg>
+            <Icon name="chevronDown" size="3.5" class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
 
           <!-- Sort -->
@@ -133,16 +125,14 @@
             <select
               v-model="filters.sort"
               @change="fetchVacancies"
-              class="appearance-none text-sm border border-gray-300 rounded-lg pl-3 pr-8 py-2 bg-white text-gray-700 shadow-sm cursor-pointer focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
+              class="appearance-none text-sm border border-gray-300 rounded-lg pl-3 pr-8 py-2 bg-white text-gray-700 shadow-sm cursor-pointer focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none">
               <option value="deadline_asc">Deadline: Soonest First</option>
               <option value="deadline_desc">Deadline: Latest First</option>
               <option value="sg_desc">Salary Grade: Highest First</option>
               <option value="sg_asc">Salary Grade: Lowest First</option>
               <option value="newest">Recently Posted</option>
             </select>
-            <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-            </svg>
+            <Icon name="chevronDown" size="3.5" class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
 
           <!-- Active filter count + clear -->
@@ -150,9 +140,7 @@
             v-if="hasActiveFilters"
             @click="clearFilters"
             class="flex items-center gap-1.5 text-sm text-red-600 hover:text-red-800 font-medium transition-colors">
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
+            <Icon name="close" size="3.5" />
             Clear filters
           </button>
 
@@ -173,44 +161,19 @@
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
       <!-- Error banner -->
-      <div v-if="fetchError" class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center justify-between">
+          <div v-if="fetchError" role="alert" class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
+          <Icon name="alert" size="5" class="text-red-500 flex-shrink-0" />
           <p class="text-sm text-red-700">{{ fetchError }}</p>
         </div>
         <button @click="fetchVacancies"
           class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 hover:text-red-900 bg-red-100 hover:bg-red-200 rounded-lg transition-colors">
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
+          <Icon name="refresh" size="3.5" />
           Retry
         </button>
       </div>
 
-      <!-- Loading skeleton -->
-      <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        <div
-          v-for="n in 6" :key="n"
-          class="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
-          <div class="flex gap-2 mb-3">
-            <div class="h-5 w-12 bg-gray-200 rounded-md"></div>
-            <div class="h-5 w-16 bg-gray-200 rounded-full"></div>
-          </div>
-          <div class="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
-          <div class="h-4 bg-gray-200 rounded mb-4 w-1/2"></div>
-          <div class="space-y-2">
-            <div class="h-3 bg-gray-100 rounded w-full"></div>
-            <div class="h-3 bg-gray-100 rounded w-5/6"></div>
-            <div class="h-3 bg-gray-100 rounded w-4/6"></div>
-          </div>
-          <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-            <div class="h-3 w-24 bg-gray-200 rounded"></div>
-            <div class="h-8 w-24 bg-gray-200 rounded-lg"></div>
-          </div>
-        </div>
-      </div>
+      <SkeletonLoader v-if="isLoading" variant="card" :count="6" wrapper-class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" />
 
       <!-- Vacancy cards -->
       <div
@@ -238,69 +201,26 @@
         <button
           v-if="hasActiveFilters"
           @click="clearFilters"
-          class="px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors">
+          class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors">
           Clear filters
         </button>
       </div>
 
-      <!-- ── Pagination ──────────────────────────────────────────────── -->
-      <div
+      <Pagination
         v-if="!isLoading && pagination.last_page > 1"
-        class="mt-10 flex items-center justify-between flex-wrap gap-3">
-
-        <!-- Page info -->
-        <p class="text-sm text-gray-500">
-          Showing
-          <span class="font-medium text-gray-700">{{ pagination.from }}</span>–<span class="font-medium text-gray-700">{{ pagination.to }}</span>
-          of <span class="font-medium text-gray-700">{{ pagination.total }}</span>
-        </p>
-
-        <!-- Page buttons -->
-        <div class="flex items-center gap-1">
-          <!-- Prev -->
-          <button
-            :disabled="pagination.current_page === 1"
-            @click="goToPage(pagination.current_page - 1)"
-            class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
-            </svg>
-          </button>
-
-          <!-- Page numbers -->
-          <template v-for="page in visiblePages" :key="page">
-            <span v-if="page === '...'" class="px-2 text-gray-400 text-sm">…</span>
-            <button
-              v-else
-              @click="goToPage(page)"
-              :class="[
-                'w-9 h-9 rounded-lg text-sm font-medium transition-colors',
-                page === pagination.current_page
-                  ? 'bg-[#2a338f] text-white shadow-sm'
-                  : 'text-gray-700 hover:bg-gray-100'
-              ]">
-              {{ page }}
-            </button>
-          </template>
-
-          <!-- Next -->
-          <button
-            :disabled="pagination.current_page === pagination.last_page"
-            @click="goToPage(pagination.current_page + 1)"
-            class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-            </svg>
-          </button>
-        </div>
-      </div>
+        :current-page="pagination.current_page"
+        :last-page="pagination.last_page"
+        :total="pagination.total"
+        :from="pagination.from"
+        :to="pagination.to"
+        @page-change="goToPage" />
 
     </section>
 
     <!-- ── Testimonials marquee ─────────────────────────────────────── -->
     <section v-if="testimonials.length >= 3 && vacancies.length > 0" class="py-14 bg-gray-50 border-t border-gray-100" style="overflow: hidden; max-width: 100vw;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center">
-        <p class="text-xs font-semibold uppercase tracking-widest text-[#ec1c2d] mb-2">What Applicants Say</p>
+        <p class="text-xs font-semibold uppercase tracking-widest text-accent mb-2">What Applicants Say</p>
         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Real experiences, real people</h2>
         <p class="text-sm text-gray-500 mt-2">Feedback submitted by applicants after applying through this portal.</p>
       </div>
@@ -344,7 +264,7 @@
     </section>
 
     <!-- ── Stats strip ──────────────────────────────────────────────── -->
-    <section class="text-white" style="background-color: #2a338f;">
+    <section class="text-white bg-primary">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center divide-y sm:divide-y-0 sm:divide-x divide-white/20">
           <div class="pb-6 sm:pb-0">
@@ -372,9 +292,14 @@
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import axios from 'axios'
 import { Head, router } from '@inertiajs/vue3'
+import { debounce } from 'lodash-es'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import VacancyCard from '@/Components/Vacancy/VacancyCard.vue'
 import DataPrivacyModal from '@/Components/DataPrivacyModal.vue'
+import Icon from '@/Components/UI/Icon.vue'
+import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
+import Pagination from '@/Components/UI/Pagination.vue'
+import { formatDateLong, formatDate, daysRemaining } from '@/utils/dates'
 
 const AVATAR_COLORS = ['#2a338f','#7c3aed','#0891b2','#059669','#d97706','#dc2626','#db2777','#0284c7','#65a30d']
 function avatarColor(i) { return AVATAR_COLORS[i % AVATAR_COLORS.length] }
@@ -409,14 +334,6 @@ watch(testimonials, async (val) => {
     if (!marqueeRaf) marqueeRaf = requestAnimationFrame(tickMarquee)
   }
 })
-
-function debounce(fn, delay) {
-  let timer
-  return function (...args) {
-    clearTimeout(timer)
-    timer = setTimeout(() => fn.apply(this, args), delay)
-  }
-}
 
 // ── Props from Laravel (Inertia) ──────────────────────────────────────────
 // These are passed by HomeController::index() via Inertia::render()
@@ -459,15 +376,6 @@ const hasActiveFilters = computed(() =>
 const uniquePlaces = computed(() => {
   const all = vacancies.value.map(v => v.place_of_assignment).filter(Boolean)
   return [...new Set(all)].sort()
-})
-
-// Pagination page list with ellipsis
-const visiblePages = computed(() => {
-  const { current_page: cur, last_page: last } = pagination.value
-  if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1)
-  if (cur <= 4)  return [1, 2, 3, 4, 5, '...', last]
-  if (cur >= last - 3) return [1, '...', last - 4, last - 3, last - 2, last - 1, last]
-  return [1, '...', cur - 1, cur, cur + 1, '...', last]
 })
 
 // ── Data fetching ─────────────────────────────────────────────────────────

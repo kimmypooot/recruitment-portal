@@ -9,15 +9,12 @@
       <!-- Toolbar -->
       <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
         <div class="relative flex-1">
-          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
+          <Icon name="search" size="4" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input v-model="vacancySearch" type="text" placeholder="Search vacant positions…"
-            class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none shadow-sm" />
+            class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none shadow-sm" />
         </div>
         <select v-model="vacancyStatusFilter"
-          class="px-3 pr-8 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-[#2a338f] focus:outline-none shadow-sm">
+          class="px-3 pr-8 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-primary focus:outline-none shadow-sm">
           <option value="">All Statuses</option>
           <option value="published">Published</option>
           <option value="draft">Draft</option>
@@ -29,31 +26,17 @@
       <!-- Table card -->
       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
-        <!-- Loading skeleton -->
-        <div v-if="vacanciesLoading" class="p-6 space-y-3">
-          <div v-for="n in 6" :key="n" class="flex items-center gap-4 h-12">
-            <div class="h-3 bg-gray-100 rounded w-6 animate-pulse flex-shrink-0"></div>
-            <div class="flex-1 h-3 bg-gray-100 rounded animate-pulse"></div>
-            <div class="h-3 bg-gray-100 rounded w-20 animate-pulse"></div>
-            <div class="h-3 bg-gray-100 rounded w-16 animate-pulse hidden md:block"></div>
-            <div class="h-3 bg-gray-100 rounded w-24 animate-pulse hidden lg:block"></div>
-            <div class="h-3 bg-gray-100 rounded w-20 animate-pulse hidden lg:block"></div>
-            <div class="h-3 bg-gray-100 rounded w-16 animate-pulse"></div>
-            <div class="h-7 bg-gray-100 rounded-lg w-28 animate-pulse"></div>
-          </div>
-        </div>
+        <SkeletonLoader v-if="vacanciesLoading" variant="table-row" :count="6" wrapper-class="p-6 space-y-3" />
 
         <!-- Error state -->
-        <div v-else-if="vacancyError" class="py-20 text-center px-6">
+        <div v-else-if="vacancyError" role="alert" class="py-20 text-center px-6">
           <div class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-3">
-            <svg class="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
-            </svg>
+            <Icon name="alert" size="6" class="text-red-400" />
           </div>
           <p class="text-sm font-semibold text-gray-700 mb-1">Failed to load positions</p>
           <p class="text-xs text-gray-400 mb-4">{{ vacancyError }}</p>
           <button @click="fetchVacancies"
-            class="text-sm font-medium text-[#2a338f] hover:underline">Try again</button>
+            class="text-sm font-medium text-primary hover:underline">Try again</button>
         </div>
 
         <!-- Table -->
@@ -130,10 +113,8 @@
                 <!-- Action -->
                 <td class="px-5 py-4 text-right">
                   <button @click="viewApplicants(v)"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#2a338f] bg-[#2a338f]/8 hover:bg-[#2a338f]/15 rounded-lg transition-colors">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
-                    </svg>
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary bg-primary/8 hover:bg-primary/15 rounded-lg transition-colors">
+                    <Icon name="user" size="3.5" />
                     View Applicants
                   </button>
                 </td>
@@ -143,12 +124,10 @@
               <tr v-if="!filteredVacancies.length">
                 <td colspan="9" class="px-5 py-20 text-center">
                   <div class="flex flex-col items-center gap-2">
-                    <svg class="w-10 h-10 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
+                    <Icon name="briefcase" size="10" class="text-gray-200" />
                     <p class="text-sm font-medium text-gray-400">No vacant positions found</p>
                     <button v-if="vacancySearch || vacancyStatusFilter" @click="vacancySearch = ''; vacancyStatusFilter = ''"
-                      class="text-xs text-[#2a338f] hover:underline">Clear filters</button>
+                      class="text-xs text-primary hover:underline">Clear filters</button>
                   </div>
                 </td>
               </tr>
@@ -167,19 +146,13 @@
       <!-- Breadcrumb + back -->
       <div class="flex items-center gap-2 flex-wrap mb-4">
         <button @click="backToList"
-          class="flex items-center gap-1.5 text-sm text-[#2a338f] font-medium hover:underline">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-          </svg>
+          class="flex items-center gap-1.5 text-sm text-primary font-medium hover:underline">
+          <Icon name="chevronLeft" size="4" />
           Back to Vacant Positions
         </button>
-        <svg class="w-3.5 h-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-        </svg>
+        <Icon name="chevronRight" size="3.5" class="text-gray-300" />
         <span class="text-sm text-gray-500 truncate max-w-xs">{{ selectedVacancy?.position_title }}</span>
-        <svg class="w-3.5 h-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-        </svg>
+        <Icon name="chevronRight" size="3.5" class="text-gray-300" />
         <span class="text-sm font-semibold text-gray-800">Applicants</span>
       </div>
 
@@ -227,16 +200,13 @@
           </div>
           <div class="flex gap-2 sm:ml-auto">
             <div class="relative flex-1 sm:flex-none">
-              <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
+              <Icon name="search" size="3.5" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input v-model="filters.search" @input="onSearch" type="text"
                 placeholder="Search applicant…"
-                class="w-full sm:w-56 pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" />
+                class="w-full sm:w-56 pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none" />
             </div>
             <select v-model="filters.status" @change="resetAndFetch"
-              class="px-2.5 pr-7 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              class="px-2.5 pr-7 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
               <option value="">All Statuses</option>
               <optgroup label="Initial">
                 <option value="submitted">Submitted</option>
@@ -264,16 +234,14 @@
 
         <!-- Selection bar -->
         <div v-if="!loading && selectedIds.size > 0"
-          class="px-5 py-2.5 bg-[#2a338f]/5 border-b border-[#2a338f]/10 flex items-center gap-3 flex-wrap flex-shrink-0">
-          <span class="text-xs font-semibold text-[#2a338f]">
+          class="px-5 py-2.5 bg-primary/5 border-b border-primary/10 flex items-center gap-3 flex-wrap flex-shrink-0">
+          <span class="text-xs font-semibold text-primary">
             {{ selectedIds.size }} applicant{{ selectedIds.size !== 1 ? 's' : '' }} selected
           </span>
           <div class="flex items-center gap-2 ml-auto">
             <button @click="openBatchUpdate"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors">
-              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-              </svg>
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors">
+              <Icon name="document" size="3" />
               Update Status
             </button>
             <button @click="clearSelection"
@@ -283,21 +251,7 @@
           </div>
         </div>
 
-        <!-- Loading skeleton -->
-        <div v-if="loading" class="p-5 space-y-3">
-          <div v-for="n in 6" :key="n" class="flex items-center gap-4 h-11">
-            <div class="w-4 h-4 bg-gray-100 rounded animate-pulse flex-shrink-0 ml-5"></div>
-            <div class="w-8 h-8 rounded-full bg-gray-100 animate-pulse flex-shrink-0"></div>
-            <div class="flex-1 space-y-1.5">
-              <div class="h-3 bg-gray-100 rounded w-1/3 animate-pulse"></div>
-              <div class="h-2.5 bg-gray-100 rounded w-1/4 animate-pulse"></div>
-            </div>
-            <div class="h-2.5 bg-gray-100 rounded w-20 animate-pulse hidden sm:block"></div>
-            <div class="h-2.5 bg-gray-100 rounded w-20 animate-pulse hidden md:block"></div>
-            <div class="h-5 w-20 bg-gray-100 rounded-full animate-pulse"></div>
-            <div class="h-7 w-36 bg-gray-100 rounded animate-pulse"></div>
-          </div>
-        </div>
+        <SkeletonLoader v-if="loading" variant="application-row" :count="6" />
 
         <!-- Table -->
         <div v-else class="overflow-x-auto">
@@ -308,7 +262,7 @@
                   <input type="checkbox" ref="headerCheckbox"
                     :checked="allOnPageSelected"
                     @change="toggleSelectAll"
-                    class="rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f] cursor-pointer" />
+                    class="rounded border-gray-300 text-primary focus:ring-primary cursor-pointer" />
                 </th>
                 <th class="px-4 py-3.5 min-w-[200px] cursor-pointer select-none hover:text-gray-700" @click="toggleSort('name')">
                   Applicant Name<span class="text-[10px]" v-html="sortIcon('name')"></span>
@@ -336,20 +290,20 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr v-for="(app, idx) in sortedApplications" :key="app.id"
-                :class="['hover:bg-gray-50/80 transition-colors', selectedIds.has(app.id) ? 'bg-[#2a338f]/3' : '']">
+                :class="['hover:bg-gray-50/80 transition-colors', selectedIds.has(app.id) ? 'bg-primary/3' : '']">
 
                 <!-- Checkbox -->
                 <td class="pl-5 pr-2 py-4 w-10">
                   <input type="checkbox"
                     :checked="selectedIds.has(app.id)"
                     @click.stop="handleRowCheck($event, app, idx)"
-                    class="rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f] cursor-pointer" />
+                    class="rounded border-gray-300 text-primary focus:ring-primary cursor-pointer" />
                 </td>
 
                 <!-- Applicant Name (Last, First Middle) -->
                 <td class="px-4 py-4">
                   <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-full bg-[#2a338f]/10 flex items-center justify-center text-[#2a338f] text-xs font-bold flex-shrink-0">
+                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">
                       {{ initials(app.applicant?.user) }}
                     </div>
                     <p class="font-semibold text-gray-900 leading-snug">{{ formatApplicantName(app) }}</p>
@@ -391,28 +345,19 @@
                   <div class="flex items-center justify-end gap-1">
                     <button @click="openAttachments(app)" title="View Attachments"
                       class="p-1.5 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-md transition-colors">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                      </svg>
+                      <Icon name="paperclip" size="4" />
                     </button>
                     <button @click="openCredentials(app)" title="View Applicant Credentials"
                       class="p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-md transition-colors">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                      </svg>
+                      <Icon name="document" size="4" />
                     </button>
                     <button @click="openDetail(app)" title="View Details"
                       class="p-1.5 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                      </svg>
+                      <Icon name="eye" size="4" />
                     </button>
                     <button @click="openUpdate(app)" title="Update Status"
-                      class="p-1.5 text-[#2a338f] bg-[#2a338f]/8 hover:bg-[#2a338f]/15 rounded-md transition-colors">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                      </svg>
+                      class="p-1.5 text-primary bg-primary/8 hover:bg-primary/15 rounded-md transition-colors">
+                      <Icon name="document" size="4" />
                     </button>
                   </div>
                 </td>
@@ -421,12 +366,10 @@
               <tr v-if="!sortedApplications.length">
                 <td colspan="9" class="px-5 py-20 text-center">
                   <div class="flex flex-col items-center gap-2">
-                    <svg class="w-9 h-9 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
-                    </svg>
+                    <Icon name="user" size="8" class="text-gray-200" />
                     <p class="text-sm font-medium text-gray-400">No applicants found</p>
                     <button v-if="filters.search || filters.status" @click="clearFilters"
-                      class="text-xs text-[#2a338f] hover:underline">Clear filters</button>
+                      class="text-xs text-primary hover:underline">Clear filters</button>
                   </div>
                 </td>
               </tr>
@@ -444,18 +387,14 @@
           <div class="flex items-center gap-1">
             <button :disabled="meta.current_page === 1" @click="goPage(meta.current_page - 1)"
               class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
-              </svg>
+              <Icon name="chevronLeft" size="4" />
             </button>
             <span class="px-3 py-1 text-xs font-medium text-gray-700">
               {{ meta.current_page }} / {{ meta.last_page }}
             </span>
             <button :disabled="meta.current_page === meta.last_page" @click="goPage(meta.current_page + 1)"
               class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-              </svg>
+              <Icon name="chevronRight" size="4" />
             </button>
           </div>
         </div>
@@ -471,7 +410,7 @@
 
         <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-[#2a338f]/10 flex items-center justify-center text-[#2a338f] text-sm font-bold flex-shrink-0">
+            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold flex-shrink-0">
               {{ initials(detailTarget.applicant?.user) }}
             </div>
             <div>
@@ -480,9 +419,7 @@
             </div>
           </div>
           <button @click="detailTarget = null" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
+            <Icon name="xmark" size="5" />
           </button>
         </div>
 
@@ -510,17 +447,17 @@
               <div v-for="step in statusPipeline" :key="step.key"
                 :class="[
                   'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
-                  detailTarget.status === step.key ? 'bg-[#2a338f]/5 border border-[#2a338f]/20' : ''
+                  detailTarget.status === step.key ? 'bg-primary/5 border border-primary/20' : ''
                 ]">
                 <div :class="[
                     'w-2 h-2 rounded-full flex-shrink-0',
-                    detailTarget.status === step.key ? 'bg-[#2a338f]' :
+                    detailTarget.status === step.key ? 'bg-primary' :
                     isPast(step.key, detailTarget.status) ? 'bg-gray-300' : 'bg-gray-100'
                   ]"></div>
-                <span :class="detailTarget.status === step.key ? 'font-medium text-[#2a338f]' : 'text-gray-400'">
+                <span :class="detailTarget.status === step.key ? 'font-medium text-primary' : 'text-gray-400'">
                   {{ step.label }}
                 </span>
-                <span v-if="detailTarget.status === step.key" class="ml-auto text-xs text-[#2a338f] font-medium">Current</span>
+                <span v-if="detailTarget.status === step.key" class="ml-auto text-xs text-primary font-medium">Current</span>
               </div>
             </div>
           </div>
@@ -550,20 +487,18 @@
 
             <div class="flex gap-2 mb-3">
               <select v-model="csForm.type"
-                class="flex-1 px-2.5 pr-7 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+                class="flex-1 px-2.5 pr-7 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
                 <option value="33A">CS Form 33-A (Appointment)</option>
                 <option value="33B">CS Form 33-B (Casual/Contractual)</option>
                 <option value="form1">CS Form 1 (Personal Data Sheet)</option>
               </select>
               <button @click="generateForm" :disabled="csForm.generating"
-                class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-[#2a338f] text-white rounded-lg hover:bg-[#1e2570] disabled:opacity-60 transition-colors">
+                class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-60 transition-colors">
                 <svg v-if="csForm.generating" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                 </svg>
-                <svg v-else class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                </svg>
+                <Icon v-else name="plus" size="3" />
                 Generate
               </button>
             </div>
@@ -587,27 +522,21 @@
                 </div>
                 <div class="flex items-center gap-1 flex-shrink-0">
                   <button @click="downloadForm(f)"
-                    class="p-1.5 text-gray-500 hover:text-[#2a338f] hover:bg-[#2a338f]/8 rounded-md transition-colors"
+                    class="p-1.5 text-gray-500 hover:text-primary hover:bg-primary/8 rounded-md transition-colors"
                     title="Download PDF">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
+                    <Icon name="download" size="3.5" />
                   </button>
                   <button v-if="!f.signed_at && csForm.pnpkiReady"
                     @click="signForm(f)" :disabled="csForm.actionId === f.id"
                     class="p-1.5 text-amber-600 hover:bg-amber-50 rounded-md transition-colors disabled:opacity-50"
                     title="Sign via PNPKI">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                    </svg>
+                    <Icon name="document" size="3.5" />
                   </button>
                   <button v-if="!f.submitted_to_csc_at"
                     @click="markSubmitted(f)" :disabled="csForm.actionId === f.id"
                     class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors disabled:opacity-50"
                     title="Mark as submitted to CSC">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
+                    <Icon name="check" size="3.5" />
                   </button>
                 </div>
               </div>
@@ -620,7 +549,7 @@
 
         <div class="px-6 py-4 border-t border-gray-100 flex-shrink-0">
           <button @click="openUpdate(detailTarget); detailTarget = null"
-            class="w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors">
+            class="w-full py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors">
             Update Status
           </button>
         </div>
@@ -669,7 +598,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">New Status <span class="text-red-500">*</span></label>
             <select v-model="statusForm.status"
-              class="w-full px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              class="w-full px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
               <optgroup label="Initial">
                 <option value="under_review">Under Review</option>
               </optgroup>
@@ -705,12 +634,12 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Date &amp; Time</label>
               <input type="datetime-local" v-model="scheduleForm.scheduled_at"
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
               <input type="text" v-model="scheduleForm.venue" placeholder="e.g. CSC Regional Office, Room 201"
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -718,7 +647,7 @@
               </label>
               <textarea v-model="scheduleForm.notes" rows="2"
                 placeholder="Additional instructions or reminders…"
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none resize-none"></textarea>
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none resize-none"></textarea>
             </div>
           </div>
 
@@ -728,7 +657,7 @@
             </label>
             <textarea v-model="statusForm.remarks" rows="3"
               placeholder="Add notes or feedback for the applicant…"
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none resize-none"></textarea>
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none resize-none"></textarea>
           </div>
         </div>
 
@@ -738,7 +667,7 @@
             Cancel
           </button>
           <button @click="doUpdateStatus" :disabled="saving"
-            class="px-4 py-2 text-sm bg-[#2a338f] text-white font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-60 transition-colors">
+            class="px-4 py-2 text-sm bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-60 transition-colors">
             <span v-if="saving" class="flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -777,7 +706,7 @@
               <span>{{ Math.round((batchProgress / batchTotal) * 100) }}%</span>
             </div>
             <div class="w-full bg-gray-100 rounded-full h-1.5">
-              <div class="bg-[#2a338f] h-1.5 rounded-full transition-all duration-300"
+              <div class="bg-primary h-1.5 rounded-full transition-all duration-300"
                 :style="{ width: `${(batchProgress / batchTotal) * 100}%` }"></div>
             </div>
           </div>
@@ -785,7 +714,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">New Status <span class="text-red-500">*</span></label>
             <select v-model="batchForm.status" :disabled="batchSaving"
-              class="w-full px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white disabled:opacity-60">
+              class="w-full px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white disabled:opacity-60">
               <option value="" disabled>Select a status…</option>
               <optgroup label="Initial">
                 <option value="under_review">Under Review</option>
@@ -816,7 +745,7 @@
             </label>
             <textarea v-model="batchForm.remarks" rows="3" :disabled="batchSaving"
               placeholder="Add notes or feedback…"
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none resize-none disabled:opacity-60"></textarea>
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none resize-none disabled:opacity-60"></textarea>
           </div>
 
           <p v-if="batchError" class="text-xs text-red-600">{{ batchError }}</p>
@@ -828,7 +757,7 @@
             Cancel
           </button>
           <button @click="doBatchUpdate" :disabled="batchSaving || !batchForm.status"
-            class="px-4 py-2 text-sm bg-[#2a338f] text-white font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-60 transition-colors">
+            class="px-4 py-2 text-sm bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-60 transition-colors">
             <span v-if="batchSaving" class="flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -858,6 +787,9 @@ import AttachmentsModal from './Applications/AttachmentsModal.vue'
 import CredentialsDrawer from './Applications/CredentialsDrawer.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
+import Icon from '@/Components/UI/Icon.vue'
+import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
+import { formatDate, formatDateTime } from '@/utils/dates'
 const { alert } = useConfirm()
 const toast = useToast()
 
@@ -1072,11 +1004,6 @@ function isPast(key, currentStatus) {
 function authHeaders() {
   const token = localStorage.getItem('auth_token')
   return token ? { Authorization: `Bearer ${token}` } : {}
-}
-
-function formatDate(str) {
-  if (!str) return '—'
-  return new Date(str).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 function pendingCount(v) {

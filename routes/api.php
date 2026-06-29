@@ -42,6 +42,7 @@ Route::middleware('throttle:5,1')->post('/login', [AuthController::class, 'login
 Route::middleware('throttle:3,60')->post('/register', [AuthController::class, 'register']);
 
 // Privacy consent re-acknowledgment (for existing users when policy updates)
+Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/email/verification-notification', [AuthController::class, 'resendVerificationApi']);
 Route::middleware(['auth:sanctum'])->post('/privacy-consent', [AuthController::class, 'recordConsent']);
 Route::middleware(['auth:sanctum'])->post('/logout', [AuthController::class, 'logout']);
 Route::middleware(['auth:sanctum'])->post('/change-password', [AuthController::class, 'changePassword']);

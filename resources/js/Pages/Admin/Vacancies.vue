@@ -6,9 +6,9 @@
       <div class="flex gap-2 flex-wrap">
         <input v-model="filters.search" @input="onSearch" type="text"
           placeholder="Search position..."
-          class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none w-52" />
+          class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none w-52" />
         <select v-model="filters.status" @change="fetchVacancies"
-          class="px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+          class="px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
           <option value="">All Status</option>
           <option value="draft">Draft</option>
           <option value="published">Published</option>
@@ -16,27 +16,25 @@
         </select>
       </div>
       <button @click="openCreate"
-        class="flex items-center gap-2 px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-        </svg>
+        class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
+        <Icon name="plus" size="4" />
         New Vacancy
       </button>
     </div>
 
     <!-- Bulk action bar -->
-    <div v-if="selectedIds.length" class="flex items-center gap-3 flex-wrap px-5 py-3 bg-[#2a338f]/5 border border-[#2a338f]/20 rounded-lg mb-4">
+    <div v-if="selectedIds.length" class="flex items-center gap-3 flex-wrap px-5 py-3 bg-primary/5 border border-primary/20 rounded-lg mb-4">
       <span class="text-sm font-medium text-gray-700">{{ selectedIds.length }} selected</span>
       <div class="flex-1"></div>
       <select v-model="bulkStatus"
-        class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
+        class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:outline-none">
         <option value="">Change status to…</option>
         <option value="draft">Draft</option>
         <option value="published">Published</option>
         <option value="closed">Closed</option>
       </select>
       <button @click="bulkApply" :disabled="!bulkStatus || bulkLoading"
-        class="px-4 py-1.5 text-sm font-semibold text-white bg-[#2a338f] hover:bg-[#1e2570] disabled:opacity-50 rounded-lg transition-colors">
+        class="px-4 py-1.5 text-sm font-semibold text-white bg-primary hover:bg-primary-dark disabled:opacity-50 rounded-lg transition-colors">
         <span v-if="bulkLoading" class="flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -54,9 +52,7 @@
 
     <!-- Table -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <div v-if="loading" class="p-8 space-y-3">
-        <div v-for="n in 5" :key="n" class="h-12 bg-gray-100 rounded animate-pulse"></div>
-      </div>
+      <SkeletonLoader v-if="loading" variant="table-row" :count="5" wrapper-class="p-8 space-y-3" />
 
       <div v-else class="overflow-x-auto">
       <table class="w-full min-w-[700px] text-sm">
@@ -64,7 +60,7 @@
           <tr class="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider">
             <th class="px-5 py-3 w-10">
               <input type="checkbox" :checked="selectAll" @change="toggleSelectAll"
-                class="w-4 h-4 rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f]" />
+                class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
             </th>
             <th class="px-5 py-3">Position</th>
             <th class="px-5 py-3">SG</th>
@@ -77,10 +73,10 @@
         </thead>
         <tbody class="divide-y divide-gray-100">
           <tr v-for="v in vacancies" :key="v.id" class="hover:bg-gray-50 transition-colors"
-            :class="selectedIds.includes(v.id) ? 'bg-[#2a338f]/5' : ''">
+            :class="selectedIds.includes(v.id) ? 'bg-primary/5' : ''">
             <td class="px-5 py-3.5">
               <input type="checkbox" :checked="selectedIds.includes(v.id)" @change="toggleSelect(v.id)"
-                class="w-4 h-4 rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f]" />
+                class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
             </td>
             <td class="px-5 py-3.5 font-medium text-gray-900">{{ v.position_title }}</td>
             <td class="px-5 py-3.5 text-gray-600">SG-{{ v.salary_grade }}</td>
@@ -91,7 +87,7 @@
             <td class="px-5 py-3.5">
               <div class="flex items-center justify-end gap-2">
                 <button @click="openEdit(v)"
-                  class="px-2.5 py-1 text-xs font-medium text-[#2a338f] bg-[#2a338f]/10 hover:bg-[#2a338f]/20 rounded-md transition-colors">
+                  class="px-2.5 py-1 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-md transition-colors">
                   Edit
                 </button>
                 <button @click="previewVacancy(v)" :disabled="previewLoading === v.id"
@@ -100,9 +96,7 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                   </svg>
-                  <svg v-else class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                  </svg>
+                  <Icon v-else name="externalLink" size="3" />
                   Preview
                 </button>
                 <button v-if="v.status === 'draft'" @click="changeStatus(v, 'publish')" :disabled="statusLoading === v.id"
@@ -137,14 +131,12 @@
           <tr v-if="!vacancies.length">
             <td colspan="9" class="px-5 py-16 text-center">
               <div class="flex flex-col items-center gap-2">
-                <svg class="w-10 h-10 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
+                <Icon name="briefcase" size="10" class="text-gray-200" />
                 <p class="text-sm font-medium text-gray-400">No vacancies found</p>
                 <button v-if="filters.search || filters.status" @click="filters.search = ''; filters.status = ''; fetchVacancies()"
-                  class="text-xs text-[#2a338f] hover:underline">Clear filters</button>
+                  class="text-xs text-primary hover:underline">Clear filters</button>
                 <button v-else @click="openCreate"
-                  class="text-xs text-[#2a338f] hover:underline">Create your first vacancy</button>
+                  class="text-xs text-primary hover:underline">Create your first vacancy</button>
               </div>
             </td>
           </tr>
@@ -161,21 +153,17 @@
         <div class="flex items-center gap-1">
           <button :disabled="meta.current_page === 1" @click="goPage(meta.current_page - 1)"
             class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
-            </svg>
+            <Icon name="chevronLeft" size="4" />
           </button>
           <button v-for="p in visibleVacancyPages" :key="p" @click="typeof p === 'number' && goPage(p)"
             :disabled="p === '…'"
             :class="['px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
-              p === meta.current_page ? 'bg-[#2a338f] text-white' : p === '…' ? 'text-gray-300 cursor-default' : 'text-gray-600 hover:bg-gray-100']">
+              p === meta.current_page ? 'bg-primary text-white' : p === '…' ? 'text-gray-300 cursor-default' : 'text-gray-600 hover:bg-gray-100']">
             {{ p }}
           </button>
           <button :disabled="meta.current_page === meta.last_page" @click="goPage(meta.current_page + 1)"
             class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 transition-colors">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-            </svg>
+            <Icon name="chevronRight" size="4" />
           </button>
         </div>
       </div>
@@ -203,9 +191,7 @@
           </div>
           <button type="button" @click="showModal = false" aria-label="Close modal"
             class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors flex-shrink-0">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
+            <Icon name="xmark" size="5" />
           </button>
         </div>
 
@@ -214,12 +200,12 @@
           <button v-for="tab in activeTabs" :key="tab.id" type="button" @click="modalTab = tab.id"
             class="relative px-4 py-3 text-sm font-medium transition-colors -mb-px"
             :class="modalTab === tab.id
-              ? 'text-[#2a338f] border-b-2 border-[#2a338f]'
+              ? 'text-primary border-b-2 border-primary'
               : 'text-gray-500 hover:text-gray-800'">
             <span class="flex items-center gap-1.5">
               {{ tab.label }}
               <span v-if="tab.id === 'competencies' && draftAssignments.length"
-                class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#2a338f] text-white text-[9px] font-bold">
+                class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold">
                 {{ draftAssignments.length }}
               </span>
             </span>
@@ -235,17 +221,17 @@
               <div class="col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Position Title <span class="text-red-500">*</span></label>
                 <input v-model="form.position_title" required type="text"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Plantilla Item No. <span class="text-red-500">*</span></label>
                 <input v-model="form.plantilla_no" required type="text"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Salary Grade <span class="text-red-500">*</span></label>
                 <select v-model="form.salary_grade" required
-                  class="w-full px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+                  class="w-full px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
                   <option value="">Select SG</option>
                   <option v-for="n in 33" :key="n" :value="n">SG-{{ n }}</option>
                 </select>
@@ -253,12 +239,12 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Salary (₱)</label>
                 <input v-model="form.monthly_salary" type="number" min="0" step="0.01"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Position Level <span class="text-red-500">*</span></label>
                 <select v-model="form.position_level" required
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none">
                   <option value="" disabled>Select position level</option>
                   <option value="Supervisory">Supervisory</option>
                   <option value="Technical or Non-Supervisory">Technical or Non-Supervisory</option>
@@ -269,16 +255,16 @@
               <div class="col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Place of Assignment <span class="text-red-500">*</span></label>
                 <input v-model="form.place_of_assignment" required type="text"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Application Deadline <span class="text-red-500">*</span></label>
                 <input v-model="form.deadline_at" required type="date"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
               </div>
               <div class="flex items-center gap-2.5 pt-7">
                 <input v-model="form.is_anticipated_vacancy" id="anticipated" type="checkbox"
-                  class="w-4 h-4 rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f]" />
+                  class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
                 <label for="anticipated" class="text-sm text-gray-700 cursor-pointer">Anticipated Vacancy</label>
               </div>
             </div>
@@ -295,7 +281,7 @@
               </label>
               <textarea v-model="form[field.key]" required rows="3"
                 :placeholder="field.placeholder"
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none resize-none"></textarea>
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none resize-none"></textarea>
             </div>
           </div>
 
@@ -306,11 +292,9 @@
             <div class="flex flex-col overflow-hidden" style="max-height: 56vh;">
               <div class="p-3 border-b border-gray-100 flex-shrink-0">
                 <div class="relative">
-                  <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                  </svg>
+                  <Icon name="search" size="3.5" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input v-model="compSearch" type="text" placeholder="Search competencies…"
-                    class="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none" />
+                    class="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
                 </div>
               </div>
               <div class="p-4 overflow-y-auto flex-1">
@@ -327,14 +311,12 @@
                     :class="[
                       'flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer transition-all text-sm select-none',
                       isAssigned(comp.competency_key)
-                        ? 'bg-[#2a338f]/8 border border-[#2a338f]/25 text-gray-900 font-medium'
+                        ? 'bg-primary/8 border border-primary/25 text-gray-900 font-medium'
                         : 'hover:bg-gray-50 border border-transparent text-gray-600'
                     ]">
-                    <div :class="isAssigned(comp.competency_key) ? 'bg-[#2a338f]' : 'bg-gray-200'"
+                    <div :class="isAssigned(comp.competency_key) ? 'bg-primary' : 'bg-gray-200'"
                       class="w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition-colors">
-                      <svg v-if="isAssigned(comp.competency_key)" class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                      </svg>
+                      <Icon v-if="isAssigned(comp.competency_key)" name="check" size="3" class="text-white" />
                     </div>
                     <span class="truncate leading-tight">{{ comp.competency_name }}</span>
                   </div>
@@ -357,9 +339,7 @@
               <div v-if="!draftAssignments.length"
                 class="flex-1 flex flex-col items-center justify-center text-center py-10">
                 <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                  <svg class="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                  </svg>
+                  <Icon name="document" size="5" class="text-gray-300" />
                 </div>
                 <p class="text-sm text-gray-400 font-medium">None assigned yet</p>
                 <p class="text-xs text-gray-300 mt-0.5">Select from the list on the left.</p>
@@ -373,7 +353,7 @@
                     <p class="text-[10px] text-gray-400 mt-0.5">{{ item.competency_group }}</p>
                   </div>
                   <select v-model="item.level"
-                    class="text-xs border border-gray-200 rounded-md px-1.5 pr-7 py-1 bg-white text-gray-700 focus:ring-1 focus:ring-[#2a338f] focus:outline-none flex-shrink-0">
+                    class="text-xs border border-gray-200 rounded-md px-1.5 pr-7 py-1 bg-white text-gray-700 focus:ring-1 focus:ring-primary focus:outline-none flex-shrink-0">
                     <option :value="1">Basic</option>
                     <option :value="2">Intermediate</option>
                     <option :value="3">Advanced</option>
@@ -381,9 +361,7 @@
                   </select>
                   <button type="button" @click="removeAssignment(item.competency_key)" aria-label="Remove competency"
                     class="p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
+                    <Icon name="xmark" size="3.5" />
                   </button>
                 </div>
               </div>
@@ -412,14 +390,14 @@
 
             <!-- On Position tab: Next → -->
             <button v-if="modalTab === 'position'" type="button" @click="modalTab = 'qualifications'"
-              class="px-4 py-2 text-sm bg-[#2a338f] text-white font-semibold rounded-lg hover:bg-[#1e2570] transition-colors">
+              class="px-4 py-2 text-sm bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark transition-colors">
               Next: Qualifications →
             </button>
 
             <!-- On Qualifications tab: Save (or Next if editing) -->
             <template v-else-if="modalTab === 'qualifications'">
               <button type="submit" :disabled="saving"
-                class="px-4 py-2 text-sm bg-[#2a338f] text-white font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-60 transition-colors">
+                class="px-4 py-2 text-sm bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-60 transition-colors">
                 <span v-if="saving" class="flex items-center gap-1.5">
                   <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -434,7 +412,7 @@
             <!-- On Competencies tab: Save competencies -->
             <button v-else-if="modalTab === 'competencies'" type="button"
               @click="saveCompetencies" :disabled="compSaving"
-              class="px-4 py-2 text-sm bg-[#2a338f] text-white font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-60 transition-colors">
+              class="px-4 py-2 text-sm bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-60 transition-colors">
               <span v-if="compSaving" class="flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -490,6 +468,9 @@ import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import VacancyDetailModal from '@/Components/Vacancy/VacancyDetailModal.vue'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
+import Icon from '@/Components/UI/Icon.vue'
+import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
+import { formatDate } from '@/utils/dates'
 
 const toast = useToast()
 const { confirm } = useConfirm()
@@ -789,12 +770,6 @@ async function doDelete() {
   } finally {
     saving.value = false
   }
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────────
-function formatDate(str) {
-  if (!str) return '—'
-  return new Date(str).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 // ── Escape handler ─────────────────────────────────────────────────────────────────
