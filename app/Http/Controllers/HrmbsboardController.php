@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AppointingAuthorityDecision;
 use App\Models\Application;
+use App\Models\AppointingAuthorityDecision;
 use App\Models\BackgroundCheck;
 use App\Models\BackgroundInvestigationReport;
 use App\Models\BeiRating;
@@ -18,13 +18,13 @@ use App\Models\InterviewSchedule;
 use App\Models\PreAssessment;
 use App\Models\QsEvaluation;
 use App\Models\Vacancy;
-use App\Models\User;
 use App\Services\AuditLog;
 use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use ZipArchive;
 
 class HrmbsboardController extends Controller
 {
@@ -45,19 +45,19 @@ class HrmbsboardController extends Controller
     public function assign(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'user_id'     => ['required', Rule::exists('users', 'id')->where('role', 'hrmpsb')],
+            'user_id' => ['required', Rule::exists('users', 'id')->where('role', 'hrmpsb')],
             'hrmpsb_role' => ['required', Rule::in(array_keys(HrmbsboardComposition::ROLES))],
             'member_type' => 'required|in:principal,alternate',
         ]);
 
         $composition = HrmbsboardComposition::updateOrCreate(
             [
-                'user_id'     => $data['user_id'],
+                'user_id' => $data['user_id'],
                 'hrmpsb_role' => $data['hrmpsb_role'],
             ],
             [
                 'member_type' => $data['member_type'],
-                'is_active'   => true,
+                'is_active' => true,
                 'assigned_by' => $request->user()->id,
                 'assigned_at' => now(),
             ]
@@ -108,12 +108,12 @@ class HrmbsboardController extends Controller
             'composition' => $composition,
             'roles' => HrmbsboardComposition::ROLES,
             'user' => [
-                'id'         => $request->user()->id,
+                'id' => $request->user()->id,
                 'first_name' => $request->user()->first_name,
-                'last_name'  => $request->user()->last_name,
-                'full_name'  => $request->user()->full_name,
-                'email'      => $request->user()->email,
-                'role'       => $request->user()->role,
+                'last_name' => $request->user()->last_name,
+                'full_name' => $request->user()->full_name,
+                'email' => $request->user()->email,
+                'role' => $request->user()->role,
             ],
         ]);
     }
@@ -310,7 +310,7 @@ class HrmbsboardController extends Controller
         }
 
         $applications = $vacancy->applications()
-            ->with(['applicant:id,user_id', 'applicant.user:id,first_name,last_name,middle_name,suffix'])
+            ->with(['applicant:id,user_id,pds_path,app_letter_path,ipcr_path,coe_path,tor_path', 'applicant.user:id,first_name,last_name,middle_name,suffix'])
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
             ->orderBy('created_at')
             ->get()
@@ -318,39 +318,126 @@ class HrmbsboardController extends Controller
                 $profile = $app->applicant;
 
                 $docExists = fn ($col) => $profile?->$col && Storage::disk('public')->exists($profile->$col);
-                $docLink   = fn ($col, $type) => $docExists($col) ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}" : null;
+                $docLink = fn ($col, $type) => $docExists($col) ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}" : null;
 
                 return [
-                    'id'              => $app->id,
-                    'anonymized_name' => $app->anonymizationToken?->token ?? ('APP-' . $app->id),
-                    'status'          => $app->status,
-                    'submitted_at'    => $app->submitted_at,
-                    'documents'       => [
-                        'pds'        => $docExists('pds_path'),
-                        'tor'        => $docExists('tor_path'),
+                    'id' => $app->id,
+                    'anonymized_name' => $app->anonymizationToken?->token ?? ('APP-'.$app->id),
+                    'status' => $app->status,
+                    'submitted_at' => $app->submitted_at,
+                    'documents' => [
+                        'pds' => $docExists('pds_path'),
+                        'tor' => $docExists('tor_path'),
                         'app_letter' => $docExists('app_letter_path'),
-                        'ipcr'       => $docExists('ipcr_path'),
-                        'coe'        => $docExists('coe_path'),
+                        'ipcr' => $docExists('ipcr_path'),
+                        'coe' => $docExists('coe_path'),
                     ],
-                    'document_links'  => [
-                        'pds'        => $docLink('pds_path', 'pds'),
-                        'tor'        => $docLink('tor_path', 'tor'),
+                    'document_links' => [
+                        'pds' => $docLink('pds_path', 'pds'),
+                        'tor' => $docLink('tor_path', 'tor'),
                         'app_letter' => $docLink('app_letter_path', 'app_letter'),
-                        'ipcr'       => $docLink('ipcr_path', 'ipcr'),
-                        'coe'        => $docLink('coe_path', 'coe'),
+                        'ipcr' => $docLink('ipcr_path', 'ipcr'),
+                        'coe' => $docLink('coe_path', 'coe'),
                     ],
                 ];
             });
 
         return response()->json([
             'vacancy' => [
-                'id'               => $vacancy->id,
-                'position_title'   => $vacancy->position_title,
-                'plantilla_no'     => $vacancy->plantilla_no,
-                'salary_grade'     => $vacancy->salary_grade,
+                'id' => $vacancy->id,
+                'position_title' => $vacancy->position_title,
+                'plantilla_no' => $vacancy->plantilla_no,
+                'salary_grade' => $vacancy->salary_grade,
                 'place_of_assignment' => $vacancy->place_of_assignment,
             ],
             'applicants' => $applications,
         ]);
+    }
+
+    public function downloadRequirements(Request $request, Vacancy $vacancy)
+    {
+        $user = $request->user();
+
+        $isAdmin = $user->canAccessAdminModule();
+        $isMember = HrmbsboardComposition::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->exists();
+
+        if (! $isAdmin && ! $isMember) {
+            abort(403);
+        }
+
+        $data = $request->validate([
+            'application_ids' => 'required|array|min:1',
+            'application_ids.*' => 'integer|exists:applications,id',
+            'document_type' => 'required|in:pds,app_letter,ipcr,coe,tor,all',
+        ]);
+
+        $docTypes = $data['document_type'] === 'all'
+            ? ['pds', 'app_letter', 'ipcr', 'coe', 'tor']
+            : [$data['document_type']];
+
+        $pathMap = [
+            'pds' => 'pds_path',
+            'app_letter' => 'app_letter_path',
+            'ipcr' => 'ipcr_path',
+            'coe' => 'coe_path',
+            'tor' => 'tor_path',
+        ];
+
+        $labelMap = [
+            'pds' => 'PDS',
+            'app_letter' => 'App_Letter',
+            'ipcr' => 'IPCR',
+            'coe' => 'COE',
+            'tor' => 'TOR',
+        ];
+
+        $zip = new ZipArchive;
+        $tmpPath = tempnam(sys_get_temp_dir(), 'req_');
+        $zipName = 'Requirements_'.now()->format('Y-m-d_His').'.zip';
+
+        if ($zip->open($tmpPath, ZipArchive::CREATE) !== true) {
+            return response()->json(['message' => 'Failed to create archive.'], 500);
+        }
+
+        $added = 0;
+
+        foreach ($data['application_ids'] as $appId) {
+            $application = Application::with('applicant')->find($appId);
+            if (! $application || ! $application->applicant) {
+                continue;
+            }
+
+            $profile = $application->applicant;
+            $folderName = 'APP-'.$appId;
+
+            foreach ($docTypes as $type) {
+                $col = $pathMap[$type];
+                $path = $profile->{$col};
+
+                if (! $path || ! Storage::disk('public')->exists($path)) {
+                    continue;
+                }
+
+                $ext = pathinfo($path, PATHINFO_EXTENSION);
+                $fileName = "{$folderName}/{$labelMap[$type]}.{$ext}";
+                $fullPath = Storage::disk('public')->path($path);
+
+                if ($zip->addFile($fullPath, $fileName)) {
+                    $added++;
+                }
+            }
+        }
+
+        $zip->close();
+
+        if ($added === 0) {
+            unlink($tmpPath);
+
+            return response()->json(['message' => 'No documents found for the selected applicants and document type.'], 404);
+        }
+
+        return response()->download($tmpPath, $zipName)->deleteFileAfterSend(true);
     }
 }

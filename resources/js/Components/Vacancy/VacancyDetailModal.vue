@@ -51,12 +51,8 @@
                 <h3 class="text-xs font-semibold text-[#2a338f] uppercase tracking-wider mb-3">Position Information</h3>
                 <dl class="space-y-2.5">
                   <div class="flex gap-3">
-                    <dt class="w-28 sm:w-36 flex-shrink-0 text-xs text-gray-400 font-medium pt-0.5">Item No.</dt>
+                    <dt class="w-28 sm:w-36 flex-shrink-0 text-xs text-gray-400 font-medium pt-0.5">Plantilla Item No.</dt>
                     <dd class="text-sm text-gray-800 break-words min-w-0">{{ vacancy.plantilla_no || '—' }}</dd>
-                  </div>
-                  <div class="flex gap-3">
-                    <dt class="w-28 sm:w-36 flex-shrink-0 text-xs text-gray-400 font-medium pt-0.5">Plantilla No.</dt>
-
                   </div>
                   <div class="flex gap-3">
                     <dt class="w-28 sm:w-36 flex-shrink-0 text-xs text-gray-400 font-medium pt-0.5">Salary Grade</dt>
@@ -141,9 +137,9 @@
                               </svg>
                             </button>
                             <div v-if="activeTooltip === comp.competency_key"
-                              class="absolute bottom-full right-0 mb-1 w-64 bg-gray-900 text-white text-xs rounded-lg p-2.5 z-10 shadow-xl">
+                              class="absolute top-full right-0 mt-1 w-64 bg-gray-900 text-white text-xs rounded-lg p-2.5 z-10 shadow-xl">
                               {{ comp.description }}
-                              <div class="absolute top-full right-3 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                              <div class="absolute bottom-full right-3 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900"></div>
                             </div>
                           </div>
                         </div>
@@ -165,10 +161,10 @@
 
         <!-- Footer -->
         <div class="p-4 sm:p-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-          <p class="text-xs text-gray-400">
+          <p v-if="!preview" class="text-xs text-gray-400">
             Make sure you meet the qualifications before applying.
           </p>
-          <div class="flex gap-3 w-full sm:w-auto">
+          <div v-if="!preview" class="flex gap-3 w-full sm:w-auto">
             <button @click="$emit('close')"
               class="flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
               Cancel
@@ -188,10 +184,15 @@
               </svg>
             </Link>
           </div>
+          <button v-else @click="$emit('close')"
+            class="ml-auto px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors shadow-sm">
+            Close
+          </button>
         </div>
 
       </div>
     </div>
+
   </Teleport>
 </template>
 
@@ -202,6 +203,7 @@ import { Link } from '@inertiajs/vue3'
 const props = defineProps({
   vacancy:    { type: Object, required: true },
   appliedIds: { type: Array,  default: () => [] },
+  preview:    { type: Boolean, default: false },
 })
 
 defineEmits(['close'])

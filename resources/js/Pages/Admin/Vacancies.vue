@@ -94,13 +94,17 @@
                   class="px-2.5 py-1 text-xs font-medium text-[#2a338f] bg-[#2a338f]/10 hover:bg-[#2a338f]/20 rounded-md transition-colors">
                   Edit
                 </button>
-                <Link :href="`/vacancies/${v.id}/apply`" target="_blank"
-                  class="px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors inline-flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <button @click="previewVacancy(v)" :disabled="previewLoading === v.id"
+                  class="px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors inline-flex items-center gap-1 disabled:opacity-60">
+                  <svg v-if="previewLoading === v.id" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                  </svg>
+                  <svg v-else class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                   </svg>
                   Preview
-                </Link>
+                </button>
                 <button v-if="v.status === 'draft'" @click="changeStatus(v, 'publish')" :disabled="statusLoading === v.id"
                   class="px-2.5 py-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-md transition-colors disabled:opacity-60">
                   <span v-if="statusLoading === v.id" class="flex items-center gap-1">
@@ -466,6 +470,13 @@
       </div>
     </div>
 
+    <VacancyDetailModal
+      v-if="showPreview && previewVacancyData"
+      :vacancy="previewVacancyData"
+      :applied-ids="[]"
+      preview
+      @close="showPreview = false"
+    />
   </AdminLayout>
 </template>
 
@@ -476,6 +487,7 @@ import { debounce } from 'lodash-es'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
+import VacancyDetailModal from '@/Components/Vacancy/VacancyDetailModal.vue'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 
@@ -553,6 +565,24 @@ const activeTabs = computed(() => {
   if (editingId.value) base.push({ id: 'competencies', label: 'Competencies' })
   return base
 })
+
+const showPreview      = ref(false)
+const previewVacancyData = ref(null)
+const previewLoading   = ref(null)
+
+async function previewVacancy(v) {
+  previewLoading.value = v.id
+  try {
+    const { data } = await axios.get(`/api/vacancies/${v.id}`, { headers: authHeaders() })
+    previewVacancyData.value = data.data ?? data
+    showPreview.value = true
+  } catch {
+    previewVacancyData.value = v
+    showPreview.value = true
+  } finally {
+    previewLoading.value = null
+  }
+}
 
 const filters = reactive({ search: '', status: '', page: 1 })
 

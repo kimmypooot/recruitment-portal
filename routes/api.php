@@ -17,6 +17,8 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EoptController;
 use App\Http\Controllers\ExaminationController;
 use App\Http\Controllers\ExamResultController;
+use App\Http\Controllers\ExportController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\HrmbsboardController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\NotificationController;
@@ -27,8 +29,6 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VacancyCompetencyController;
 use App\Http\Controllers\VacancyController;
-use App\Http\Controllers\ExportController;
-use App\Http\Controllers\FeedbackController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -153,6 +153,7 @@ Route::middleware(['auth:sanctum', 'role:hrmpsb,admin'])->group(function () {
     Route::get('/hrmpsb/applications/{application}/profile', [HrmbsboardController::class, 'applicantProfile']);
     Route::get('/hrmpsb/applications/{application}/documents/{type}', [HrmbsboardController::class, 'serveDocument']);
     Route::get('/hrmpsb/vacancies/{vacancy}/applicants', [HrmbsboardController::class, 'vacancyApplicants']);
+    Route::post('/hrmpsb/vacancies/{vacancy}/download-requirements', [HrmbsboardController::class, 'downloadRequirements']);
     // QS Evaluation
     Route::get('/qs-evaluations/{vacancy}', [QsEvaluationController::class, 'index']);
     Route::post('/qs-evaluations', [QsEvaluationController::class, 'store']);
@@ -232,5 +233,3 @@ Route::middleware(['auth:sanctum', 'role:hrmpsb,admin'])->group(function () {
     Route::post('/background-investigation/resend-link/{report}', [BackgroundInvestigationController::class, 'resendLink']);
     Route::delete('/background-investigation/revoke-link/{report}', [BackgroundInvestigationController::class, 'revokeLink']);
 });
-
-

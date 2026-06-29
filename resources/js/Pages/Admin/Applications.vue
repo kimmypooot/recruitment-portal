@@ -858,7 +858,6 @@ import AttachmentsModal from './Applications/AttachmentsModal.vue'
 import CredentialsDrawer from './Applications/CredentialsDrawer.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
-
 const { alert } = useConfirm()
 const toast = useToast()
 
@@ -1075,6 +1074,11 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
+function formatDate(str) {
+  if (!str) return '—'
+  return new Date(str).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
 function pendingCount(v) {
   const b = v.status_breakdown ?? {}
   return (b.submitted ?? 0) + (b.under_review ?? 0)
@@ -1095,11 +1099,6 @@ function initials(user) {
     return ((user.first_name?.[0] ?? '') + (user.last_name?.[0] ?? '')).toUpperCase() || '?'
   }
   return String(user ?? '').split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase() || '?'
-}
-
-function formatDate(str) {
-  if (!str) return '—'
-  return new Date(str).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 function formatMoney(amount) {

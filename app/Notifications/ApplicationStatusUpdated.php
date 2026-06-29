@@ -9,15 +9,18 @@ use Illuminate\Notifications\Notification;
 class ApplicationStatusUpdated extends Notification
 {
     private readonly string $applicantName;
+
     private readonly string $positionTitle;
+
     private readonly string $newStatusLabel;
 
     public function __construct(
         private readonly Application $application,
         private readonly string $oldStatus,
         private readonly string $newStatus,
+        public bool $silent = false,
     ) {
-        $profile       = $this->application->applicant;
+        $profile = $this->application->applicant;
         $this->applicantName = $profile ? trim("{$profile->first_name} {$profile->last_name}") : 'Applicant';
         $this->positionTitle = $this->application->vacancy?->position_title ?? 'the applied position';
         $this->newStatusLabel = $this->formatLabel($this->newStatus);
@@ -25,7 +28,7 @@ class ApplicationStatusUpdated extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->silent ? ['database'] : ['mail', 'database'];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -50,31 +53,31 @@ class ApplicationStatusUpdated extends Notification
     {
         return [
             'application_id' => $this->application->id,
-            'vacancy_title'  => $this->positionTitle,
-            'old_status'     => $this->oldStatus,
-            'new_status'     => $this->newStatus,
-            'message'        => $this->statusDetails()['headline'],
+            'vacancy_title' => $this->positionTitle,
+            'old_status' => $this->oldStatus,
+            'new_status' => $this->newStatus,
+            'message' => $this->statusDetails()['headline'],
         ];
     }
 
     private function formatLabel(string $status): string
     {
         return match ($status) {
-            'submitted'      => 'Submitted',
-            'under_review'   => 'Under Review',
-            'screened'       => 'Screened',
-            'qualified'      => 'Qualified',
-            'disqualified'   => 'Not Qualified',
+            'submitted' => 'Submitted',
+            'under_review' => 'Under Review',
+            'screened' => 'Screened',
+            'qualified' => 'Qualified',
+            'disqualified' => 'Not Qualified',
             'exam_scheduled' => 'Exam Scheduled',
-            'shortlisted'    => 'Shortlisted',
-            'for_interview'  => 'For Interview',
-            'interviewed'    => 'Interviewed',
-            'recommended'    => 'Recommended',
-            'appointed'      => 'Appointed',
-            'completed'      => 'Completed',
-            'withdrawn'      => 'Withdrawn',
-            'failed'         => 'Not Passed',
-            default          => ucfirst(str_replace('_', ' ', $status)),
+            'shortlisted' => 'Shortlisted',
+            'for_interview' => 'For Interview',
+            'interviewed' => 'Interviewed',
+            'recommended' => 'Recommended',
+            'appointed' => 'Appointed',
+            'completed' => 'Completed',
+            'withdrawn' => 'Withdrawn',
+            'failed' => 'Not Passed',
+            default => ucfirst(str_replace('_', ' ', $status)),
         };
     }
 

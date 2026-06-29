@@ -8,13 +8,15 @@ use App\Models\HrmbsboardComposition;
 use App\Models\Vacancy;
 use App\Models\VacancyCompetency;
 use App\Services\AuditLog;
+use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class BeiRatingController extends Controller
 {
-    use \App\Traits\FormatsApplicantName;
+    use FormatsApplicantName;
+
     private function getComposition(int $userId): ?HrmbsboardComposition
     {
         return HrmbsboardComposition::where('user_id', $userId)
@@ -37,7 +39,7 @@ class BeiRatingController extends Controller
         $isSecretariat = $user->canAccessAdminModule() || $this->isSecretariat($user->id);
         $composition = $this->getComposition($user->id);
 
-        if (!$isSecretariat && !$composition) {
+        if (! $isSecretariat && ! $composition) {
             return response()->json(['message' => 'You are not an active HRMPSB member or HR-Chief.'], 403);
         }
 
@@ -52,26 +54,26 @@ class BeiRatingController extends Controller
                 $profile = $app->applicant;
 
                 $docExists = fn ($col) => $profile?->$col && Storage::disk('public')->exists($profile->$col);
-                $docLink   = fn ($col, $type) => $docExists($col) ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}" : null;
+                $docLink = fn ($col, $type) => $docExists($col) ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}" : null;
 
                 $base = [
-                    'id'       => $app->id,
-                    'token'    => $token?->token ?? 'NO-TOKEN',
+                    'id' => $app->id,
+                    'token' => $token?->token ?? 'NO-TOKEN',
                     'unmasked' => $isUnmasked,
-                    'name'     => $isUnmasked ? $this->formatApplicantName($profile) : null,
+                    'name' => $isUnmasked ? $this->formatApplicantName($profile) : null,
                     'documents' => [
-                        'has_pds'        => $docExists('pds_path'),
-                        'has_tor'        => $docExists('tor_path'),
+                        'has_pds' => $docExists('pds_path'),
+                        'has_tor' => $docExists('tor_path'),
                         'has_app_letter' => $docExists('app_letter_path'),
-                        'has_ipcr'       => $docExists('ipcr_path'),
-                        'has_coe'        => $docExists('coe_path'),
+                        'has_ipcr' => $docExists('ipcr_path'),
+                        'has_coe' => $docExists('coe_path'),
                     ],
                     'document_links' => [
-                        'pds'        => $docLink('pds_path', 'pds'),
-                        'tor'        => $docLink('tor_path', 'tor'),
+                        'pds' => $docLink('pds_path', 'pds'),
+                        'tor' => $docLink('tor_path', 'tor'),
                         'app_letter' => $docLink('app_letter_path', 'app_letter'),
-                        'ipcr'       => $docLink('ipcr_path', 'ipcr'),
-                        'coe'        => $docLink('coe_path', 'coe'),
+                        'ipcr' => $docLink('ipcr_path', 'ipcr'),
+                        'coe' => $docLink('coe_path', 'coe'),
                     ],
                 ];
 
@@ -80,10 +82,10 @@ class BeiRatingController extends Controller
                         ->with('evaluator:id,first_name,last_name,middle_name,suffix')
                         ->get()
                         ->map(fn ($r) => [
-                            'evaluator'         => $r->evaluator?->full_name,
+                            'evaluator' => $r->evaluator?->full_name,
                             'competency_scores' => $r->competency_scores,
-                            'total_rating'      => $r->total_rating,
-                            'locked'            => $r->isLocked(),
+                            'total_rating' => $r->total_rating,
+                            'locked' => $r->isLocked(),
                         ]);
                 } else {
                     $base['my_rating'] = BeiRating::where('application_id', $app->id)
@@ -100,20 +102,20 @@ class BeiRatingController extends Controller
             ->sortBy(fn ($vc) => [$vc->competency?->competency_group, $vc->competency?->sort_order])
             ->mapWithKeys(fn ($vc) => [
                 $vc->competency_key => [
-                    'name'        => $vc->competency?->competency_name ?? $vc->competency_key,
-                    'group'       => $vc->competency?->competency_group ?? 'Core',
-                    'level'       => $vc->competency_level,
+                    'name' => $vc->competency?->competency_name ?? $vc->competency_key,
+                    'group' => $vc->competency?->competency_group ?? 'Core',
+                    'level' => $vc->competency_level,
                     'description' => $vc->competency?->description,
                 ],
             ]);
 
         return response()->json([
-            'vacancy'        => $vacancy->only(
+            'vacancy' => $vacancy->only(
                 'id', 'position_title', 'plantilla_no', 'salary_grade',
                 'place_of_assignment', 'status', 'published_at'
             ),
-            'competencies'   => $vacancyCompetencies,
-            'applications'   => $applications,
+            'competencies' => $vacancyCompetencies,
+            'applications' => $applications,
             'is_secretariat' => $isSecretariat,
         ]);
     }
@@ -121,10 +123,10 @@ class BeiRatingController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'application_id'      => 'required|exists:applications,id',
-            'competency_scores'   => 'required|array',
+            'application_id' => 'required|exists:applications,id',
+            'competency_scores' => 'required|array',
             'competency_scores.*' => 'required|integer|min:1|max:5',
-            'remarks'             => 'nullable|string|max:1000',
+            'remarks' => 'nullable|string|max:1000',
         ]);
 
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
@@ -136,7 +138,7 @@ class BeiRatingController extends Controller
             ->toArray();
 
         $unknownKeys = array_diff(array_keys($data['competency_scores']), $validKeys);
-        if (!empty($unknownKeys)) {
+        if (! empty($unknownKeys)) {
             return response()->json([
                 'message' => 'One or more competency scores do not match this vacancy\'s assigned competencies.',
             ], 422);
@@ -159,8 +161,8 @@ class BeiRatingController extends Controller
             ['application_id' => $data['application_id'], 'evaluator_id' => $user->id],
             [
                 'competency_scores' => $data['competency_scores'],
-                'remarks'           => $data['remarks'] ?? null,
-                'rated_at'          => now(),
+                'remarks' => $data['remarks'] ?? null,
+                'rated_at' => now(),
             ]
         );
 
@@ -186,10 +188,14 @@ class BeiRatingController extends Controller
             ->whereNull('locked_at')
             ->update(['locked_at' => now()]);
 
+        Application::whereIn('id', $applicationIds)
+            ->where('status', 'for_interview')
+            ->update(['status' => 'interviewed', 'reviewed_at' => now()]);
+
         AuditLog::record('bei_ratings_locked', $vacancy);
 
         return response()->json([
-            'message'      => 'BEI ratings locked successfully.',
+            'message' => 'BEI ratings locked successfully.',
             'locked_count' => $count,
         ]);
     }

@@ -8,12 +8,13 @@ use App\Models\HrmbsboardComposition;
 use App\Models\Vacancy;
 use App\Models\VacancyCompetency;
 use App\Services\AuditLog;
+use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CbweRatingController extends Controller
 {
-    use \App\Traits\FormatsApplicantName;
+    use FormatsApplicantName;
 
     private function getComposition(int $userId): ?HrmbsboardComposition
     {
@@ -37,7 +38,7 @@ class CbweRatingController extends Controller
         $isSecretariat = $user->canAccessAdminModule() || $this->isSecretariat($user->id);
         $composition = $this->getComposition($user->id);
 
-        if (!$isSecretariat && !$composition) {
+        if (! $isSecretariat && ! $composition) {
             return response()->json(['message' => 'You are not an active HRMPSB member or HR-Chief.'], 403);
         }
 
@@ -53,10 +54,10 @@ class CbweRatingController extends Controller
                 $profile = $app->applicant;
 
                 $base = [
-                    'id'       => $app->id,
-                    'token'    => $token?->token ?? 'NO-TOKEN',
+                    'id' => $app->id,
+                    'token' => $token?->token ?? 'NO-TOKEN',
                     'unmasked' => $isUnmasked,
-                    'name'     => $isUnmasked ? $this->formatApplicantName($profile) : null,
+                    'name' => $isUnmasked ? $this->formatApplicantName($profile) : null,
                 ];
 
                 if ($isSecretariat) {
@@ -64,10 +65,10 @@ class CbweRatingController extends Controller
                         ->with('evaluator:id,first_name,last_name,middle_name,suffix')
                         ->get()
                         ->map(fn ($r) => [
-                            'evaluator'         => $r->evaluator?->full_name,
+                            'evaluator' => $r->evaluator?->full_name,
                             'competency_scores' => $r->competency_scores,
-                            'total_rating'      => $r->total_rating,
-                            'locked'            => $r->isLocked(),
+                            'total_rating' => $r->total_rating,
+                            'locked' => $r->isLocked(),
                         ]);
                 } else {
                     $base['my_rating'] = CbweRating::where('application_id', $app->id)
@@ -86,39 +87,38 @@ class CbweRatingController extends Controller
             ->sortBy(fn ($vc) => [$vc->competency?->competency_group, $vc->competency?->sort_order])
             ->mapWithKeys(fn ($vc) => [
                 $vc->competency_key => [
-                    'name'        => $vc->competency?->competency_name ?? $vc->competency_key,
-                    'group'       => $vc->competency?->competency_group ?? 'Core',
-                    'level'       => $vc->competency_level,
+                    'name' => $vc->competency?->competency_name ?? $vc->competency_key,
+                    'group' => $vc->competency?->competency_group ?? 'Core',
+                    'level' => $vc->competency_level,
                     'description' => $vc->competency?->description,
                 ],
             ]);
 
         $allLocked = $applications->isNotEmpty()
-            && $applications->every(fn ($app) =>
-                CbweRating::where('application_id', $app['id'])
-                    ->whereNotNull('locked_at')
-                    ->exists()
+            && $applications->every(fn ($app) => CbweRating::where('application_id', $app['id'])
+                ->whereNotNull('locked_at')
+                ->exists()
             );
 
         return response()->json([
-            'vacancy'        => $vacancy->only(
+            'vacancy' => $vacancy->only(
                 'id', 'position_title', 'plantilla_no', 'salary_grade',
                 'place_of_assignment', 'status', 'published_at'
             ),
-            'competencies'   => $vacancyCompetencies,
-            'applications'   => $applications,
+            'competencies' => $vacancyCompetencies,
+            'applications' => $applications,
             'is_secretariat' => $isSecretariat,
-            'all_locked'     => $allLocked,
+            'all_locked' => $allLocked,
         ]);
     }
 
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'application_id'      => 'required|exists:applications,id',
-            'competency_scores'   => 'required|array',
+            'application_id' => 'required|exists:applications,id',
+            'competency_scores' => 'required|array',
             'competency_scores.*' => 'required|integer|min:1|max:5',
-            'remarks'             => 'nullable|string|max:1000',
+            'remarks' => 'nullable|string|max:1000',
         ]);
 
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
@@ -131,7 +131,7 @@ class CbweRatingController extends Controller
             ->toArray();
 
         $unknownKeys = array_diff(array_keys($data['competency_scores']), $validKeys);
-        if (!empty($unknownKeys)) {
+        if (! empty($unknownKeys)) {
             return response()->json([
                 'message' => 'One or more competency scores do not match the vacancy\'s CBWE competencies.',
             ], 422);
@@ -154,8 +154,8 @@ class CbweRatingController extends Controller
             ['application_id' => $data['application_id'], 'evaluator_id' => $user->id],
             [
                 'competency_scores' => $data['competency_scores'],
-                'remarks'           => $data['remarks'] ?? null,
-                'rated_at'          => now(),
+                'remarks' => $data['remarks'] ?? null,
+                'rated_at' => now(),
             ]
         );
 
@@ -180,10 +180,14 @@ class CbweRatingController extends Controller
             ->whereNull('locked_at')
             ->update(['locked_at' => now()]);
 
+        Application::whereIn('id', $applicationIds)
+            ->where('status', 'exam_scheduled')
+            ->update(['status' => 'shortlisted', 'reviewed_at' => now()]);
+
         AuditLog::record('cbwe_ratings_locked', $vacancy);
 
         return response()->json([
-            'message'      => 'CBWE ratings locked successfully.',
+            'message' => 'CBWE ratings locked successfully.',
             'locked_count' => $count,
         ]);
     }

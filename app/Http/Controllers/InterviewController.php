@@ -8,9 +8,11 @@ use App\Models\ExamResult;
 use App\Models\HrmbsboardComposition;
 use App\Models\InterviewSchedule;
 use App\Models\Vacancy;
+use App\Notifications\ApplicationStatusUpdated;
 use App\Notifications\InterviewScheduled;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class InterviewController extends Controller
 {
@@ -22,13 +24,14 @@ class InterviewController extends Controller
         if ($user->canAccessAdminModule()) {
             return true;
         }
+
         return HrmbsboardComposition::where('user_id', $user->id)
             ->whereIn('hrmpsb_role', ['secretariat', 'hr-chief'])
             ->where('is_active', true)
             ->exists();
     }
 
-    private function examPasserIds($appIds): \Illuminate\Support\Collection
+    private function examPasserIds($appIds): Collection
     {
         $results = ExamResult::whereIn('application_id', $appIds)->get()->groupBy('application_id');
         $cbweIds = CbweRating::whereIn('application_id', $appIds)
@@ -40,6 +43,7 @@ class InterviewController extends Controller
             $group = $results->get($id, collect());
             $passedTwe = $group->isNotEmpty() && $group->every(fn ($r) => $r->percentage >= self::PASSING_THRESHOLD);
             $completedCbwe = $cbweIds->contains($id);
+
             return $passedTwe && $completedCbwe;
         })->values();
     }
@@ -55,9 +59,9 @@ class InterviewController extends Controller
     {
         $data = $request->validate([
             'application_id' => 'required|exists:applications,id',
-            'scheduled_at'   => 'required|date|after:now',
-            'venue'          => 'required|string|max:255',
-            'notes'          => 'nullable|string|max:1000',
+            'scheduled_at' => 'required|date|after:now',
+            'venue' => 'required|string|max:255',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $interview = InterviewSchedule::create($data);
@@ -74,8 +78,8 @@ class InterviewController extends Controller
     {
         $data = $request->validate([
             'scheduled_at' => 'sometimes|required|date',
-            'venue'        => 'sometimes|required|string|max:255',
-            'notes'        => 'nullable|string|max:1000',
+            'venue' => 'sometimes|required|string|max:255',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $interview->update($data);
@@ -110,13 +114,13 @@ class InterviewController extends Controller
             ->orderBy('id')
             ->get()
             ->map(fn ($app) => [
-                'id'           => $app->id,
-                'token'        => $app->anonymizationToken?->token ?? ('APP-' . $app->id),
-                'status'       => $app->status,
+                'id' => $app->id,
+                'token' => $app->anonymizationToken?->token ?? ('APP-'.$app->id),
+                'status' => $app->status,
                 'exam_results' => $app->examResults->map(fn ($r) => [
-                    'exam_type'  => $r->exam_type,
+                    'exam_type' => $r->exam_type,
                     'percentage' => $r->percentage,
-                    'passed'     => $r->percentage >= self::PASSING_THRESHOLD,
+                    'passed' => $r->percentage >= self::PASSING_THRESHOLD,
                 ]),
                 'cbwe_average' => $app->cbweRatings->whereNotNull('locked_at')->count() > 0
                     ? round($app->cbweRatings->whereNotNull('locked_at')->avg('total_rating'), 2)
@@ -124,46 +128,55 @@ class InterviewController extends Controller
             ]);
 
         return response()->json([
-            'vacancy'           => $vacancy->only('id', 'position_title', 'plantilla_no', 'salary_grade', 'place_of_assignment', 'status', 'published_at', 'deadline_at'),
-            'can_schedule'      => $this->isSecretary($request),
-            'applications'      => $applications,
-            'schedules'         => $schedules,
+            'vacancy' => $vacancy->only('id', 'position_title', 'plantilla_no', 'salary_grade', 'place_of_assignment', 'status', 'published_at', 'deadline_at'),
+            'can_schedule' => $this->isSecretary($request),
+            'applications' => $applications,
+            'schedules' => $schedules,
             'passing_threshold' => self::PASSING_THRESHOLD,
         ]);
     }
 
-public function storeHrmpsb(Request $request): JsonResponse
-        {
-            if (! $this->isSecretary($request)) {
-                return response()->json(['message' => 'Only the HRMPSB Secretariat, Admin, HR-Manager, or HR-Chief can schedule BEI.'], 403);
-            }
-
-            $data = $request->validate([
-                'application_id' => 'required|exists:applications,id',
-                'scheduled_at'   => 'required|date',
-                'venue'          => 'required|string|max:255',
-                'notes'          => 'nullable|string|max:1000',
-            ]);
-
-            $interview = InterviewSchedule::updateOrCreate(
-                ['application_id' => $data['application_id']],
-                ['scheduled_at' => $data['scheduled_at'], 'venue' => $data['venue'], 'notes' => $data['notes'] ?? null]
-            );
-
-            return response()->json($interview, 201);
+    public function storeHrmpsb(Request $request): JsonResponse
+    {
+        if (! $this->isSecretary($request)) {
+            return response()->json(['message' => 'Only the HRMPSB Secretariat, Admin, HR-Manager, or HR-Chief can schedule BEI.'], 403);
         }
 
-public function batchSchedule(Request $request, Vacancy $vacancy): JsonResponse
-        {
-            if (! $this->isSecretary($request)) {
-                return response()->json(['message' => 'Only the HRMPSB Secretariat, Admin, HR-Manager, or HR-Chief can schedule BEI.'], 403);
-            }
+        $data = $request->validate([
+            'application_id' => 'required|exists:applications,id',
+            'scheduled_at' => 'required|date',
+            'venue' => 'required|string|max:255',
+            'notes' => 'nullable|string|max:1000',
+        ]);
 
-            $data = $request->validate([
-                'scheduled_at' => 'required|date',
-                'venue'        => 'required|string|max:255',
-                'notes'        => 'nullable|string|max:1000',
-            ]);
+        $interview = InterviewSchedule::updateOrCreate(
+            ['application_id' => $data['application_id']],
+            ['scheduled_at' => $data['scheduled_at'], 'venue' => $data['venue'], 'notes' => $data['notes'] ?? null]
+        );
+
+        $application = Application::find($data['application_id']);
+        if ($application && $application->status === 'shortlisted') {
+            $oldStatus = $application->status;
+            $application->update(['status' => 'for_interview', 'reviewed_at' => now()]);
+            if ($user = $application->applicant?->user) {
+                $user->notify(new ApplicationStatusUpdated($application, $oldStatus, 'for_interview', silent: true));
+            }
+        }
+
+        return response()->json($interview, 201);
+    }
+
+    public function batchSchedule(Request $request, Vacancy $vacancy): JsonResponse
+    {
+        if (! $this->isSecretary($request)) {
+            return response()->json(['message' => 'Only the HRMPSB Secretariat, Admin, HR-Manager, or HR-Chief can schedule BEI.'], 403);
+        }
+
+        $data = $request->validate([
+            'scheduled_at' => 'required|date',
+            'venue' => 'required|string|max:255',
+            'notes' => 'nullable|string|max:1000',
+        ]);
 
         $appIds = Application::where('vacancy_id', $vacancy->id)
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
@@ -178,28 +191,33 @@ public function batchSchedule(Request $request, Vacancy $vacancy): JsonResponse
             );
         }
 
+        Application::whereIn('id', $passerIds)
+            ->where('status', 'shortlisted')
+            ->update(['status' => 'for_interview', 'reviewed_at' => now()]);
+
         return response()->json(['scheduled' => $passerIds->count()]);
     }
 
-public function notifyApplicants(Request $request, Vacancy $vacancy): JsonResponse
-        {
-            if (! $this->isSecretary($request)) {
-                return response()->json(['message' => 'Only the HRMPSB Secretariat, Admin, HR-Manager, or HR-Chief can send notifications.'], 403);
-            }
+    public function notifyApplicants(Request $request, Vacancy $vacancy): JsonResponse
+    {
+        if (! $this->isSecretary($request)) {
+            return response()->json(['message' => 'Only the HRMPSB Secretariat, Admin, HR-Manager, or HR-Chief can send notifications.'], 403);
+        }
 
         $data = $request->validate([
-            'application_ids'   => 'required|array|min:1',
+            'application_ids' => 'required|array|min:1',
             'application_ids.*' => 'integer|exists:applications,id',
         ]);
 
         $notified = 0;
-        $skipped  = 0;
+        $skipped = 0;
 
         foreach ($data['application_ids'] as $appId) {
             $schedule = InterviewSchedule::where('application_id', $appId)->first();
 
             if (! $schedule) {
                 $skipped++;
+
                 continue;
             }
 
@@ -210,6 +228,7 @@ public function notifyApplicants(Request $request, Vacancy $vacancy): JsonRespon
 
             if (! $user) {
                 $skipped++;
+
                 continue;
             }
 
@@ -219,7 +238,7 @@ public function notifyApplicants(Request $request, Vacancy $vacancy): JsonRespon
 
         return response()->json([
             'notified' => $notified,
-            'skipped'  => $skipped,
+            'skipped' => $skipped,
         ]);
     }
 }

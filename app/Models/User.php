@@ -46,7 +46,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function getFullNameAttribute(): string
     {
-        $middle = $this->middle_name ? ' ' . $this->middle_name . ' ' : ' ';
+        $middle = $this->middle_name ? ' ' . mb_substr($this->middle_name, 0, 1) . '. ' : ' ';
         $suffix = $this->suffix ? ', ' . $this->suffix : '';
         return $this->first_name . $middle . $this->last_name . $suffix;
     }

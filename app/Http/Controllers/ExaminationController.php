@@ -6,6 +6,7 @@ use App\Models\Application;
 use App\Models\ExamSchedule;
 use App\Models\HrmbsboardComposition;
 use App\Models\Vacancy;
+use App\Notifications\ApplicationStatusUpdated;
 use App\Notifications\ExaminationScheduled;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class ExaminationController extends Controller
         if ($user->canAccessAdminModule()) {
             return true;
         }
+
         return HrmbsboardComposition::where('user_id', $user->id)
             ->whereIn('hrmpsb_role', ['secretariat', 'hr-chief'])
             ->where('is_active', true)
@@ -35,10 +37,10 @@ class ExaminationController extends Controller
     {
         $data = $request->validate([
             'application_id' => 'required|exists:applications,id',
-            'exam_type'      => 'nullable|in:TWE,CBWE',
-            'scheduled_at'   => 'required|date|after:now',
-            'venue'          => 'required|string|max:255',
-            'notes'          => 'nullable|string|max:1000',
+            'exam_type' => 'nullable|in:TWE,CBWE',
+            'scheduled_at' => 'required|date|after:now',
+            'venue' => 'required|string|max:255',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $exam = ExamSchedule::create($data);
@@ -55,8 +57,8 @@ class ExaminationController extends Controller
     {
         $data = $request->validate([
             'scheduled_at' => 'sometimes|required|date',
-            'venue'        => 'sometimes|required|string|max:255',
-            'notes'        => 'nullable|string|max:1000',
+            'venue' => 'sometimes|required|string|max:255',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $examination->update($data);
@@ -89,16 +91,16 @@ class ExaminationController extends Controller
             ->orderBy('id')
             ->get()
             ->map(fn ($app) => [
-                'id'     => $app->id,
-                'token'  => $app->anonymizationToken?->token ?? ('APP-' . $app->id),
+                'id' => $app->id,
+                'token' => $app->anonymizationToken?->token ?? ('APP-'.$app->id),
                 'status' => $app->status,
             ]);
 
         return response()->json([
-            'vacancy'      => $vacancy->only('id', 'position_title', 'plantilla_no', 'salary_grade', 'place_of_assignment', 'status', 'published_at', 'deadline_at'),
+            'vacancy' => $vacancy->only('id', 'position_title', 'plantilla_no', 'salary_grade', 'place_of_assignment', 'status', 'published_at', 'deadline_at'),
             'can_schedule' => $this->isSecretary($request),
             'applications' => $applications,
-            'schedules'    => $schedules,
+            'schedules' => $schedules,
         ]);
     }
 
@@ -110,16 +112,25 @@ class ExaminationController extends Controller
 
         $data = $request->validate([
             'application_id' => 'required|exists:applications,id',
-            'exam_type'      => 'required|in:TWE,CBWE',
-            'scheduled_at'   => 'required|date',
-            'venue'          => 'required|string|max:255',
-            'notes'          => 'nullable|string|max:1000',
+            'exam_type' => 'required|in:TWE,CBWE',
+            'scheduled_at' => 'required|date',
+            'venue' => 'required|string|max:255',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $exam = ExamSchedule::updateOrCreate(
             ['application_id' => $data['application_id'], 'exam_type' => $data['exam_type']],
             ['scheduled_at' => $data['scheduled_at'], 'venue' => $data['venue'], 'notes' => $data['notes'] ?? null]
         );
+
+        $application = Application::find($data['application_id']);
+        if ($application && $application->status === 'qualified') {
+            $oldStatus = $application->status;
+            $application->update(['status' => 'exam_scheduled', 'reviewed_at' => now()]);
+            if ($user = $application->applicant?->user) {
+                $user->notify(new ApplicationStatusUpdated($application, $oldStatus, 'exam_scheduled', silent: true));
+            }
+        }
 
         return response()->json($exam, 201);
     }
@@ -131,10 +142,10 @@ class ExaminationController extends Controller
         }
 
         $data = $request->validate([
-            'exam_type'    => 'required|in:TWE,CBWE',
+            'exam_type' => 'required|in:TWE,CBWE',
             'scheduled_at' => 'required|date',
-            'venue'        => 'required|string|max:255',
-            'notes'        => 'nullable|string|max:1000',
+            'venue' => 'required|string|max:255',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $appIds = Application::where('vacancy_id', $vacancy->id)
@@ -148,6 +159,10 @@ class ExaminationController extends Controller
             );
         }
 
+        Application::whereIn('id', $appIds)
+            ->where('status', 'qualified')
+            ->update(['status' => 'exam_scheduled', 'reviewed_at' => now()]);
+
         return response()->json(['scheduled' => $appIds->count(), 'exam_type' => $data['exam_type']]);
     }
 
@@ -158,13 +173,13 @@ class ExaminationController extends Controller
         }
 
         $data = $request->validate([
-            'application_ids'   => 'required|array|min:1',
+            'application_ids' => 'required|array|min:1',
             'application_ids.*' => 'integer|exists:applications,id',
-            'exam_type'         => 'required|in:TWE,CBWE',
+            'exam_type' => 'required|in:TWE,CBWE',
         ]);
 
         $notified = 0;
-        $skipped  = 0;
+        $skipped = 0;
 
         foreach ($data['application_ids'] as $appId) {
             $schedule = ExamSchedule::where('application_id', $appId)
@@ -173,6 +188,7 @@ class ExaminationController extends Controller
 
             if (! $schedule) {
                 $skipped++;
+
                 continue;
             }
 
@@ -183,6 +199,7 @@ class ExaminationController extends Controller
 
             if (! $user) {
                 $skipped++;
+
                 continue;
             }
 
@@ -192,7 +209,7 @@ class ExaminationController extends Controller
 
         return response()->json([
             'notified' => $notified,
-            'skipped'  => $skipped,
+            'skipped' => $skipped,
             'exam_type' => $data['exam_type'],
         ]);
     }
