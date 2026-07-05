@@ -19,18 +19,23 @@
           <div class="flex-shrink-0">
             <div class="relative w-28 h-28 rounded-full border-2 overflow-hidden flex items-center justify-center bg-gray-50"
               :class="photoPath ? 'border-[#2a338f]/30' : 'border-dashed border-gray-300'">
-              <div v-if="photoSaving || photoLoading" class="absolute inset-0 bg-[#2a338f] flex items-center justify-center z-10 rounded-full">
+              <div v-if="photoSaving || photoLoading || (!photoPath && googleAvatar && googleAvatarLoading)"
+                class="absolute inset-0 bg-[#2a338f] flex items-center justify-center z-10 rounded-full">
                 <div class="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
               </div>
               <img v-if="photoPath" :src="photoUrl" @load="photoLoading = false" @error="photoLoading = false" class="w-full h-full object-cover" :class="photoSaving || photoLoading ? 'opacity-50' : ''" alt="Profile photo" />
-              <svg v-else class="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <img v-else-if="googleAvatar" :src="googleAvatar"
+                @load="googleAvatarLoading = false" @error="googleAvatarLoading = false; googleAvatarFailed = true"
+                v-show="!googleAvatarFailed"
+                class="w-full h-full object-cover" :class="googleAvatarLoading ? 'opacity-50' : ''" alt="Google profile photo" />
+              <svg v-if="!photoPath && (!googleAvatar || googleAvatarFailed)" class="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
               </svg>
             </div>
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-gray-800">
-              {{ photoPath ? 'Photo uploaded' : 'No photo yet' }}
+              {{ photoPath ? 'Photo uploaded' : (googleAvatar && !googleAvatarFailed ? 'Using your Google photo' : 'No photo yet') }}
             </p>
             <p class="text-xs text-gray-500 mt-1 leading-relaxed">
               Use a recent photo with a plain background. Face the camera directly, no sunglasses or hats.
@@ -89,6 +94,58 @@
             </button>
           </div>
           <p v-if="linkError" class="mt-3 text-xs text-red-500">{{ linkError }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full name card -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
+        <div class="w-9 h-9 rounded-lg bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-900">Full Name</p>
+          <p class="text-xs text-gray-500 mt-0.5">Make sure this matches your government-issued ID</p>
+        </div>
+      </div>
+      <div class="px-6 py-6 grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-5">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+            First Name <span class="text-red-500 normal-case">*</span>
+          </label>
+          <input v-model="name.first_name" type="text" @blur="validateName('first_name')" @input="validateName('first_name')"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            :class="errors.first_name ? 'border-red-400' : 'border-gray-300'" />
+          <p v-if="errors.first_name" class="mt-1 text-xs text-red-500">{{ errors.first_name }}</p>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Middle Name</label>
+          <input v-model="name.middle_name" type="text"
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+            Last Name <span class="text-red-500 normal-case">*</span>
+          </label>
+          <input v-model="name.last_name" type="text" @blur="validateName('last_name')" @input="validateName('last_name')"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            :class="errors.last_name ? 'border-red-400' : 'border-gray-300'" />
+          <p v-if="errors.last_name" class="mt-1 text-xs text-red-500">{{ errors.last_name }}</p>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Suffix</label>
+          <select v-model="name.suffix"
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
+            <option value="">None</option>
+            <option>Jr.</option>
+            <option>Sr.</option>
+            <option>II</option>
+            <option>III</option>
+            <option>IV</option>
+          </select>
         </div>
       </div>
     </div>
@@ -268,6 +325,7 @@ import citiesData from '@/data/cities.json'
 const { confirm } = useConfirm()
 
 const props = defineProps({
+  name:        { type: Object, required: true },
   personal:    { type: Object, required: true },
   photoPath:   { type: String, default: '' },
   photoUrl:    { type: String, default: null },
@@ -282,6 +340,8 @@ const props = defineProps({
 const emit = defineEmits(['open-photo-modal', 'google-linked', 'google-unlinked'])
 
 const photoLoading = ref(!!props.photoPath)
+const googleAvatarLoading = ref(!!props.googleAvatar)
+const googleAvatarFailed  = ref(false)
 
 watch(() => props.photoPath, (val) => {
   if (val) photoLoading.value = true
@@ -390,6 +450,16 @@ const fieldLabels = {
 function validate(field) {
   if (!props.personal[field]) {
     props.errors[field] = `${fieldLabels[field] ?? field} is required.`
+  } else {
+    delete props.errors[field]
+  }
+}
+
+const nameLabels = { first_name: 'First Name', last_name: 'Last Name' }
+
+function validateName(field) {
+  if (!props.name[field]?.trim()) {
+    props.errors[field] = `${nameLabels[field] ?? field} is required.`
   } else {
     delete props.errors[field]
   }

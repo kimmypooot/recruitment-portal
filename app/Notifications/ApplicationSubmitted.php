@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Application;
+use App\Services\EmailTemplateMailBuilder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -25,14 +26,9 @@ class ApplicationSubmitted extends Notification implements ShouldQueue
     {
         $positionTitle = $this->application->vacancy?->position_title ?? 'a position';
 
-        return (new MailMessage)
-            ->subject("Application Received — {$positionTitle}")
-            ->greeting('Dear Applicant,')
-            ->line("Thank you for applying for the position of **{$positionTitle}**.")
-            ->line('Your application has been received and is now being reviewed. We will notify you once there is an update on your status.')
-            ->action('View Your Application', url('/applicant/applications'))
-            ->line("If you have any questions, feel free to reach out to the CSC RO VIII.")
-            ->salutation('CSC RO VIII - Recruitment Portal');
+        return EmailTemplateMailBuilder::build('application_submitted', [
+            '{{position_title}}' => $positionTitle,
+        ]);
     }
 
     public function toArray(object $notifiable): array

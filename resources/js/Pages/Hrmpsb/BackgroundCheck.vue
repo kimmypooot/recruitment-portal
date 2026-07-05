@@ -6,6 +6,7 @@
         :vacancy="vacancy"
         :stage="7"
         stageLabel="Background Investigation"
+        stageKey="background"
         :loading="loading"
       />
 

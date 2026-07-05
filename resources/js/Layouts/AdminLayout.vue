@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="authorized">
     <a href="#main-content"
       class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:outline-none">
       Skip to content
@@ -85,7 +85,9 @@
               <div class="relative w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
                 <span>{{ userInitial }}</span>
                 <img :src="`/profile/photo?token=${authToken}`"
-                  class="absolute inset-0 w-full h-full object-cover"
+                  class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                  :class="avatarLoaded ? 'opacity-100' : 'opacity-0'"
+                  @load="avatarLoaded = true"
                   @error="e => e.target.style.display = 'none'"
                   alt="" />
               </div>
@@ -197,6 +199,10 @@
 
   </div>
   </div>
+
+  <div v-else class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="w-10 h-10 border-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
+  </div>
 </template>
 
 <style scoped>
@@ -239,7 +245,9 @@ let soTimer = null
 const page              = usePage()
 const authToken      = ref('')
 const authUser       = ref({})
+const avatarLoaded   = ref(false)
 const myRole         = ref(null)
+const authorized     = ref(false)
 
 const userName    = computed(() => authUser.value?.full_name ?? 'Admin')
 const userEmail   = computed(() => authUser.value?.email ?? '')
@@ -272,22 +280,47 @@ function handleKeydown(e) {
   }
 }
 
+// Mirrors the backend's User::canAccessAdminModule() — admin, or an hrmpsb
+// user with a secretariat/hr-chief designation. Everyone else (including
+// applicants) is redirected before any admin content or nav renders.
 onMounted(async () => {
   authToken.value = localStorage.getItem('auth_token') ?? ''
   authUser.value  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeydown)
 
-  if (authToken.value) {
+  if (!authToken.value) {
+    navigateTo('/login')
+    return
+  }
+
+  const role = authUser.value?.role
+
+  if (role === 'admin') {
+    authorized.value = true
+    return
+  }
+
+  if (role === 'hrmpsb') {
     try {
       const { data } = await axios.get('/api/hrmpsb/my-role', {
         headers: { Authorization: `Bearer ${authToken.value}` }
       })
       myRole.value = data.composition
     } catch {
-      // Board role not available — proceed with system role only
+      // Board role not available — treated as unauthorized below
     }
+
+    if (myRole.value && ['secretariat', 'hr-chief'].includes(myRole.value.hrmpsb_role)) {
+      authorized.value = true
+      return
+    }
+
+    navigateTo('/hrmpsb/dashboard')
+    return
   }
+
+  navigateTo(role === 'applicant' ? '/applicant/dashboard' : '/login')
 })
 
 onBeforeUnmount(() => {
@@ -324,6 +357,7 @@ const navGroups = computed(() => {
       label: 'Configuration',
       items: [
         { label: 'Competencies', href: '/admin/competencies', icon: 'check' },
+        { label: 'Email Templates', href: '/admin/email-templates', icon: 'mail' },
       ],
     },
     {

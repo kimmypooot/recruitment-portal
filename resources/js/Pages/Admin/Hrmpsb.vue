@@ -1,6 +1,7 @@
 <template>
   <AdminLayout title="HRMPSB Management">
 
+    <!-- ── HRMPSB Board Composition ─────────────────────────────────────── -->
     <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
       <div>
         <h2 class="text-lg font-semibold text-gray-900">Board Composition</h2>
@@ -15,7 +16,6 @@
       </button>
     </div>
 
-    <!-- Composition table -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div v-if="loading" class="p-8 space-y-3">
         <div v-for="n in 5" :key="n" class="h-10 bg-gray-100 rounded animate-pulse"></div>
@@ -90,7 +90,72 @@
       </div>
     </div>
 
-    <!-- Assign member modal -->
+    <!-- ── Place of Assignment Heads ────────────────────────────────────── -->
+    <div class="mt-10">
+      <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <div>
+          <h2 class="text-lg font-semibold text-gray-900">Place of Assignment Heads</h2>
+          <p class="text-sm text-gray-500 mt-0.5">Map each Field Office or Regional Support Unit to its designated Head of Unit. This assignment is used per-vacancy to dynamically build the HRMPSB composition. Vacancies under Human Resource Division (HRD) automatically exclude the Head of Unit since the Chief of HR Division is already a mandatory member. Vacancies under Office of the Regional Director (ORD) also exclude it, since the head of that office is the Appointing Authority, for whom a Head of Unit designation does not apply.</p>
+        </div>
+        <button @click="openPoaHeadModal"
+          class="flex items-center gap-2 px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          Assign Head
+        </button>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div v-if="loadingHeads" class="p-8 space-y-3">
+          <div v-for="n in 3" :key="n" class="h-10 bg-gray-100 rounded animate-pulse"></div>
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr class="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider">
+                <th class="px-5 py-3">Place of Assignment</th>
+                <th class="px-5 py-3">Designated Head of Unit</th>
+                <th class="px-5 py-3">Assigned By</th>
+                <th class="px-5 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr v-for="h in poaHeads" :key="h.id" class="hover:bg-gray-50 transition-colors">
+                <td class="px-5 py-3.5">
+                  <span class="font-medium text-gray-900">{{ h.place_of_assignment }}</span>
+                </td>
+                <td class="px-5 py-3.5">
+                  <div class="font-medium text-gray-900">{{ h.user?.full_name }}</div>
+                  <div class="text-xs text-gray-400">{{ h.user?.email }}</div>
+                </td>
+                <td class="px-5 py-3.5 text-xs text-gray-500">{{ h.assigned_by?.full_name ?? '—' }}</td>
+                <td class="px-5 py-3.5">
+                  <div class="flex items-center justify-end gap-2">
+                    <button @click="openPoaHeadEditModal(h)"
+                      class="px-2.5 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-md transition-colors">
+                      Change
+                    </button>
+                    <button @click="removePoaHead(h)"
+                      class="px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors">
+                      Remove
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="!poaHeads.length">
+                <td colspan="4" class="px-5 py-12 text-center text-sm text-gray-400">
+                  No heads assigned yet. Click "Assign Head" to designate a Head of Unit for each place of assignment.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Assign Member Modal ──────────────────────────────────────────── -->
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/60" @click="showModal = false"></div>
       <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md">
@@ -146,6 +211,60 @@
       </div>
     </div>
 
+    <!-- ── Assign/Edit Place of Assignment Head Modal ───────────────────── -->
+    <div v-if="showPoaHeadModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/60" @click="showPoaHeadModal = false"></div>
+      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h3 class="text-base font-semibold text-gray-900">{{ editingPoaHead ? 'Change Head of Unit' : 'Assign Head of Unit' }}</h3>
+          <button @click="showPoaHeadModal = false" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form @submit.prevent="submitPoaHead" class="px-6 py-5 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Place of Assignment <span class="text-red-500">*</span></label>
+            <select v-model="poaHeadForm.place_of_assignment" required :disabled="editingPoaHead"
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              <option value="">Select place of assignment…</option>
+              <optgroup label="CSC Field Offices">
+                <option v-for="loc in fieldOffices" :key="loc" :value="loc">{{ loc }}</option>
+              </optgroup>
+              <optgroup label="Regional Support Units">
+                <option v-for="loc in rsuOffices" :key="loc" :value="loc">{{ loc }}</option>
+              </optgroup>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Head of Unit <span class="text-red-500">*</span></label>
+            <select v-model="poaHeadForm.user_id" required
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              <option value="">Select user…</option>
+              <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ u.full_name }}</option>
+            </select>
+            <p class="mt-1 text-xs text-gray-400">Only users with the HRMPSB system role can be designated as Head of Unit.</p>
+          </div>
+          <div v-if="poaHeadForm.place_of_assignment === HRD_PLACE" class="text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+            Note: The HRD is the Human Resource Division. Since the Chief of HR Division is already a mandatory HRMPSB member, the Head of Unit role will be excluded from the HRMPSB composition for HRD vacancies.
+          </div>
+          <div v-if="poaHeadForm.place_of_assignment === ORD_PLACE" class="text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+            Note: The ORD is the Office of the Regional Director. Since the head of this office is the Appointing Authority — who plays a separate role in the recruitment process — the Head of Unit role does not apply and will be excluded from the HRMPSB composition for ORD vacancies.
+          </div>
+          <div v-if="poaHeadError" class="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{{ poaHeadError }}</div>
+          <div class="flex justify-end gap-3 pt-1">
+            <button type="button" @click="showPoaHeadModal = false"
+              class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
+            <button type="submit" :disabled="savingPoaHead"
+              class="px-4 py-2 text-sm bg-[#2a338f] text-white font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-60">
+              {{ savingPoaHead ? 'Saving…' : (editingPoaHead ? 'Update' : 'Assign') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </AdminLayout>
 </template>
 
@@ -155,11 +274,15 @@ import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
+import { CSC_FIELD_OFFICES, REGIONAL_SUPPORT_UNITS } from '@/constants/officesOfAssignment'
+
+const HRD_PLACE = 'Human Resource Division (HRD)'
+const ORD_PLACE = 'Office of the Regional Director (ORD)'
 
 const toast = useToast()
-
 const { confirm } = useConfirm()
 
+// ── Global Composition ─────────────────────────────────────────────────
 const compositions = ref([])
 const roles        = ref({})
 const users        = ref([])
@@ -254,5 +377,72 @@ async function removeMember(c) {
   }
 }
 
-onMounted(() => { loadCompositions(); loadUsers() })
+// ── Place of Assignment Heads ─────────────────────────────────────────
+const poaHeads        = ref([])
+const loadingHeads    = ref(false)
+const showPoaHeadModal = ref(false)
+const savingPoaHead   = ref(false)
+const poaHeadError    = ref('')
+const editingPoaHead  = ref(false)
+
+const poaHeadForm = reactive({ place_of_assignment: '', user_id: '' })
+
+const fieldOffices = CSC_FIELD_OFFICES
+const rsuOffices   = REGIONAL_SUPPORT_UNITS
+
+async function loadPoaHeads() {
+  loadingHeads.value = true
+  try {
+    const { data } = await axios.get('/api/admin/place-of-assignment-heads', { headers: authHeaders() })
+    poaHeads.value = data.heads
+  } finally {
+    loadingHeads.value = false
+  }
+}
+
+function openPoaHeadModal() {
+  editingPoaHead.value = false
+  poaHeadForm.place_of_assignment = ''
+  poaHeadForm.user_id = ''
+  poaHeadError.value = ''
+  showPoaHeadModal.value = true
+}
+
+function openPoaHeadEditModal(head) {
+  editingPoaHead.value = true
+  poaHeadForm.place_of_assignment = head.place_of_assignment
+  poaHeadForm.user_id = head.user_id
+  poaHeadError.value = ''
+  showPoaHeadModal.value = true
+}
+
+async function submitPoaHead() {
+  savingPoaHead.value = true
+  poaHeadError.value = ''
+  try {
+    await axios.post('/api/admin/place-of-assignment-heads', poaHeadForm, { headers: authHeaders() })
+    showPoaHeadModal.value = false
+    toast.success(editingPoaHead.value ? 'Head of Unit updated.' : 'Head of Unit assigned.')
+    loadPoaHeads()
+  } catch (e) {
+    poaHeadError.value = e.response?.data?.message ?? 'Failed to save.'
+    toast.error(poaHeadError.value)
+  } finally {
+    savingPoaHead.value = false
+  }
+}
+
+async function removePoaHead(head) {
+  const ok = await confirm(`Remove ${head.user?.full_name} as Head of Unit for "${head.place_of_assignment}"?`)
+  if (!ok) return
+  try {
+    await axios.delete(`/api/admin/place-of-assignment-heads/${head.id}`, { headers: authHeaders() })
+    toast.error(`Head of Unit removed for ${head.place_of_assignment}.`)
+    loadPoaHeads()
+  } catch (e) {
+    toast.error(e?.response?.data?.message ?? 'Failed to remove.')
+  }
+}
+
+onMounted(() => { loadCompositions(); loadUsers(); loadPoaHeads() })
 </script>

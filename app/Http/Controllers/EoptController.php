@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\BeiRating;
 use App\Models\EoptResult;
 use App\Models\HrmbsboardComposition;
 use App\Models\Vacancy;
@@ -92,6 +93,16 @@ class EoptController extends Controller
         ]);
 
         $application = Application::findOrFail($data['application_id']);
+
+        $beiLocked = BeiRating::where('application_id', $data['application_id'])
+            ->whereNotNull('locked_at')
+            ->exists();
+
+        if (! $beiLocked) {
+            return response()->json([
+                'message' => 'BEI ratings for this applicant must be locked before EOPT can be recorded.',
+            ], 422);
+        }
 
         $result = EoptResult::updateOrCreate(
             ['application_id' => $data['application_id']],

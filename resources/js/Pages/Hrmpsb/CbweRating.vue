@@ -7,6 +7,7 @@
         :vacancy="vacancy"
         :stage="3"
         stageLabel="Competency-Based Work Evaluation (CBWE)"
+        stageKey="cbwe"
         :loading="loading"
       />
 

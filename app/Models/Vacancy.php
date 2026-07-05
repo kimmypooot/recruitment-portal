@@ -12,6 +12,33 @@ class Vacancy extends Model
 {
     use HasFactory, SoftDeletes;
 
+    // Keep in sync with resources/js/constants/officesOfAssignment.js
+    public const CSC_FIELD_OFFICES = [
+        'CSC Field Office - Leyte I',
+        'CSC Field Office - Leyte II',
+        'CSC Field Office - Southern Leyte',
+        'CSC Field Office - Biliran',
+        'CSC Satellite Office - Western Leyte',
+        'CSC Field Office - Samar',
+        'CSC Field Office - Eastern Samar',
+        'CSC Field Office - Northern Samar',
+    ];
+
+    public const REGIONAL_SUPPORT_UNITS = [
+        'Office of the Regional Director (ORD)',
+        'Human Resource Division (HRD)',
+        'Management Resource Division (MSD)',
+        'Public Assistance and Liaison Division (PALD)',
+        'Policies and Systems Evaluation Division (PSED)',
+        'Examination Services Division (ESD)',
+        'Legal Services Division (LSD)',
+    ];
+
+    public static function placesOfAssignment(): array
+    {
+        return [...self::CSC_FIELD_OFFICES, ...self::REGIONAL_SUPPORT_UNITS];
+    }
+
     protected $fillable = [
         'position_title',
         'plantilla_no',
@@ -31,12 +58,12 @@ class Vacancy extends Model
     ];
 
     protected $casts = [
-        'salary_grade'           => 'integer',
-        'monthly_salary'         => 'decimal:2',
+        'salary_grade' => 'integer',
+        'monthly_salary' => 'decimal:2',
         'is_anticipated_vacancy' => 'boolean',
-        'published_at'           => 'datetime',
-        'deadline_at'            => 'datetime',
-        'deleted_at'             => 'datetime',
+        'published_at' => 'datetime',
+        'deadline_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────
@@ -76,6 +103,6 @@ class Vacancy extends Model
     public function scopeOpen($query)
     {
         return $query->where('status', 'published')
-                     ->where('deadline_at', '>=', now());
+            ->where('deadline_at', '>=', now());
     }
 }

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="authorized">
     <a href="#main-content"
       class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:outline-none">
       Skip to content
@@ -95,7 +95,9 @@
             <div class="relative w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden bg-primary">
               <span>{{ userInitial }}</span>
               <img :src="`/profile/photo?token=${authToken}`"
-                class="absolute inset-0 w-full h-full object-cover"
+                class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                :class="avatarLoaded ? 'opacity-100' : 'opacity-0'"
+                @load="avatarLoaded = true"
                 @error="e => e.target.style.display = 'none'"
                 alt="" />
             </div>
@@ -213,6 +215,10 @@
 
   </div>
   </div>
+
+  <div v-else class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="w-10 h-10 border-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
+  </div>
 </template>
 
 <script setup>
@@ -246,6 +252,8 @@ const myRole           = ref(null)
 const page             = usePage()
 const authToken        = ref('')
 const authUser         = ref({})
+const avatarLoaded     = ref(false)
+const authorized       = ref(false)
 const tooltip          = ref({ visible: false, x: 0, y: 0, text: '' })
 
 const stageReasons = {
@@ -330,21 +338,36 @@ function handleKeydown(e) {
   }
 }
 
+// HRMPSB pages are open to 'admin' and any 'hrmpsb' user (unlike /admin,
+// which additionally requires a secretariat/hr-chief designation). Everyone
+// else — including applicants — is redirected before any content renders.
 onMounted(async () => {
   authToken.value = localStorage.getItem('auth_token') ?? ''
   authUser.value  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeydown)
 
-  if (authToken.value) {
-    try {
-      const { data } = await axios.get('/api/hrmpsb/my-role', {
-        headers: { Authorization: `Bearer ${authToken.value}` }
-      })
-      myRole.value = data.composition
-    } catch {
-      // Board role not available — proceed with system role only
-    }
+  if (!authToken.value) {
+    navigateTo('/login')
+    return
+  }
+
+  const role = authUser.value?.role
+
+  if (role !== 'admin' && role !== 'hrmpsb') {
+    navigateTo(role === 'applicant' ? '/applicant/dashboard' : '/login')
+    return
+  }
+
+  authorized.value = true
+
+  try {
+    const { data } = await axios.get('/api/hrmpsb/my-role', {
+      headers: { Authorization: `Bearer ${authToken.value}` }
+    })
+    myRole.value = data.composition
+  } catch {
+    // Board role not available — proceed with system role only
   }
 
   if (props2.vacancyId) {

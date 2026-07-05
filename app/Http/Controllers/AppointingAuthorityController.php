@@ -23,6 +23,7 @@ class AppointingAuthorityController extends Controller
         $user = $request->user();
 
         $applications = Application::with([
+            'anonymizationToken',
             'applicant.user',
             'examResults',
             'cbweRatings',
@@ -55,10 +56,13 @@ class AppointingAuthorityController extends Controller
                     ? round($beiRatings->avg('total_rating'), 2)
                     : null;
 
+                $isUnmasked = $app->anonymizationToken?->isUnmasked();
+
                 return [
                     'id' => $app->id,
-                    'token' => $app->token,
-                    'name' => $this->formatApplicantName($app->applicant) ?: '—',
+                    'token' => $app->anonymizationToken?->token,
+                    'unmasked' => $isUnmasked,
+                    'name' => $isUnmasked ? ($this->formatApplicantName($app->applicant) ?: '—') : null,
                     'qs_result' => $qsResult,
                     'exam_scores' => $exams,
                     'cbwe_average' => $app->cbweRatings->whereNotNull('total_rating')->count() > 0
@@ -153,6 +157,11 @@ class AppointingAuthorityController extends Controller
             $applicantName = $this->formatApplicantName($application->applicant) ?: 'An applicant';
 
             $application->update(['status' => 'appointed', 'reviewed_at' => now()]);
+
+            if ($vacancy->status !== 'filled') {
+                $vacancy->update(['status' => 'filled']);
+                AuditLog::record('filled', $vacancy);
+            }
 
             $secretariat = HrmbsboardComposition::where('hrmpsb_role', 'secretariat')
                 ->where('is_active', true)

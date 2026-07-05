@@ -7,6 +7,7 @@
       :vacancy="vacancy"
       :stage="2"
       stageLabel="QS Screening"
+      stageKey="qs"
       :loading="loading"
     />
 

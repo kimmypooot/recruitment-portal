@@ -12,12 +12,18 @@ class AddCspHeaders
     {
         $response = $next($request);
 
+        $viteDevOrigins = '';
+
+        if (app()->environment('local') && config('app.debug')) {
+            $viteDevOrigins = ' http://127.0.0.1:5183 ws://127.0.0.1:5183';
+        }
+
         $csp = "default-src 'self'; "
-            . "script-src 'self' 'unsafe-inline'; "
-            . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            . "script-src 'self' 'unsafe-inline'{$viteDevOrigins}; "
+            . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$viteDevOrigins}; "
             . "font-src 'self' data: https://fonts.gstatic.com; "
-            . "img-src 'self' data:; "
-            . "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; "
+            . "img-src 'self' data: https://*.googleusercontent.com; "
+            . "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com{$viteDevOrigins}; "
             . "form-action 'self'; "
             . "base-uri 'self'; "
             . "frame-ancestors 'none'; "

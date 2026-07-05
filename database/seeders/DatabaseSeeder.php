@@ -5,10 +5,13 @@ namespace Database\Seeders;
 use App\Models\AnonymizationToken;
 use App\Models\ApplicantProfile;
 use App\Models\Application;
+use App\Models\AppointingAuthorityDecision;
 use App\Models\BeiRating;
 use App\Models\CbweRating;
+use App\Models\DeliberationResult;
 use App\Models\ExamResult;
 use App\Models\HrmbsboardComposition;
+use App\Models\PlaceOfAssignmentHead;
 use App\Models\PreAssessment;
 use App\Models\QsEvaluation;
 use App\Models\User;
@@ -24,24 +27,25 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(CompetencySeeder::class);
+        $this->call(EmailTemplateSeeder::class);
 
         // ── Staff Users ───────────────────────────────────────────────────────
         $admin = User::create([
-            'first_name'        => 'System',
-            'last_name'         => 'Administrator',
-            'email'             => 'admin@csc8.gov.ph',
-            'password'          => Hash::make('Password123'),
-            'role'              => 'admin',
+            'first_name' => 'System',
+            'last_name' => 'Administrator',
+            'email' => 'admin@csc8.gov.ph',
+            'password' => Hash::make('Password123'),
+            'role' => 'admin',
             'email_verified_at' => now(),
         ]);
 
         $hrOfficer = User::create([
-            'first_name'        => 'Maria',
-            'last_name'         => 'Santos',
-            'middle_name'       => 'Buenaventura',
-            'email'             => 'maria.santos@csc8.gov.ph',
-            'password'          => Hash::make('Password123'),
-            'role'              => 'admin',
+            'first_name' => 'Maria',
+            'last_name' => 'Santos',
+            'middle_name' => 'Buenaventura',
+            'email' => 'maria.santos@csc8.gov.ph',
+            'password' => Hash::make('Password123'),
+            'role' => 'admin',
             'email_verified_at' => now(),
         ]);
 
@@ -50,20 +54,20 @@ class DatabaseSeeder extends Seeder
             ['first_name' => 'Rodrigo',   'last_name' => 'Dela Peña',  'middle_name' => 'Viernes',    'email' => 'rodrigo.delapena@csc8.gov.ph',   'suffix' => null],
             ['first_name' => 'Carmela',   'last_name' => 'Villanueva', 'middle_name' => 'Ramos',      'email' => 'carmela.villanueva@csc8.gov.ph', 'suffix' => null],
             ['first_name' => 'Benjamin',  'last_name' => 'Oquendo',    'middle_name' => 'Tan',        'email' => 'benjamin.oquendo@csc8.gov.ph',   'suffix' => 'Jr.'],
-            ['first_name' => 'Luzviminda','last_name' => 'Cabrera',    'middle_name' => 'Ferrer',     'email' => 'luzviminda.cabrera@csc8.gov.ph', 'suffix' => null],
+            ['first_name' => 'Luzviminda', 'last_name' => 'Cabrera',    'middle_name' => 'Ferrer',     'email' => 'luzviminda.cabrera@csc8.gov.ph', 'suffix' => null],
             ['first_name' => 'Arsenio',   'last_name' => 'Macaraig',   'middle_name' => 'Quiambao',   'email' => 'arsenio.macaraig@csc8.gov.ph',   'suffix' => null],
             ['first_name' => 'Florencia', 'last_name' => 'Espiritu',   'middle_name' => 'Laurel',     'email' => 'florencia.espiritu@csc8.gov.ph', 'suffix' => null],
             ['first_name' => 'Eduardo',   'last_name' => 'Bautista',   'middle_name' => 'Chua',       'email' => 'eduardo.bautista@csc8.gov.ph',   'suffix' => 'Sr.'],
             ['first_name' => 'Natividad', 'last_name' => 'Soriano',    'middle_name' => 'Aguilar',    'email' => 'natividad.soriano@csc8.gov.ph',  'suffix' => null],
             ['first_name' => 'Renato',    'last_name' => 'Perez',      'middle_name' => 'Dizon',      'email' => 'renato.perez@csc8.gov.ph',       'suffix' => null],
         ])->map(fn ($d) => User::create([
-            'first_name'        => $d['first_name'],
-            'last_name'         => $d['last_name'],
-            'middle_name'       => $d['middle_name'],
-            'suffix'            => $d['suffix'],
-            'email'             => $d['email'],
-            'password'          => Hash::make('Password123'),
-            'role'              => 'hrmpsb',
+            'first_name' => $d['first_name'],
+            'last_name' => $d['last_name'],
+            'middle_name' => $d['middle_name'],
+            'suffix' => $d['suffix'],
+            'email' => $d['email'],
+            'password' => Hash::make('Password123'),
+            'role' => 'hrmpsb',
             'email_verified_at' => now(),
         ]));
 
@@ -74,39 +78,71 @@ class DatabaseSeeder extends Seeder
         // $hrmpsb[3] = Director II Representative (Cabrera)
         // $hrmpsb[4] = Division Chief Representative (Macaraig)
         // $hrmpsb[5] = HR Chief (Espiritu) — can access admin module
-        // $hrmpsb[6] = Head of Unit (Bautista)
+        // $hrmpsb[6] = Head of Unit (Bautista) — now set via place_of_assignment_heads (dynamic)
         // $hrmpsb[7] = PINTIG Rep 1st Level (Soriano)
         // $hrmpsb[8] = PINTIG Rep 2nd Level (Perez)
 
-        $compositionData = [
+        // NOTE: head-of-unit is no longer seeded as a global composition.
+        // It is now dynamically determined per-vacancy via place_of_assignment_heads.
+        $staticRoles = [
             ['user' => $hrmpsb[0], 'role' => 'chairperson',                   'type' => 'principal'],
             ['user' => $hrmpsb[1], 'role' => 'secretariat',                   'type' => 'principal'],
             ['user' => $hrmpsb[2], 'role' => 'appointing-authority',          'type' => 'principal'],
             ['user' => $hrmpsb[3], 'role' => 'director-representative',       'type' => 'principal'],
             ['user' => $hrmpsb[4], 'role' => 'division-chief-representative', 'type' => 'principal'],
             ['user' => $hrmpsb[5], 'role' => 'hr-chief',                      'type' => 'principal'],
-            ['user' => $hrmpsb[6], 'role' => 'head-of-unit',                  'type' => 'principal'],
             ['user' => $hrmpsb[7], 'role' => 'pintig-representative-1st',     'type' => 'principal'],
             ['user' => $hrmpsb[8], 'role' => 'pintig-representative-2nd',     'type' => 'principal'],
         ];
 
-        foreach ($compositionData as $comp) {
+        foreach ($staticRoles as $comp) {
             HrmbsboardComposition::create([
-                'user_id'     => $comp['user']->id,
+                'user_id' => $comp['user']->id,
                 'hrmpsb_role' => $comp['role'],
                 'member_type' => $comp['type'],
-                'is_active'   => true,
+                'is_active' => true,
                 'assigned_by' => $admin->id,
                 'assigned_at' => now()->subDays(30),
             ]);
         }
 
-        $secretariat  = $hrmpsb[1]; // Villanueva — encodes most assessments
-        $chairperson  = $hrmpsb[0]; // Dela Peña
-        $dirRep       = $hrmpsb[3]; // Cabrera
-        $divChief     = $hrmpsb[4]; // Macaraig
-        $hrChief      = $hrmpsb[5]; // Espiritu
-        $headOfUnit   = $hrmpsb[6]; // Bautista
+        // ── Place of Assignment Heads (dynamic Head of Unit) ─────────────────
+        // Eduardo Bautista ($hrmpsb[6]) is designated as Head of Unit for
+        // all CSC Field Offices.
+        $fieldOffices = Vacancy::CSC_FIELD_OFFICES;
+        foreach ($fieldOffices as $office) {
+            PlaceOfAssignmentHead::create([
+                'place_of_assignment' => $office,
+                'user_id' => $hrmpsb[6]->id,
+                'assigned_by' => $admin->id,
+            ]);
+        }
+
+        // Regional Support Units (excluding HRD — the HR Chief is already a
+        // mandatory HRMPSB member — and ORD, whose head is the Appointing
+        // Authority, for whom a Head of Unit designation does not apply).
+        $rsuHeads = [
+            'Management Resource Division (MSD)' => $hrmpsb[6]->id, // Bautista
+            'Public Assistance and Liaison Division (PALD)' => $hrmpsb[6]->id,
+            'Policies and Systems Evaluation Division (PSED)' => $hrmpsb[6]->id,
+            'Examination Services Division (ESD)' => $hrmpsb[6]->id,
+            'Legal Services Division (LSD)' => $hrmpsb[6]->id,
+        ];
+
+        foreach ($rsuHeads as $rsu => $userId) {
+            PlaceOfAssignmentHead::create([
+                'place_of_assignment' => $rsu,
+                'user_id' => $userId,
+                'assigned_by' => $admin->id,
+            ]);
+        }
+
+        $secretariat = $hrmpsb[1]; // Villanueva — encodes most assessments
+        $chairperson = $hrmpsb[0]; // Dela Peña
+        $dirRep = $hrmpsb[3]; // Cabrera
+        $divChief = $hrmpsb[4]; // Macaraig
+        $hrChief = $hrmpsb[5]; // Espiritu
+        $headOfUnit = $hrmpsb[6]; // Bautista
 
         // ── Applicant Users ───────────────────────────────────────────────────
         $applicantData = [
@@ -120,36 +156,36 @@ class DatabaseSeeder extends Seeder
         ];
 
         $applicants = collect();
-        $profiles   = collect();
+        $profiles = collect();
 
         foreach ($applicantData as $d) {
             $user = User::create([
-                'first_name'        => $d['first_name'],
-                'last_name'         => $d['last_name'],
-                'middle_name'       => $d['middle_name'],
-                'email'             => $d['email'],
-                'password'          => Hash::make('Password123'),
-                'role'              => 'applicant',
+                'first_name' => $d['first_name'],
+                'last_name' => $d['last_name'],
+                'middle_name' => $d['middle_name'],
+                'email' => $d['email'],
+                'password' => Hash::make('Password123'),
+                'role' => 'applicant',
                 'email_verified_at' => now(),
             ]);
             $applicants->push($user);
 
             $profiles->push(ApplicantProfile::create([
-                'user_id'               => $user->id,
-                'gender'                => $d['gender'],
-                'civil_status'          => $d['civil_status'],
-                'birthday'              => $d['birthday'],
-                'religion'              => 'Roman Catholic',
-                'region'                => 'Region VIII',
-                'province'              => 'Leyte',
-                'city_municipality'     => 'Tacloban City',
-                'barangay'              => 'Barangay 1',
-                'mobile_number'         => $d['mobile_number'],
-                'eligibility'           => $d['eligibility'],
-                'indigenous_group'      => 'No',
-                'pwd'                   => 'No',
-                'solo_parent'           => 'No',
-                'profile_completed_at'  => now()->subDays(20),
+                'user_id' => $user->id,
+                'gender' => $d['gender'],
+                'civil_status' => $d['civil_status'],
+                'birthday' => $d['birthday'],
+                'religion' => 'Roman Catholic',
+                'region' => 'Region VIII',
+                'province' => 'Leyte',
+                'city_municipality' => 'Tacloban City',
+                'barangay' => 'Barangay 1',
+                'mobile_number' => $d['mobile_number'],
+                'eligibility' => $d['eligibility'],
+                'indigenous_group' => 'No',
+                'pwd' => 'No',
+                'solo_parent' => 'No',
+                'profile_completed_at' => now()->subDays(20),
             ]));
         }
 
@@ -157,74 +193,74 @@ class DatabaseSeeder extends Seeder
         $vacancies = collect();
 
         $v1 = Vacancy::create([
-            'position_title'      => 'Administrative Officer II',
-            'plantilla_no'        => 'CSCRO8-AO2-001-2026',
-            'salary_grade'        => 11,
-            'monthly_salary'      => 27000.00,
-            'position_level'      => 'Second Level',
+            'position_title' => 'Administrative Officer II',
+            'plantilla_no' => 'CSCRO8-AO2-001-2026',
+            'salary_grade' => 11,
+            'monthly_salary' => 27000.00,
+            'position_level' => 'Second Level',
             'place_of_assignment' => 'CSC Regional Office No. VIII, Tacloban City',
-            'education_req'       => "Bachelor's Degree relevant to the job",
-            'experience_req'      => '1 year of relevant experience',
-            'training_req'        => '4 hours of relevant training',
-            'eligibility_req'     => 'Career Service (Professional) / Second Level Eligibility',
-            'status'              => 'published',
-            'posted_by'           => $hrOfficer->id,
-            'published_at'        => Carbon::now()->subDays(25),
-            'deadline_at'         => Carbon::now()->addDays(5),
+            'education_req' => "Bachelor's Degree relevant to the job",
+            'experience_req' => '1 year of relevant experience',
+            'training_req' => '4 hours of relevant training',
+            'eligibility_req' => 'Career Service (Professional) / Second Level Eligibility',
+            'status' => 'published',
+            'posted_by' => $hrOfficer->id,
+            'published_at' => Carbon::now()->subDays(25),
+            'deadline_at' => Carbon::now()->addDays(5),
         ]);
         $vacancies->push($v1);
 
         $v2 = Vacancy::create([
-            'position_title'      => 'Information Technology Officer I',
-            'plantilla_no'        => 'CSCRO8-ITO1-002-2026',
-            'salary_grade'        => 19,
-            'monthly_salary'      => 57699.00,
-            'position_level'      => 'Second Level',
+            'position_title' => 'Information Technology Officer I',
+            'plantilla_no' => 'CSCRO8-ITO1-002-2026',
+            'salary_grade' => 19,
+            'monthly_salary' => 57699.00,
+            'position_level' => 'Second Level',
             'place_of_assignment' => 'CSC Regional Office No. VIII, Tacloban City',
-            'education_req'       => "Bachelor's Degree in Information Technology, Computer Science, or related field",
-            'experience_req'      => '2 years of relevant experience',
-            'training_req'        => '8 hours of relevant training',
-            'eligibility_req'     => 'Career Service (Professional) / Second Level Eligibility',
-            'status'              => 'published',
-            'posted_by'           => $hrOfficer->id,
-            'published_at'        => Carbon::now()->subDays(20),
-            'deadline_at'         => Carbon::now()->addDays(10),
+            'education_req' => "Bachelor's Degree in Information Technology, Computer Science, or related field",
+            'experience_req' => '2 years of relevant experience',
+            'training_req' => '8 hours of relevant training',
+            'eligibility_req' => 'Career Service (Professional) / Second Level Eligibility',
+            'status' => 'published',
+            'posted_by' => $hrOfficer->id,
+            'published_at' => Carbon::now()->subDays(20),
+            'deadline_at' => Carbon::now()->addDays(10),
         ]);
         $vacancies->push($v2);
 
         $v3 = Vacancy::create([
-            'position_title'      => 'Human Resource Management Officer III',
-            'plantilla_no'        => 'CSCRO8-HRMO3-003-2026',
-            'salary_grade'        => 18,
-            'monthly_salary'      => 51357.00,
-            'position_level'      => 'Second Level',
+            'position_title' => 'Human Resource Management Officer III',
+            'plantilla_no' => 'CSCRO8-HRMO3-003-2026',
+            'salary_grade' => 18,
+            'monthly_salary' => 51357.00,
+            'position_level' => 'Second Level',
             'place_of_assignment' => 'CSC Regional Office No. VIII, Tacloban City',
-            'education_req'       => "Bachelor's Degree in Public Administration, Human Resource Management, or related field",
-            'experience_req'      => '2 years of relevant experience',
-            'training_req'        => '8 hours of relevant training',
-            'eligibility_req'     => 'Career Service (Professional) / Second Level Eligibility',
-            'status'              => 'published',
-            'posted_by'           => $hrOfficer->id,
-            'published_at'        => Carbon::now()->subDays(15),
-            'deadline_at'         => Carbon::now()->addDays(15),
+            'education_req' => "Bachelor's Degree in Public Administration, Human Resource Management, or related field",
+            'experience_req' => '2 years of relevant experience',
+            'training_req' => '8 hours of relevant training',
+            'eligibility_req' => 'Career Service (Professional) / Second Level Eligibility',
+            'status' => 'published',
+            'posted_by' => $hrOfficer->id,
+            'published_at' => Carbon::now()->subDays(15),
+            'deadline_at' => Carbon::now()->addDays(15),
         ]);
         $vacancies->push($v3);
 
         $v4 = Vacancy::create([
-            'position_title'      => 'Records Officer II',
-            'plantilla_no'        => 'CSCRO8-RO2-004-2026',
-            'salary_grade'        => 11,
-            'monthly_salary'      => 27000.00,
-            'position_level'      => 'Second Level',
+            'position_title' => 'Records Officer II',
+            'plantilla_no' => 'CSCRO8-RO2-004-2026',
+            'salary_grade' => 11,
+            'monthly_salary' => 27000.00,
+            'position_level' => 'Second Level',
             'place_of_assignment' => 'CSC Regional Office No. VIII, Tacloban City',
-            'education_req'       => "Bachelor's Degree relevant to the job",
-            'experience_req'      => '1 year of relevant experience',
-            'training_req'        => '4 hours of relevant training',
-            'eligibility_req'     => 'Career Service (Professional) / Second Level Eligibility',
-            'status'              => 'draft',
-            'posted_by'           => $hrOfficer->id,
-            'published_at'        => null,
-            'deadline_at'         => null,
+            'education_req' => "Bachelor's Degree relevant to the job",
+            'experience_req' => '1 year of relevant experience',
+            'training_req' => '4 hours of relevant training',
+            'eligibility_req' => 'Career Service (Professional) / Second Level Eligibility',
+            'status' => 'draft',
+            'posted_by' => $hrOfficer->id,
+            'published_at' => null,
+            'deadline_at' => null,
         ]);
         $vacancies->push($v4);
 
@@ -233,7 +269,7 @@ class DatabaseSeeder extends Seeder
         $v1Competencies = [
             ['key' => 'exemplifying_integrity',          'level' => 2],
             ['key' => 'delivering_service_excellence',   'level' => 2],
-            ['key' => 'solving_problems_making_decisions','level' => 2],
+            ['key' => 'solving_problems_making_decisions', 'level' => 2],
             ['key' => 'planning_and_delivering',         'level' => 2],
             ['key' => 'writing_effectively_1',           'level' => 2],
             ['key' => 'records_management',              'level' => 2],
@@ -247,7 +283,7 @@ class DatabaseSeeder extends Seeder
         $v2Competencies = [
             ['key' => 'exemplifying_integrity',          'level' => 3],
             ['key' => 'delivering_service_excellence',   'level' => 3],
-            ['key' => 'solving_problems_making_decisions','level' => 3],
+            ['key' => 'solving_problems_making_decisions', 'level' => 3],
             ['key' => 'championing_and_applying_innovation', 'level' => 3],
             ['key' => 'planning_and_delivering',         'level' => 3],
             ['key' => 'information_technology',          'level' => 3],
@@ -260,10 +296,10 @@ class DatabaseSeeder extends Seeder
         $v3Competencies = [
             ['key' => 'exemplifying_integrity',          'level' => 3],
             ['key' => 'delivering_service_excellence',   'level' => 3],
-            ['key' => 'solving_problems_making_decisions','level' => 3],
+            ['key' => 'solving_problems_making_decisions', 'level' => 3],
             ['key' => 'thinking_strategically',          'level' => 3],
             ['key' => 'managing_performance_coaching',   'level' => 3],
-            ['key' => 'building_collaborative_inclusive','level' => 3],
+            ['key' => 'building_collaborative_inclusive', 'level' => 3],
             ['key' => 'policy_interpretation_implementation', 'level' => 3],
         ];
         foreach ($v3Competencies as $c) {
@@ -287,23 +323,23 @@ class DatabaseSeeder extends Seeder
         $appDay = 23;
         foreach ([0, 1, 2, 3, 4] as $i) {
             $app = Application::create([
-                'vacancy_id'   => $v1->id,
+                'vacancy_id' => $v1->id,
                 'applicant_id' => $profiles[$i]->id,
-                'status'       => match($i) {
+                'status' => match ($i) {
                     0, 1 => 'for_interview',
-                    2    => 'shortlisted',
-                    3    => 'disqualified',
-                    4    => 'shortlisted',
+                    2 => 'shortlisted',
+                    3 => 'disqualified',
+                    4 => 'shortlisted',
                 },
                 'submitted_at' => Carbon::now()->subDays($appDay - $i),
-                'reviewed_at'  => Carbon::now()->subDays($appDay - $i - 2),
+                'reviewed_at' => Carbon::now()->subDays($appDay - $i - 2),
             ]);
             $v1Apps->push($app);
 
             // Anonymization token: CSCRO8-AO2-001-2026 → prefix AO2-0601
             AnonymizationToken::create([
                 'application_id' => $app->id,
-                'token'          => 'AO2-0601-00' . ($i + 1),
+                'token' => 'AO2-0601-00'.($i + 1),
             ]);
         }
 
@@ -328,16 +364,16 @@ class DatabaseSeeder extends Seeder
 
         foreach ($qsData as [$appId, $evalId, $edu, $exp, $trn, $elig, $overall, $remarks]) {
             QsEvaluation::create([
-                'application_id'   => $appId,
-                'evaluator_id'     => $evalId,
-                'education_meets'  => $edu,
+                'application_id' => $appId,
+                'evaluator_id' => $evalId,
+                'education_meets' => $edu,
                 'experience_meets' => $exp,
-                'training_meets'   => $trn,
-                'eligibility_meets'=> $elig,
-                'overall_qualified'=> $overall,
-                'remarks'          => $remarks,
-                'evaluated_at'     => Carbon::now()->subDays(18),
-                'locked_at'        => Carbon::now()->subDays(17),
+                'training_meets' => $trn,
+                'eligibility_meets' => $elig,
+                'overall_qualified' => $overall,
+                'remarks' => $remarks,
+                'evaluated_at' => Carbon::now()->subDays(18),
+                'locked_at' => Carbon::now()->subDays(17),
             ]);
         }
 
@@ -345,30 +381,30 @@ class DatabaseSeeder extends Seeder
         $preAssessData = [
             [$v1Apps[0]->id, true, true, true, true, true, true, true, true, true, true, true, 'Applicant has strong academic credentials and relevant work experience. Highly recommended.'],
             [$v1Apps[1]->id, true, true, true, true, true, true, true, true, true, true, true, 'Complete documents submitted. Meets all qualifications.'],
-            [$v1Apps[2]->id, true, false,true, true, true, true, true, true, true, true, true, 'IPCR not yet submitted. All other requirements complete.'],
-            [$v1Apps[3]->id, true, true, true, true, false,false,false,false,false,false,false, 'Disqualified. Training requirement not met.'],
+            [$v1Apps[2]->id, true, false, true, true, true, true, true, true, true, true, true, 'IPCR not yet submitted. All other requirements complete.'],
+            [$v1Apps[3]->id, true, true, true, true, false, false, false, false, false, false, false, 'Disqualified. Training requirement not met.'],
             [$v1Apps[4]->id, true, true, true, true, true, true, true, true, true, true, true, 'All requirements submitted and verified. Meets qualifications.'],
         ];
 
         foreach ($preAssessData as [$appId, $pds, $ipcr, $tor, $coe, $reqComp, $edu, $lic, $exp, $trn, $elig, $hrd, $remarks]) {
             PreAssessment::create([
-                'application_id'        => $appId,
-                'pds_submitted'         => $pds,
-                'ipcr_submitted'        => $ipcr,
-                'tor_submitted'         => $tor,
-                'coe_submitted'         => $coe,
+                'application_id' => $appId,
+                'pds_submitted' => $pds,
+                'ipcr_submitted' => $ipcr,
+                'tor_submitted' => $tor,
+                'coe_submitted' => $coe,
                 'requirements_complete' => $reqComp,
-                'requirements_remarks'  => null,
-                'education_meets'       => $edu,
-                'license_meets'         => $lic,
-                'experience_meets'      => $exp,
-                'training_meets'        => $trn,
-                'eligibility_meets'     => $elig,
-                'hrd_assessment'        => $hrd,
-                'hrd_remarks'           => $remarks,
-                'consensus'             => $hrd,
-                'assessed_by'           => $secretariat->id,
-                'assessed_at'           => Carbon::now()->subDays(17),
+                'requirements_remarks' => null,
+                'education_meets' => $edu,
+                'license_meets' => $lic,
+                'experience_meets' => $exp,
+                'training_meets' => $trn,
+                'eligibility_meets' => $elig,
+                'hrd_assessment' => $hrd,
+                'hrd_remarks' => $remarks,
+                'consensus' => $hrd,
+                'assessed_by' => $secretariat->id,
+                'assessed_at' => Carbon::now()->subDays(17),
             ]);
         }
 
@@ -383,11 +419,11 @@ class DatabaseSeeder extends Seeder
         foreach ($tweScores as [$appId, $raw, $max, $type]) {
             ExamResult::create([
                 'application_id' => $appId,
-                'exam_type'      => $type,
-                'raw_score'      => $raw,
-                'max_score'      => $max,
-                'encoded_by'     => $secretariat->id,
-                'encoded_at'     => Carbon::now()->subDays(14),
+                'exam_type' => $type,
+                'raw_score' => $raw,
+                'max_score' => $max,
+                'encoded_by' => $secretariat->id,
+                'encoded_at' => Carbon::now()->subDays(14),
             ]);
         }
 
@@ -397,32 +433,32 @@ class DatabaseSeeder extends Seeder
         // Scale: 1-5 (5 = Outstanding)
         $beiData = [
             // Ana Dela Cruz — excellent scores across all evaluators
-            [$v1Apps[0]->id, $chairperson->id, ['professionalism_ethics'=>5,'results_focus'=>5,'teamwork_cooperation'=>4,'creative_problem_solving'=>4,'public_service_orientation'=>5], 4.60, 'Consistently demonstrates exemplary values and strong results orientation.'],
-            [$v1Apps[0]->id, $dirRep->id,      ['professionalism_ethics'=>5,'results_focus'=>4,'teamwork_cooperation'=>5,'creative_problem_solving'=>4,'public_service_orientation'=>5], 4.60, 'Excellent interpersonal skills and commitment to public service.'],
-            [$v1Apps[0]->id, $divChief->id,    ['professionalism_ethics'=>4,'results_focus'=>5,'teamwork_cooperation'=>4,'creative_problem_solving'=>5,'public_service_orientation'=>4], 4.40, 'Strong problem-solving ability. Highly recommended.'],
+            [$v1Apps[0]->id, $chairperson->id, ['professionalism_ethics' => 5, 'results_focus' => 5, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 4, 'public_service_orientation' => 5], 4.60, 'Consistently demonstrates exemplary values and strong results orientation.'],
+            [$v1Apps[0]->id, $dirRep->id,      ['professionalism_ethics' => 5, 'results_focus' => 4, 'teamwork_cooperation' => 5, 'creative_problem_solving' => 4, 'public_service_orientation' => 5], 4.60, 'Excellent interpersonal skills and commitment to public service.'],
+            [$v1Apps[0]->id, $divChief->id,    ['professionalism_ethics' => 4, 'results_focus' => 5, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 5, 'public_service_orientation' => 4], 4.40, 'Strong problem-solving ability. Highly recommended.'],
             // Carlo Mendoza
-            [$v1Apps[1]->id, $chairperson->id, ['professionalism_ethics'=>4,'results_focus'=>4,'teamwork_cooperation'=>3,'creative_problem_solving'=>3,'public_service_orientation'=>4], 3.60, 'Adequate performance. Needs improvement in teamwork.'],
-            [$v1Apps[1]->id, $dirRep->id,      ['professionalism_ethics'=>4,'results_focus'=>3,'teamwork_cooperation'=>4,'creative_problem_solving'=>3,'public_service_orientation'=>4], 3.60, 'Satisfactory. Modest problem-solving skills.'],
-            [$v1Apps[1]->id, $divChief->id,    ['professionalism_ethics'=>3,'results_focus'=>4,'teamwork_cooperation'=>4,'creative_problem_solving'=>4,'public_service_orientation'=>3], 3.60, 'Acceptable. Communication skills need strengthening.'],
+            [$v1Apps[1]->id, $chairperson->id, ['professionalism_ethics' => 4, 'results_focus' => 4, 'teamwork_cooperation' => 3, 'creative_problem_solving' => 3, 'public_service_orientation' => 4], 3.60, 'Adequate performance. Needs improvement in teamwork.'],
+            [$v1Apps[1]->id, $dirRep->id,      ['professionalism_ethics' => 4, 'results_focus' => 3, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 3, 'public_service_orientation' => 4], 3.60, 'Satisfactory. Modest problem-solving skills.'],
+            [$v1Apps[1]->id, $divChief->id,    ['professionalism_ethics' => 3, 'results_focus' => 4, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 4, 'public_service_orientation' => 3], 3.60, 'Acceptable. Communication skills need strengthening.'],
             // Liza Reyes
-            [$v1Apps[2]->id, $chairperson->id, ['professionalism_ethics'=>5,'results_focus'=>4,'teamwork_cooperation'=>5,'creative_problem_solving'=>4,'public_service_orientation'=>5], 4.60, 'Outstanding integrity and team player. Highly recommended.'],
-            [$v1Apps[2]->id, $dirRep->id,      ['professionalism_ethics'=>4,'results_focus'=>5,'teamwork_cooperation'=>4,'creative_problem_solving'=>5,'public_service_orientation'=>4], 4.40, 'Strong analytical skills. Very good candidate.'],
-            [$v1Apps[2]->id, $divChief->id,    ['professionalism_ethics'=>5,'results_focus'=>4,'teamwork_cooperation'=>5,'creative_problem_solving'=>3,'public_service_orientation'=>5], 4.40, 'Excellent public service orientation.'],
+            [$v1Apps[2]->id, $chairperson->id, ['professionalism_ethics' => 5, 'results_focus' => 4, 'teamwork_cooperation' => 5, 'creative_problem_solving' => 4, 'public_service_orientation' => 5], 4.60, 'Outstanding integrity and team player. Highly recommended.'],
+            [$v1Apps[2]->id, $dirRep->id,      ['professionalism_ethics' => 4, 'results_focus' => 5, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 5, 'public_service_orientation' => 4], 4.40, 'Strong analytical skills. Very good candidate.'],
+            [$v1Apps[2]->id, $divChief->id,    ['professionalism_ethics' => 5, 'results_focus' => 4, 'teamwork_cooperation' => 5, 'creative_problem_solving' => 3, 'public_service_orientation' => 5], 4.40, 'Excellent public service orientation.'],
             // Patricia Lim
-            [$v1Apps[4]->id, $chairperson->id, ['professionalism_ethics'=>4,'results_focus'=>3,'teamwork_cooperation'=>4,'creative_problem_solving'=>3,'public_service_orientation'=>4], 3.60, 'Satisfactory overall. Moderate results focus.'],
-            [$v1Apps[4]->id, $dirRep->id,      ['professionalism_ethics'=>3,'results_focus'=>4,'teamwork_cooperation'=>3,'creative_problem_solving'=>4,'public_service_orientation'=>3], 3.40, 'Average performance. Further development needed.'],
-            [$v1Apps[4]->id, $divChief->id,    ['professionalism_ethics'=>4,'results_focus'=>3,'teamwork_cooperation'=>4,'creative_problem_solving'=>3,'public_service_orientation'=>4], 3.60, 'Satisfactory. Good interpersonal skills.'],
+            [$v1Apps[4]->id, $chairperson->id, ['professionalism_ethics' => 4, 'results_focus' => 3, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 3, 'public_service_orientation' => 4], 3.60, 'Satisfactory overall. Moderate results focus.'],
+            [$v1Apps[4]->id, $dirRep->id,      ['professionalism_ethics' => 3, 'results_focus' => 4, 'teamwork_cooperation' => 3, 'creative_problem_solving' => 4, 'public_service_orientation' => 3], 3.40, 'Average performance. Further development needed.'],
+            [$v1Apps[4]->id, $divChief->id,    ['professionalism_ethics' => 4, 'results_focus' => 3, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 3, 'public_service_orientation' => 4], 3.60, 'Satisfactory. Good interpersonal skills.'],
         ];
 
         foreach ($beiData as [$appId, $evalId, $scores, $total, $remarks]) {
             BeiRating::create([
-                'application_id'  => $appId,
-                'evaluator_id'    => $evalId,
-                'competency_scores'=> $scores,
-                'total_rating'    => $total,
-                'remarks'         => $remarks,
-                'rated_at'        => Carbon::now()->subDays(10),
-                'locked_at'       => Carbon::now()->subDays(9),
+                'application_id' => $appId,
+                'evaluator_id' => $evalId,
+                'competency_scores' => $scores,
+                'total_rating' => $total,
+                'remarks' => $remarks,
+                'rated_at' => Carbon::now()->subDays(10),
+                'locked_at' => Carbon::now()->subDays(9),
             ]);
         }
 
@@ -431,32 +467,32 @@ class DatabaseSeeder extends Seeder
         // Scale: 1-5
         $cbweData = [
             // Ana
-            [$v1Apps[0]->id, $chairperson->id, ['exemplifying_integrity'=>5,'delivering_service_excellence'=>5,'solving_problems_making_decisions'=>4], 4.67, 'Exceptional integrity and client focus.'],
-            [$v1Apps[0]->id, $dirRep->id,      ['exemplifying_integrity'=>5,'delivering_service_excellence'=>4,'solving_problems_making_decisions'=>5], 4.67, 'Very strong problem-solving in simulated scenarios.'],
-            [$v1Apps[0]->id, $divChief->id,    ['exemplifying_integrity'=>4,'delivering_service_excellence'=>5,'solving_problems_making_decisions'=>4], 4.33, 'Excellent service orientation.'],
+            [$v1Apps[0]->id, $chairperson->id, ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.67, 'Exceptional integrity and client focus.'],
+            [$v1Apps[0]->id, $dirRep->id,      ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 5], 4.67, 'Very strong problem-solving in simulated scenarios.'],
+            [$v1Apps[0]->id, $divChief->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.33, 'Excellent service orientation.'],
             // Carlo
-            [$v1Apps[1]->id, $chairperson->id, ['exemplifying_integrity'=>4,'delivering_service_excellence'=>3,'solving_problems_making_decisions'=>3], 3.33, 'Acceptable. Needs growth in service delivery.'],
-            [$v1Apps[1]->id, $dirRep->id,      ['exemplifying_integrity'=>3,'delivering_service_excellence'=>4,'solving_problems_making_decisions'=>3], 3.33, 'Average performance.'],
-            [$v1Apps[1]->id, $divChief->id,    ['exemplifying_integrity'=>4,'delivering_service_excellence'=>3,'solving_problems_making_decisions'=>4], 3.67, 'Satisfactory.'],
+            [$v1Apps[1]->id, $chairperson->id, ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'solving_problems_making_decisions' => 3], 3.33, 'Acceptable. Needs growth in service delivery.'],
+            [$v1Apps[1]->id, $dirRep->id,      ['exemplifying_integrity' => 3, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 3], 3.33, 'Average performance.'],
+            [$v1Apps[1]->id, $divChief->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'solving_problems_making_decisions' => 4], 3.67, 'Satisfactory.'],
             // Liza
-            [$v1Apps[2]->id, $chairperson->id, ['exemplifying_integrity'=>5,'delivering_service_excellence'=>4,'solving_problems_making_decisions'=>5], 4.67, 'Demonstrates high integrity and sharp analytical skills.'],
-            [$v1Apps[2]->id, $dirRep->id,      ['exemplifying_integrity'=>4,'delivering_service_excellence'=>5,'solving_problems_making_decisions'=>4], 4.33, 'Highly service-oriented.'],
-            [$v1Apps[2]->id, $divChief->id,    ['exemplifying_integrity'=>5,'delivering_service_excellence'=>5,'solving_problems_making_decisions'=>4], 4.67, 'Outstanding.'],
+            [$v1Apps[2]->id, $chairperson->id, ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 5], 4.67, 'Demonstrates high integrity and sharp analytical skills.'],
+            [$v1Apps[2]->id, $dirRep->id,      ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.33, 'Highly service-oriented.'],
+            [$v1Apps[2]->id, $divChief->id,    ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.67, 'Outstanding.'],
             // Patricia
-            [$v1Apps[4]->id, $chairperson->id, ['exemplifying_integrity'=>4,'delivering_service_excellence'=>3,'solving_problems_making_decisions'=>3], 3.33, 'Satisfactory with areas for improvement.'],
-            [$v1Apps[4]->id, $dirRep->id,      ['exemplifying_integrity'=>3,'delivering_service_excellence'=>4,'solving_problems_making_decisions'=>3], 3.33, 'Average overall.'],
-            [$v1Apps[4]->id, $divChief->id,    ['exemplifying_integrity'=>4,'delivering_service_excellence'=>3,'solving_problems_making_decisions'=>4], 3.67, 'Acceptable performance.'],
+            [$v1Apps[4]->id, $chairperson->id, ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'solving_problems_making_decisions' => 3], 3.33, 'Satisfactory with areas for improvement.'],
+            [$v1Apps[4]->id, $dirRep->id,      ['exemplifying_integrity' => 3, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 3], 3.33, 'Average overall.'],
+            [$v1Apps[4]->id, $divChief->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'solving_problems_making_decisions' => 4], 3.67, 'Acceptable performance.'],
         ];
 
         foreach ($cbweData as [$appId, $evalId, $scores, $total, $remarks]) {
             CbweRating::create([
-                'application_id'   => $appId,
-                'evaluator_id'     => $evalId,
-                'competency_scores'=> $scores,
-                'total_rating'     => $total,
-                'remarks'          => $remarks,
-                'rated_at'         => Carbon::now()->subDays(10),
-                'locked_at'        => Carbon::now()->subDays(9),
+                'application_id' => $appId,
+                'evaluator_id' => $evalId,
+                'competency_scores' => $scores,
+                'total_rating' => $total,
+                'remarks' => $remarks,
+                'rated_at' => Carbon::now()->subDays(10),
+                'locked_at' => Carbon::now()->subDays(9),
             ]);
         }
 
@@ -464,43 +500,154 @@ class DatabaseSeeder extends Seeder
         $v2Apps = collect();
         foreach ([1, 5, 6] as $i) {
             $app = Application::create([
-                'vacancy_id'   => $v2->id,
+                'vacancy_id' => $v2->id,
                 'applicant_id' => $profiles[$i]->id,
-                'status'       => 'screened',
+                'status' => 'screened',
                 'submitted_at' => Carbon::now()->subDays(18),
-                'reviewed_at'  => Carbon::now()->subDays(16),
+                'reviewed_at' => Carbon::now()->subDays(16),
             ]);
             $v2Apps->push($app);
 
             AnonymizationToken::create([
                 'application_id' => $app->id,
-                'token'          => 'ITO1-0601-00' . ($v2Apps->count()),
+                'token' => 'ITO1-0601-00'.($v2Apps->count()),
             ]);
 
             QsEvaluation::create([
-                'application_id'    => $app->id,
-                'evaluator_id'      => $secretariat->id,
-                'education_meets'   => true,
-                'experience_meets'  => true,
-                'training_meets'    => true,
+                'application_id' => $app->id,
+                'evaluator_id' => $secretariat->id,
+                'education_meets' => true,
+                'experience_meets' => true,
+                'training_meets' => true,
                 'eligibility_meets' => $i !== 5, // Marco has sub-professional — disqualified
                 'overall_qualified' => $i !== 5,
-                'remarks'           => $i === 5 ? 'Eligibility does not meet second level requirement.' : 'Meets all minimum qualifications.',
-                'evaluated_at'      => Carbon::now()->subDays(14),
-                'locked_at'         => Carbon::now()->subDays(13),
+                'remarks' => $i === 5 ? 'Eligibility does not meet second level requirement.' : 'Meets all minimum qualifications.',
+                'evaluated_at' => Carbon::now()->subDays(14),
+                'locked_at' => Carbon::now()->subDays(13),
             ]);
         }
 
-        // ── Applications for V3 (HRMO III) — submitted ───────────────────────
+        // ── Applications for V3 (HRMO III) ────────────────────────────────────
+        // Josephine Aquino (index 6) is pushed through the full pipeline and
+        // has already been selected by the Appointing Authority. Liza Reyes
+        // (index 2) remains an earlier-stage comparator application.
+        $v3Apps = collect();
         foreach ([2, 6] as $i) {
-            Application::create([
-                'vacancy_id'   => $v3->id,
+            $app = Application::create([
+                'vacancy_id' => $v3->id,
                 'applicant_id' => $profiles[$i]->id,
-                'status'       => 'submitted',
+                'status' => $i === 6 ? 'appointed' : 'submitted',
                 'submitted_at' => Carbon::now()->subDays(10),
-                'reviewed_at'  => null,
+                'reviewed_at' => $i === 6 ? Carbon::now()->subDays(2) : null,
+            ]);
+            $v3Apps->push($app);
+        }
+        $v3Josephine = $v3Apps->firstWhere('applicant_id', $profiles[6]->id);
+
+        AnonymizationToken::create([
+            'application_id' => $v3Josephine->id,
+            'token' => 'HRMO3-0601-001',
+            'unmasked_at' => Carbon::now()->subDays(3),
+            'unmasked_by' => $admin->id,
+        ]);
+
+        QsEvaluation::create([
+            'application_id' => $v3Josephine->id,
+            'evaluator_id' => $secretariat->id,
+            'education_meets' => true,
+            'experience_meets' => true,
+            'training_meets' => true,
+            'eligibility_meets' => true,
+            'overall_qualified' => true,
+            'remarks' => 'Meets all minimum qualifications for HRMO III.',
+            'evaluated_at' => Carbon::now()->subDays(9),
+            'locked_at' => Carbon::now()->subDays(9),
+        ]);
+
+        PreAssessment::create([
+            'application_id' => $v3Josephine->id,
+            'pds_submitted' => true,
+            'ipcr_submitted' => true,
+            'tor_submitted' => true,
+            'coe_submitted' => true,
+            'requirements_complete' => true,
+            'requirements_remarks' => null,
+            'education_meets' => true,
+            'license_meets' => true,
+            'experience_meets' => true,
+            'training_meets' => true,
+            'eligibility_meets' => true,
+            'hrd_assessment' => true,
+            'hrd_remarks' => 'All requirements submitted and verified. Meets qualifications.',
+            'consensus' => true,
+            'assessed_by' => $secretariat->id,
+            'assessed_at' => Carbon::now()->subDays(8),
+        ]);
+
+        ExamResult::create([
+            'application_id' => $v3Josephine->id,
+            'exam_type' => 'TWE',
+            'raw_score' => 43,
+            'max_score' => 50,
+            'encoded_by' => $secretariat->id,
+            'encoded_at' => Carbon::now()->subDays(7),
+        ]);
+
+        $v3BeiData = [
+            [$chairperson->id, ['professionalism_ethics' => 5, 'results_focus' => 5, 'teamwork_cooperation' => 5, 'creative_problem_solving' => 4, 'public_service_orientation' => 5], 4.80, 'Exceptional candidate across all leadership competencies.'],
+            [$dirRep->id,      ['professionalism_ethics' => 5, 'results_focus' => 4, 'teamwork_cooperation' => 5, 'creative_problem_solving' => 5, 'public_service_orientation' => 4], 4.60, 'Strong strategic thinking and stakeholder management.'],
+            [$divChief->id,    ['professionalism_ethics' => 4, 'results_focus' => 5, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 5, 'public_service_orientation' => 5], 4.60, 'Highly recommended for the supervisory role.'],
+        ];
+        foreach ($v3BeiData as [$evalId, $scores, $total, $remarks]) {
+            BeiRating::create([
+                'application_id' => $v3Josephine->id,
+                'evaluator_id' => $evalId,
+                'competency_scores' => $scores,
+                'total_rating' => $total,
+                'remarks' => $remarks,
+                'rated_at' => Carbon::now()->subDays(6),
+                'locked_at' => Carbon::now()->subDays(5),
             ]);
         }
+
+        $v3CbweData = [
+            [$chairperson->id, ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.67, 'Excellent integrity and client focus.'],
+            [$dirRep->id,      ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 5], 4.67, 'Sharp analytical and policy interpretation skills.'],
+            [$divChief->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 5], 4.67, 'Outstanding overall performance.'],
+        ];
+        foreach ($v3CbweData as [$evalId, $scores, $total, $remarks]) {
+            CbweRating::create([
+                'application_id' => $v3Josephine->id,
+                'evaluator_id' => $evalId,
+                'competency_scores' => $scores,
+                'total_rating' => $total,
+                'remarks' => $remarks,
+                'rated_at' => Carbon::now()->subDays(6),
+                'locked_at' => Carbon::now()->subDays(5),
+            ]);
+        }
+
+        DeliberationResult::create([
+            'vacancy_id' => $v3->id,
+            'application_id' => $v3Josephine->id,
+            'action' => 'endorsed',
+            'rank' => 1,
+            'decided_by' => $secretariat->id,
+            'decided_at' => Carbon::now()->subDays(4),
+            'remarks' => 'Top-ranked candidate. Endorsed to the Appointing Authority for final decision.',
+            'locked_at' => Carbon::now()->subDays(4),
+        ]);
+
+        AppointingAuthorityDecision::create([
+            'vacancy_id' => $v3->id,
+            'application_id' => $v3Josephine->id,
+            'action' => 'appointed',
+            'decided_by' => $hrmpsb[2]->id, // Appointing Authority (Oquendo)
+            'decided_at' => Carbon::now()->subDays(2),
+            'remarks' => 'Selected as the most qualified candidate for Human Resource Management Officer III.',
+        ]);
+
+        $v3->update(['status' => 'filled']);
 
         // ── Audit Logs ────────────────────────────────────────────────────────
         $auditEntries = [
@@ -515,12 +662,12 @@ class DatabaseSeeder extends Seeder
 
         foreach ($auditEntries as [$userId, $action, $model, $createdAt]) {
             DB::table('audit_logs')->insert([
-                'user_id'        => $userId,
-                'action'         => $action,
+                'user_id' => $userId,
+                'action' => $action,
                 'auditable_type' => get_class($model),
-                'auditable_id'   => $model->id,
-                'created_at'     => $createdAt,
-                'updated_at'     => $createdAt,
+                'auditable_id' => $model->id,
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
             ]);
         }
     }

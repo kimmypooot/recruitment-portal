@@ -7,6 +7,7 @@
         :vacancy="vacancy"
         :stage="5"
         stageLabel="Behavioral Event Interview (BEI)"
+        stageKey="bei"
         :loading="loading"
       />
 

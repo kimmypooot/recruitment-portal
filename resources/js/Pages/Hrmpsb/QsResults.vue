@@ -7,6 +7,7 @@
         :vacancy="vacancy"
         :stage="2"
         stageLabel="QS Results"
+        stageKey="qs"
         :loading="loading"
       >
         <div v-if="qsLocked" class="mt-4 flex items-center gap-2 text-xs text-amber-700">

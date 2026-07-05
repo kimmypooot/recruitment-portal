@@ -7,6 +7,7 @@
       :vacancy="vacancy"
       :stage="1"
       stageLabel="Pre-Assessment Matrix"
+      stageKey="pre-assessment"
       :loading="loading"
     />
 

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Application;
+use App\Services\EmailTemplateMailBuilder;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -31,22 +32,23 @@ class ApplicationStatusUpdated extends Notification
         return $this->silent ? ['database'] : ['mail', 'database'];
     }
 
+    private const KNOWN_STATUSES = [
+        'submitted', 'under_review', 'screened', 'qualified', 'disqualified',
+        'exam_scheduled', 'shortlisted', 'for_interview', 'interviewed',
+        'recommended', 'appointed', 'completed', 'withdrawn', 'failed',
+    ];
+
     public function toMail(object $notifiable): MailMessage
     {
-        $details = $this->statusDetails();
+        $key = in_array($this->newStatus, self::KNOWN_STATUSES, true)
+            ? "application_status_{$this->newStatus}"
+            : 'application_status_default';
 
-        return (new MailMessage)
-            ->subject("Application Update — {$this->positionTitle}")
-            ->greeting("Dear {$this->applicantName},")
-            ->line("There has been an update on your application for **{$this->positionTitle}**.")
-            ->line("**Status:** {$details['headline']}")
-            ->when(
-                $details['description'],
-                fn ($m) => $m->line($details['description'])
-            )
-            ->action('View Your Application', url('/applicant/applications'))
-            ->line('Thank you for your continued interest in the CSC RO VIII.')
-            ->salutation('CSC RO VIII - Recruitment Portal');
+        return EmailTemplateMailBuilder::build($key, [
+            '{{applicant_name}}' => $this->applicantName,
+            '{{position_title}}' => $this->positionTitle,
+            '{{status_label}}' => $this->newStatusLabel,
+        ]);
     }
 
     public function toDatabase(object $notifiable): array

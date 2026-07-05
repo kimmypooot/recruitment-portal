@@ -516,8 +516,9 @@ function currentStageBadge(s) {
   const awaiting   = { class: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' }
   const done       = { class: 'bg-green-100 text-green-700', dot: 'bg-green-500' }
 
-  if (s.appointing_authority_exists) return { label: 'Awaiting Appointment',   ...{ class: 'bg-red-100 text-red-700', dot: 'bg-red-500' } }
-  if (s.deliberation_exists)         return { label: 'Deliberation Done',       ...done }
+  if (s.appointing_authority_appointed) return { label: 'Appointed',           ...done }
+  if (s.appointing_authority_exists)    return { label: 'Not Appointed',       ...{ class: 'bg-gray-100 text-gray-600', dot: 'bg-gray-400' } }
+  if (s.deliberation_exists)            return { label: 'Awaiting Appointment', ...{ class: 'bg-red-100 text-red-700', dot: 'bg-red-500' } }
   if (s.background_check_locked)     return { label: 'Awaiting Deliberation',   ...awaiting }
   if (s.background_check_exists)     return { label: 'BG Check In Progress',    ...inProgress }
   if (s.eopt_exists)                 return { label: 'EOPT Rated',              ...awaiting }

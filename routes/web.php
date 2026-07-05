@@ -69,22 +69,35 @@ Route::prefix('admin')->group(function () {
     Route::get('/reports', fn () => Inertia::render('Admin/Reports'));
     Route::get('/competencies', fn () => Inertia::render('Admin/Competencies'));
     Route::get('/feedbacks', fn () => Inertia::render('Admin/Feedbacks'));
+    Route::get('/email-templates', fn () => Inertia::render('Admin/EmailTemplates'));
 });
 
 // HRMPSB evaluation pages — auth enforced by API routes and client-side guards
+// Backend stage-gating via pipeline-stage middleware prevents direct URL access to locked stages
 Route::prefix('hrmpsb')->group(function () {
     Route::get('/dashboard', fn () => Inertia::render('Hrmpsb/Dashboard'));
-    Route::get('/qs-evaluation/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/QsEvaluation', ['vacancyId' => (int) $vacancy]));
-    Route::get('/qs-results/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/QsResults', ['vacancyId' => (int) $vacancy]));
-    Route::get('/exam-results/{vacancy}', fn ($vacancy, Request $r) => Inertia::render('Hrmpsb/ExamResults', ['vacancyId' => (int) $vacancy, 'exam_type' => $r->query('exam_type', 'TWE')]));
-    Route::get('/bei-rating/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/BeiRating', ['vacancyId' => (int) $vacancy]));
-    Route::get('/eopt/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/Eopt', ['vacancyId' => (int) $vacancy]));
-    Route::get('/deliberation/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/Deliberation', ['vacancyId' => (int) $vacancy]));
-    Route::get('/pre-assessment/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/PreAssessment', ['vacancyId' => (int) $vacancy]));
-    Route::get('/exam-schedule/{vacancy}', fn ($vacancy, Request $r) => Inertia::render('Hrmpsb/ExamScheduler', ['vacancyId' => (int) $vacancy, 'exam_type' => $r->query('exam_type', 'TWE')]));
-    Route::get('/bei-schedule/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/BeiScheduler', ['vacancyId' => (int) $vacancy]));
-    Route::get('/cbwe-rating/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/CbweRating', ['vacancyId' => (int) $vacancy]));
-    Route::get('/background-check/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/BackgroundCheck', ['vacancyId' => (int) $vacancy]));
+    Route::get('/pre-assessment/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/PreAssessment', ['vacancyId' => (int) $vacancy]))
+        ->middleware('pipeline-stage:pre-assessment');
+    Route::get('/qs-evaluation/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/QsEvaluation', ['vacancyId' => (int) $vacancy]))
+        ->middleware('pipeline-stage:qs');
+    Route::get('/qs-results/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/QsResults', ['vacancyId' => (int) $vacancy]))
+        ->middleware('pipeline-stage:qs');
+    Route::get('/exam-schedule/{vacancy}', fn ($vacancy, Request $r) => Inertia::render('Hrmpsb/ExamScheduler', ['vacancyId' => (int) $vacancy, 'exam_type' => $r->query('exam_type', 'TWE')]))
+        ->middleware('pipeline-stage:twe');
+    Route::get('/exam-results/{vacancy}', fn ($vacancy, Request $r) => Inertia::render('Hrmpsb/ExamResults', ['vacancyId' => (int) $vacancy, 'exam_type' => $r->query('exam_type', 'TWE')]))
+        ->middleware('pipeline-stage:twe');
+    Route::get('/cbwe-rating/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/CbweRating', ['vacancyId' => (int) $vacancy]))
+        ->middleware('pipeline-stage:cbwe');
+    Route::get('/bei-schedule/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/BeiScheduler', ['vacancyId' => (int) $vacancy]))
+        ->middleware('pipeline-stage:bei');
+    Route::get('/bei-rating/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/BeiRating', ['vacancyId' => (int) $vacancy]))
+        ->middleware('pipeline-stage:bei');
+    Route::get('/eopt/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/Eopt', ['vacancyId' => (int) $vacancy]))
+        ->middleware('pipeline-stage:eopt');
+    Route::get('/background-check/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/BackgroundCheck', ['vacancyId' => (int) $vacancy]))
+        ->middleware('pipeline-stage:background');
+    Route::get('/deliberation/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/Deliberation', ['vacancyId' => (int) $vacancy]))
+        ->middleware('pipeline-stage:deliberation');
     Route::get('/applicants/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/Applicants', ['vacancyId' => (int) $vacancy]));
     Route::get('/aa-decisions', fn () => Inertia::render('Hrmpsb/AaDecisions'));
 });
@@ -96,4 +109,16 @@ Route::prefix('appointing-authority')->group(function () {
         'vacancyId' => (int) $vacancy,
         'eoptDefinitions' => \App\Models\EoptResult::getAllDefinitions(),
     ]));
+});
+
+// Dev error preview — remove in production
+Route::get('/_error/{code}', function ($code) {
+    $status = (int) match ($code) {
+        '400', '401', '403', '404', '419', '429', '500', '503' => $code,
+        default => 404,
+    };
+
+    return Inertia::render('Error', ['status' => $status])
+        ->toResponse(request())
+        ->setStatusCode($status);
 });

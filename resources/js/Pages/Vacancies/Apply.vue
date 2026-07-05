@@ -62,15 +62,24 @@
 
           <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-5 border-t border-white/20">
             <div>
-              <p class="text-xs text-white/60 font-medium">Education Req.</p>
+              <p class="text-xs text-white/60 font-medium flex items-center gap-1.5">
+                <Icon name="academicCap" size="3.5" color="text-white/60" class="flex-shrink-0" />
+                Education Req.
+              </p>
               <p class="text-sm text-white mt-0.5">{{ vacancy.education_req ?? '—' }}</p>
             </div>
             <div>
-              <p class="text-xs text-white/60 font-medium">Experience Req.</p>
+              <p class="text-xs text-white/60 font-medium flex items-center gap-1.5">
+                <Icon name="briefcase" size="3.5" color="text-white/60" class="flex-shrink-0" />
+                Experience Req.
+              </p>
               <p class="text-sm text-white mt-0.5">{{ vacancy.experience_req ?? '—' }}</p>
             </div>
             <div>
-              <p class="text-xs text-white/60 font-medium">Eligibility Req.</p>
+              <p class="text-xs text-white/60 font-medium flex items-center gap-1.5">
+                <Icon name="shield" size="3.5" color="text-white/60" class="flex-shrink-0" />
+                Eligibility Req.
+              </p>
               <p class="text-sm text-white mt-0.5">{{ vacancy.eligibility_req ?? '—' }}</p>
             </div>
           </div>
@@ -177,13 +186,19 @@
 
             <!-- Eligibility -->
             <div>
-              <p class="text-xs text-gray-400 font-medium mb-0.5">Civil Service Eligibility</p>
+              <p class="text-xs text-gray-400 font-medium mb-0.5 flex items-center gap-1.5">
+                <Icon name="shield" size="3.5" color="text-gray-400" class="flex-shrink-0" />
+                Civil Service Eligibility
+              </p>
               <p class="text-sm font-semibold text-gray-900">{{ profile.eligibility ?? '—' }}</p>
             </div>
 
             <!-- Work Experience -->
             <div>
-              <p class="text-xs text-gray-400 font-medium mb-2">Work Experience ({{ (profile.work_experiences ?? []).length }} record{{ (profile.work_experiences ?? []).length !== 1 ? 's' : '' }})</p>
+              <p class="text-xs text-gray-400 font-medium mb-2 flex items-center gap-1.5">
+                <Icon name="briefcase" size="3.5" color="text-gray-400" class="flex-shrink-0" />
+                Work Experience ({{ (profile.work_experiences ?? []).length }} record{{ (profile.work_experiences ?? []).length !== 1 ? 's' : '' }})
+              </p>
               <div v-if="(profile.work_experiences ?? []).length" class="space-y-2">
                 <div v-for="exp in (profile.work_experiences ?? []).slice(0, 3)" :key="exp.id"
                   class="flex items-start justify-between gap-4 py-2.5 px-3 rounded-lg bg-gray-50">
@@ -204,7 +219,10 @@
 
             <!-- Education -->
             <div>
-              <p class="text-xs text-gray-400 font-medium mb-2">Educational Attainment ({{ (profile.educational_attainments ?? []).length }} record{{ (profile.educational_attainments ?? []).length !== 1 ? 's' : '' }})</p>
+              <p class="text-xs text-gray-400 font-medium mb-2 flex items-center gap-1.5">
+                <Icon name="academicCap" size="3.5" color="text-gray-400" class="flex-shrink-0" />
+                Educational Attainment ({{ (profile.educational_attainments ?? []).length }} record{{ (profile.educational_attainments ?? []).length !== 1 ? 's' : '' }})
+              </p>
               <div v-if="(profile.educational_attainments ?? []).length" class="space-y-2">
                 <div v-for="edu in profile.educational_attainments" :key="edu.id"
                   class="py-2.5 px-3 rounded-lg bg-gray-50">

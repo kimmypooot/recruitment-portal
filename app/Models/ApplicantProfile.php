@@ -75,4 +75,17 @@ class ApplicantProfile extends Model
             && $this->region !== null
             && $this->eligibility !== null;
     }
+
+    /**
+     * Required documents to submit an application: PDS, Application Letter,
+     * Certificate of Eligibility, and Transcript of Records. IPCR is optional
+     * (mirrors the required flags in CompleteProfile.vue's docFields).
+     */
+    public function hasRequiredDocuments(): bool
+    {
+        return $this->pds_path !== null
+            && $this->app_letter_path !== null
+            && $this->coe_path !== null
+            && $this->tor_path !== null;
+    }
 }

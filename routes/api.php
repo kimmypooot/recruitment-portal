@@ -14,6 +14,7 @@ use App\Http\Controllers\CsFormController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliberationController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\EmailTemplateController;
 use App\Http\Controllers\EoptController;
 use App\Http\Controllers\ExaminationController;
 use App\Http\Controllers\ExamResultController;
@@ -33,6 +34,7 @@ use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::get('/vacancies', [VacancyController::class, 'index']);
+Route::get('/vacancies/status-counts', [VacancyController::class, 'statusCounts']);
 Route::get('/vacancies/{vacancy}', [VacancyController::class, 'show']);
 Route::get('/testimonials', [FeedbackController::class, 'testimonials']);
 Route::get('/competencies', [VacancyCompetencyController::class, 'index']);
@@ -56,8 +58,13 @@ Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard/recent-applications', [DashboardController::class, 'recentApplications']);
     Route::get('/dashboard/pipeline', [DashboardController::class, 'pipeline']);
+    Route::get('/dashboard/pipeline-by-vacancy', [DashboardController::class, 'pipelineByVacancy']);
     Route::get('/dashboard/upcoming', [DashboardController::class, 'upcoming']);
 });
+
+// HR/admin export — registered before the applicant `{application}` wildcard
+// route below so "export" isn't swallowed as a route-model-bound application ID.
+Route::middleware(['auth:sanctum', 'admin-access'])->get('/applications/export', [ApplicationController::class, 'export']);
 
 // Authenticated applicant routes
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -98,8 +105,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 // HR / Admin management routes (admin role + hrmpsb with secretariat/hr-chief designation)
 Route::middleware(['auth:sanctum', 'admin-access'])->group(function () {
-    Route::apiResource('vacancies', VacancyController::class)->except(['index', 'show']);
+    // Registered before the apiResource below so "bulk-status" isn't swallowed
+    // by the PATCH /vacancies/{vacancy} wildcard route as a vacancy ID.
     Route::patch('/vacancies/bulk-status', [VacancyController::class, 'bulkUpdateStatus']);
+    Route::apiResource('vacancies', VacancyController::class)->except(['index', 'show']);
     Route::patch('/vacancies/{vacancy}/publish', [VacancyController::class, 'publish']);
     Route::patch('/vacancies/{vacancy}/archive', [VacancyController::class, 'archive']);
     Route::get('/applications', [ApplicationController::class, 'hrIndex']);
@@ -139,6 +148,16 @@ Route::middleware(['auth:sanctum', 'admin-access'])->prefix('admin')->group(func
     Route::delete('/hrmpsb/compositions/{composition}', [HrmbsboardController::class, 'remove']);
     Route::patch('/hrmpsb/compositions/{composition}/toggle-type', [HrmbsboardController::class, 'toggleType']);
     Route::patch('/hrmpsb/compositions/{composition}/toggle-active', [HrmbsboardController::class, 'toggleActive']);
+
+    // Place of Assignment Heads (dynamic Head of Unit mapping)
+    Route::get('/place-of-assignment-heads', [HrmbsboardController::class, 'poaHeads']);
+    Route::post('/place-of-assignment-heads', [HrmbsboardController::class, 'assignPoaHead']);
+    Route::delete('/place-of-assignment-heads/{head}', [HrmbsboardController::class, 'removePoaHead']);
+
+    // Email template management
+    Route::get('/email-templates', [EmailTemplateController::class, 'index']);
+    Route::get('/email-templates/{emailTemplate}/preview', [EmailTemplateController::class, 'preview']);
+    Route::put('/email-templates/{emailTemplate}', [EmailTemplateController::class, 'update']);
 });
 
 // Exports

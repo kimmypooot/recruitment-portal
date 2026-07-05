@@ -14,10 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(\App\Http\Middleware\AddCspHeaders::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\HandleInertiaRequests::class);
 
         $middleware->alias([
-            'role'         => \App\Http\Middleware\EnsureRole::class,
-            'admin-access' => \App\Http\Middleware\EnsureAdminAccess::class,
+            'role'           => \App\Http\Middleware\EnsureRole::class,
+            'admin-access'   => \App\Http\Middleware\EnsureAdminAccess::class,
+            'pipeline-stage' => \App\Http\Middleware\EnsurePipelineStageAccessible::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

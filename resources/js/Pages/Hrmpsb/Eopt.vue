@@ -7,6 +7,7 @@
         :vacancy="vacancy"
         :stage="6"
         stageLabel="Ethics-Oriented Personality Test (EOPT)"
+        stageKey="eopt"
         :loading="loading"
       />
 

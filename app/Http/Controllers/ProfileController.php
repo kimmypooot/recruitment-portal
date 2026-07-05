@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\ApplicantProfile;
+use App\Models\User;
 use App\Models\WorkExperience;
 use App\Models\EducationalAttainment;
 use App\Models\Training;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -31,6 +33,10 @@ class ProfileController extends Controller
     public function update(Request $request): JsonResponse
     {
         $data = $request->validate([
+            'first_name'        => 'sometimes|required|string|max:100',
+            'last_name'         => 'sometimes|required|string|max:100',
+            'middle_name'       => 'nullable|string|max:100',
+            'suffix'            => 'nullable|string|max:20',
             'gender'            => 'nullable|string|max:20',
             'civil_status'      => 'nullable|string|max:30',
             'birthday'          => 'nullable|date',
@@ -47,8 +53,45 @@ class ProfileController extends Controller
             'solo_parent'       => 'nullable|string|in:Yes,No',
         ]);
 
+        $nameKeys  = ['first_name', 'last_name', 'middle_name', 'suffix'];
+        $nameData  = array_intersect_key($data, array_flip($nameKeys));
+        $profileData = array_diff_key($data, array_flip($nameKeys));
+
+        $user = Auth::user();
+
+        if (! empty($nameData)) {
+            $firstName  = trim($nameData['first_name'] ?? $user->first_name);
+            $lastName   = trim($nameData['last_name'] ?? $user->last_name);
+            $middleName = array_key_exists('middle_name', $nameData) ? $nameData['middle_name'] : $user->middle_name;
+            $suffix     = array_key_exists('suffix', $nameData) ? $nameData['suffix'] : $user->suffix;
+            $middleName = $middleName ? trim($middleName) : null;
+            $suffix     = $suffix ? trim($suffix) : null;
+
+            DB::transaction(function () use ($user, $firstName, $lastName, $middleName, $suffix) {
+                $duplicate = User::lockForUpdate()
+                    ->where('id', '!=', $user->id)
+                    ->whereRaw('LOWER(first_name) = ? AND LOWER(last_name) = ?', [
+                        strtolower($firstName),
+                        strtolower($lastName),
+                    ])
+                    ->when($middleName, fn ($q, $m) => $q->whereRaw('LOWER(middle_name) = ?', [strtolower($m)]))
+                    ->first();
+
+                if ($duplicate) {
+                    abort(409, 'Another account already uses this name. Please contact support if this is an error.');
+                }
+
+                $user->update([
+                    'first_name'  => $firstName,
+                    'last_name'   => $lastName,
+                    'middle_name' => $middleName,
+                    'suffix'      => $suffix,
+                ]);
+            });
+        }
+
         $profile = $this->getOrCreateProfile();
-        $profile->fill($data);
+        $profile->fill($profileData);
 
         if ($profile->isComplete() && $profile->profile_completed_at === null) {
             $profile->profile_completed_at = now();
@@ -57,6 +100,7 @@ class ProfileController extends Controller
         $profile->save();
 
         return response()->json([
+            'user'        => $user->fresh(),
             'profile'     => $profile->fresh(['workExperiences', 'educationalAttainments', 'trainings']),
             'is_complete' => $profile->isComplete(),
         ]);
@@ -95,6 +139,10 @@ class ProfileController extends Controller
 
         if ($profile?->photo_path && Storage::disk('public')->exists($profile->photo_path)) {
             return Storage::disk('public')->response($profile->photo_path);
+        }
+
+        if ($user->google_avatar) {
+            return redirect($user->google_avatar);
         }
 
         // Return transparent pixel so the browser doesn't log a 404 for non-applicant users

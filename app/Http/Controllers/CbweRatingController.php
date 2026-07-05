@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\CbweRating;
 use App\Models\HrmbsboardComposition;
+use App\Models\QsEvaluation;
 use App\Models\Vacancy;
 use App\Models\VacancyCompetency;
 use App\Services\AuditLog;
@@ -123,6 +124,19 @@ class CbweRatingController extends Controller
 
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
+
+        // CBWE may be conducted concurrently with the TWE exam (board's discretion), so we
+        // only require that QS screening — the actual prerequisite for both — is done.
+        $qsEvaluations = QsEvaluation::where('application_id', $data['application_id'])->get();
+        $qsLocked = $qsEvaluations->isNotEmpty() && $qsEvaluations->every(fn ($e) => $e->locked_at !== null);
+        $qsQualified = $qsEvaluations->count() > 0
+            && $qsEvaluations->where('overall_qualified', true)->count() > ($qsEvaluations->count() / 2);
+
+        if (! $qsLocked || ! $qsQualified) {
+            return response()->json([
+                'message' => 'This applicant must pass locked QS screening before CBWE rating can begin.',
+            ], 422);
+        }
 
         // Ensure submitted keys are among the 3 core CBWE competencies assigned to the vacancy
         $validKeys = VacancyCompetency::where('vacancy_id', $application->vacancy_id)

@@ -123,6 +123,7 @@
       <!-- ═══ Tab 1 — Personal Info ═══ -->
       <PersonalInfoTab
         v-show="activeTab === 'personal'"
+        :name="nameForm"
         :personal="personal"
         :photo-path="photoPath"
         :photo-url="photoUrl"
@@ -163,7 +164,7 @@
         :doc-paths="docPaths"
         :doc-timestamps="docTimestamps"
         :auth-token="authToken"
-        :is-complete="isComplete"
+        :is-complete="canApply"
         :saving="savingDocs"
         :errors="docErrors"
         @file-select="onDocFileSelect"
@@ -173,21 +174,39 @@
       <div v-if="activeTab !== 'documents'"
         class="fixed bottom-14 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-md transition-all duration-500"
         :class="sidebarCollapsed ? 'left-0' : 'left-0 lg:left-64'">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-end gap-4">
-          <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+          <button v-if="previousTab" @click="goToPreviousTab" type="button"
+            class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
             </svg>
-            Saved
-          </div>
-          <button @click="savePersonal" :disabled="savingPersonal"
-            class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-            <svg v-if="savingPersonal" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-            </svg>
-            {{ savingPersonal ? 'Saving…' : 'Save Changes' }}
+            <span class="hidden sm:inline">Previous:</span> {{ previousTab.label }}
           </button>
+          <div v-else></div>
+
+          <div class="flex items-center gap-4">
+            <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+              Saved
+            </div>
+            <button @click="savePersonal" :disabled="savingPersonal"
+              class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+              <svg v-if="savingPersonal" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+              </svg>
+              {{ savingPersonal ? 'Saving…' : 'Save Changes' }}
+            </button>
+            <button v-if="nextTab" @click="goToNextTab" type="button"
+              class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-[#2a338f] hover:bg-[#2a338f]/5 rounded-lg transition-colors">
+              <span class="hidden sm:inline">Next:</span> {{ nextTab.label }}
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -195,21 +214,32 @@
       <div v-if="activeTab === 'documents'"
         class="fixed bottom-14 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-md transition-all duration-500"
         :class="sidebarCollapsed ? 'left-0' : 'left-0 lg:left-64'">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-end gap-4">
-          <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+          <button v-if="previousTab" @click="goToPreviousTab" type="button"
+            class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
             </svg>
-            Uploaded
-          </div>
-          <button @click="uploadDocuments" :disabled="savingDocs"
-            class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-            <svg v-if="savingDocs" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-            </svg>
-            {{ savingDocs ? 'Uploading…' : 'Upload Documents' }}
+            <span class="hidden sm:inline">Previous:</span> {{ previousTab.label }}
           </button>
+          <div v-else></div>
+
+          <div class="flex items-center gap-4">
+            <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+              Uploaded
+            </div>
+            <button @click="uploadDocuments" :disabled="savingDocs"
+              class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+              <svg v-if="savingDocs" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+              </svg>
+              {{ savingDocs ? 'Uploading…' : 'Upload Documents' }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -646,6 +676,13 @@ const personal = reactive({
   indigenous_group: '', pwd: '', solo_parent: '',
 })
 
+const nameForm = reactive({
+  first_name: authUser.value.first_name ?? '',
+  middle_name: authUser.value.middle_name ?? '',
+  last_name: authUser.value.last_name ?? '',
+  suffix: authUser.value.suffix ?? '',
+})
+
 const errors = reactive({})
 
 const tabs = computed(() => [
@@ -689,6 +726,14 @@ const docFields = [
   { key: 'coe',        label: 'Certificate of Eligibility', required: true },
   { key: 'tor',        label: 'Authenticated Transcript of Records', required: true },
 ]
+
+const hasRequiredDocuments = computed(() =>
+  docFields.filter(d => d.required).every(d => !!docPaths[d.key])
+)
+
+// "Complete" here means actually eligible to apply — basic profile info
+// alone isn't enough; the required documents must be uploaded too.
+const canApply = computed(() => isComplete.value && hasRequiredDocuments.value)
 
 const docErrors = reactive({})
 
@@ -777,6 +822,18 @@ async function switchTab(tabKey) {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+const currentTabIndex = computed(() => tabs.value.findIndex(t => t.key === activeTab.value))
+const previousTab     = computed(() => currentTabIndex.value > 0 ? tabs.value[currentTabIndex.value - 1] : null)
+const nextTab         = computed(() => currentTabIndex.value < tabs.value.length - 1 ? tabs.value[currentTabIndex.value + 1] : null)
+
+function goToPreviousTab() {
+  if (previousTab.value) switchTab(previousTab.value.key)
+}
+
+function goToNextTab() {
+  if (nextTab.value) switchTab(nextTab.value.key)
+}
+
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 onMounted(async () => {
@@ -790,6 +847,12 @@ onMounted(async () => {
 
   try {
     const { data } = await profileApi.show()
+    if (data.user) {
+      nameForm.first_name = data.user.first_name ?? ''
+      nameForm.middle_name = data.user.middle_name ?? ''
+      nameForm.last_name = data.user.last_name ?? ''
+      nameForm.suffix = data.user.suffix ?? ''
+    }
     if (data.profile) {
       const p = data.profile
       Object.keys(personal).forEach(k => { if (p[k] !== null && p[k] !== undefined) personal[k] = p[k] })
@@ -826,6 +889,13 @@ function validateRequired() {
     if (!personal[f]) { errors[f] = `${labels[f]} is required.`; valid = false }
     else { delete errors[f] }
   })
+
+  const nameLabels = { first_name: 'First Name', last_name: 'Last Name' }
+  ;['first_name', 'last_name'].forEach(f => {
+    if (!nameForm[f]?.trim()) { errors[f] = `${nameLabels[f]} is required.`; valid = false }
+    else { delete errors[f] }
+  })
+
   return valid
 }
 
@@ -833,11 +903,17 @@ async function savePersonal() {
   if (!validateRequired()) return
   savingPersonal.value = true
   try {
-    const { data } = await profileApi.update({ ...personal })
+    const { data } = await profileApi.update({ ...personal, ...nameForm })
     isComplete.value = data.is_complete
     localStorage.setItem('profile_complete', data.is_complete)
     window.dispatchEvent(new CustomEvent('profile-complete-changed'))
     localStorage.removeItem(DRAFT_KEY())
+    if (data.user) {
+      const stored = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+      localStorage.setItem('auth_user', JSON.stringify({ ...stored, ...data.user }))
+      refreshAuthUser()
+      window.dispatchEvent(new CustomEvent('auth-user-updated'))
+    }
     showSaveIndicator()
   } catch (e) {
     await alert(e.response?.data?.message ?? 'Failed to save.')

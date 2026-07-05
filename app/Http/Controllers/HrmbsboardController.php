@@ -15,10 +15,12 @@ use App\Models\ExamResult;
 use App\Models\ExamSchedule;
 use App\Models\HrmbsboardComposition;
 use App\Models\InterviewSchedule;
+use App\Models\PlaceOfAssignmentHead;
 use App\Models\PreAssessment;
 use App\Models\QsEvaluation;
 use App\Models\Vacancy;
 use App\Services\AuditLog;
+use App\Services\HrmpsbCompositionService;
 use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,8 +32,46 @@ class HrmbsboardController extends Controller
 {
     use FormatsApplicantName;
 
-    public function compositions(): JsonResponse
+    public function compositions(Request $request): JsonResponse
     {
+        $vacancyId = $request->query('vacancy_id');
+
+        if ($vacancyId) {
+            $vacancy = Vacancy::findOrFail($vacancyId);
+            $service = app(HrmpsbCompositionService::class);
+            $compositions = $service->forVacancy($vacancy);
+
+            $compositions = $compositions->map(fn ($c) => [
+                'id' => $c->id ?? null,
+                'user_id' => $c->user_id,
+                'hrmpsb_role' => $c->hrmpsb_role,
+                'member_type' => $c->member_type ?? 'principal',
+                'is_active' => $c->is_active ?? true,
+                'is_dynamic' => $c->is_dynamic ?? false,
+                'assigned_by' => $c->assignedBy ?? null,
+                'assigned_at' => $c->assigned_at ?? null,
+                'user' => $c->user ? [
+                    'id' => $c->user->id,
+                    'first_name' => $c->user->first_name,
+                    'last_name' => $c->user->last_name,
+                    'middle_name' => $c->user->middle_name,
+                    'suffix' => $c->user->suffix,
+                    'email' => $c->user->email,
+                    'full_name' => trim(implode(' ', array_filter([
+                        $c->user->first_name,
+                        $c->user->middle_name,
+                        $c->user->last_name,
+                        $c->user->suffix,
+                    ]))),
+                ] : null,
+            ]);
+
+            return response()->json([
+                'compositions' => $compositions,
+                'roles' => HrmbsboardComposition::ALL_ROLES,
+            ]);
+        }
+
         $compositions = HrmbsboardComposition::with(['user:id,first_name,last_name,middle_name,suffix,email,role', 'assignedBy:id,first_name,last_name,middle_name,suffix'])
             ->orderBy('hrmpsb_role')
             ->get();
@@ -157,6 +197,7 @@ class HrmbsboardController extends Controller
                     'deliberation_exists' => false,
                     'comparative_assessment_exists' => false,
                     'appointing_authority_exists' => false,
+                    'appointing_authority_appointed' => false,
                 ];
 
                 continue;
@@ -181,6 +222,9 @@ class HrmbsboardController extends Controller
             $deliExists = DeliberationResult::where('vacancy_id', $vacancyId)->whereNotNull('locked_at')->exists();
             $carExists = ComparativeAssessmentResult::where('vacancy_id', $vacancyId)->exists();
             $aaExists = AppointingAuthorityDecision::where('vacancy_id', $vacancyId)->exists();
+            $aaAppointed = AppointingAuthorityDecision::where('vacancy_id', $vacancyId)
+                ->where('action', 'appointed')
+                ->exists();
 
             $stages[$vacancyId] = [
                 'pre_assessment_exists' => $preAssessmentExists,
@@ -200,6 +244,7 @@ class HrmbsboardController extends Controller
                 'deliberation_exists' => $deliExists,
                 'comparative_assessment_exists' => $carExists,
                 'appointing_authority_exists' => $aaExists,
+                'appointing_authority_appointed' => $aaAppointed,
             ];
         }
 
@@ -352,6 +397,46 @@ class HrmbsboardController extends Controller
             ],
             'applicants' => $applications,
         ]);
+    }
+
+    // ── Place of Assignment Heads ─────────────────────────────────────────
+
+    public function poaHeads(): JsonResponse
+    {
+        $heads = PlaceOfAssignmentHead::with(['user:id,first_name,last_name,middle_name,suffix,email,role', 'assignedBy:id,first_name,last_name,middle_name,suffix'])
+            ->orderBy('place_of_assignment')
+            ->get();
+
+        return response()->json(['heads' => $heads]);
+    }
+
+    public function assignPoaHead(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'place_of_assignment' => ['required', Rule::in(Vacancy::placesOfAssignment())],
+            'user_id' => ['required', Rule::exists('users', 'id')->where('role', 'hrmpsb')],
+        ]);
+
+        $head = PlaceOfAssignmentHead::updateOrCreate(
+            ['place_of_assignment' => $data['place_of_assignment']],
+            [
+                'user_id' => $data['user_id'],
+                'assigned_by' => $request->user()->id,
+            ]
+        );
+
+        AuditLog::record("poa_head_assigned:{$data['place_of_assignment']}", $head);
+
+        return response()->json($head->load('user:id,first_name,last_name,middle_name,suffix,email,role'), 201);
+    }
+
+    public function removePoaHead(PlaceOfAssignmentHead $head): JsonResponse
+    {
+        AuditLog::record("poa_head_removed:{$head->place_of_assignment}", $head);
+
+        $head->delete();
+
+        return response()->json(['message' => 'Head of unit removed for this place of assignment.']);
     }
 
     public function downloadRequirements(Request $request, Vacancy $vacancy)

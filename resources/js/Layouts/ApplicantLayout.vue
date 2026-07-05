@@ -92,7 +92,9 @@
               <div class="relative w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
                 <span>{{ userInitial }}</span>
                 <img :src="`/profile/photo?token=${authToken}`"
-                  class="absolute inset-0 w-full h-full object-cover"
+                  class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                  :class="avatarLoaded ? 'opacity-100' : 'opacity-0'"
+                  @load="avatarLoaded = true"
                   @error="e => e.target.style.display = 'none'"
                   alt="" />
               </div>
@@ -418,6 +420,7 @@ async function submitChangePassword() {
 const page              = usePage()
 const authToken      = ref('')
 const authUser       = ref({})
+const avatarLoaded   = ref(false)
 
 const profileComplete = ref(localStorage.getItem('profile_complete') === 'true')
 
@@ -516,6 +519,10 @@ async function confirmLogout() {
   navigateTo('/login')
 }
 
+function refreshAuthUser() {
+  authUser.value = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+}
+
 onMounted(() => {
   authToken.value = localStorage.getItem('auth_token') ?? ''
   authUser.value  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
@@ -524,6 +531,7 @@ onMounted(() => {
   window.addEventListener('scroll', handleScroll, { passive: true })
   window.addEventListener('storage', refreshProfileStatus)
   window.addEventListener('profile-complete-changed', refreshProfileStatus)
+  window.addEventListener('auth-user-updated', refreshAuthUser)
 })
 
 onBeforeUnmount(() => {
@@ -531,5 +539,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll)
   window.removeEventListener('storage', refreshProfileStatus)
   window.removeEventListener('profile-complete-changed', refreshProfileStatus)
+  window.removeEventListener('auth-user-updated', refreshAuthUser)
 })
 </script>

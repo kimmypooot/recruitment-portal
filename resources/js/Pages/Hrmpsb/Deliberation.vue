@@ -7,6 +7,7 @@
         :vacancy="vacancy"
         :stage="8"
         stageLabel="Final Deliberation &amp; Selection"
+        stageKey="deliberation"
         :loading="loading"
       />
 

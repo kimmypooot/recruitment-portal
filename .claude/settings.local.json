@@ -24,7 +24,18 @@
       "Bash(php -l app/Http/Controllers/AuthController.php)",
       "Bash(php -l app/Models/PrivacyConsent.php)",
       "Bash(php -l app/Http/Controllers/ProfileController.php)",
-      "Bash(php -l app/Http/Controllers/DocumentController.php)"
+      "Bash(php -l app/Http/Controllers/DocumentController.php)",
+      "Bash(php -v)",
+      "Read(//c/xampp/htdocs/**)",
+      "Artifact",
+      "Bash(git rm *)",
+      "Bash(./vendor/bin/pint *)",
+      "Bash(git check-ignore *)",
+      "Bash(php -l app/Http/Controllers/CbweRatingController.php)",
+      "Bash(php -l app/Http/Controllers/BeiRatingController.php)",
+      "Bash(php -l app/Http/Controllers/VacancyController.php)",
+      "Bash(php -l app/Http/Requests/StoreVacancyRequest.php)",
+      "Bash(php -l app/Models/Vacancy.php)"
     ]
   }
 }

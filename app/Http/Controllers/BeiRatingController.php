@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\BeiRating;
+use App\Models\CbweRating;
+use App\Models\ExamResult;
 use App\Models\HrmbsboardComposition;
 use App\Models\Vacancy;
 use App\Models\VacancyCompetency;
@@ -16,6 +18,8 @@ use Illuminate\Support\Facades\Storage;
 class BeiRatingController extends Controller
 {
     use FormatsApplicantName;
+
+    private const PASSING_THRESHOLD = 70.0;
 
     private function getComposition(int $userId): ?HrmbsboardComposition
     {
@@ -131,6 +135,23 @@ class BeiRatingController extends Controller
 
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
+
+        // TWE and CBWE may have been conducted concurrently, but BEI requires both to be
+        // done: the applicant must have passed TWE and CBWE ratings must be locked.
+        $tweResults = ExamResult::where('application_id', $data['application_id'])
+            ->where('exam_type', 'TWE')
+            ->get();
+        $passedTwe = $tweResults->isNotEmpty() && $tweResults->every(fn ($r) => $r->percentage >= self::PASSING_THRESHOLD);
+
+        $cbweLocked = CbweRating::where('application_id', $data['application_id'])
+            ->whereNotNull('locked_at')
+            ->exists();
+
+        if (! $passedTwe || ! $cbweLocked) {
+            return response()->json([
+                'message' => 'This applicant must have passed the TWE exam and have locked CBWE ratings before BEI rating can begin.',
+            ], 422);
+        }
 
         // Ensure submitted keys match the vacancy's assigned competencies
         $validKeys = VacancyCompetency::where('vacancy_id', $application->vacancy_id)

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\InterviewSchedule;
+use App\Services\EmailTemplateMailBuilder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -30,22 +31,14 @@ class InterviewScheduled extends Notification implements ShouldQueue
         $date = $this->schedule->scheduled_at->format('F j, Y');
         $time = $this->schedule->scheduled_at->format('g:i A');
 
-        return (new MailMessage)
-            ->subject("Interview Scheduled — {$this->positionTitle}")
-            ->greeting("Dear {$notifiable->first_name},")
-            ->line("Congratulations on passing the written exam! You are invited to a **Behavioral Event Interview (BEI)** for the position of **{$this->positionTitle}**.")
-            ->line('Here are the details of your interview:')
-            ->line("- **Date:** {$date}")
-            ->line("- **Time:** {$time}")
-            ->line("- **Venue:** {$this->schedule->venue}")
-            ->when(
-                $this->schedule->notes,
-                fn ($m) => $m->line("- **Additional Info:** {$this->schedule->notes}")
-            )
-            ->line('Please arrive at least 15 minutes early. Bring a valid government-issued ID and any supporting documents you wish to present.')
-            ->action('View My Application', url('/applicant/applications'))
-            ->line('For questions, please contact the HR Management and Practices Section.')
-            ->salutation('CSC RO VIII - Recruitment Portal');
+        return EmailTemplateMailBuilder::build('interview_scheduled', [
+            '{{first_name}}' => $notifiable->first_name,
+            '{{position_title}}' => $this->positionTitle,
+            '{{date}}' => $date,
+            '{{time}}' => $time,
+            '{{venue}}' => $this->schedule->venue,
+            '{{notes_block}}' => $this->schedule->notes ? "- **Additional Info:** {$this->schedule->notes}" : '',
+        ]);
     }
 
     public function toArray(object $notifiable): array

@@ -9,6 +9,7 @@ use App\Models\QsEvaluation;
 use App\Models\User;
 use App\Models\Vacancy;
 use App\Notifications\ApplicationStatusUpdated;
+use App\Services\HrmpsbCompositionService;
 use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,11 +52,9 @@ class PreAssessmentController extends Controller
             ->get()
             ->groupBy('application_id');
 
-        $members = HrmbsboardComposition::with('user:id,first_name,last_name,middle_name,suffix')
-            ->where('is_active', true)
-            ->where('hrmpsb_role', '!=', 'secretariat')
-            ->orderBy('hrmpsb_role')
-            ->get();
+        $service = app(HrmpsbCompositionService::class);
+        $members = $service->forVacancy($vacancy)
+            ->reject(fn ($m) => $m->hrmpsb_role === 'secretariat');
 
         $rows = $applications->map(function (Application $app) use ($qsEvals) {
             $profile = $app->applicant;
@@ -132,7 +131,7 @@ class PreAssessmentController extends Controller
             'hrmpsb_members' => $members->map(fn ($m) => [
                 'user_id' => $m->user_id,
                 'name' => $this->formatNameWithMiddleInitial($m->user),
-                'role' => HrmbsboardComposition::ROLES[$m->hrmpsb_role] ?? $m->hrmpsb_role,
+                'role' => HrmbsboardComposition::ALL_ROLES[$m->hrmpsb_role] ?? $m->hrmpsb_role,
             ]),
         ]);
     }

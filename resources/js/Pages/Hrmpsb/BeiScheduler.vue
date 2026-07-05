@@ -7,6 +7,7 @@
         :vacancy="vacancy"
         :stage="5"
         stageLabel="BEI Scheduling"
+        stageKey="bei"
         :loading="loading"
       >
         <div class="mt-4 flex items-center gap-2 text-xs text-gray-500">

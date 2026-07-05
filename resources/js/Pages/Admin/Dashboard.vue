@@ -10,7 +10,15 @@
     </div>
 
     <!-- Stat cards -->
-    <SkeletonLoader v-if="loading" variant="stat-card" :count="4" wrapper-class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6" />
+    <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6">
+      <div v-for="n in 4" :key="n" class="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4 shadow-sm animate-pulse">
+        <div class="w-11 h-11 rounded-xl bg-gray-200 flex-shrink-0"></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-3 bg-gray-200 rounded w-16"></div>
+          <div class="h-7 bg-gray-200 rounded w-10"></div>
+        </div>
+      </div>
+    </div>
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6">
       <Link v-for="card in statCards" :key="card.label" :href="card.link"
         class="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 flex items-center sm:items-start gap-3 sm:gap-4 shadow-sm hover:border-primary/30 hover:shadow-md transition-all cursor-pointer">
@@ -25,23 +33,59 @@
       </Link>
     </div>
 
-    <!-- Pipeline summary chips -->
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
-      <h2 class="text-sm font-semibold text-gray-900 mb-3">Application Pipeline</h2>
-      <SkeletonLoader v-if="loading" variant="custom" :count="8" wrapper-class="flex flex-wrap gap-2" />
-      <div v-else-if="sortedPipeline.length" class="flex flex-wrap gap-2">
-        <div v-for="item in sortedPipeline" :key="item.status"
-          :class="statusChipClass(item.status)"
-          class="flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium">
-          <span>{{ statusLabel(item.status) }}</span>
-          <span class="font-bold">{{ item.count }}</span>
+    <!-- Pipeline per vacancy -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm mb-6">
+      <div class="p-5 pb-0">
+        <h2 class="text-sm font-semibold text-gray-900">Application Pipeline by Vacancy</h2>
+      </div>
+
+      <!-- Skeleton matching table layout -->
+      <div v-if="loading" class="animate-pulse p-5 space-y-4">
+        <div v-for="n in 3" :key="n">
+          <div class="flex items-start gap-3 pb-3 mb-3 border-b border-gray-100 last:border-0">
+            <div class="flex-1 space-y-2">
+              <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+              <div class="h-3 bg-gray-100 rounded w-1/3"></div>
+            </div>
+            <div class="h-5 w-8 bg-gray-200 rounded-full flex-shrink-0"></div>
+            <div class="flex gap-1.5">
+              <div class="h-6 w-16 bg-gray-100 rounded-full"></div>
+              <div class="h-6 w-14 bg-gray-100 rounded-full"></div>
+            </div>
+          </div>
         </div>
       </div>
-      <p v-else class="text-sm text-gray-400">No application data yet.</p>
+
+      <div v-else-if="pipelineByVacancy.length" class="divide-y divide-gray-100">
+        <div v-for="item in pipelineByVacancy" :key="item.vacancy_id" class="px-5 py-3.5 hover:bg-gray-50/50 transition-colors">
+          <div class="flex items-start gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ item.position_title }}</p>
+                <span class="text-xs text-gray-400 shrink-0">({{ item.total }})</span>
+              </div>
+              <p v-if="item.place_of_assignment" class="text-xs text-gray-400 mt-0.5 truncate">{{ item.place_of_assignment }}</p>
+            </div>
+            <div class="flex flex-wrap gap-1.5 shrink-0">
+              <span v-for="(count, status) in item.statuses" :key="status"
+                :class="statusChipClass(status)"
+                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium border leading-tight">
+                <span class="max-w-[72px] truncate">{{ statusLabel(status) }}</span>
+                <span class="font-bold">{{ count }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-else class="px-5 py-8 text-center">
+        <div v-if="!pipelineByVacancy.length && !loading">
+          <p class="text-sm text-gray-400">No applications yet.</p>
+        </div>
+      </div>
     </div>
 
     <!-- Pipeline color legend -->
-    <div class="mt-3 flex flex-wrap gap-2 text-[10px] text-gray-400">
+    <div class="mt-3 mb-6 flex flex-wrap gap-2 text-[10px] text-gray-400">
       <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> Submitted</span>
       <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span> Under Review</span>
       <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-500"></span> Exam Scheduled</span>
@@ -72,7 +116,20 @@
             <Link href="/admin/applications" class="text-xs text-primary hover:underline font-medium">View all</Link>
           </div>
         </div>
-        <SkeletonLoader v-if="loading" variant="custom" :count="5" />
+
+        <!-- Skeleton matching table rows -->
+        <div v-if="loading" class="animate-pulse space-y-3">
+          <div v-for="n in 5" :key="n" class="flex items-center gap-4 h-12 border-b border-gray-50">
+            <div class="flex-1 space-y-1.5">
+              <div class="h-3 bg-gray-100 rounded w-1/3"></div>
+              <div class="h-2.5 bg-gray-100 rounded w-1/4"></div>
+            </div>
+            <div class="h-3 bg-gray-100 rounded w-24 hidden sm:block"></div>
+            <div class="h-5 w-20 bg-gray-100 rounded-full"></div>
+            <div class="h-3 bg-gray-100 rounded w-14"></div>
+          </div>
+        </div>
+
         <div v-else-if="recentApplications.length" class="-mx-5 sm:mx-0 overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
@@ -101,7 +158,19 @@
       <!-- Upcoming Schedules (1/3) -->
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
         <h2 class="text-sm font-semibold text-gray-900 mb-4">Upcoming Schedules</h2>
-        <SkeletonLoader v-if="scheduleLoading" variant="custom" :count="4" />
+
+        <!-- Skeleton matching card layout -->
+        <div v-if="scheduleLoading" class="animate-pulse space-y-3">
+          <div v-for="n in 4" :key="n" class="rounded-lg border border-gray-100 p-3">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="h-3 w-10 bg-gray-200 rounded"></div>
+              <div class="h-3 w-20 bg-gray-100 rounded"></div>
+            </div>
+            <div class="h-3 bg-gray-100 rounded w-1/2 mb-1.5"></div>
+            <div class="h-2.5 bg-gray-100 rounded w-1/3"></div>
+          </div>
+        </div>
+
         <div v-else-if="upcomingAll.length" class="space-y-2.5">
           <div v-for="item in upcomingAll" :key="item.type + item.id"
             class="rounded-lg border p-3 text-xs"
@@ -139,15 +208,14 @@ import api from '@/services/api'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import Icon from '@/Components/UI/Icon.vue'
-import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
-import { STATUS_ORDER, statusLabel, statusChipClass } from '@/config/statusConfig'
+import { statusLabel, statusChipClass } from '@/config/statusConfig'
 import { formatDate, formatDateTime, timeAgo } from '@/utils/dates'
 
 const loading         = ref(true)
 const scheduleLoading = ref(true)
 const loadError       = ref(null)
 const stats           = ref({})
-const pipeline        = ref([])
+const pipelineByVacancy = ref([])
 const recentApplications = ref([])
 const upcoming        = ref({ exams: [], interviews: [] })
 const autoRefresh     = ref(false)
@@ -166,15 +234,6 @@ watch(autoRefresh, (val) => {
 onBeforeUnmount(() => {
   clearInterval(refreshInterval)
 })
-
-// ── Pipeline ──────────────────────────────────────────────────────────────────
-const sortedPipeline = computed(() =>
-  [...pipeline.value].sort((a, b) => {
-    const ai = STATUS_ORDER.indexOf(a.status)
-    const bi = STATUS_ORDER.indexOf(b.status)
-    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
-  })
-)
 
 // ── Upcoming ──────────────────────────────────────────────────────────────────
 const upcomingAll = computed(() => {
@@ -227,8 +286,6 @@ function formatApplicantName(app) {
   return p?.user?.full_name ?? '—'
 }
 
-
-
 // ── Data fetching ─────────────────────────────────────────────────────────────
 async function loadDashboard() {
   loading.value = true
@@ -237,11 +294,11 @@ async function loadDashboard() {
   try {
     const [statsRes, pipelineRes, recentRes] = await Promise.all([
       api.get('/dashboard/stats'),
-      api.get('/dashboard/pipeline'),
+      api.get('/dashboard/pipeline-by-vacancy'),
       api.get('/dashboard/recent-applications'),
     ])
     stats.value              = statsRes.data
-    pipeline.value           = pipelineRes.data
+    pipelineByVacancy.value  = pipelineRes.data
     recentApplications.value = recentRes.data
     lastRefreshed.value = new Date()
     if (autoRefresh.value) {

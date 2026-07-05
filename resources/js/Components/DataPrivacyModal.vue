@@ -24,15 +24,29 @@
 
         <!-- Image area -->
         <div class="flex-1 overflow-y-auto flex flex-col items-center justify-center p-6">
+
+          <!-- Lazy-load skeleton (shown until the image finishes loading) -->
+          <div v-if="imageLoading && !imageError"
+            class="w-full rounded-xl border-2 border-[#2a338f]/20 bg-gray-50 flex items-center justify-center animate-pulse"
+            style="height: 65vh;">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-10 h-10 border-4 border-gray-200 border-t-[#2a338f] rounded-full animate-spin"></div>
+              <p class="text-xs text-gray-400">Loading privacy notice…</p>
+            </div>
+          </div>
+
           <img
+            v-show="!imageLoading && !imageError"
             src="/images/privacy-notice.jpg"
             alt="CSC Data Privacy Notice"
             class="w-full rounded-xl object-contain border-2 border-[#2a338f]"
             style="max-height: 65vh;"
-            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            @load="imageLoading = false"
+            @error="imageLoading = false; imageError = true" />
 
           <!-- Fallback when image is not yet provided -->
-          <div class="w-full hidden flex-col items-center justify-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl py-14 text-center gap-3">
+          <div v-if="imageError"
+            class="w-full flex flex-col items-center justify-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl py-14 text-center gap-3">
             <svg class="w-12 h-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 19.5h16.5M13.5 3.75h-3A2.25 2.25 0 008.25 6v.75M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
@@ -180,8 +194,10 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const STORAGE_KEY = 'dp_accepted_v1'
 
-const visible = ref(false)
-const step    = ref(1)
+const visible      = ref(false)
+const step         = ref(1)
+const imageLoading = ref(true)
+const imageError   = ref(false)
 
 onMounted(() => {
   if (!sessionStorage.getItem(STORAGE_KEY)) {

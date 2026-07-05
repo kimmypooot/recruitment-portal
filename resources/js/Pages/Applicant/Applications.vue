@@ -168,51 +168,7 @@
 
           <!-- Pipeline progress -->
           <div class="px-5 pb-5">
-            <div class="flex items-start gap-0">
-              <div v-for="(step, idx) in pipeline" :key="step.key" class="flex-1 flex flex-col items-center min-w-0">
-                <!-- Dot row with half-connectors -->
-                <div class="flex items-center w-full">
-                  <div class="flex-1 h-0.5 transition-colors"
-                    :class="idx === 0 ? 'invisible' :
-                      isPipelinePast(step.key, app.status) || app.status === step.key ? 'bg-primary' : 'bg-gray-200'">
-                   </div>
-                   <div :class="[
-                     'rounded-full transition-all flex-shrink-0 w-2.5 h-2.5',
-                     app.status === step.key
-                       ? 'bg-primary ring-2 ring-primary/30 ring-offset-1'
-                       : isPipelinePast(step.key, app.status)
-                         ? 'bg-primary'
-                         : isTerminal(app.status)
-                           ? 'bg-gray-100'
-                           : 'bg-gray-200'
-                   ]"></div>
-                   <div class="flex-1 h-0.5 transition-colors"
-                     :class="idx === pipeline.length - 1 ? 'invisible' :
-                       isPipelinePast(pipeline[idx + 1].key, app.status) || app.status === pipeline[idx + 1].key ? 'bg-primary' : 'bg-gray-200'">
-                   </div>
-                </div>
-                <!-- Short label (desktop only) -->
-                <span class="mt-1 text-[8px] leading-tight text-center w-full hidden sm:block"
-                  :class="app.status === step.key ? 'text-primary font-semibold' : 'text-gray-400'">
-                  {{ step.short }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Current stage label -->
-            <p class="mt-2 text-xs text-gray-400">
-              <span v-if="isTerminal(app.status)">
-                <span v-if="app.status === 'withdrawn'" class="text-gray-500">Application withdrawn</span>
-                <span v-else-if="app.status === 'appointed'" class="text-green-600 font-semibold">Congratulations — appointed!</span>
-                <span v-else-if="app.status === 'completed'" class="text-green-600 font-medium">Process completed</span>
-                <span v-else-if="app.status === 'disqualified'" class="text-red-500">Disqualified from selection</span>
-              </span>
-              <span v-else>
-                Stage <strong class="text-gray-600">{{ pipelineStep(app.status) }}</strong> of {{ pipeline.length }}
-                <span class="mx-1 text-gray-200">·</span>
-                <span class="text-gray-500">{{ statusLabel(app.status) }}</span>
-              </span>
-            </p>
+            <StatusPipeline :status="app.status" />
           </div>
 
           <!-- Withdraw footer (only for early-stage applications) -->
@@ -285,13 +241,12 @@ import { Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import { applicationApi, profileApi } from '@/services/api'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
+import StatusPipeline from '@/Components/UI/StatusPipeline.vue'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 import Icon from '@/Components/UI/Icon.vue'
 import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
 import {
-  pipelineStep, isPipelinePast, isTerminal, canWithdraw,
-  statusLabel, statusIcon, statusBorderClass,
-  PIPELINE as pipeline,
+  canWithdraw, statusLabel, statusIcon, statusBorderClass,
 } from '@/config/statusConfig'
 import { formatDate, formatDateLong, formatDateTime, formatDateRange, daysRemaining } from '@/utils/dates'
 import { useToast } from '@/composables/useToast'

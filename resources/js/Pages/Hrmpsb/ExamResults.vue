@@ -7,6 +7,7 @@
         :vacancy="vacancy"
         :stage="stageNumber"
         :stageLabel="stageLabel"
+        stageKey="twe"
         :loading="loading">
         <!-- Exam type tabs -->
         <div class="mt-4 flex items-center gap-1">

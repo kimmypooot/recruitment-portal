@@ -16,13 +16,13 @@ class DashboardController extends Controller
         $stats = Cache::remember('dashboard_stats', 3600, function () {
             return [
                 'vacancies' => [
-                    'total'        => Vacancy::count(),
-                    'published'    => Vacancy::published()->count(),
+                    'total' => Vacancy::count(),
+                    'published' => Vacancy::published()->count(),
                     'closing_soon' => Vacancy::published()->where('deadline_at', '<=', now()->addDays(7))->count(),
                 ],
                 'applications' => [
-                    'total'      => Application::count(),
-                    'pending'    => Application::where('status', 'submitted')->count(),
+                    'total' => Application::count(),
+                    'pending' => Application::where('status', 'submitted')->count(),
                     'this_month' => Application::whereMonth('created_at', now()->month)->count(),
                 ],
                 'pipeline' => Application::selectRaw('status, COUNT(*) as count')->groupBy('status')->get(),
@@ -55,28 +55,51 @@ class DashboardController extends Controller
         return response()->json($pipeline);
     }
 
+    public function pipelineByVacancy(): JsonResponse
+    {
+        $applications = Application::with('vacancy:id,position_title,place_of_assignment')
+            ->get()
+            ->groupBy('vacancy_id')
+            ->map(function ($apps, $vacancyId) {
+                $vacancy = $apps->first()->vacancy;
+
+                return [
+                    'vacancy_id' => $vacancyId,
+                    'position_title' => $vacancy?->position_title ?? 'Unknown Position',
+                    'place_of_assignment' => $vacancy?->place_of_assignment ?? '',
+                    'total' => $apps->count(),
+                    'statuses' => $apps->groupBy('status')->map(fn ($group) => $group->count())->sortKeys(),
+                ];
+            })
+            ->values()
+            ->sortByDesc('total')
+            ->values();
+
+        return response()->json($applications);
+    }
+
     public function upcoming(): JsonResponse
     {
         $exams = ExamSchedule::with([
             'application.vacancy:id,position_title,place_of_assignment',
             'application.applicant.user:id,first_name,last_name,middle_name,suffix',
         ])
-        ->where('scheduled_at', '>=', now())
-        ->orderBy('scheduled_at')
-        ->limit(5)
-        ->get();
+            ->where('scheduled_at', '>=', now())
+            ->orderBy('scheduled_at')
+            ->limit(5)
+            ->get();
 
         $interviews = InterviewSchedule::with([
             'application.vacancy:id,position_title,place_of_assignment',
             'application.applicant.user:id,first_name,last_name,middle_name,suffix',
         ])
-        ->where('scheduled_at', '>=', now())
-        ->orderBy('scheduled_at')
-        ->limit(5)
-        ->get();
+            ->where('scheduled_at', '>=', now())
+            ->orderBy('scheduled_at')
+            ->limit(5)
+            ->get();
 
         return response()->json([
-            'exams'      => $exams,
+            'exams' => $exams,
             'interviews' => $interviews,
         ]);
     }
