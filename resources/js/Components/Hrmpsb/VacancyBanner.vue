@@ -3,7 +3,7 @@
 
   <div v-else-if="vacancy"
     class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-gray-300">
-    <div class="h-1.5 w-full" style="background: linear-gradient(90deg, #2a338f 0%, #2980b9 100%)" />
+    <div class="h-1.5 w-full" style="background: linear-gradient(90deg, var(--color-primary) 0%, #2980b9 100%)" />
 
     <div class="px-6 py-5">
 

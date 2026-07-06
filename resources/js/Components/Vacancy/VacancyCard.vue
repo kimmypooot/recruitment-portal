@@ -1,22 +1,22 @@
 <template>
-  <article class="bg-white rounded-xl border border-gray-200 hover:border-[#2a338f]/40 hover:shadow-md transition-all duration-200 flex flex-col">
+  <article class="bg-white rounded-xl border border-gray-200 hover:border-primary/40 hover:shadow-md transition-all duration-200 flex flex-col">
 
     <!-- Card header -->
     <div class="p-5 flex-1">
       <!-- SG badge + status -->
       <div class="flex items-start justify-between gap-3 mb-3">
         <div class="flex items-center gap-2">
-          <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-[#2a338f] text-white">
+          <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-primary text-white">
             SG-{{ vacancy.salary_grade }}
           </span>
           <StatusBadge :status="vacancy.status" />
         </div>
         <!-- Deadline countdown -->
-        <span v-if="daysRemaining !== null && daysRemaining <= 7 && daysRemaining >= 0"
-          :class="daysRemaining <= 3 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'"
+        <span v-if="urgency.level !== 'none'"
+          :class="urgency.level === 'danger' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'"
           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold">
           <span class="w-1.5 h-1.5 rounded-full animate-pulse"
-            :class="daysRemaining <= 3 ? 'bg-red-500' : 'bg-amber-400'"></span>
+            :class="urgency.level === 'danger' ? 'bg-red-500' : 'bg-amber-400'"></span>
           {{ daysRemaining === 0 ? 'Closing today' : `${daysRemaining}d left` }}
         </span>
       </div>
@@ -85,7 +85,7 @@
         </div>
         <div>
           <p class="text-xs text-gray-400">Deadline</p>
-          <p class="text-xs font-semibold" :class="isUrgent ? 'text-red-600' : 'text-gray-700'">
+          <p class="text-xs font-semibold" :class="urgency.level !== 'none' ? 'text-red-600' : 'text-gray-700'">
             {{ formatDate(vacancy.deadline_at) }}
           </p>
         </div>
@@ -95,7 +95,7 @@
       <button v-if="isLoggedIn && showDetailFirst"
         @click="openDetail"
         :disabled="loadingDetail"
-        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] disabled:opacity-60 rounded-lg transition-colors shadow-sm">
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark disabled:opacity-60 rounded-lg transition-colors shadow-sm">
         <svg v-if="loadingDetail" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -111,7 +111,7 @@
       <!-- Logged in + direct: go directly to apply page -->
       <Link v-else-if="isLoggedIn"
         :href="`/vacancies/${vacancy.id}/apply`"
-        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors shadow-sm">
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors shadow-sm">
         View & Apply
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
@@ -120,7 +120,7 @@
 
       <!-- Not logged in: prompt to sign in -->
       <button v-else @click="promptLogin"
-        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors shadow-sm">
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors shadow-sm">
         View & Apply
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
@@ -133,6 +133,7 @@
       v-if="showDetailModal && detailVacancy"
       :vacancy="detailVacancy"
       :applied-ids="appliedIds"
+      :confirm-before-apply="confirmBeforeApply"
       @close="showDetailModal = false"
     />
 
@@ -141,8 +142,8 @@
       <div v-if="showAuthModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50" @click="showAuthModal = false"></div>
         <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
-          <div class="w-14 h-14 rounded-full bg-[#2a338f]/10 flex items-center justify-center mx-auto mb-4">
-            <svg class="w-7 h-7 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
             </svg>
           </div>
@@ -151,7 +152,7 @@
           <p class="text-xs text-gray-400 mb-6">You need an account to apply for this position. It only takes a minute to register.</p>
           <div class="flex flex-col gap-2">
             <Link :href="`/login?next=/vacancies/${vacancy.id}/apply`"
-              class="w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors">
+              class="w-full py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors">
               Sign in
             </Link>
             <Link :href="`/register?next=/vacancies/${vacancy.id}/apply`"
@@ -174,12 +175,14 @@ import { ref, computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import VacancyDetailModal from '@/Components/Vacancy/VacancyDetailModal.vue'
+import { deadlineUrgency } from '@/utils/dates'
 
 const props = defineProps({
-  vacancy:         { type: Object,  required: true },
-  authenticated:   { type: Boolean, default: false },
-  showDetailFirst: { type: Boolean, default: false },
-  appliedIds:      { type: Array,   default: () => [] },
+  vacancy:            { type: Object,  required: true },
+  authenticated:      { type: Boolean, default: false },
+  showDetailFirst:    { type: Boolean, default: false },
+  appliedIds:         { type: Array,   default: () => [] },
+  confirmBeforeApply: { type: Boolean, default: false },
 })
 
 const showAuthModal    = ref(false)
@@ -213,13 +216,8 @@ async function openDetail() {
   }
 }
 
-const daysRemaining = computed(() => {
-  if (!props.vacancy.deadline_at) return null
-  const ms = new Date(props.vacancy.deadline_at) - new Date()
-  return ms < 0 ? -1 : Math.ceil(ms / (1000 * 60 * 60 * 24))
-})
-
-const isUrgent = computed(() => daysRemaining.value !== null && daysRemaining.value >= 0 && daysRemaining.value <= 7)
+const urgency = computed(() => deadlineUrgency(props.vacancy.deadline_at))
+const daysRemaining = computed(() => urgency.value.daysRemaining)
 
 function formatSalary(val) {
   return Number(val).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })

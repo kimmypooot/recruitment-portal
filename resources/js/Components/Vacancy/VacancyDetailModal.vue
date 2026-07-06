@@ -1,6 +1,7 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-50 flex items-start justify-center p-0 sm:p-4 overflow-y-auto" @keydown.escape="$emit('close')">
+    <div ref="modalRef" role="dialog" aria-modal="true" aria-labelledby="vacancy-modal-title"
+      class="fixed inset-0 z-50 flex items-start justify-center p-0 sm:p-4 overflow-y-auto" @keydown.escape="$emit('close')">
       <div class="absolute inset-0 bg-black/60" @click="$emit('close')"></div>
 
       <div class="relative bg-white rounded-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-4xl my-0 sm:my-6 flex flex-col max-h-full sm:max-h-[90vh]">
@@ -14,8 +15,8 @@
                 Anticipated Vacancy
               </span>
               <div class="flex items-center gap-2 flex-wrap">
-                <h2 class="text-lg sm:text-xl font-bold text-gray-900 break-words">{{ vacancy.position_title }}</h2>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-[#2a338f] text-white flex-shrink-0">
+                <h2 id="vacancy-modal-title" class="text-lg sm:text-xl font-bold text-gray-900 break-words">{{ vacancy.position_title }}</h2>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-primary text-white flex-shrink-0">
                   SG-{{ vacancy.salary_grade }}
                 </span>
               </div>
@@ -28,15 +29,6 @@
               </svg>
             </button>
           </div>
-          <!-- Proficiency legend -->
-          <div v-if="vacancy.competencies && vacancy.competencies.length > 0"
-            class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-            <span class="text-xs text-gray-400 font-medium">Proficiency Levels:</span>
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">L1 - Basic</span>
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">L2 - Intermediate</span>
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-semibold bg-violet-100 text-violet-700">L3 - Advanced</span>
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">L4 - Superior</span>
-          </div>
         </div>
 
         <!-- Body (scrollable) -->
@@ -48,7 +40,7 @@
 
               <!-- Position Information -->
               <section>
-                <h3 class="text-xs font-semibold text-[#2a338f] uppercase tracking-wider mb-3">Position Information</h3>
+                <h3 class="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Position Information</h3>
                 <dl class="space-y-2.5">
                   <div class="flex gap-3">
                     <dt class="w-28 sm:w-36 flex-shrink-0 text-xs text-gray-400 font-medium pt-0.5">Plantilla Item No.</dt>
@@ -76,9 +68,9 @@
                   </div>
                   <div class="flex gap-3">
                     <dt class="w-28 sm:w-36 flex-shrink-0 text-xs text-gray-400 font-medium pt-0.5">Application Deadline</dt>
-                    <dd class="text-sm font-semibold break-words min-w-0" :class="isUrgent ? 'text-red-600' : 'text-gray-800'">
+                    <dd class="text-sm font-semibold break-words min-w-0" :class="urgency.level !== 'none' ? 'text-red-600' : 'text-gray-800'">
                       {{ formatDate(vacancy.deadline_at) }}
-                      <span v-if="daysRemaining !== null && daysRemaining >= 0 && daysRemaining <= 5"
+                      <span v-if="urgency.level !== 'none'"
                         class="ml-1 text-xs font-normal">
                         ({{ daysRemaining === 0 ? 'closes today' : `${daysRemaining}d left` }})
                       </span>
@@ -89,7 +81,7 @@
 
               <!-- Qualification Standards -->
               <section>
-                <h3 class="text-xs font-semibold text-[#2a338f] uppercase tracking-wider mb-3">Qualification Standards</h3>
+                <h3 class="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Qualification Standards</h3>
                 <dl class="space-y-3">
                   <div>
                     <dt class="text-xs text-gray-400 font-medium mb-0.5">Education</dt>
@@ -114,7 +106,7 @@
 
             <!-- Right column: Competency Requirements -->
             <div class="p-4 sm:p-6">
-              <h3 class="text-xs font-semibold text-[#2a338f] uppercase tracking-wider mb-3">Competency Requirements</h3>
+              <h3 class="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Competency Requirements</h3>
 
               <div v-if="!vacancy.competencies || vacancy.competencies.length === 0"
                 class="text-sm text-gray-400 italic">No competency requirements defined for this position.</div>
@@ -129,14 +121,21 @@
                         <div class="flex items-center gap-1.5">
                           <p class="text-sm font-medium text-gray-800 truncate">{{ comp.competency_name }}</p>
                           <div v-if="comp.description" class="relative">
-                            <button @mouseenter="activeTooltip = comp.competency_key"
+                            <button type="button"
+                              @mouseenter="activeTooltip = comp.competency_key"
                               @mouseleave="activeTooltip = null"
+                              @click="activeTooltip = activeTooltip === comp.competency_key ? null : comp.competency_key"
+                              @focus="activeTooltip = comp.competency_key"
+                              @blur="activeTooltip = null"
+                              :aria-expanded="activeTooltip === comp.competency_key"
+                              :aria-label="`More about ${comp.competency_name}`"
                               class="text-gray-300 hover:text-gray-500 transition-colors">
                               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                               </svg>
                             </button>
                             <div v-if="activeTooltip === comp.competency_key"
+                              role="tooltip"
                               class="absolute top-full right-0 mt-1 w-64 bg-gray-900 text-white text-xs rounded-lg p-2.5 z-10 shadow-xl">
                               {{ comp.description }}
                               <div class="absolute bottom-full right-3 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900"></div>
@@ -176,8 +175,15 @@
               </svg>
               Already Applied
             </span>
+            <button v-else-if="confirmBeforeApply" @click="showConfirmModal = true"
+              class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors shadow-sm">
+              Proceed to Apply
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+              </svg>
+            </button>
             <Link v-else :href="`/vacancies/${vacancy.id}/apply`"
-              class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-semibold text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors shadow-sm">
+              class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors shadow-sm">
               Proceed to Apply
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
@@ -185,11 +191,37 @@
             </Link>
           </div>
           <button v-else @click="$emit('close')"
-            class="ml-auto px-4 py-2 text-sm font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors shadow-sm">
+            class="ml-auto px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors shadow-sm">
             Close
           </button>
         </div>
 
+      </div>
+    </div>
+
+    <!-- Confirmation modal -->
+    <div v-if="confirmBeforeApply && showConfirmModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/60" @click="showConfirmModal = false"></div>
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+        <div class="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-7 h-7 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+          </svg>
+        </div>
+        <h3 class="text-base font-bold text-gray-900 mb-1">Before you proceed</h3>
+        <p class="text-sm text-gray-500 mb-6">
+          Please ensure that the details in your profile are relevant to this position and that all required documents are attached before continuing to the application form.
+        </p>
+        <div class="flex flex-col gap-2">
+          <Link :href="`/vacancies/${vacancy.id}/apply`"
+            class="w-full py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors">
+            Proceed to Apply
+          </Link>
+          <button @click="showConfirmModal = false"
+            class="w-full py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-semibold rounded-lg transition-colors">
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
 
@@ -199,18 +231,29 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
+import { deadlineUrgency } from '@/utils/dates'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const props = defineProps({
-  vacancy:    { type: Object, required: true },
-  appliedIds: { type: Array,  default: () => [] },
-  preview:    { type: Boolean, default: false },
+  vacancy:            { type: Object, required: true },
+  appliedIds:         { type: Array,  default: () => [] },
+  preview:            { type: Boolean, default: false },
+  confirmBeforeApply: { type: Boolean, default: false },
 })
 
 defineEmits(['close'])
 
+const modalRef = ref(null)
+// This component is only ever mounted while the modal should be open (the
+// parent gates it with v-if), so the trap is simply "on for this instance".
+// Escape is already wired to the existing @keydown.escape → close emit below,
+// so let the trap only handle focus, not a second Escape path.
+useFocusTrap(ref(true), modalRef, { closeOnEscape: false })
+
 const isApplied = computed(() => props.appliedIds.includes(props.vacancy.id))
 
 const activeTooltip = ref(null)
+const showConfirmModal = ref(false)
 
 const groupedCompetencies = computed(() => {
   if (!props.vacancy.competencies?.length) return {}
@@ -223,15 +266,8 @@ const groupedCompetencies = computed(() => {
   return groups
 })
 
-const daysRemaining = computed(() => {
-  if (!props.vacancy.deadline_at) return null
-  const ms = new Date(props.vacancy.deadline_at) - new Date()
-  return ms < 0 ? -1 : Math.ceil(ms / (1000 * 60 * 60 * 24))
-})
-
-const isUrgent = computed(() =>
-  daysRemaining.value !== null && daysRemaining.value >= 0 && daysRemaining.value <= 5
-)
+const urgency = computed(() => deadlineUrgency(props.vacancy.deadline_at))
+const daysRemaining = computed(() => urgency.value.daysRemaining)
 
 function formatDate(dateStr) {
   if (!dateStr) return 'No deadline set'

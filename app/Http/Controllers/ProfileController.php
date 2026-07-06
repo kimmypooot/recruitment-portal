@@ -136,9 +136,10 @@ class ProfileController extends Controller
 
         $user    = $accessToken->tokenable;
         $profile = ApplicantProfile::where('user_id', $user->id)->first();
+        $path    = $user->photo_path ?? $profile?->photo_path;
 
-        if ($profile?->photo_path && Storage::disk('public')->exists($profile->photo_path)) {
-            return Storage::disk('public')->response($profile->photo_path);
+        if ($path && Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->response($path);
         }
 
         if ($user->google_avatar) {
@@ -180,9 +181,9 @@ class ProfileController extends Controller
             if ($request->hasFile($input)) {
                 $pathCol = $cols['path'];
                 if ($profile->$pathCol) {
-                    Storage::disk('public')->delete($profile->$pathCol);
+                    Storage::disk('local')->delete($profile->$pathCol);
                 }
-                $profile->$pathCol = $request->file($input)->store($dir, 'public');
+                $profile->$pathCol = $request->file($input)->store($dir, 'local');
                 if ($cols['ts']) {
                     $profile->{$cols['ts']} = now();
                 }
@@ -348,11 +349,11 @@ class ProfileController extends Controller
             abort(403, 'Access denied');
         }
 
-        if (! Storage::disk('public')->exists($path)) {
+        if (! Storage::disk('local')->exists($path)) {
             abort(404);
         }
 
-        return Storage::disk('public')->response($path);
+        return Storage::disk('local')->response($path);
     }
 
     // Helpers ─────────────────────────────────────────────────────────────────

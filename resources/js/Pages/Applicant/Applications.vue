@@ -202,10 +202,8 @@
   </ApplicantLayout>
 
   <!-- ── Withdraw Confirm Modal ─────────────────────────────────────────────── -->
-  <Teleport to="body">
-  <div v-if="withdrawTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/50" @click="withdrawTarget = null"></div>
-    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+  <BaseModal :show="!!withdrawTarget" title="Withdraw Application" max-width="max-w-sm" @close="withdrawTarget = null">
+    <template v-if="withdrawTarget">
       <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
         <Icon name="alert" size="6" color="text-red-500" />
       </div>
@@ -230,9 +228,8 @@
           <span v-else>Yes, Withdraw</span>
         </button>
       </div>
-    </div>
-  </div>
-  </Teleport>
+    </template>
+  </BaseModal>
 </template>
 
 <script setup>
@@ -240,6 +237,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import { applicationApi, profileApi } from '@/services/api'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import StatusPipeline from '@/Components/UI/StatusPipeline.vue'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'

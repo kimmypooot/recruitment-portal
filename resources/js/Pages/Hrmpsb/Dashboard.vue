@@ -3,8 +3,8 @@
     <div class="space-y-6 pb-20 sm:pb-6">
 
       <!-- Board role banner -->
-      <div v-if="myRole" class="bg-[#2a338f]/5 border border-[#2a338f]/20 rounded-xl p-5 flex items-center gap-4 flex-wrap">
-        <div class="w-12 h-12 rounded-full bg-[#2a338f] flex items-center justify-center text-white font-bold text-base flex-shrink-0">
+      <div v-if="myRole" class="bg-primary/5 border border-primary/20 rounded-xl p-5 flex items-center gap-4 flex-wrap">
+        <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-base flex-shrink-0">
           {{ initials }}
         </div>
         <div class="flex-1 min-w-0">
@@ -87,7 +87,7 @@
               <!-- Top: SG badge + meta + stage badge -->
               <div class="flex items-start gap-4 flex-1 min-w-0">
                 <!-- SG badge -->
-                <div class="w-10 h-10 rounded-lg bg-[#2a338f] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                   SG-{{ v.salary_grade }}
                 </div>
 
@@ -114,14 +114,14 @@
               <!-- Bottom: Actions (below on mobile, right side on desktop) -->
               <div v-if="stages[v.id]" class="relative flex items-center gap-2 flex-wrap justify-end sm:flex-shrink-0">
                 <a :href="`/hrmpsb/applicants/${v.id}`"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors border border-[#2a338f] text-[#2a338f] hover:bg-[#2a338f]/5 whitespace-nowrap">
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors border border-primary text-primary hover:bg-primary/5 whitespace-nowrap">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
                   Applicants & Docs
                 </a>
                 <button @click.stop="toggleOpen(v.id)"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-[#2a338f] text-white hover:bg-[#1e2570] whitespace-nowrap">
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-primary text-white hover:bg-primary-dark whitespace-nowrap">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/>
                   </svg>
@@ -278,13 +278,13 @@ function lastCompletedIdx(vacancyId) {
 function phaseMeterClass(step, idx, vacancyId) {
   const last = lastCompletedIdx(vacancyId)
   if (idx < last) return 'bg-green-400'
-  if (idx === last) return 'bg-[#2a338f]'
+  if (idx === last) return 'bg-primary'
   return 'bg-gray-200'
 }
 
 function phaseLabelClass(step, idx, vacancyId) {
   const last = lastCompletedIdx(vacancyId)
-  if (idx === last) return 'text-[#2a338f] font-semibold'
+  if (idx === last) return 'text-primary font-semibold'
   if (idx < last) return 'text-green-600'
   return 'text-gray-300'
 }
@@ -512,7 +512,7 @@ function authHeaders() {
 
 function currentStageBadge(s) {
   const inProgress = { class: 'bg-blue-100 text-blue-700',   dot: 'bg-blue-500 animate-pulse' }
-  const scheduled  = { class: 'bg-[#2a338f]/10 text-[#2a338f]', dot: 'bg-[#2a338f]' }
+  const scheduled  = { class: 'bg-primary/10 text-primary', dot: 'bg-primary' }
   const awaiting   = { class: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' }
   const done       = { class: 'bg-green-100 text-green-700', dot: 'bg-green-500' }
 

@@ -8,7 +8,7 @@
           <h1 class="text-xl font-bold text-gray-900">Demographic Reports</h1>
           <p class="text-sm text-gray-500 mt-1">Applicant demographics breakdown across all or selected vacancies.</p>
         </div>
-        <div v-if="!loading && totalProfiles > 0" class="flex items-center gap-2 px-3 py-1.5 bg-[#2a338f]/5 text-[#2a338f] rounded-lg text-sm font-medium">
+        <div v-if="!loading && totalProfiles > 0" class="flex items-center gap-2 px-3 py-1.5 bg-primary/5 text-primary rounded-lg text-sm font-medium">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
           </svg>
@@ -25,7 +25,7 @@
           <div class="min-w-56">
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Position</label>
             <select v-model="selectedPosition" @change="onPositionChange"
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
               <option value="">All Positions</option>
               <option v-for="title in uniquePositions" :key="title" :value="title">{{ title }}</option>
             </select>
@@ -34,7 +34,7 @@
           <div class="min-w-56">
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Date Published</label>
             <select v-model="selectedVacancyId" @change="loadAll" :disabled="!selectedPosition"
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white disabled:opacity-50 disabled:cursor-not-allowed">
               <option value="">All Postings</option>
               <option v-for="v in positionVacancies" :key="v.id" :value="v.id">
                 {{ formatPublicationRange(v.published_at, v.deadline_at) }}
@@ -154,7 +154,7 @@ function onPositionChange() {
 }
 
 const BAR_COLORS = [
-  'bg-[#2a338f]',
+  'bg-primary',
   'bg-blue-500',
   'bg-cyan-500',
   'bg-teal-500',

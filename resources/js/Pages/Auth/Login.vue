@@ -75,6 +75,7 @@
               type="email"
               autocomplete="email"
               required
+              autofocus
               placeholder="you@example.com"
               class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
           </div>
@@ -129,63 +130,20 @@
 
   </PublicLayout>
 
-  <!-- Post-login preload overlay (same style as GoogleCallback) -->
-  <Teleport to="body">
-    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100"
-                leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
-      <div v-if="showPreload" class="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
-        style="background: linear-gradient(135deg, #f0eef9 0%, #e8eafa 50%, #fdeef0 100%);">
-        <!-- Particles -->
-        <div class="absolute inset-0 overflow-hidden pointer-events-none">
-          <div class="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-20"
-            style="background: radial-gradient(circle, #2a338f 0%, transparent 70%); animation: float 8s ease-in-out infinite;"></div>
-          <div class="absolute -bottom-16 -right-16 w-96 h-96 rounded-full opacity-15"
-            style="background: radial-gradient(circle, #ec1c2d 0%, transparent 70%); animation: float 10s ease-in-out infinite reverse;"></div>
-          <div class="absolute top-1/3 right-1/4 w-48 h-48 rounded-full opacity-10"
-            style="background: radial-gradient(circle, #2a338f 0%, transparent 70%); animation: float 12s ease-in-out infinite 2s;"></div>
-        </div>
-
-        <div class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/40 p-10 text-center max-w-sm w-full mx-4">
-          <!-- Animated rings -->
-          <div class="relative w-28 h-28 mx-auto mb-6">
-            <svg class="absolute inset-0 w-28 h-28 animate-spin" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="#e5e7eb" stroke-width="2.5"/>
-              <circle cx="12" cy="12" r="10" stroke="#2a338f" stroke-width="2.5"
-                stroke-linecap="round" stroke-dasharray="62.832" stroke-dashoffset="20"/>
-            </svg>
-            <svg class="absolute inset-2 w-[96px] h-[96px] animate-spin" style="animation-duration:2s;animation-direction:reverse;" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="8" stroke="#e5e7eb" stroke-width="1.5"/>
-              <circle cx="12" cy="12" r="8" stroke="#ec1c2d" stroke-width="1.5"
-                stroke-linecap="round" stroke-dasharray="50.265" stroke-dashoffset="15"/>
-            </svg>
-            <img src="/images/csc-logo.png" alt="CSC"
-              class="absolute w-12 h-12 rounded-full bg-white shadow-sm object-contain p-1.5"
-              style="top:50%;left:50%;transform:translate(-50%,-50%);"
-              @error="e => e.target.style.display='none'" />
-          </div>
-
-          <Transition name="pfade" mode="out-in">
-            <div v-if="preloadWelcome" key="welcome" class="space-y-2">
-              <p class="text-sm font-medium tracking-wide uppercase" style="color:#ec1c2d;">Welcome back</p>
-              <p class="text-2xl font-bold text-gray-900">{{ preloadName }}</p>
-              <p class="text-gray-500 text-sm">{{ preloadSubtitle }}</p>
-            </div>
-            <div v-else key="loading" class="space-y-2">
-              <p class="text-xl font-semibold" style="color:#2a338f;">Signing you in</p>
-              <p class="text-gray-500 text-sm">{{ preloadSubtitle }}</p>
-            </div>
-          </Transition>
-
-          <!-- Pulsing dots -->
-          <div class="flex justify-center gap-1.5 mt-6">
-            <span v-for="i in 3" :key="i" class="w-2 h-2 rounded-full transition-all duration-300"
-              :style="{ backgroundColor: preloadDot === i - 1 ? '#ec1c2d' : '#2a338f',
-                        transform: preloadDot === i - 1 ? 'scale(1.25)' : 'scale(1)' }"></span>
-          </div>
-        </div>
+  <!-- Post-login preload overlay -->
+  <AuthSplashOverlay :visible="showPreload">
+    <Transition name="pfade" mode="out-in">
+      <div v-if="preloadWelcome" key="welcome" class="space-y-2">
+        <p class="text-sm font-medium tracking-wide uppercase text-accent">Welcome back</p>
+        <p class="text-2xl font-bold text-gray-900">{{ preloadName }}</p>
+        <p class="text-gray-500 text-sm">{{ preloadSubtitle }}</p>
+      </div>
+      <div v-else key="loading" class="space-y-2">
+        <p class="text-xl font-semibold text-primary">Signing you in</p>
+        <p class="text-gray-500 text-sm">{{ preloadSubtitle }}</p>
       </div>
     </Transition>
-  </Teleport>
+  </AuthSplashOverlay>
 </template>
 
 <script setup>
@@ -194,10 +152,19 @@ import { Head, Link, usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import Icon from '@/Components/UI/Icon.vue'
+import AuthSplashOverlay from '@/Components/UI/AuthSplashOverlay.vue'
 import { navigateTo } from '@/utils/navigate'
 
 const page  = usePage()
 const form  = reactive({ email: '', password: '', remember: false })
+
+// Only ever redirect back to a same-site relative path (never a full URL)
+// to avoid turning `next` into an open-redirect vector.
+function safeNext() {
+  const raw = new URLSearchParams(window.location.search).get('next')
+  if (raw && raw.startsWith('/') && !raw.startsWith('//')) return raw
+  return null
+}
 const loading       = ref(false)
 const error         = ref('')
 const attemptCount  = ref(0)
@@ -207,13 +174,7 @@ const showPassword  = ref(false)
 const showPreload    = ref(false)
 const preloadWelcome = ref(false)
 const preloadName    = ref('')
-const preloadDot     = ref(0)
 const preloadSubtitle = ref('Please wait a moment…')
-let dotTimer = null
-
-function startDots() {
-  dotTimer = setInterval(() => { preloadDot.value = (preloadDot.value + 1) % 3 }, 400)
-}
 
 async function submit() {
   loading.value = true
@@ -221,7 +182,6 @@ async function submit() {
 
   // Show preloader immediately — don't block on the API call
   showPreload.value = true
-  startDots()
 
   try {
     // API call and minimum loading-state display run in parallel
@@ -234,6 +194,7 @@ async function submit() {
     localStorage.setItem('auth_token', data.token)
     localStorage.setItem('auth_token_created_at', String(Date.now()))
     localStorage.setItem('auth_user', JSON.stringify(data.user))
+    localStorage.setItem('auth_remember', form.remember ? '1' : '0')
     const role = data.user?.role
 
     preloadName.value    = data.user?.first_name ? `${data.user.first_name}!` : ''
@@ -241,9 +202,10 @@ async function submit() {
 
     // Welcome display and destination resolution run in parallel
     const welcomeDelay = new Promise(r => setTimeout(r, 700))
+    const next = safeNext()
     if (role === 'admin') {
       await welcomeDelay
-      navigateTo('/admin/dashboard')
+      navigateTo(next ?? '/admin/dashboard')
     } else if (role === 'hrmpsb') {
       const token = data.token
       try {
@@ -253,14 +215,14 @@ async function submit() {
         if (roleData.composition?.hrmpsb_role === 'appointing-authority') {
           preloadSubtitle.value = 'Preparing Appointing Authority dashboard…'
           await welcomeDelay
-          navigateTo('/appointing-authority/dashboard')
+          navigateTo(next ?? '/appointing-authority/dashboard')
         } else {
           await welcomeDelay
-          navigateTo('/hrmpsb/dashboard')
+          navigateTo(next ?? '/hrmpsb/dashboard')
         }
       } catch {
         await welcomeDelay
-        navigateTo('/hrmpsb/dashboard')
+        navigateTo(next ?? '/hrmpsb/dashboard')
       }
     } else {
       // Profile check races against the welcome display time
@@ -268,15 +230,15 @@ async function submit() {
         axios.get('/api/profile', { headers: { Authorization: `Bearer ${data.token}` } }),
         welcomeDelay,
       ])
-      const dest = profileResult.status === 'fulfilled' && profileResult.value.data.is_complete
-        ? '/applicant/dashboard'
-        : '/applicant/complete-profile'
+      const isComplete = profileResult.status === 'fulfilled' && profileResult.value.data.is_complete
+      // A next destination only makes sense once the profile is complete —
+      // otherwise send them to finish their profile first, same as today.
+      const dest = isComplete ? (next ?? '/applicant/dashboard') : '/applicant/complete-profile'
       navigateTo(dest)
     }
   } catch (err) {
     showPreload.value    = false
     preloadWelcome.value = false
-    clearInterval(dotTimer)
     attemptCount.value++
     const status = err.response?.status
     if (status === 429) {
@@ -293,11 +255,6 @@ async function submit() {
 </script>
 
 <style scoped>
-@keyframes float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(30px, -30px) scale(1.05); }
-  66%       { transform: translate(-20px, 20px) scale(0.95); }
-}
 .pfade-enter-active, .pfade-leave-active { transition: opacity 0.4s ease, transform 0.4s ease; }
 .pfade-enter-from { opacity: 0; transform: translateY(8px); }
 .pfade-leave-to   { opacity: 0; transform: translateY(-8px); }

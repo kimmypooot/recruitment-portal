@@ -45,7 +45,7 @@
               <div v-if="doc.path" class="flex items-center gap-1.5 flex-shrink-0">
                 <button @click="$emit('view', app.id, doc.type)"
                   :disabled="actionId === doc.type + '-view'"
-                  class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-[#2a338f] bg-[#2a338f]/8 hover:bg-[#2a338f]/15 rounded-lg transition-colors disabled:opacity-50">
+                  class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-primary bg-primary/8 hover:bg-primary/15 rounded-lg transition-colors disabled:opacity-50">
                   <svg v-if="actionId === doc.type + '-view'" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>

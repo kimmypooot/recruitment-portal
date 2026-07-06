@@ -53,7 +53,7 @@
               If your email is registered, you will receive a password reset link shortly.
             </p>
             <button @click="submitted = false"
-              class="text-sm text-[#2a338f] font-medium hover:underline">
+              class="text-sm text-primary font-medium hover:underline">
               Send again
             </button>
           </div>
@@ -67,20 +67,20 @@
               type="email"
               required
               placeholder="you@example.com"
-              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
           </div>
 
           <button
             type="submit"
             :disabled="loading"
-            class="w-full py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white font-semibold text-sm rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+            class="w-full py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
             {{ loading ? 'Sending…' : 'Send Reset Link' }}
           </button>
         </form>
 
         <p class="mt-6 text-center text-sm text-gray-500">
           Remember your password?
-          <Link href="/login" class="text-[#2a338f] font-medium hover:underline">Sign in</Link>
+          <Link href="/login" class="text-primary font-medium hover:underline">Sign in</Link>
         </p>
 
       </div>

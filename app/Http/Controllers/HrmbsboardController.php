@@ -333,9 +333,9 @@ class HrmbsboardController extends Controller
         $profile = $application->applicant;
         $path = $profile?->{$pathMap[$type]};
 
-        abort_if(! $path || ! Storage::disk('public')->exists($path), 404);
+        abort_if(! $path || ! Storage::disk('local')->exists($path), 404);
 
-        return Storage::disk('public')->response($path);
+        return Storage::disk('local')->response($path);
     }
 
     /**
@@ -362,7 +362,7 @@ class HrmbsboardController extends Controller
             ->map(function ($app) {
                 $profile = $app->applicant;
 
-                $docExists = fn ($col) => $profile?->$col && Storage::disk('public')->exists($profile->$col);
+                $docExists = fn ($col) => $profile?->$col && Storage::disk('local')->exists($profile->$col);
                 $docLink = fn ($col, $type) => $docExists($col) ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}" : null;
 
                 return [
@@ -501,13 +501,13 @@ class HrmbsboardController extends Controller
                 $col = $pathMap[$type];
                 $path = $profile->{$col};
 
-                if (! $path || ! Storage::disk('public')->exists($path)) {
+                if (! $path || ! Storage::disk('local')->exists($path)) {
                     continue;
                 }
 
                 $ext = pathinfo($path, PATHINFO_EXTENSION);
                 $fileName = "{$folderName}/{$labelMap[$type]}.{$ext}";
-                $fullPath = Storage::disk('public')->path($path);
+                $fullPath = Storage::disk('local')->path($path);
 
                 if ($zip->addFile($fullPath, $fileName)) {
                     $added++;

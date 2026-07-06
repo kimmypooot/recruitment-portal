@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AuditLog
 {
@@ -19,8 +20,15 @@ class AuditLog
                 'created_at'   => now(),
                 'updated_at'   => now(),
             ]);
-        } catch (\Throwable) {
-            // Silently fail so audit logging never breaks core flows
+        } catch (\Throwable $e) {
+            // Never break core flows, but leave a trace — silent audit loss is
+            // itself a compliance problem.
+            Log::warning('Audit log write failed', [
+                'action' => $action,
+                'auditable_type' => get_class($model),
+                'auditable_id' => $model->getKey(),
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

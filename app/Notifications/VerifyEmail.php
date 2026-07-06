@@ -2,6 +2,8 @@
 
 namespace App\Notifications;
 
+use App\Models\User;
+use App\Services\EmailTemplateMailBuilder;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Carbon;
@@ -13,6 +15,10 @@ class VerifyEmail extends Notification
     public static $createUrlCallback;
 
     public static $toMailCallback;
+
+    public function __construct(protected ?string $code = null)
+    {
+    }
 
     public function via($notifiable): array
     {
@@ -32,13 +38,10 @@ class VerifyEmail extends Notification
 
     protected function buildMailMessage(string $url, $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->subject('Verify Your Email — CSC RO VIII')
-            ->greeting('Welcome to CSC RO VIII!')
-            ->line('Thank you for creating an account with the Civil Service Commission Regional Office VIII - Recruitment Portal.')
-            ->line('Please click the button below to verify your email address and activate your account.')
-            ->action('Verify Email Address', $url)
-            ->line('If you did not create an account, no further action is required.');
+        return EmailTemplateMailBuilder::build('email_verification', [
+            '{{code}}' => $this->code ?? '——————',
+            '{{expiry_minutes}}' => (string) User::VERIFICATION_CODE_TTL_MINUTES,
+        ], $url);
     }
 
     protected function verificationUrl($notifiable): string

@@ -513,6 +513,26 @@ class DatabaseSeeder extends Seeder
                 'token' => 'ITO1-0601-00'.($v2Apps->count()),
             ]);
 
+            PreAssessment::create([
+                'application_id' => $app->id,
+                'pds_submitted' => true,
+                'ipcr_submitted' => true,
+                'tor_submitted' => true,
+                'coe_submitted' => true,
+                'requirements_complete' => true,
+                'requirements_remarks' => null,
+                'education_meets' => true,
+                'license_meets' => true,
+                'experience_meets' => true,
+                'training_meets' => true,
+                'eligibility_meets' => $i !== 5,
+                'hrd_assessment' => $i !== 5,
+                'hrd_remarks' => $i === 5 ? 'Eligibility does not meet second level requirement.' : 'Meets all minimum qualifications.',
+                'consensus' => $i !== 5,
+                'assessed_by' => $secretariat->id,
+                'assessed_at' => Carbon::now()->subDays(15),
+            ]);
+
             QsEvaluation::create([
                 'application_id' => $app->id,
                 'evaluator_id' => $secretariat->id,

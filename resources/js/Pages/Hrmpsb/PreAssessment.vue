@@ -19,8 +19,8 @@
         @click="grp.open = !grp.open"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors"
         :class="grp.open
-          ? 'bg-[#2a338f] text-white border-[#2a338f]'
-          : 'bg-white text-gray-600 border-gray-300 hover:border-[#2a338f] hover:text-[#2a338f]'">
+          ? 'bg-primary text-white border-primary'
+          : 'bg-white text-gray-600 border-gray-300 hover:border-primary hover:text-primary'">
         <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round"
             :d="grp.open ? 'M19 9l-7 7-7-7' : 'M9 5l7 7-7 7'"/>
@@ -290,7 +290,7 @@
                 <select :value="getDraft(row.id).requirements_complete"
                   :disabled="!isSecretary"
                   @change="e => setDraft(row.id, 'requirements_complete', e.target.value === '' ? null : e.target.value === 'true')"
-                  class="text-xs border border-gray-200 rounded px-1.5 pr-7 py-1 bg-white focus:ring-1 focus:ring-[#2a338f] focus:outline-none w-full max-w-[110px] disabled:opacity-60 disabled:cursor-not-allowed"
+                  class="text-xs border border-gray-200 rounded px-1.5 pr-7 py-1 bg-white focus:ring-1 focus:ring-primary focus:outline-none w-full max-w-[110px] disabled:opacity-60 disabled:cursor-not-allowed"
                   :class="getDraft(row.id).requirements_complete === true ? 'text-green-700 border-green-300'
                          : getDraft(row.id).requirements_complete === false ? 'text-red-600 border-red-300'
                          : 'text-gray-500'">
@@ -315,7 +315,7 @@
                   :readonly="!isSecretary"
                   @input="e => isSecretary && setDraft(row.id, 'secretariat_remarks', e.target.value)"
                   rows="2" placeholder="Remarks…"
-                  class="text-xs border border-gray-200 rounded px-1.5 py-1 w-full focus:ring-1 focus:ring-[#2a338f] focus:outline-none resize-none read-only:opacity-60 read-only:cursor-default"
+                  class="text-xs border border-gray-200 rounded px-1.5 py-1 w-full focus:ring-1 focus:ring-primary focus:outline-none resize-none read-only:opacity-60 read-only:cursor-default"
                   style="min-width:150px"></textarea>
               </td>
 
@@ -395,7 +395,7 @@
                   <select :value="getDraft(row.id).hrd_assessment"
                     :disabled="!isSecretary"
                     @change="e => setDraft(row.id, 'hrd_assessment', e.target.value === '' ? null : e.target.value === 'true')"
-                     class="text-xs border border-gray-200 rounded px-1.5 pr-7 py-1 bg-white focus:ring-1 focus:ring-[#2a338f] focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+                     class="text-xs border border-gray-200 rounded px-1.5 pr-7 py-1 bg-white focus:ring-1 focus:ring-primary focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
                     :class="getDraft(row.id).hrd_assessment === true ? 'text-green-700 border-green-300'
                            : getDraft(row.id).hrd_assessment === false ? 'text-red-600 border-red-300'
                            : 'text-gray-500'">
@@ -410,7 +410,7 @@
                     :readonly="!isSecretary"
                     @input="e => isSecretary && setDraft(row.id, 'hrd_remarks', e.target.value)"
                     rows="2" placeholder="HRD remarks…"
-                    class="text-xs border border-gray-200 rounded px-1.5 py-1 w-full focus:ring-1 focus:ring-[#2a338f] focus:outline-none resize-none read-only:opacity-60 read-only:cursor-default"
+                    class="text-xs border border-gray-200 rounded px-1.5 py-1 w-full focus:ring-1 focus:ring-primary focus:outline-none resize-none read-only:opacity-60 read-only:cursor-default"
                     style="min-width:150px"></textarea>
                 </td>
                 <!-- PDS Link -->
@@ -418,7 +418,7 @@
                   <button @click="viewDocument(row.applicant.pds_url)"
                     :disabled="!row.applicant.pds_url"
                     class="inline-flex items-center gap-1 font-medium whitespace-nowrap cursor-pointer transition-colors"
-                    :class="row.applicant.pds_url ? 'text-[#2a338f] hover:underline' : 'text-gray-300 cursor-not-allowed'">
+                    :class="row.applicant.pds_url ? 'text-primary hover:underline' : 'text-gray-300 cursor-not-allowed'">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                     </svg>
@@ -525,7 +525,7 @@
                   <button v-if="drafts[row.id]?.dirty"
                     @click="saveRow(row.id)"
                     :disabled="saving[row.id]"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#2a338f] hover:bg-[#1e2570] text-white font-semibold text-[11px] transition-colors disabled:opacity-60">
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary hover:bg-primary-dark text-white font-semibold text-[11px] transition-colors disabled:opacity-60">
                     <svg v-if="saving[row.id]" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>

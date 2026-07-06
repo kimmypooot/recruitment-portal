@@ -64,7 +64,7 @@ const iconColorClass = computed(() => iconMap[props.iconType]?.color ?? 'text-re
 
 const confirmClass = computed(() => {
   if (props.variant === 'danger') return 'bg-red-600 hover:bg-red-700'
-  if (props.variant === 'primary') return 'bg-[#2a338f] hover:bg-[#1e2570]'
+  if (props.variant === 'primary') return 'bg-primary hover:bg-primary-dark'
   return 'bg-gray-600 hover:bg-gray-700'
 })
 

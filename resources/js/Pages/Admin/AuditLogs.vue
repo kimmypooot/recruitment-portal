@@ -12,10 +12,10 @@
           </svg>
           <input v-model="filters.search" @input="onSearch" type="text"
             placeholder="Search action, model, or user…"
-            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" />
+            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none" />
         </div>
         <select v-model="filters.action_type" @change="resetAndFetch"
-          class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white sm:min-w-36">
+          class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white sm:min-w-36">
           <option value="">All Actions</option>
           <optgroup label="Vacancy">
             <option value="vacancy_created">Created</option>
@@ -63,7 +63,7 @@
         </div>
         <button v-if="filters.search || filters.action_type || filters.date_from || filters.date_to"
           @click="clearFilters"
-          class="text-xs text-[#2a338f] hover:underline self-start sm:self-auto">
+          class="text-xs text-primary hover:underline self-start sm:self-auto">
           Clear all filters
         </button>
         <span v-if="!loading" class="text-xs text-gray-400 sm:hidden">
@@ -141,7 +141,7 @@
                 </svg>
                 <p class="text-sm font-medium text-gray-400">No audit logs found</p>
                 <button v-if="filters.search || filters.action_type" @click="clearFilters"
-                  class="text-xs text-[#2a338f] hover:underline">Clear filters</button>
+                  class="text-xs text-primary hover:underline">Clear filters</button>
               </div>
             </td>
           </tr>
@@ -166,7 +166,7 @@
           <button v-for="p in visibleAuditPages" :key="p" @click="typeof p === 'number' && goPage(p)"
             :disabled="p === '…'"
             :class="['px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
-              p === meta.current_page ? 'bg-[#2a338f] text-white' : p === '…' ? 'text-gray-300 cursor-default' : 'text-gray-600 hover:bg-gray-100']">
+              p === meta.current_page ? 'bg-primary text-white' : p === '…' ? 'text-gray-300 cursor-default' : 'text-gray-600 hover:bg-gray-100']">
             {{ p }}
           </button>
           <button :disabled="meta.current_page === meta.last_page" @click="goPage(meta.current_page + 1)"

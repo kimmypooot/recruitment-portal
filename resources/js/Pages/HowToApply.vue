@@ -33,7 +33,7 @@
 
         <div v-for="(step, index) in steps" :key="index" class="flex gap-6">
           <!-- Step number -->
-          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-[#2a338f] text-white flex items-center justify-center font-bold text-lg shadow">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg shadow">
             {{ index + 1 }}
           </div>
           <!-- Content -->
@@ -42,7 +42,7 @@
             <p class="text-gray-600 text-sm leading-relaxed">{{ step.description }}</p>
             <ul v-if="step.items" class="mt-3 space-y-1.5">
               <li v-for="item in step.items" :key="item" class="flex items-start gap-2 text-sm text-gray-600">
-                <svg class="w-4 h-4 mt-0.5 text-[#2a338f] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg class="w-4 h-4 mt-0.5 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                 </svg>
                 {{ item }}
@@ -61,8 +61,8 @@
         <p class="text-gray-500 text-sm mb-8">Prepare these documents before starting your application. All files must be in PDF, JPG, or PNG format (max 10 MB each).</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div v-for="doc in documents" :key="doc.name" class="flex items-start gap-3 p-4 rounded-xl border border-gray-200 bg-gray-50">
-            <div class="w-9 h-9 rounded-lg bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
             </div>
@@ -80,7 +80,7 @@
       <h2 class="text-xl font-bold text-gray-900 mb-2">Ready to apply?</h2>
       <p class="text-gray-500 text-sm mb-6">Create a free account to start tracking your application.</p>
       <div class="flex flex-col sm:flex-row gap-3 justify-center">
-        <Link href="/register" class="px-6 py-3 bg-[#2a338f] text-white font-semibold text-sm rounded-lg hover:bg-[#1e2570] transition-colors shadow-sm">
+        <Link href="/register" class="px-6 py-3 bg-primary text-white font-semibold text-sm rounded-lg hover:bg-primary-dark transition-colors shadow-sm">
           Create Account
         </Link>
         <Link href="/" class="px-6 py-3 border border-gray-300 text-gray-700 font-semibold text-sm rounded-lg hover:bg-gray-50 transition-colors">

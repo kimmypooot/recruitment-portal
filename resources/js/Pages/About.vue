@@ -35,13 +35,13 @@
       <!-- Mandate — full width -->
       <div class="p-6 rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="flex items-start gap-5">
-          <div class="w-10 h-10 rounded-xl bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" :d="mandate.icon"/>
             </svg>
           </div>
           <div>
-            <p class="text-xs font-semibold text-[#2a338f] uppercase tracking-wider mb-1">{{ mandate.label }}</p>
+            <p class="text-xs font-semibold text-primary uppercase tracking-wider mb-1">{{ mandate.label }}</p>
             <h3 class="text-base font-bold text-gray-900 mb-2">{{ mandate.title }}</h3>
             <p class="text-sm text-gray-600 leading-relaxed">{{ mandate.text }}</p>
           </div>
@@ -52,12 +52,12 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div v-for="card in corePurposeVision" :key="card.label"
           class="p-6 rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div class="w-10 h-10 rounded-xl bg-[#2a338f]/10 flex items-center justify-center mb-4">
-            <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" :d="card.icon"/>
             </svg>
           </div>
-          <p class="text-xs font-semibold text-[#2a338f] uppercase tracking-wider mb-1">{{ card.label }}</p>
+          <p class="text-xs font-semibold text-primary uppercase tracking-wider mb-1">{{ card.label }}</p>
           <h3 class="text-base font-bold text-gray-900 mb-2">{{ card.title }}</h3>
           <p class="text-sm text-gray-600 leading-relaxed">{{ card.text }}</p>
         </div>
@@ -87,13 +87,13 @@
       <h2 class="text-2xl font-bold text-gray-900 mb-2 text-center">Core Values</h2>
       <p class="text-gray-500 text-sm text-center mb-10">Principles that guide the Civil Service Commission</p>
       <div class="flex flex-wrap justify-center gap-5">
-        <div v-for="value in values" :key="value.label" class="text-center p-5 rounded-2xl bg-[#2a338f]/5 border border-[#2a338f]/15 w-36">
+        <div v-for="value in values" :key="value.label" class="text-center p-5 rounded-2xl bg-primary/5 border border-primary/15 w-36">
           <div class="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
-            <svg class="w-7 h-7 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <svg class="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" :d="value.svg"/>
             </svg>
           </div>
-          <p class="text-xs font-semibold text-[#2a338f]">{{ value.label }}</p>
+          <p class="text-xs font-semibold text-primary">{{ value.label }}</p>
         </div>
       </div>
     </section>

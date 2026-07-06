@@ -35,7 +35,7 @@
 
         <!-- Header card -->
         <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden mb-6">
-          <div class="h-2 bg-gradient-to-r from-[#2a338f] via-blue-600 to-[#1a5276]"></div>
+          <div class="h-2 bg-gradient-to-r from-primary via-blue-600 to-[#1a5276]"></div>
           <div class="p-6 sm:p-8">
             <div class="flex items-start gap-4 mb-6">
               <img src="/images/csc-logo.png" alt="CSC Logo" class="h-14 w-14 object-contain flex-shrink-0"
@@ -93,7 +93,7 @@
             </div>
             <div class="flex gap-1.5 mt-3">
               <div v-for="s in 3" :key="s" class="flex-1 h-1.5 rounded-full transition-colors duration-300"
-                :class="s <= currentStep ? 'bg-[#2a338f]' : 'bg-gray-200'"></div>
+                :class="s <= currentStep ? 'bg-primary' : 'bg-gray-200'"></div>
             </div>
           </div>
 
@@ -114,14 +114,14 @@
                 v-model="form.on_competencies"
                 rows="8"
                 maxlength="5000"
-                class="w-full border border-gray-300 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] resize-none transition-shadow"
+                class="w-full border border-gray-300 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary resize-none transition-shadow"
                 :class="{ 'border-red-300 bg-red-50/30': errors.on_competencies, 'border-green-300 bg-green-50/30': form.on_competencies.length >= 1000 }"
                 placeholder="Assess the applicant's competencies, skills, and qualifications relevant to the position..."
               ></textarea>
               <!-- Character progress bar -->
               <div class="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div class="h-full rounded-full transition-all duration-300"
-                  :class="charPct('on_competencies') >= 100 ? 'bg-green-500' : charPct('on_competencies') >= 50 ? 'bg-amber-400' : 'bg-[#2a338f]'"
+                  :class="charPct('on_competencies') >= 100 ? 'bg-green-500' : charPct('on_competencies') >= 50 ? 'bg-amber-400' : 'bg-primary'"
                   :style="{ width: Math.min(charPct('on_competencies'), 100) + '%' }"></div>
               </div>
               <div class="flex justify-between mt-1">
@@ -149,13 +149,13 @@
                 v-model="form.on_performance"
                 rows="8"
                 maxlength="5000"
-                class="w-full border border-gray-300 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] resize-none transition-shadow"
+                class="w-full border border-gray-300 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary resize-none transition-shadow"
                 :class="{ 'border-red-300 bg-red-50/30': errors.on_performance, 'border-green-300 bg-green-50/30': form.on_performance.length >= 1000 }"
                 placeholder="Assess the applicant's performance, work history, and other relevant information..."
               ></textarea>
               <div class="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div class="h-full rounded-full transition-all duration-300"
-                  :class="charPct('on_performance') >= 100 ? 'bg-green-500' : charPct('on_performance') >= 50 ? 'bg-amber-400' : 'bg-[#2a338f]'"
+                  :class="charPct('on_performance') >= 100 ? 'bg-green-500' : charPct('on_performance') >= 50 ? 'bg-amber-400' : 'bg-primary'"
                   :style="{ width: Math.min(charPct('on_performance'), 100) + '%' }"></div>
               </div>
               <div class="flex justify-between mt-1">
@@ -184,7 +184,7 @@
                 class="relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all group"
                 :class="selectedFile
                   ? 'border-green-300 bg-green-50/30'
-                  : 'border-gray-300 hover:border-[#2a338f] hover:bg-blue-50/30'"
+                  : 'border-gray-300 hover:border-primary hover:bg-blue-50/30'"
               >
                 <input ref="fileInput" type="file" accept=".pdf" @change="handleFile" class="hidden" />
 
@@ -205,13 +205,13 @@
 
                 <!-- No file -->
                 <template v-else>
-                  <div class="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#2a338f]/5 transition-colors">
-                    <svg class="w-7 h-7 text-gray-400 group-hover:text-[#2a338f] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <div class="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/5 transition-colors">
+                    <svg class="w-7 h-7 text-gray-400 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                     </svg>
                   </div>
                   <p class="text-sm text-gray-500">
-                    Drop your PDF here, or <span class="text-[#2a338f] font-semibold">browse files</span>
+                    Drop your PDF here, or <span class="text-primary font-semibold">browse files</span>
                   </p>
                   <p class="text-xs text-gray-400 mt-1">PDF only, max 10 MB</p>
                 </template>
@@ -236,7 +236,7 @@
               <div v-else></div>
 
               <button v-if="currentStep < 3" type="button" @click="nextStep"
-                class="px-6 py-2.5 text-sm font-semibold text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-xl shadow-sm transition-colors">
+                class="px-6 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-xl shadow-sm transition-colors">
                 Continue →
               </button>
               <button v-else type="submit" :disabled="submitting"

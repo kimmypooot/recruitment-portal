@@ -301,7 +301,7 @@ import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
 import Pagination from '@/Components/UI/Pagination.vue'
 import { formatDateLong, formatDate, daysRemaining } from '@/utils/dates'
 
-const AVATAR_COLORS = ['#2a338f','#7c3aed','#0891b2','#059669','#d97706','#dc2626','#db2777','#0284c7','#65a30d']
+const AVATAR_COLORS = ['var(--color-primary)','#7c3aed','#0891b2','#059669','#d97706','#dc2626','#db2777','#0284c7','#65a30d']
 function avatarColor(i) { return AVATAR_COLORS[i % AVATAR_COLORS.length] }
 
 // ── Testimonials state (must be declared before watch) ────────────────────

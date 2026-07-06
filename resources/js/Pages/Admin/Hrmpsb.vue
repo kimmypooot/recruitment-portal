@@ -8,7 +8,7 @@
         <p class="text-sm text-gray-500 mt-0.5">Fixed membership — applies to all vacancies. Reconstitute by updating members here.</p>
       </div>
       <button @click="openAssignModal"
-        class="flex items-center gap-2 px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
+        class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
         </svg>
@@ -98,7 +98,7 @@
           <p class="text-sm text-gray-500 mt-0.5">Map each Field Office or Regional Support Unit to its designated Head of Unit. This assignment is used per-vacancy to dynamically build the HRMPSB composition. Vacancies under Human Resource Division (HRD) automatically exclude the Head of Unit since the Chief of HR Division is already a mandatory member. Vacancies under Office of the Regional Director (ORD) also exclude it, since the head of that office is the Appointing Authority, for whom a Head of Unit designation does not apply.</p>
         </div>
         <button @click="openPoaHeadModal"
-          class="flex items-center gap-2 px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
+          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
@@ -171,7 +171,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">User <span class="text-red-500">*</span></label>
             <select v-model="assignForm.user_id" required
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
               <option value="">Select user…</option>
               <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ u.full_name }}</option>
             </select>
@@ -180,7 +180,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">HRMPSB Role <span class="text-red-500">*</span></label>
             <select v-model="assignForm.hrmpsb_role" required
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
               <option value="">Select role…</option>
               <option v-for="(label, key) in roles" :key="key" :value="key">{{ label }}</option>
             </select>
@@ -189,11 +189,11 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">Member Type <span class="text-red-500">*</span></label>
             <div class="flex gap-4">
               <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input type="radio" v-model="assignForm.member_type" value="principal" class="text-[#2a338f]" />
+                <input type="radio" v-model="assignForm.member_type" value="principal" class="text-primary" />
                 Principal
               </label>
               <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input type="radio" v-model="assignForm.member_type" value="alternate" class="text-[#2a338f]" />
+                <input type="radio" v-model="assignForm.member_type" value="alternate" class="text-primary" />
                 Alternate
               </label>
             </div>
@@ -203,7 +203,7 @@
             <button type="button" @click="showModal = false"
               class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
             <button type="submit" :disabled="saving"
-              class="px-4 py-2 text-sm bg-[#2a338f] text-white font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-60">
+              class="px-4 py-2 text-sm bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-60">
               {{ saving ? 'Saving…' : 'Add to Board' }}
             </button>
           </div>
@@ -227,7 +227,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Place of Assignment <span class="text-red-500">*</span></label>
             <select v-model="poaHeadForm.place_of_assignment" required :disabled="editingPoaHead"
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
               <option value="">Select place of assignment…</option>
               <optgroup label="CSC Field Offices">
                 <option v-for="loc in fieldOffices" :key="loc" :value="loc">{{ loc }}</option>
@@ -240,7 +240,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Head of Unit <span class="text-red-500">*</span></label>
             <select v-model="poaHeadForm.user_id" required
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:outline-none bg-white">
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
               <option value="">Select user…</option>
               <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ u.full_name }}</option>
             </select>
@@ -257,7 +257,7 @@
             <button type="button" @click="showPoaHeadModal = false"
               class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
             <button type="submit" :disabled="savingPoaHead"
-              class="px-4 py-2 text-sm bg-[#2a338f] text-white font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-60">
+              class="px-4 py-2 text-sm bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-60">
               {{ savingPoaHead ? 'Saving…' : (editingPoaHead ? 'Update' : 'Assign') }}
             </button>
           </div>

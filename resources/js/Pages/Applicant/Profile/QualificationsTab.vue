@@ -14,7 +14,7 @@
           <p class="text-xs text-amber-600 font-medium mt-0.5">Enter experience relevant to the applied position</p>
         </div>
         <button @click="$emit('add-experience')"
-          class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-xs font-semibold rounded-lg transition-colors">
+          class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary-dark text-white text-xs font-semibold rounded-lg transition-colors">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
@@ -44,7 +44,7 @@
                 <td class="py-3 text-right">
                   <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button @click="$emit('edit-experience', exp)"
-                      class="p-1 rounded text-gray-400 hover:text-[#2a338f] transition-colors">
+                      class="p-1 rounded text-gray-400 hover:text-primary transition-colors">
                       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                       </svg>
@@ -86,7 +86,7 @@
           <p class="text-xs text-gray-500 mt-0.5">List all levels from highest to lowest</p>
         </div>
         <button @click="$emit('add-education')"
-          class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-xs font-semibold rounded-lg transition-colors">
+          class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary-dark text-white text-xs font-semibold rounded-lg transition-colors">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
@@ -116,7 +116,7 @@
                 <td class="py-3 text-right">
                   <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button @click="$emit('edit-education', edu)"
-                      class="p-1 rounded text-gray-400 hover:text-[#2a338f] transition-colors">
+                      class="p-1 rounded text-gray-400 hover:text-primary transition-colors">
                       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                       </svg>
@@ -158,7 +158,7 @@
           <p class="text-xs text-amber-600 font-medium mt-0.5">Enter trainings relevant to the applied position</p>
         </div>
         <button @click="$emit('add-training')"
-          class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-xs font-semibold rounded-lg transition-colors">
+          class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary-dark text-white text-xs font-semibold rounded-lg transition-colors">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
@@ -188,7 +188,7 @@
                 <td class="py-3 text-right">
                   <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button @click="$emit('edit-training', t)"
-                      class="p-1 rounded text-gray-400 hover:text-[#2a338f] transition-colors">
+                      class="p-1 rounded text-gray-400 hover:text-primary transition-colors">
                       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                       </svg>
@@ -220,8 +220,8 @@
     <!-- Eligibility & Other Info -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
-        <div class="w-9 h-9 rounded-lg bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
-          <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
           </svg>
         </div>
@@ -236,7 +236,7 @@
             Eligibility <span class="text-red-500 normal-case">*</span>
           </label>
           <select v-model="personal.eligibility"
-            class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition">
             <option value="">— Select —</option>
             <option value="N/A">N/A</option>
             <option value="Career Service Professional Eligibility">Career Service Professional Eligibility</option>
@@ -255,7 +255,7 @@
           </select>
           <div v-if="personal.eligibility === 'Others'" class="mt-2">
             <input v-model="personal.eligibility_other" type="text" placeholder="Specify eligibility"
-              class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition uppercase" />
+              class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition uppercase" />
           </div>
         </div>
 

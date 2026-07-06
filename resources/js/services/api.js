@@ -1,7 +1,9 @@
 // resources/js/services/api.js
 import axios from 'axios';
+import { useToast } from '@/composables/useToast';
 
 const origin = window.location.origin
+let sessionExpiredHandled = false
 
 const api = axios.create({
   baseURL: `${origin}/api`,
@@ -23,9 +25,21 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const wasLoggedIn = !!localStorage.getItem('auth_token');
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_user');
-      window.location.href = `${origin}/login`;
+      localStorage.removeItem('auth_token_created_at');
+      localStorage.removeItem('auth_remember');
+
+      const onLoginPage = window.location.pathname === '/login';
+      if (!onLoginPage && !sessionExpiredHandled) {
+        sessionExpiredHandled = true;
+        if (wasLoggedIn) {
+          useToast().warning('Your session has expired. Please sign in again to continue.');
+        }
+        const next = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = `${origin}/login?next=${next}`;
+      }
     }
     if (error.response?.status === 403) {
       console.error('Forbidden — insufficient permissions');

@@ -23,11 +23,20 @@ export function useIdleTimer(timeout = IDLE_TIMEOUT) {
     localStorage.removeItem('auth_token')
     localStorage.removeItem('auth_user')
     localStorage.removeItem('auth_token_created_at')
+    localStorage.removeItem('auth_remember')
     router.visit('/login')
+  }
+
+  // "Remember me" and Google OAuth logins get a long-lived (30-day) token —
+  // forcing them out after 30 idle minutes anyway defeats the point of
+  // "remember me". Skip the idle-driven logout for those sessions.
+  function isRememberedSession() {
+    return localStorage.getItem('auth_remember') === '1'
   }
 
   function resetTimer() {
     clearAll()
+    if (isRememberedSession()) return
     warningTimer = setTimeout(() => {
       warning('Your session will expire due to inactivity. Move your mouse or press a key to stay signed in.')
     }, timeout - WARNING_BEFORE)

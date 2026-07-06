@@ -34,7 +34,12 @@ class AuthController extends Controller
         }
 
         $user = $request->user();
-        $expiresAt = $request->boolean('remember') ? null : now()->addHours(2);
+
+        if ($user->deactivated_at) {
+            $user->update(['deactivated_at' => null]);
+        }
+        $user->update(['last_login_at' => now()]);
+        $expiresAt = $request->boolean('remember') ? now()->addDays(30) : now()->addHours(2);
         $token = $user->createToken('api-token', ['*'], $expiresAt)->plainTextToken;
 
         return response()->json(['token' => $token, 'user' => $user]);
@@ -47,10 +52,41 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out successfully.']);
     }
 
+    public function deactivate(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->update(['deactivated_at' => now()]);
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Account deactivated successfully.']);
+    }
+
+    public function deleteAccount(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Deletion is irreversible — require re-authentication, not just a live token.
+        if ($user->has_password) {
+            $request->validate(['password' => 'required|string']);
+
+            if (! Hash::check($request->password, $user->password)) {
+                return response()->json(['message' => 'The password is incorrect.'], 422);
+            }
+        }
+
+        $user->tokens()->delete();
+        $user->delete();
+
+        return response()->json(['message' => 'Account deleted successfully.']);
+    }
+
     public function changePassword(Request $request): JsonResponse
     {
         $user = $request->user();
-        $isGoogleOnly = (bool) $user->google_id;
+        // Only accounts that never set their own password (Google-created) may skip
+        // current-password verification. A linked Google account alone is not enough —
+        // otherwise a hijacked session could take over the account.
+        $isGoogleOnly = ! $user->has_password;
 
         $rules = [
             'password' => ['required', 'string', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()],
@@ -66,7 +102,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'The current password is incorrect.'], 422);
         }
 
-        $user->update(['password' => Hash::make($request->password)]);
+        $user->update(['password' => Hash::make($request->password), 'has_password' => true]);
 
         return response()->json(['message' => $isGoogleOnly ? 'Password set successfully. You can now sign in with your email and password.' : 'Password changed successfully.']);
     }
@@ -126,7 +162,7 @@ class AuthController extends Controller
 
         $user->sendEmailVerificationNotification();
 
-        $token = $user->createToken('api-token', ['*'], null)->plainTextToken;
+        $token = $user->createToken('api-token', ['*'], now()->addHours(2))->plainTextToken;
 
         return response()->json(['token' => $token, 'user' => $user], 201);
     }
@@ -157,16 +193,41 @@ class AuthController extends Controller
         }
 
         if ($user->hasVerifiedEmail()) {
-            return redirect()->intended('/login')
+            return redirect('/email/verify?verified=1')
                 ->with('message', 'Email already verified.');
         }
 
         if ($user->markEmailAsVerified()) {
+            $user->clearEmailVerificationCode();
             event(new Verified($user));
         }
 
-        return redirect()->intended('/login')
+        return redirect('/email/verify?verified=1')
             ->with('message', 'Email verified successfully.');
+    }
+
+    public function verifyEmailCode(Request $request): JsonResponse
+    {
+        $request->validate([
+            'code' => 'required|string|size:6',
+        ]);
+
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email already verified.', 'user' => $user]);
+        }
+
+        if (! $user->isValidEmailVerificationCode($request->input('code'))) {
+            return response()->json(['message' => 'That code is invalid or has expired. Please request a new one.'], 422);
+        }
+
+        if ($user->markEmailAsVerified()) {
+            $user->clearEmailVerificationCode();
+            event(new Verified($user));
+        }
+
+        return response()->json(['message' => 'Email verified successfully.', 'user' => $user->fresh()]);
     }
 
     public function resendVerification(Request $request): RedirectResponse
@@ -179,7 +240,7 @@ class AuthController extends Controller
 
         $user->sendEmailVerificationNotification();
 
-        return back()->with('message', 'Verification link sent.');
+        return back()->with('message', 'Verification code sent.');
     }
 
     public function resendVerificationApi(Request $request): JsonResponse
@@ -192,7 +253,12 @@ class AuthController extends Controller
 
         $user->sendEmailVerificationNotification();
 
-        return response()->json(['message' => 'Verification link sent.']);
+        return response()->json(['message' => 'Verification code sent.']);
+    }
+
+    public function me(Request $request): JsonResponse
+    {
+        return response()->json(['user' => $request->user()->fresh()]);
     }
 
     // ── Google OAuth: Login flow ──────────────────────────────────────────
@@ -231,6 +297,7 @@ class AuthController extends Controller
             $existing = User::where('google_id', $googleUser->getId())->first();
             if ($existing) {
                 $existing->update([
+                    'email_verified_at' => $existing->email_verified_at ?? now(),
                     'google_avatar' => $googleUser->getAvatar(),
                 ]);
 
@@ -271,6 +338,7 @@ class AuthController extends Controller
                 'middle_name' => $gMiddleName,
                 'email' => $googleUser->getEmail(),
                 'password' => Hash::make(Str::random(32)),
+                'has_password' => false,
                 'role' => 'applicant',
                 'email_verified_at' => now(),
                 'google_id' => $googleUser->getId(),
@@ -346,6 +414,7 @@ class AuthController extends Controller
                 'full_name' => $user->full_name,
                 'email' => $user->email,
                 'role' => $user->role,
+                'email_verified_at' => $user->email_verified_at,
                 'google_id' => $user->google_id,
                 'google_avatar' => $user->google_avatar,
             ]));
@@ -365,6 +434,13 @@ class AuthController extends Controller
     public function googleUnlink(Request $request): JsonResponse
     {
         $user = $request->user();
+
+        if (! $user->has_password) {
+            return response()->json([
+                'message' => 'Set a password first so you can still sign in after disconnecting Google.',
+            ], 422);
+        }
+
         $user->update([
             'google_id' => null,
             'google_avatar' => null,
@@ -377,7 +453,7 @@ class AuthController extends Controller
 
     private function redirectWithToken(User $user): RedirectResponse
     {
-        $token = $user->createToken('api-token', ['*'], null)->plainTextToken;
+        $token = $user->createToken('api-token', ['*'], now()->addDays(30))->plainTextToken;
         $userData = base64_encode(json_encode([
             'id' => $user->id,
             'first_name' => $user->first_name,
@@ -387,6 +463,7 @@ class AuthController extends Controller
             'full_name' => $user->full_name,
             'email' => $user->email,
             'role' => $user->role,
+            'email_verified_at' => $user->email_verified_at,
             'google_id' => $user->google_id,
             'google_avatar' => $user->google_avatar,
         ]));

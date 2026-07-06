@@ -54,6 +54,26 @@ export function isPastDeadline(dateStr) {
   return new Date(dateStr) < new Date()
 }
 
+// Shared "how urgent is this deadline" thresholds, used anywhere a vacancy
+// deadline is shown (card grid, detail modal, apply page) so the coloring
+// and cutoffs agree across screens instead of drifting independently.
+const URGENCY_DANGER_DAYS = 3
+const URGENCY_WARN_DAYS = 7
+
+export function deadlineUrgency(dateStr) {
+  const remaining = daysRemaining(dateStr)
+  if (remaining === null || remaining < 0) {
+    return { daysRemaining: remaining, level: 'none' }
+  }
+  if (remaining <= URGENCY_DANGER_DAYS) {
+    return { daysRemaining: remaining, level: 'danger' }
+  }
+  if (remaining <= URGENCY_WARN_DAYS) {
+    return { daysRemaining: remaining, level: 'warn' }
+  }
+  return { daysRemaining: remaining, level: 'none' }
+}
+
 export function timeAgo(date) {
   if (!date) return ''
   const diff = (Date.now() - new Date(date).getTime()) / 1000

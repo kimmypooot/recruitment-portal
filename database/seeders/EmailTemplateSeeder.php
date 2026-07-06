@@ -234,6 +234,38 @@ class EmailTemplateSeeder extends Seeder
             ],
         ];
 
+        $templates['email_verification'] = [
+            'name' => 'Email Verification',
+            'category' => 'Account',
+            'subject' => 'Verify Your Email — CSC RO VIII',
+            'greeting' => 'Welcome to CSC RO VIII!',
+            'body' => "Thank you for creating an account with the Civil Service Commission Regional Office VIII - Recruitment Portal.\n"
+                ."Enter this verification code in the portal to activate your account: **{{code}}**\n"
+                ."This code expires in {{expiry_minutes}} minutes.\n"
+                ."Alternatively, you can click the button below to verify your email address directly.\n"
+                .'If you did not create an account, no further action is required.',
+            'action_text' => 'Verify Email Address',
+            'action_url' => null,
+            'action_locked' => true,
+            'placeholders' => ['code', 'expiry_minutes'],
+            'sample_data' => ['code' => '123456', 'expiry_minutes' => '15'],
+        ];
+
+        $templates['password_reset'] = [
+            'name' => 'Password Reset',
+            'category' => 'Account',
+            'subject' => 'Reset Your Password — CSC RO VIII',
+            'greeting' => 'Hello,',
+            'body' => "You are receiving this email because we received a password reset request for your account.\n"
+                ."Click the button below to choose a new password.\n"
+                .'This password reset link will expire in {{expiry_minutes}} minutes. If you did not request a password reset, no further action is required.',
+            'action_text' => 'Reset Password',
+            'action_url' => null,
+            'action_locked' => true,
+            'placeholders' => ['expiry_minutes'],
+            'sample_data' => ['expiry_minutes' => '60'],
+        ];
+
         foreach ($templates as $key => $data) {
             EmailTemplate::firstOrCreate(['key' => $key], array_merge(['key' => $key], $data));
         }

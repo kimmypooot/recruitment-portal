@@ -11,7 +11,7 @@
           </p>
         </div>
         <div class="w-full sm:w-64">
-          <select v-model="categoryFilter" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
+          <select v-model="categoryFilter" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none">
             <option value="">All categories</option>
             <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
           </select>
@@ -53,11 +53,11 @@
 
                 <div class="flex items-center gap-1 shrink-0">
                   <button @click="openPreview(tpl)"
-                    class="px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:text-[#2a338f] hover:bg-indigo-50 rounded-lg transition-colors">
+                    class="px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:text-primary hover:bg-indigo-50 rounded-lg transition-colors">
                     Preview
                   </button>
                   <button @click="openEdit(tpl)"
-                    class="px-2.5 py-1.5 text-xs font-medium text-white bg-[#2a338f] hover:bg-[#1e2570] rounded-lg transition-colors">
+                    class="px-2.5 py-1.5 text-xs font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors">
                     Edit
                   </button>
                 </div>
@@ -98,20 +98,20 @@
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Subject <span class="text-red-500">*</span></label>
               <input v-model="form.subject" type="text" required
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" :class="{ 'border-red-300': formErrors.subject }"/>
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none" :class="{ 'border-red-300': formErrors.subject }"/>
               <p v-if="formErrors.subject" class="text-xs text-red-600 mt-1">{{ formErrors.subject[0] }}</p>
             </div>
 
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Greeting <span class="text-red-500">*</span></label>
               <input v-model="form.greeting" type="text" required
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" :class="{ 'border-red-300': formErrors.greeting }"/>
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none" :class="{ 'border-red-300': formErrors.greeting }"/>
             </div>
 
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Body <span class="text-red-500">*</span></label>
               <textarea v-model="form.body" rows="8" required
-                class="w-full px-3 py-2 text-sm font-mono border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none"></textarea>
+                class="w-full px-3 py-2 text-sm font-mono border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none"></textarea>
               <p class="text-[11px] text-gray-400 mt-1">Each line becomes a paragraph. Use **text** for bold. Empty placeholder lines are omitted automatically.</p>
               <p v-if="formErrors.body" class="text-xs text-red-600 mt-1">{{ formErrors.body[0] }}</p>
             </div>
@@ -120,12 +120,12 @@
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1.5">Button Text</label>
                 <input v-model="form.action_text" type="text" placeholder="e.g. View Your Application"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none"/>
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none"/>
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1.5">Button Link</label>
                 <input v-if="!modal.template?.action_locked" v-model="form.action_url" type="text" placeholder="/applicant/applications"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none"/>
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none"/>
                 <p v-else class="text-xs text-gray-400 mt-2.5 italic">Auto-generated per request — not editable.</p>
               </div>
             </div>
@@ -133,17 +133,17 @@
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Footer</label>
               <input v-model="form.footer" type="text"
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none"/>
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none"/>
             </div>
 
             <label class="flex items-center gap-2 cursor-pointer">
-              <input v-model="form.is_active" type="checkbox" class="rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f]"/>
+              <input v-model="form.is_active" type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary"/>
               <span class="text-sm text-gray-700">Active — send this version of the email</span>
             </label>
 
             <div class="flex justify-end gap-3 pt-2 border-t border-gray-100 mt-4">
               <button type="button" @click="closeModal" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
-              <button type="submit" :disabled="modal.saving" class="inline-flex items-center px-4 py-2 bg-[#2a338f] text-white text-sm font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-50 transition-colors">
+              <button type="submit" :disabled="modal.saving" class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-50 transition-colors">
                 {{ modal.saving ? 'Saving…' : 'Save Changes' }}
               </button>
             </div>
@@ -170,7 +170,7 @@
               <p class="text-sm text-gray-800 mb-3">{{ preview.data?.greeting }}</p>
               <p v-for="(line, i) in previewLines" :key="i" class="text-sm text-gray-700 mb-2 leading-relaxed" v-html="formatLine(line)"></p>
               <a v-if="preview.data?.action_text" href="#" @click.prevent
-                class="inline-block mt-2 px-4 py-2 bg-[#2a338f] text-white text-sm font-semibold rounded-lg">
+                class="inline-block mt-2 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg">
                 {{ preview.data.action_text }}
               </a>
               <p class="text-xs text-gray-400 mt-5 pt-3 border-t border-gray-200">{{ preview.data?.footer }}</p>

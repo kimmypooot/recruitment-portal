@@ -321,13 +321,13 @@ class ApplicationController extends Controller
         $profile = $application->applicant;
         $path    = $profile?->{$map[$type]};
 
-        abort_if(!$path || !Storage::disk('public')->exists($path), 404);
+        abort_if(!$path || !Storage::disk('local')->exists($path), 404);
 
         if ($request->boolean('download')) {
-            return Storage::disk('public')->download($path);
+            return Storage::disk('local')->download($path);
         }
 
-        return Storage::disk('public')->response($path);
+        return Storage::disk('local')->response($path);
     }
 
     public function withdraw(Request $request, Application $application): JsonResponse

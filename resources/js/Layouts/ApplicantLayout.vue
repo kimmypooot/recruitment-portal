@@ -90,12 +90,15 @@
             <button @click="dropdownOpen = !dropdownOpen"
               class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
               <div class="relative w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
-                <span>{{ userInitial }}</span>
-                <img :src="`/profile/photo?token=${authToken}`"
+                <div v-if="avatarLoading" class="absolute inset-0 flex items-center justify-center">
+                  <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                </div>
+                <span v-if="avatarError">{{ userInitial }}</span>
+                <img v-if="authToken" :src="`/profile/photo?token=${authToken}&_=${avatarVersion}`"
                   class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
                   :class="avatarLoaded ? 'opacity-100' : 'opacity-0'"
-                  @load="avatarLoaded = true"
-                  @error="e => e.target.style.display = 'none'"
+                  @load="e => { if (e.target.naturalWidth === 1 && e.target.naturalHeight === 1) { avatarLoading = false; avatarError = true } else { avatarLoaded = true; avatarLoading = false; avatarError = false } }"
+                  @error="e => { e.target.style.display = 'none'; avatarLoading = false; avatarError = true }"
                   alt="" />
               </div>
               <div class="hidden sm:block text-left">
@@ -114,7 +117,22 @@
               leave-from-class="opacity-100 scale-100"
               leave-to-class="opacity-0 scale-95">
               <div v-if="dropdownOpen"
-                class="absolute right-0 mt-1 w-48 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
+                class="absolute right-0 mt-1 w-56 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
+                <div class="px-4 py-3 border-b border-gray-100">
+                  <div class="flex items-center gap-1.5">
+                    <p class="text-xs text-gray-500 truncate">{{ authUser.email }}</p>
+                    <span v-if="authUser.email_verified_at"
+                      class="inline-flex items-center gap-0.5 text-[10px] font-medium text-[#1877F2]">
+                      <span class="inline-flex items-center justify-center w-3 h-3 rounded-full bg-[#1877F2]">
+                        <svg class="w-1.5 h-1.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                      Verified
+                    </span>
+                    <span v-else class="text-[10px] font-medium text-gray-400">Not Verified</span>
+                  </div>
+                </div>
                 <div class="py-1">
                   <button @click="dropdownOpen = false; showChangePasswordModal = true"
                     class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
@@ -150,10 +168,8 @@
     </button>
 
     <!-- Change Password modal -->
-    <Teleport to="body">
-      <div v-if="showChangePasswordModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50" @click="closeChangePassword"></div>
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+    <BaseModal :show="showChangePasswordModal" :title="isGoogleOnly ? 'Set a Password' : 'Change Password'"
+      max-width="max-w-sm" @close="closeChangePassword">
           <div class="flex items-center gap-3 mb-5">
             <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Icon name="lock" class="w-5 h-5 text-primary" />
@@ -198,18 +214,7 @@
               </div>
               <p v-if="cpErrors.password" class="mt-1 text-xs text-red-500">{{ cpErrors.password }}</p>
 
-              <!-- Password requirements -->
-              <div class="mt-2 space-y-1" aria-live="polite">
-                <p v-for="req in passwordRequirements" :key="req.label"
-                  class="flex items-center gap-1.5 text-xs transition-colors"
-                  :class="req.met ? 'text-green-600' : 'text-gray-400'">
-                  <Icon v-if="req.met" name="check" size="3.5" class="flex-shrink-0" />
-                  <svg v-else class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="9"/>
-                  </svg>
-                  {{ req.label }}
-                </p>
-              </div>
+              <PasswordRequirements :password="cpForm.password" />
             </div>
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Confirm New Password</label>
@@ -248,15 +253,11 @@
               {{ cpSaving ? 'Saving…' : 'Update Password' }}
             </button>
           </div>
-        </div>
-      </div>
-    </Teleport>
+    </BaseModal>
 
     <!-- Logout confirmation modal -->
-    <Teleport to="body">
-      <div v-if="showLogoutModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50" @click="showLogoutModal = false"></div>
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+    <BaseModal :show="showLogoutModal" title="Sign out" max-width="max-w-sm" @close="showLogoutModal = false">
+        <div class="text-center">
           <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
             <Icon name="logout" class="w-6 h-6 text-red-500" />
           </div>
@@ -273,69 +274,28 @@
             </button>
           </div>
         </div>
-      </div>
-    </Teleport>
+    </BaseModal>
 
     <!-- Sign-out preload overlay -->
-    <Teleport to="body">
-      <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100"
-                  leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
-        <div v-if="showSignOutPreload" class="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
-          style="background: linear-gradient(135deg, #f0eef9 0%, #e8eafa 50%, #fdeef0 100%);">
-          <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-20"
-              style="background: radial-gradient(circle, #2a338f 0%, transparent 70%); animation: float 8s ease-in-out infinite;"></div>
-            <div class="absolute -bottom-16 -right-16 w-96 h-96 rounded-full opacity-15"
-              style="background: radial-gradient(circle, #ec1c2d 0%, transparent 70%); animation: float 10s ease-in-out infinite reverse;"></div>
-          </div>
-          <div class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/40 p-10 text-center max-w-sm w-full mx-4">
-            <div class="relative w-28 h-28 mx-auto mb-6">
-              <svg class="absolute inset-0 w-28 h-28 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="#e5e7eb" stroke-width="2.5"/>
-                <circle cx="12" cy="12" r="10" stroke="#2a338f" stroke-width="2.5"
-                  stroke-linecap="round" stroke-dasharray="62.832" stroke-dashoffset="20"/>
-              </svg>
-              <svg class="absolute inset-2 w-[96px] h-[96px] animate-spin" style="animation-duration:2s;animation-direction:reverse;" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="8" stroke="#e5e7eb" stroke-width="1.5"/>
-                <circle cx="12" cy="12" r="8" stroke="#ec1c2d" stroke-width="1.5"
-                  stroke-linecap="round" stroke-dasharray="50.265" stroke-dashoffset="15"/>
-              </svg>
-              <img src="/images/csc-logo.png" alt="CSC"
-                class="absolute w-12 h-12 rounded-full bg-white shadow-sm object-contain p-1.5"
-                style="top:50%;left:50%;transform:translate(-50%,-50%);"
-                @error="e => e.target.style.display='none'" />
-            </div>
-            <p class="text-xl font-semibold mb-1" style="color:#2a338f;">Signing you out</p>
-            <p class="text-gray-500 text-sm">See you next time!</p>
-            <div class="flex justify-center gap-1.5 mt-6">
-              <span v-for="i in 3" :key="i" class="w-2 h-2 rounded-full transition-all duration-300"
-                :style="{ backgroundColor: soDot === i - 1 ? '#ec1c2d' : '#2a338f',
-                          transform: soDot === i - 1 ? 'scale(1.25)' : 'scale(1)' }"></span>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <AuthSplashOverlay :visible="showSignOutPreload">
+      <p class="text-xl font-semibold mb-1 text-primary">Signing you out</p>
+      <p class="text-gray-500 text-sm">See you next time!</p>
+    </AuthSplashOverlay>
 
   </div>
   </div>
 </template>
 
-<style scoped>
-@keyframes float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(30px, -30px) scale(1.05); }
-  66%       { transform: translate(-20px, 20px) scale(0.95); }
-}
-</style>
-
 <script setup>
-import { ref, computed, provide, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, provide, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import axios from 'axios'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import Icon from '@/Components/UI/Icon.vue'
 import NotificationBell from '@/Components/UI/NotificationBell.vue'
 import AppFooter from '@/Components/UI/AppFooter.vue'
+import PasswordRequirements from '@/Components/UI/PasswordRequirements.vue'
+import AuthSplashOverlay from '@/Components/UI/AuthSplashOverlay.vue'
 import { useIdleTimer } from '@/composables/useIdleTimer'
 import { navigateTo } from '@/utils/navigate'
 
@@ -351,8 +311,6 @@ const showBackToTop     = ref(false)
 const showLogoutModal         = ref(false)
 const showChangePasswordModal = ref(false)
 const showSignOutPreload  = ref(false)
-const soDot               = ref(0)
-let soTimer = null
 
 const cpForm = ref({ current_password: '', password: '', password_confirmation: '' })
 const cpErrors = ref({})
@@ -362,16 +320,6 @@ const cpSaving = ref(false)
 const showCurrent = ref(false)
 const showNew = ref(false)
 const showConfirm = ref(false)
-
-const passwordRequirements = computed(() => {
-  const p = cpForm.value.password
-  return [
-    { label: 'At least 8 characters',      met: p.length >= 8 },
-    { label: 'At least one uppercase letter', met: /[A-Z]/.test(p) },
-    { label: 'At least one lowercase letter', met: /[a-z]/.test(p) },
-    { label: 'At least one number',          met: /[0-9]/.test(p) },
-  ]
-})
 
 function closeChangePassword() {
   showChangePasswordModal.value = false
@@ -403,6 +351,10 @@ async function submitChangePassword() {
     })
     cpSuccess.value = 'Password updated successfully.'
     cpForm.value = { current_password: '', password: '', password_confirmation: '' }
+    if (authUser.value) {
+      authUser.value = { ...authUser.value, has_password: true }
+      localStorage.setItem('auth_user', JSON.stringify(authUser.value))
+    }
     setTimeout(() => closeChangePassword(), 1500)
   } catch (e) {
     const data = e.response?.data
@@ -421,6 +373,19 @@ const page              = usePage()
 const authToken      = ref('')
 const authUser       = ref({})
 const avatarLoaded   = ref(false)
+const avatarLoading  = ref(true)
+const avatarError    = ref(false)
+const avatarVersion  = ref(Date.now())
+watch(authToken, (token) => {
+  if (token) { avatarLoading.value = true; avatarLoaded.value = false; avatarError.value = false }
+})
+
+function refreshAvatar() {
+  avatarVersion.value = Date.now()
+  avatarLoading.value = true
+  avatarLoaded.value  = false
+  avatarError.value   = false
+}
 
 const profileComplete = ref(localStorage.getItem('profile_complete') === 'true')
 
@@ -430,7 +395,9 @@ function refreshProfileStatus() {
 
 const userName    = computed(() => authUser.value?.full_name ?? 'Applicant')
 const userInitial = computed(() => (authUser.value?.full_name ?? 'A')[0].toUpperCase())
-const isGoogleOnly = computed(() => !!authUser.value?.google_id)
+// "Google-only" means the account has never set its own password — a linked
+// Google account alone still requires the current password to change it.
+const isGoogleOnly = computed(() => authUser.value?.has_password === false)
 
 function disabledHint(item) {
   if (item.label === 'My Profile') return false
@@ -505,7 +472,6 @@ async function confirmLogout() {
   dropdownOpen.value       = false
   sidebarOpen.value        = false
   showSignOutPreload.value = true
-  soTimer = setInterval(() => { soDot.value = (soDot.value + 1) % 3 }, 400)
 
   // API call and minimum display time run in parallel
   await Promise.allSettled([
@@ -513,9 +479,9 @@ async function confirmLogout() {
     new Promise(r => setTimeout(r, 900)),
   ])
 
-  clearInterval(soTimer)
   localStorage.removeItem('auth_token')
   localStorage.removeItem('auth_user')
+  localStorage.removeItem('auth_remember')
   navigateTo('/login')
 }
 
@@ -532,6 +498,7 @@ onMounted(() => {
   window.addEventListener('storage', refreshProfileStatus)
   window.addEventListener('profile-complete-changed', refreshProfileStatus)
   window.addEventListener('auth-user-updated', refreshAuthUser)
+  window.addEventListener('auth-avatar-updated', refreshAvatar)
 })
 
 onBeforeUnmount(() => {
@@ -540,5 +507,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('storage', refreshProfileStatus)
   window.removeEventListener('profile-complete-changed', refreshProfileStatus)
   window.removeEventListener('auth-user-updated', refreshAuthUser)
+  window.removeEventListener('auth-avatar-updated', refreshAvatar)
 })
 </script>

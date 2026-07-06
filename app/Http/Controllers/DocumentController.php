@@ -12,8 +12,10 @@ class DocumentController extends Controller
 {
     public function store(Request $request, Application $application): JsonResponse
     {
+        $this->authorize('view', $application);
+
         $request->validate([
-            'document_type' => 'required|string',
+            'document_type' => 'required|string|in:pds,app_letter,ipcr,coe,tor,other',
             'file'          => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png|mimetypes:application/pdf,image/jpeg,image/png',
         ]);
 
@@ -21,7 +23,7 @@ class DocumentController extends Controller
         $originalName = $file->getClientOriginalName();
         $storedName   = Str::uuid() . '.' . $file->extension();
 
-        $path = $file->storeAs('documents/' . $application->id, $storedName, 'private');
+        $path = $file->storeAs('documents/' . $application->id, $storedName, 'local');
 
         $document = $application->documents()->create([
             'document_type'     => $request->document_type,

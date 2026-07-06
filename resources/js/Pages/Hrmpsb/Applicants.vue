@@ -13,7 +13,7 @@
     <template v-else>
       <div class="pb-20 sm:pb-6">
       <a :href="`/hrmpsb/dashboard`"
-        class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#2a338f] mb-4 transition-colors">
+        class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-primary mb-4 transition-colors">
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
         </svg>
@@ -23,7 +23,7 @@
       <!-- Vacancy header -->
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-[#2a338f] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+          <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
             SG-{{ vacancy.salary_grade }}
           </div>
           <div class="min-w-0">
@@ -46,7 +46,7 @@
           <button @click="openDownloadModal"
             :disabled="!selectedIds.length"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            :class="selectedIds.length ? 'bg-[#2a338f] text-white hover:bg-[#1e2570]' : 'bg-gray-100 text-gray-400'">
+            :class="selectedIds.length ? 'bg-primary text-white hover:bg-primary-dark' : 'bg-gray-100 text-gray-400'">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
@@ -63,7 +63,7 @@
             <tr class="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider">
               <th class="px-5 py-3 w-10">
                 <input type="checkbox" :checked="selectAll" @change="toggleSelectAll"
-                  class="w-4 h-4 rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f]" />
+                  class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
               </th>
               <th class="px-5 py-3">#</th>
               <th class="px-5 py-3">Applicant ID</th>
@@ -75,10 +75,10 @@
           <tbody class="divide-y divide-gray-100">
             <tr v-for="(app, i) in applicants" :key="app.id"
               class="hover:bg-gray-50 transition-colors"
-              :class="selectedIds.includes(app.id) ? 'bg-[#2a338f]/5' : ''">
+              :class="selectedIds.includes(app.id) ? 'bg-primary/5' : ''">
               <td class="px-5 py-3.5">
                 <input type="checkbox" :checked="selectedIds.includes(app.id)" @change="toggleSelect(app.id)"
-                  class="w-4 h-4 rounded border-gray-300 text-[#2a338f] focus:ring-[#2a338f]" />
+                  class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
               </td>
               <td class="px-5 py-3.5 text-gray-400 text-xs">{{ i + 1 }}</td>
               <td class="px-5 py-3.5 font-medium text-gray-900">{{ app.anonymized_name }}</td>
@@ -147,9 +147,9 @@
             <div class="space-y-2.5">
               <label v-for="opt in downloadOptions" :key="opt.value"
                 class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg border cursor-pointer transition-colors"
-                :class="downloadType === opt.value ? 'border-[#2a338f] bg-[#2a338f]/5' : 'border-gray-200 hover:border-gray-300'">
+                :class="downloadType === opt.value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'">
                 <input type="radio" v-model="downloadType" :value="opt.value"
-                  class="w-4 h-4 text-[#2a338f] border-gray-300 focus:ring-[#2a338f]" />
+                  class="w-4 h-4 text-primary border-gray-300 focus:ring-primary" />
                 <div>
                   <p class="text-sm font-medium text-gray-800">{{ opt.label }}</p>
                   <p v-if="opt.hint" class="text-xs text-gray-400 mt-0.5">{{ opt.hint }}</p>
@@ -169,7 +169,7 @@
             </button>
             <button @click="doDownload" :disabled="!downloadType || downloading"
               class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              :class="downloadType ? 'bg-[#2a338f] hover:bg-[#1e2570]' : 'bg-gray-300'">
+              :class="downloadType ? 'bg-primary hover:bg-primary-dark' : 'bg-gray-300'">
               <svg v-if="downloading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>

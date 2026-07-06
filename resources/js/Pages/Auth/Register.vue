@@ -63,7 +63,7 @@
         <form @submit.prevent="submit" class="space-y-5">
 
           <!-- Last Name + First Name -->
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Last Name <span class="text-red-500">*</span></label>
               <input
@@ -91,8 +91,8 @@
           </div>
 
           <!-- Middle Name + Suffix -->
-          <div class="grid grid-cols-3 gap-4">
-            <div class="col-span-2">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="sm:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1.5">Middle Name</label>
               <input
                 v-model="form.middle_name"
@@ -152,21 +152,7 @@
             </div>
             <p v-if="errors.password" id="error-password" class="mt-1 text-xs text-red-600">{{ errors.password }}</p>
 
-            <!-- Password requirements -->
-            <div class="mt-2 space-y-1">
-              <p class="text-xs" :class="form.password.length >= 8 ? 'text-green-600' : 'text-gray-400'">
-                <span v-html="form.password.length >= 8 ? '&#10003;' : '&#9679;'"></span> At least 8 characters
-              </p>
-              <p class="text-xs" :class="/[A-Z]/.test(form.password) ? 'text-green-600' : 'text-gray-400'">
-                <span v-html="/[A-Z]/.test(form.password) ? '&#10003;' : '&#9679;'"></span> One uppercase letter
-              </p>
-              <p class="text-xs" :class="/[a-z]/.test(form.password) ? 'text-green-600' : 'text-gray-400'">
-                <span v-html="/[a-z]/.test(form.password) ? '&#10003;' : '&#9679;'"></span> One lowercase letter
-              </p>
-              <p class="text-xs" :class="/[0-9]/.test(form.password) ? 'text-green-600' : 'text-gray-400'">
-                <span v-html="/[0-9]/.test(form.password) ? '&#10003;' : '&#9679;'"></span> One number
-              </p>
-            </div>
+            <PasswordRequirements :password="form.password" />
           </div>
 
           <!-- Confirm Password -->
@@ -248,6 +234,7 @@ import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import Icon from '@/Components/UI/Icon.vue'
+import PasswordRequirements from '@/Components/UI/PasswordRequirements.vue'
 
 const PRIVACY_POLICY_VERSION = '1.0'
 

@@ -83,12 +83,15 @@
             <button @click="dropdownOpen = !dropdownOpen"
               class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
               <div class="relative w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
-                <span>{{ userInitial }}</span>
-                <img :src="`/profile/photo?token=${authToken}`"
+                <div v-if="avatarLoading" class="absolute inset-0 flex items-center justify-center">
+                  <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                </div>
+                <span v-if="avatarError">{{ userInitial }}</span>
+                <img v-if="authToken" :src="`/profile/photo?token=${authToken}&_=${avatarVersion}`"
                   class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
                   :class="avatarLoaded ? 'opacity-100' : 'opacity-0'"
-                  @load="avatarLoaded = true"
-                  @error="e => e.target.style.display = 'none'"
+                  @load="e => { if (e.target.naturalWidth === 1 && e.target.naturalHeight === 1) { avatarLoading = false; avatarError = true } else { avatarLoaded = true; avatarLoading = false; avatarError = false } }"
+                  @error="e => { e.target.style.display = 'none'; avatarLoading = false; avatarError = true }"
                   alt="" />
               </div>
               <div class="hidden sm:block text-left">
@@ -157,45 +160,10 @@
     <WorkspaceSwitcher :show="showWorkspaceSwitch" target="hrmpsb" />
 
     <!-- Sign-out preload overlay -->
-    <Teleport to="body">
-      <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100"
-                  leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
-        <div v-if="showSignOutPreload" class="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
-          style="background: linear-gradient(135deg, #f0eef9 0%, #e8eafa 50%, #fdeef0 100%);">
-          <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-20"
-              style="background: radial-gradient(circle, #2a338f 0%, transparent 70%); animation: float 8s ease-in-out infinite;"></div>
-            <div class="absolute -bottom-16 -right-16 w-96 h-96 rounded-full opacity-15"
-              style="background: radial-gradient(circle, #ec1c2d 0%, transparent 70%); animation: float 10s ease-in-out infinite reverse;"></div>
-          </div>
-          <div class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/40 p-10 text-center max-w-sm w-full mx-4">
-            <div class="relative w-28 h-28 mx-auto mb-6">
-              <svg class="absolute inset-0 w-28 h-28 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="#e5e7eb" stroke-width="2.5"/>
-                <circle cx="12" cy="12" r="10" stroke="#2a338f" stroke-width="2.5"
-                  stroke-linecap="round" stroke-dasharray="62.832" stroke-dashoffset="20"/>
-              </svg>
-              <svg class="absolute inset-2 w-[96px] h-[96px] animate-spin" style="animation-duration:2s;animation-direction:reverse;" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="8" stroke="#e5e7eb" stroke-width="1.5"/>
-                <circle cx="12" cy="12" r="8" stroke="#ec1c2d" stroke-width="1.5"
-                  stroke-linecap="round" stroke-dasharray="50.265" stroke-dashoffset="15"/>
-              </svg>
-              <img src="/images/csc-logo.png" alt="CSC"
-                class="absolute w-12 h-12 rounded-full bg-white shadow-sm object-contain p-1.5"
-                style="top:50%;left:50%;transform:translate(-50%,-50%);"
-                @error="e => e.target.style.display='none'" />
-            </div>
-            <p class="text-xl font-semibold mb-1" style="color:#2a338f;">Signing you out</p>
-            <p class="text-gray-500 text-sm">See you next time!</p>
-            <div class="flex justify-center gap-1.5 mt-6">
-              <span v-for="i in 3" :key="i" class="w-2 h-2 rounded-full transition-all duration-300"
-                :style="{ backgroundColor: soDot === i - 1 ? '#ec1c2d' : '#2a338f',
-                          transform: soDot === i - 1 ? 'scale(1.25)' : 'scale(1)' }"></span>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <AuthSplashOverlay :visible="showSignOutPreload">
+      <p class="text-xl font-semibold mb-1 text-primary">Signing you out</p>
+      <p class="text-gray-500 text-sm">See you next time!</p>
+    </AuthSplashOverlay>
 
   </div>
   </div>
@@ -211,15 +179,10 @@
 .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
 .sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
 .sidebar-nav { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent; }
-@keyframes float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(30px, -30px) scale(1.05); }
-  66%       { transform: translate(-20px, 20px) scale(0.95); }
-}
 </style>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import Icon from '@/Components/UI/Icon.vue'
@@ -227,6 +190,7 @@ import { roleLabel } from '@/utils/roleLabel'
 import { navigateTo } from '@/utils/navigate'
 import AppFooter from '@/Components/UI/AppFooter.vue'
 import WorkspaceSwitcher from '@/Components/UI/WorkspaceSwitcher.vue'
+import AuthSplashOverlay from '@/Components/UI/AuthSplashOverlay.vue'
 import { useIdleTimer } from '@/composables/useIdleTimer'
 
 useIdleTimer()
@@ -240,12 +204,23 @@ const dropdownRef       = ref(null)
 const showLogoutModal     = ref(false)
 const showWorkspaceSwitch = ref(false)
 const showSignOutPreload  = ref(false)
-const soDot               = ref(0)
-let soTimer = null
 const page              = usePage()
 const authToken      = ref('')
 const authUser       = ref({})
 const avatarLoaded   = ref(false)
+const avatarLoading  = ref(true)
+const avatarError    = ref(false)
+const avatarVersion  = ref(Date.now())
+watch(authToken, (token) => {
+  if (token) { avatarLoading.value = true; avatarLoaded.value = false; avatarError.value = false }
+})
+
+function refreshAvatar() {
+  avatarVersion.value = Date.now()
+  avatarLoading.value = true
+  avatarLoaded.value  = false
+  avatarError.value   = false
+}
 const myRole         = ref(null)
 const authorized     = ref(false)
 
@@ -288,6 +263,7 @@ onMounted(async () => {
   authUser.value  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeydown)
+  window.addEventListener('auth-avatar-updated', refreshAvatar)
 
   if (!authToken.value) {
     navigateTo('/login')
@@ -326,6 +302,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('auth-avatar-updated', refreshAvatar)
 })
 
 const navGroups = computed(() => {
@@ -383,7 +360,6 @@ function logout() {
 async function confirmLogout() {
   showLogoutModal.value    = false
   showSignOutPreload.value = true
-  soTimer = setInterval(() => { soDot.value = (soDot.value + 1) % 3 }, 400)
 
   // API call and minimum display time run in parallel
   await Promise.allSettled([
@@ -391,9 +367,9 @@ async function confirmLogout() {
     new Promise(r => setTimeout(r, 900)),
   ])
 
-  clearInterval(soTimer)
   localStorage.removeItem('auth_token')
   localStorage.removeItem('auth_user')
+  localStorage.removeItem('auth_remember')
   navigateTo('/login')
 }
 </script>

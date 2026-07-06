@@ -28,20 +28,31 @@
       <!-- Greeting -->
       <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">{{ greeting }}, {{ firstName }}!</h1>
-        <div class="flex flex-wrap items-center gap-2 mt-2">
-          <p class="text-sm text-gray-500">Discover and apply for open positions at the Civil Service Commission Regional Office VIII.</p>
+        <div class="flex items-center gap-2 mt-1">
+          <p class="text-sm text-gray-500">{{ authUser.email }}</p>
           <span v-if="authUser.email_verified_at"
-            class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-full">
-            <Icon name="check" size="3" color="text-green-700" />
-            Email Verified
+            class="inline-flex items-center gap-1 text-xs font-medium text-[#1877F2]">
+            <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1877F2]">
+              <svg class="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </span>
+            Verified
           </span>
           <span v-else
-            class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full">
-            <Icon name="alert" size="3" color="text-amber-700" />
-            Email Not Verified
+            class="inline-flex items-center gap-1 text-xs font-medium text-gray-400">
+            <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-gray-400">
+              <svg class="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </span>
+            Not Verified
           </span>
         </div>
       </div>
+
+      <!-- Description -->
+      <p class="text-sm text-gray-500 mb-6">Discover and apply for open positions at the Civil Service Commission Regional Office VIII.</p>
 
       <!-- Quick actions -->
       <div class="flex flex-wrap gap-2 mb-6">
@@ -82,7 +93,7 @@
         <div class="lg:col-span-2">
 
         <!-- Search + filters -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
+        <div id="vacancy-browser" class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5 scroll-mt-20">
           <div class="flex flex-wrap gap-3">
             <div class="flex-1 min-w-48 relative">
               <Icon name="search" size="4" color="text-gray-400" class="absolute left-3 top-1/2 -translate-y-1/2" />
@@ -102,13 +113,18 @@
               <option value="sg_desc">Salary Grade: Highest</option>
               <option value="newest">Recently Posted</option>
             </select>
+            <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer select-none">
+              <input v-model="hideApplied" type="checkbox"
+                class="w-3.5 h-3.5 rounded border-gray-300 text-primary focus:ring-primary accent-primary" />
+              Hide jobs I've applied to
+            </label>
             <button v-if="hasVacancyFilters" @click="clearVacancyFilters"
               class="text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-1.5">
               <Icon name="close" size="3.5" />
               Clear
             </button>
             <span class="ml-auto text-sm text-gray-400 self-center">
-              {{ loadingVacancies ? 'Loading…' : `${vacancyPagination.total ?? 0} result${vacancyPagination.total !== 1 ? 's' : ''}` }}
+              {{ loadingVacancies ? 'Loading…' : `${visibleVacancies.length} result${visibleVacancies.length !== 1 ? 's' : ''}` }}
             </span>
           </div>
         </div>
@@ -118,8 +134,8 @@
           <SkeletonLoader v-for="n in 6" :key="n" variant="card" />
         </div>
 
-        <div v-else-if="dashboardVacancies.length" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <VacancyCard v-for="v in dashboardVacancies" :key="v.id" :vacancy="v" :authenticated="true" :show-detail-first="true" :applied-ids="appliedVacancyIds" />
+        <div v-else-if="visibleVacancies.length" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <VacancyCard v-for="v in visibleVacancies" :key="v.id" :vacancy="v" :authenticated="true" :show-detail-first="true" :applied-ids="appliedVacancyIds" :confirm-before-apply="true" />
         </div>
 
         <div v-else class="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center py-20 text-center">
@@ -127,7 +143,11 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
           <p class="text-sm font-semibold text-gray-900 mb-1">No vacancies found</p>
-          <p class="text-xs text-gray-400">{{ hasVacancyFilters ? 'Try clearing your filters.' : 'No open positions at this time. Check back soon.' }}</p>
+          <p class="text-xs text-gray-400">
+            {{ hideApplied && dashboardVacancies.length && !visibleVacancies.length
+              ? "You've applied to every listing on this page — try another page or clear filters."
+              : hasVacancyFilters ? 'Try clearing your filters.' : 'No open positions at this time. Check back soon.' }}
+          </p>
           <button v-if="hasVacancyFilters" @click="clearVacancyFilters"
             class="mt-4 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors">
             Clear filters
@@ -202,7 +222,10 @@
                 <div class="h-4 w-16 bg-gray-100 rounded-full animate-pulse flex-shrink-0"></div>
               </div>
             </div>
-            <p v-else class="text-xs text-gray-400 text-center py-3">No applications yet.</p>
+            <div v-else class="text-center py-3">
+              <p class="text-xs text-gray-400 mb-1.5">No applications yet.</p>
+              <a href="#vacancy-browser" class="text-xs text-primary hover:underline font-medium">Browse open positions ↓</a>
+            </div>
           </div>
         </div>
 
@@ -233,9 +256,9 @@ import { formatDate, formatDateLong, formatDateTime, formatDateRange, daysRemain
 const pageLoading = ref(true)
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
-const authUser  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+const authUser  = ref(JSON.parse(localStorage.getItem('auth_user') ?? '{}'))
 
-const firstName = computed(() => authUser?.first_name ?? 'there')
+const firstName = computed(() => authUser.value?.first_name ?? 'there')
 
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -292,6 +315,13 @@ const statCards = computed(() => [
 ])
 
 const appliedVacancyIds = computed(() => applications.value.map(a => a.vacancy_id))
+
+const hideApplied = ref(false)
+const visibleVacancies = computed(() =>
+  hideApplied.value
+    ? dashboardVacancies.value.filter(v => !appliedVacancyIds.value.includes(v.id))
+    : dashboardVacancies.value
+)
 
 const recentApplications = computed(() =>
   [...applications.value]
@@ -380,7 +410,13 @@ onMounted(async () => {
   isComplete.value = profileRes.data.is_complete
   localStorage.setItem('profile_complete', profileRes.data.is_complete)
   window.dispatchEvent(new CustomEvent('profile-complete-changed'))
-  profile.value    = profileRes.data.profile
+  profile.value = profileRes.data.profile
+
+  // Sync auth_user in localStorage with fresh server data (includes email_verified_at)
+  if (profileRes.data.user) {
+    localStorage.setItem('auth_user', JSON.stringify(profileRes.data.user))
+    authUser.value = profileRes.data.user
+  }
 
   const appsRes = await applicationApi.myApplications().catch(() => null)
   if (appsRes) applications.value = appsRes.data

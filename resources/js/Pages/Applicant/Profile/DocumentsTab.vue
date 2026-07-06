@@ -15,7 +15,7 @@
       </div>
 
       <div class="px-6 py-6">
-        <div class="flex items-start gap-2.5 rounded-lg border border-[#2a338f]/20 bg-[#2a338f]/5 px-4 py-3 text-xs text-[#2a338f] mb-6">
+        <div class="flex items-start gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-xs text-primary mb-6">
           <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
@@ -34,12 +34,12 @@
               class="flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl px-4 py-5 cursor-pointer transition-colors group"
               :class="docFiles[doc.key] || docPaths[doc.key]
                 ? 'border-green-400 bg-green-50'
-                : 'border-gray-200 hover:border-[#2a338f]/40 hover:bg-[#2a338f]/5'">
+                : 'border-gray-200 hover:border-primary/40 hover:bg-primary/5'">
               <input type="file" :name="doc.key" accept=".pdf" class="sr-only"
                 @change="onFileSelect($event, doc.key)" />
 
               <svg v-if="!(docFiles[doc.key] || docPaths[doc.key])"
-                class="w-7 h-7 text-gray-300 group-hover:text-[#2a338f] transition-colors"
+                class="w-7 h-7 text-gray-300 group-hover:text-primary transition-colors"
                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
               </svg>
@@ -48,7 +48,7 @@
               </svg>
 
               <p class="text-sm font-medium text-center leading-snug"
-                :class="docFiles[doc.key] || docPaths[doc.key] ? 'text-green-700' : 'text-gray-500 group-hover:text-[#2a338f]'">
+                :class="docFiles[doc.key] || docPaths[doc.key] ? 'text-green-700' : 'text-gray-500 group-hover:text-primary'">
                 {{ docFiles[doc.key]?.name ?? (docPaths[doc.key] ? 'Uploaded — click to replace' : 'Click to browse or drag & drop') }}
               </p>
               <p v-if="!(docFiles[doc.key] || docPaths[doc.key])"
@@ -65,7 +65,7 @@
               <span v-else class="flex-1" />
               <a :href="viewUrl(docPaths[doc.key])"
                 target="_blank"
-                class="inline-flex items-center gap-1 text-xs font-medium text-[#2a338f] hover:underline flex-shrink-0">
+                class="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline flex-shrink-0">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                 </svg>

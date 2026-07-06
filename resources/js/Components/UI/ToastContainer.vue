@@ -1,8 +1,11 @@
 <template>
   <Teleport to="body">
-    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 max-w-sm w-full pointer-events-none"
+      aria-label="Notifications">
       <TransitionGroup name="toast">
         <div v-for="t in toasts" :key="t.id"
+          :role="t.type === 'error' ? 'alert' : 'status'"
+          :aria-live="t.type === 'error' ? 'assertive' : 'polite'"
           class="pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium transition-all"
           :class="toastClass(t.type)">
           <svg v-if="t.type === 'success'" class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -18,7 +21,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
           <span class="flex-1">{{ t.message }}</span>
-          <button @click="removeToast(t.id)" class="flex-shrink-0 p-0.5 rounded hover:bg-black/5 transition-colors">
+          <button @click="removeToast(t.id)" aria-label="Dismiss notification" class="flex-shrink-0 p-0.5 rounded hover:bg-black/5 transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>

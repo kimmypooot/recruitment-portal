@@ -76,7 +76,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
             <input v-model="filters.search" type="text" placeholder="Search applicant name or position…"
-              class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none"
+              class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none"
               @input="debouncedLoad" />
           </div>
 
@@ -85,12 +85,12 @@
             <div class="flex items-center gap-1.5 sm:gap-2">
               <span class="text-xs text-gray-400 whitespace-nowrap">From</span>
               <input v-model="filters.date_from" type="date" @change="loadFeedbacks"
-                class="flex-1 sm:flex-none text-sm border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none text-gray-600 min-w-0 w-full sm:w-auto" />
+                class="flex-1 sm:flex-none text-sm border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none text-gray-600 min-w-0 w-full sm:w-auto" />
             </div>
             <div class="flex items-center gap-1.5 sm:gap-2">
               <span class="text-xs text-gray-400 whitespace-nowrap">to</span>
               <input v-model="filters.date_to" type="date" @change="loadFeedbacks"
-                class="flex-1 sm:flex-none text-sm border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none text-gray-600 min-w-0 w-full sm:w-auto" />
+                class="flex-1 sm:flex-none text-sm border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none text-gray-600 min-w-0 w-full sm:w-auto" />
             </div>
           </div>
 
@@ -109,8 +109,8 @@
           <button @click="setRatingFilter('')"
             class="px-3 py-1 text-xs font-semibold rounded-full border transition-colors"
             :class="filters.rating === ''
-              ? 'bg-[#2a338f] text-white border-[#2a338f]'
-              : 'border-gray-200 text-gray-600 hover:border-[#2a338f] hover:text-[#2a338f]'">
+              ? 'bg-primary text-white border-primary'
+              : 'border-gray-200 text-gray-600 hover:border-primary hover:text-primary'">
             All
           </button>
           <button v-for="star in [5,4,3,2,1]" :key="star"
@@ -200,7 +200,7 @@
                   </p>
                   <button v-if="fb.comment.length > 120"
                     @click.stop="toggleExpand(fb.id)"
-                    class="mt-1 text-xs text-[#2a338f] hover:underline font-medium">
+                    class="mt-1 text-xs text-primary hover:underline font-medium">
                     {{ expandedId === fb.id ? 'Show less' : 'Read more' }}
                   </button>
                 </div>
@@ -225,7 +225,7 @@
               {{ hasActiveFilter ? 'Try adjusting your search or filters.' : 'Feedbacks will appear here once applicants submit their ratings.' }}
             </p>
             <button v-if="hasActiveFilter" @click="clearFilters"
-              class="mt-3 text-xs font-medium text-[#2a338f] hover:underline">
+              class="mt-3 text-xs font-medium text-primary hover:underline">
               Clear all filters
             </button>
           </div>
@@ -247,7 +247,7 @@
             <button v-for="p in visiblePages" :key="p" @click="typeof p === 'number' && goToPage(p)"
               :disabled="p === '…'"
               :class="['px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
-                p === currentPage ? 'bg-[#2a338f] text-white' : p === '…' ? 'text-gray-300 cursor-default' : 'text-gray-600 hover:bg-gray-100']">
+                p === currentPage ? 'bg-primary text-white' : p === '…' ? 'text-gray-300 cursor-default' : 'text-gray-600 hover:bg-gray-100']">
               {{ p }}
             </button>
             <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
@@ -358,7 +358,7 @@ function avatarInitials(fb) {
   return ((u.first_name?.[0] ?? '') + (u.last_name?.[0] ?? '')).toUpperCase() || '?'
 }
 
-const AVATAR_COLORS = ['#2a338f','#7c3aed','#0891b2','#059669','#d97706','#dc2626','#db2777']
+const AVATAR_COLORS = ['var(--color-primary)','#7c3aed','#0891b2','#059669','#d97706','#dc2626','#db2777']
 function avatarColor(fb) {
   const id = fb.applicant_id ?? fb.id ?? 0
   return AVATAR_COLORS[id % AVATAR_COLORS.length]

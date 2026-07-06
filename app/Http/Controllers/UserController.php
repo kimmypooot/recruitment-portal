@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = User::select('id', 'first_name', 'last_name', 'middle_name', 'suffix', 'email', 'role', 'created_at')
+        $query = User::select('id', 'first_name', 'last_name', 'middle_name', 'suffix', 'email', 'role', 'photo_path', 'google_avatar', 'created_at')
             ->with('applicantProfile:user_id,photo_path');
 
         if ($request->filled('role')) {
@@ -24,10 +24,10 @@ class UserController extends Controller
         $users = $query->latest()->paginate(20);
 
         $users->getCollection()->transform(function ($user) {
-            $path = $user->applicantProfile?->photo_path;
+            $path = $user->photo_path ?? $user->applicantProfile?->photo_path;
             $user->photo_url = $path && Storage::disk('public')->exists($path)
                 ? Storage::url($path)
-                : null;
+                : $user->google_avatar;
             unset($user->applicantProfile);
             return $user;
         });
@@ -113,5 +113,23 @@ class UserController extends Controller
         $user->delete();
 
         return response()->json(['message' => 'User deleted.']);
+    }
+
+    public function uploadPhoto(Request $request, User $user): JsonResponse
+    {
+        $request->validate([
+            'photo' => 'required|file|mimes:jpeg,png,jpg|mimetypes:image/jpeg,image/png|max:3072',
+        ]);
+
+        if ($user->photo_path) {
+            Storage::disk('public')->delete($user->photo_path);
+        }
+
+        $user->photo_path = $request->file('photo')->store("profile-photos/{$user->id}", 'public');
+        $user->save();
+
+        AuditLog::record('user_photo_updated', $user);
+
+        return response()->json(['photo_url' => Storage::url($user->photo_path)]);
     }
 }

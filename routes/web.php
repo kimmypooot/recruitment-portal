@@ -21,11 +21,11 @@ Route::get('/register', fn () => Inertia::render('Auth/Register'));
 Route::get('/forgot-password', [PasswordResetController::class, 'forgotPassword'])
     ->middleware('guest')->name('password.request');
 Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
-    ->middleware('guest')->name('password.email');
+    ->middleware(['guest', 'throttle:3,1'])->name('password.email');
 Route::get('/reset-password/{token}', [PasswordResetController::class, 'resetForm'])
     ->middleware('guest')->name('password.reset');
 Route::post('/reset-password', [PasswordResetController::class, 'reset'])
-    ->middleware('guest')->name('password.update');
+    ->middleware(['guest', 'throttle:5,1'])->name('password.update');
 
 // Email verification
 Route::get('/email/verify', fn () => Inertia::render('Auth/VerifyEmail'))
@@ -111,14 +111,16 @@ Route::prefix('appointing-authority')->group(function () {
     ]));
 });
 
-// Dev error preview — remove in production
-Route::get('/_error/{code}', function ($code) {
-    $status = (int) match ($code) {
-        '400', '401', '403', '404', '419', '429', '500', '503' => $code,
-        default => 404,
-    };
+// Dev error preview — only registered in local environment
+if (app()->environment('local')) {
+    Route::get('/_error/{code}', function ($code) {
+        $status = (int) match ($code) {
+            '400', '401', '403', '404', '419', '429', '500', '503' => $code,
+            default => 404,
+        };
 
-    return Inertia::render('Error', ['status' => $status])
-        ->toResponse(request())
-        ->setStatusCode($status);
-});
+        return Inertia::render('Error', ['status' => $status])
+            ->toResponse(request())
+            ->setStatusCode($status);
+    });
+}

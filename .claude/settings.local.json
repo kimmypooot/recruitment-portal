@@ -35,7 +35,10 @@
       "Bash(php -l app/Http/Controllers/BeiRatingController.php)",
       "Bash(php -l app/Http/Controllers/VacancyController.php)",
       "Bash(php -l app/Http/Requests/StoreVacancyRequest.php)",
-      "Bash(php -l app/Models/Vacancy.php)"
+      "Bash(php -l app/Models/Vacancy.php)",
+      "Bash(mysql *)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe *)",
+      "Bash(grep -n 'validate\\\\|Rule::\\\\|Request $request' app/Http/Controllers/ExaminationController.php)"
     ]
   }
 }

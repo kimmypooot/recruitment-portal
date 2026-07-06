@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Services\EmailTemplateMailBuilder;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -33,14 +34,9 @@ class ResetPassword extends Notification
     {
         $expire = config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60);
 
-        return (new MailMessage)
-            ->subject('Reset Your Password — CSC RO VIII')
-            ->greeting('Hello,')
-            ->line('You are receiving this email because we received a password reset request for your account.')
-            ->line('Click the button below to choose a new password.')
-            ->action('Reset Password', $url)
-            ->line('This password reset link will expire in '.$expire.' minutes.')
-            ->line('If you did not request a password reset, no further action is required.');
+        return EmailTemplateMailBuilder::build('password_reset', [
+            '{{expiry_minutes}}' => (string) $expire,
+        ], $url);
     }
 
     protected function resetUrl($notifiable): string

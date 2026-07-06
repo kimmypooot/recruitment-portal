@@ -10,7 +10,7 @@
             Define the competencies available for BEI rating across all positions.
           </p>
         </div>
-        <button @click="openCreate" class="inline-flex items-center px-4 py-2 bg-[#2a338f] text-white text-sm font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-50 transition-colors">
+        <button @click="openCreate" class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-50 transition-colors">
           <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
@@ -69,7 +69,7 @@
                 <!-- Actions (appear on hover) -->
                 <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
                   <button @click="openEdit(comp)"
-                    class="p-1.5 text-gray-400 hover:text-[#2a338f] hover:bg-indigo-50 rounded-lg transition-colors"
+                    class="p-1.5 text-gray-400 hover:text-primary hover:bg-indigo-50 rounded-lg transition-colors"
                     title="Edit">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -135,7 +135,7 @@
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Competency Name <span class="text-red-500">*</span></label>
               <input v-model="form.competency_name" type="text" required autofocus
                 placeholder="e.g. Professionalism and Ethics"
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" :class="{ 'border-red-300': formErrors.competency_name }"/>
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none" :class="{ 'border-red-300': formErrors.competency_name }"/>
               <p v-if="formErrors.competency_name" class="text-xs text-red-600 mt-1">{{ formErrors.competency_name[0] }}</p>
               <p v-if="modal.mode === 'edit'" class="text-[11px] text-gray-400 mt-1">
                 Key: <code class="font-mono">{{ modal.competency?.competency_key }}</code> (cannot be changed)
@@ -144,7 +144,7 @@
 
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Group <span class="text-red-500">*</span></label>
-              <select v-model="form.competency_group" required class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none">
+              <select v-model="form.competency_group" required class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none">
                 <option value="">— Select group —</option>
                 <option v-for="g in groupOrder" :key="g" :value="g">{{ g }}</option>
               </select>
@@ -155,7 +155,7 @@
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Sort Order</label>
               <input v-model.number="form.sort_order" type="number" min="0" max="255"
                 placeholder="0"
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none w-28"/>
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none w-28"/>
               <p class="text-[11px] text-gray-400 mt-1">Lower numbers appear first within the group.</p>
             </div>
 
@@ -163,13 +163,13 @@
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Description <span class="text-gray-400 font-normal">(optional)</span></label>
               <textarea v-model="form.description" rows="3"
                 placeholder="Brief description of what this competency assesses…"
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none resize-none"></textarea>
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none resize-none"></textarea>
             </div>
 
             <!-- Modal footer -->
             <div class="flex justify-end gap-3 pt-2">
               <button type="button" @click="closeModal" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
-              <button type="submit" :disabled="modal.saving" class="inline-flex items-center px-4 py-2 bg-[#2a338f] text-white text-sm font-semibold rounded-lg hover:bg-[#1e2570] disabled:opacity-50 transition-colors">
+              <button type="submit" :disabled="modal.saving" class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-50 transition-colors">
                 <svg v-if="modal.saving" class="w-4 h-4 mr-1.5 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>

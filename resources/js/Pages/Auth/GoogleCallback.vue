@@ -1,58 +1,27 @@
 <template>
   <div class="relative flex items-center justify-center min-h-screen overflow-hidden"
     style="background: linear-gradient(135deg, #f0eef9 0%, #e8eafa 50%, #fdeef0 100%);">
-    <!-- Animated background particles -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-20"
-        style="background: radial-gradient(circle, #2a338f 0%, transparent 70%); animation: float 8s ease-in-out infinite;"></div>
-      <div class="absolute -bottom-16 -right-16 w-96 h-96 rounded-full opacity-15"
-        style="background: radial-gradient(circle, #ec1c2d 0%, transparent 70%); animation: float 10s ease-in-out infinite reverse;"></div>
-      <div class="absolute top-1/3 right-1/4 w-48 h-48 rounded-full opacity-10"
-        style="background: radial-gradient(circle, #2a338f 0%, transparent 70%); animation: float 12s ease-in-out infinite 2s;"></div>
-    </div>
+    <AmbientBlobs />
 
     <!-- Card -->
-    <div
-      class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/40 p-10 text-center max-w-sm w-full mx-4 transition-all duration-500"
-      :class="status === 'processing' ? 'scale-100 opacity-100' : 'scale-100 opacity-100'">
+    <div class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/40 p-10 text-center max-w-sm w-full mx-4">
       <!-- Processing state -->
         <div v-if="status === 'processing'" key="processing">
-          <!-- Animated rings -->
-          <div class="relative w-28 h-28 mx-auto mb-6">
-            <svg class="absolute inset-0 w-28 h-28 animate-spin" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="#e5e7eb" stroke-width="2.5"/>
-              <circle cx="12" cy="12" r="10" stroke="#2a338f" stroke-width="2.5"
-                stroke-linecap="round" stroke-dasharray="62.832" stroke-dashoffset="20"/>
-            </svg>
-            <svg class="absolute inset-2 w-[96px] h-[96px] animate-spin" style="animation-duration: 2s; animation-direction: reverse;" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="8" stroke="#e5e7eb" stroke-width="1.5"/>
-              <circle cx="12" cy="12" r="8" stroke="#ec1c2d" stroke-width="1.5"
-                stroke-linecap="round" stroke-dasharray="50.265" stroke-dashoffset="15"/>
-            </svg>
-            <img src="/images/csc-logo.png" alt="CSC"
-              class="absolute w-12 h-12 rounded-full bg-white shadow-sm object-contain p-1.5"
-              style="top: 50%; left: 50%; transform: translate(-50%, -50%);"
-              @error="e => e.target.style.display = 'none'" />
-          </div>
+          <BrandRings />
 
           <transition name="fade" mode="out-in">
             <div v-if="showWelcome" key="welcome" class="space-y-2">
-              <p class="text-sm font-medium tracking-wide uppercase" style="color: #ec1c2d;">Welcome back</p>
+              <p class="text-sm font-medium tracking-wide uppercase text-accent">Welcome back</p>
               <p class="text-2xl font-bold text-gray-900">{{ userName }}</p>
               <p class="text-gray-500 text-sm">{{ statusText }}</p>
             </div>
             <div v-else key="loading" class="space-y-2">
-              <p class="text-xl font-semibold" style="color: #2a338f;">Signing you in</p>
+              <p class="text-xl font-semibold text-primary">Signing you in</p>
               <p class="text-gray-500 text-sm">Please wait a moment…</p>
             </div>
           </transition>
 
-          <!-- Pulsing dots -->
-          <div class="flex justify-center gap-1.5 mt-6">
-            <span class="w-2 h-2 rounded-full transition-all duration-300" :class="dotClass(0)" :style="dotStyle(0)"></span>
-            <span class="w-2 h-2 rounded-full transition-all duration-300" :class="dotClass(1)" :style="dotStyle(1)"></span>
-            <span class="w-2 h-2 rounded-full transition-all duration-300" :class="dotClass(2)" :style="dotStyle(2)"></span>
-          </div>
+          <PulsingDots />
         </div>
 
         <!-- Error state -->
@@ -67,7 +36,7 @@
             <p class="text-gray-500 text-sm max-w-xs mx-auto leading-relaxed">{{ errorMessage }}</p>
           </div>
           <a :href="`${appUrl}/login`"
-            class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#2a338f] text-white text-sm font-semibold rounded-xl hover:bg-[#1e2570] transition-all shadow-sm hover:shadow-md">
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-dark transition-all shadow-sm hover:shadow-md">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
@@ -103,6 +72,9 @@
 import { ref, onMounted } from 'vue'
 import api from '@/services/api'
 import { navigateTo } from '@/utils/navigate'
+import AmbientBlobs from '@/Components/UI/AmbientBlobs.vue'
+import BrandRings from '@/Components/UI/BrandRings.vue'
+import PulsingDots from '@/Components/UI/PulsingDots.vue'
 
 const appUrl = window.location.origin
 
@@ -111,7 +83,6 @@ const statusText = ref('Please wait a moment…')
 const errorMessage = ref('')
 const userName = ref('')
 const showWelcome = ref(false)
-const dotIndex = ref(0)
 
 const errorMap = {
   email_exists:        'This email is already registered. Please sign in with your password, then link Google in your Profile settings.',
@@ -121,27 +92,6 @@ const errorMap = {
   link_already_taken:  'This Google account is already linked to another user.',
   link_failed:         'Failed to link your Google account. Please try again.',
   already_linked:      'Your account is already linked to a Google account.',
-}
-
-function dotClass(index) {
-  const dots = [
-    { bg: '#2a338f', active: '#ec1c2d' },
-    { bg: '#2a338f', active: '#ec1c2d' },
-    { bg: '#2a338f', active: '#ec1c2d' },
-  ]
-  const isActive = dotIndex.value === index
-  const color = isActive ? dots[index].active : dots[index].bg
-  const scale = isActive ? 'scale-125' : 'scale-100'
-  return `${scale}`
-}
-function dotStyle(index) {
-  const dots = [
-    { bg: '#2a338f', active: '#ec1c2d' },
-    { bg: '#2a338f', active: '#ec1c2d' },
-    { bg: '#2a338f', active: '#ec1c2d' },
-  ]
-  const isActive = dotIndex.value === index
-  return { backgroundColor: isActive ? dots[index].active : dots[index].bg }
 }
 
 onMounted(async () => {
@@ -173,14 +123,14 @@ onMounted(async () => {
   if (token) {
     localStorage.setItem('auth_token', token)
     localStorage.setItem('auth_token_created_at', String(Date.now()))
+    // Google OAuth tokens never expire server-side (see AuthController) — treat
+    // them the same as a "remember me" login for idle-timeout purposes.
+    localStorage.setItem('auth_remember', '1')
     const user = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
     const firstName = user.first_name ?? ''
     userName.value = firstName ? `${firstName}!` : '!'
     statusText.value = 'Signing you in…'
     showWelcome.value = true
-
-    // Animate dots
-    setInterval(() => { dotIndex.value = (dotIndex.value + 1) % 3 }, 400)
 
     // Brief pause to show the welcome message
     await new Promise(r => setTimeout(r, 1200))

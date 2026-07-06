@@ -82,13 +82,13 @@
       <div class="mb-6">
         <div class="flex items-center justify-between flex-wrap gap-3 mb-1.5">
           <span class="text-sm font-medium text-gray-700">Profile completion</span>
-          <span class="text-sm font-semibold" :class="progressPct === 100 ? 'text-green-600' : 'text-[#2a338f]'">
+          <span class="text-sm font-semibold" :class="progressPct === 100 ? 'text-green-600' : 'text-primary'">
             {{ progressPct }}%
           </span>
         </div>
         <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
           <div class="h-full rounded-full transition-all duration-500"
-            :class="progressPct === 100 ? 'bg-green-500' : 'bg-[#2a338f]'"
+            :class="progressPct === 100 ? 'bg-green-500' : 'bg-primary'"
             :style="{ width: progressPct + '%' }"></div>
         </div>
         <p v-if="progressPct === 100" class="mt-1 text-xs text-green-600 font-medium">
@@ -106,7 +106,7 @@
             @click="switchTab(tab.key)"
             class="flex flex-1 items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors min-w-0"
             :class="activeTab === tab.key
-              ? 'bg-[#2a338f] text-white shadow-sm'
+              ? 'bg-primary text-white shadow-sm'
               : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'">
             <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" :d="tab.icon"/>
@@ -130,6 +130,7 @@
         :photo-saving="photoModal.saving"
         :regions="regions"
         :auth-email="authUser.email"
+        :email-verified-at="authUser.email_verified_at"
         :google-id="authUser.google_id"
         :google-avatar="authUser.google_avatar"
         :errors="errors"
@@ -192,7 +193,7 @@
               Saved
             </div>
             <button @click="savePersonal" :disabled="savingPersonal"
-              class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+              class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
               <svg v-if="savingPersonal" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -200,7 +201,7 @@
               {{ savingPersonal ? 'Saving…' : 'Save Changes' }}
             </button>
             <button v-if="nextTab" @click="goToNextTab" type="button"
-              class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-[#2a338f] hover:bg-[#2a338f]/5 rounded-lg transition-colors">
+              class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 rounded-lg transition-colors">
               <span class="hidden sm:inline">Next:</span> {{ nextTab.label }}
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
@@ -232,7 +233,7 @@
               Uploaded
             </div>
             <button @click="uploadDocuments" :disabled="savingDocs"
-              class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+              class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
               <svg v-if="savingDocs" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -267,23 +268,23 @@
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Position Title <span class="text-red-500 normal-case">*</span></label>
               <input v-model="expForm.position_title" type="text" placeholder="e.g. Administrative Officer II"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
             </div>
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Department / Agency <span class="text-red-500 normal-case">*</span></label>
               <input v-model="expForm.department_agency" type="text" placeholder="e.g. Civil Service Commission"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-5">
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Salary Grade</label>
                 <input v-model="expForm.salary_grade" type="text" placeholder="e.g. 15-1"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Appointment Status</label>
                 <select v-model="expForm.appointment_status"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition">
                   <option value="">— Select —</option>
                   <option value="Permanent">Permanent</option>
                   <option value="Temporary">Temporary</option>
@@ -295,12 +296,12 @@
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Date From <span class="text-red-500 normal-case">*</span></label>
                 <input v-model="expForm.date_from" type="date"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Date To</label>
                 <input v-model="expForm.date_to" type="date" :disabled="expForm.is_present"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition disabled:opacity-40 disabled:cursor-not-allowed" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition disabled:opacity-40 disabled:cursor-not-allowed" />
                 <label class="flex items-center gap-2 mt-2 cursor-pointer">
                   <input type="checkbox" v-model="expForm.is_present" class="w-4 h-4 accent-blue-700 rounded" />
                   <span class="text-xs text-gray-600">Currently employed here</span>
@@ -317,7 +318,7 @@
             <button @click="expModal.open = false"
               class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">Cancel</button>
             <button @click="saveExperience" :disabled="expModal.saving"
-              class="inline-flex items-center gap-2 px-5 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
+              class="inline-flex items-center gap-2 px-5 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
               <svg v-if="expModal.saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -352,7 +353,7 @@
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Level <span class="text-red-500 normal-case">*</span></label>
                 <select v-model="eduForm.level"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition">
                   <option value="">— Select —</option>
                   <option value="Elementary">Elementary</option>
                   <option value="Secondary">Secondary / High School</option>
@@ -364,47 +365,47 @@
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Year Graduated</label>
                 <input v-model="eduForm.year_graduated" type="text" placeholder="e.g. 2019"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
               </div>
             </div>
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">School Name <span class="text-red-500 normal-case">*</span></label>
               <input v-model="eduForm.school_name" type="text" placeholder="e.g. University of the Philippines Cebu"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
             </div>
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Degree / Course</label>
               <input v-model="eduForm.degree_course" type="text" placeholder="e.g. BS Computer Science"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-5 gap-y-5">
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Period From</label>
                 <input v-model="eduForm.period_from" type="text" placeholder="e.g. 2015"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Period To</label>
                 <input v-model="eduForm.period_to" type="text" placeholder="e.g. 2019"
                   :disabled="eduForm.period_to_present"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition disabled:opacity-40 disabled:cursor-not-allowed" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition disabled:opacity-40 disabled:cursor-not-allowed" />
                 <label class="inline-flex items-center gap-2 mt-2 cursor-pointer select-none">
                   <input type="checkbox" v-model="eduForm.period_to_present"
                     @change="eduForm.period_to_present ? (eduForm.period_to = '') : null"
-                    class="w-4 h-4 rounded border-gray-300 text-[#2a338f] accent-[#2a338f] cursor-pointer" />
+                    class="w-4 h-4 rounded border-gray-300 text-primary accent-primary cursor-pointer" />
                   <span class="text-xs text-gray-600 font-medium">Present</span>
                 </label>
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Units Earned</label>
                 <input v-model="eduForm.units_earned" type="text" placeholder="e.g. 140 or N/A"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
               </div>
             </div>
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Scholarship / Honors</label>
               <input v-model="eduForm.honors" type="text" placeholder="e.g. Cum Laude"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
             </div>
             <p v-if="eduModal.error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{{ eduModal.error }}</p>
           </div>
@@ -412,7 +413,7 @@
             <button @click="eduModal.open = false"
               class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">Cancel</button>
             <button @click="saveEducation" :disabled="eduModal.saving"
-              class="inline-flex items-center gap-2 px-5 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
+              class="inline-flex items-center gap-2 px-5 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
               <svg v-if="eduModal.saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -446,28 +447,28 @@
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Title <span class="text-red-500 normal-case">*</span></label>
               <input v-model="trainingForm.title" type="text" placeholder="e.g. Leadership Seminar"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-5">
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Date From <span class="text-red-500 normal-case">*</span></label>
                 <input v-model="trainingForm.date_from" type="date"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Date To</label>
                 <input v-model="trainingForm.date_to" type="date"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Hours</label>
                 <input v-model="trainingForm.hours" type="number" min="0" step="0.5" placeholder="e.g. 8"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Type of L&D</label>
                 <select v-model="trainingForm.ld_type"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
+                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition">
                   <option value="">— Select —</option>
                   <option value="Managerial">Managerial</option>
                   <option value="Supervisory">Supervisory</option>
@@ -478,7 +479,7 @@
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Conducted by</label>
               <input v-model="trainingForm.conducted_by" type="text" placeholder="e.g. Civil Service Commission"
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
             </div>
             <p v-if="trainingModal.error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{{ trainingModal.error }}</p>
           </div>
@@ -486,7 +487,7 @@
             <button @click="trainingModal.open = false"
               class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">Cancel</button>
             <button @click="saveTraining" :disabled="trainingModal.saving"
-              class="inline-flex items-center gap-2 px-5 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
+              class="inline-flex items-center gap-2 px-5 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
               <svg v-if="trainingModal.saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -534,16 +535,16 @@
                 </ul>
               </div>
               <label
-                class="flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-xl px-6 py-10 cursor-pointer transition-colors hover:border-[#2a338f]/50 hover:bg-[#2a338f]/5 group"
+                class="flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-xl px-6 py-10 cursor-pointer transition-colors hover:border-primary/50 hover:bg-primary/5 group"
                 :class="photoModal.error ? 'border-red-300 bg-red-50' : 'border-gray-200'">
                 <input type="file" accept="image/jpeg,image/png,image/jpg" class="sr-only" @change="onPhotoFileSelect" />
-                <div class="w-14 h-14 rounded-full bg-gray-100 group-hover:bg-[#2a338f]/10 flex items-center justify-center transition-colors">
-                  <svg class="w-7 h-7 text-gray-400 group-hover:text-[#2a338f] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <div class="w-14 h-14 rounded-full bg-gray-100 group-hover:bg-primary/10 flex items-center justify-center transition-colors">
+                  <svg class="w-7 h-7 text-gray-400 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v13.5A1.5 1.5 0 003.75 21zm10.5-11.25h.008v.008h-.008V9.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
                   </svg>
                 </div>
                 <div class="text-center">
-                  <p class="text-sm font-medium text-gray-700 group-hover:text-[#2a338f] transition-colors">Click to browse or drag & drop</p>
+                  <p class="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">Click to browse or drag & drop</p>
                   <p class="text-xs text-gray-400 mt-0.5">JPG or PNG · Max 3 MB</p>
                 </div>
               </label>
@@ -551,12 +552,12 @@
             </div>
             <div v-else class="px-7 py-5 space-y-4">
               <div class="rounded-xl overflow-hidden bg-gray-900 min-h-[200px] max-h-[55vh]" style="height: 55vw;">
-                <img ref="cropperImgRef" :src="photoModal.imgSrc" class="block max-w-full" alt="Crop preview" />
+                <img ref="cropperImgRef" :src="photoModal.imgSrc" class="block w-full h-full object-contain" alt="Crop preview" />
               </div>
               <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <p class="text-xs text-gray-400">Crop box is freely resizable — no fixed aspect ratio enforced.</p>
                 <button @click="photoModal.step = 'select'; destroyCropper()"
-                  class="text-xs text-[#2a338f] hover:underline font-medium whitespace-nowrap">← Choose different photo</button>
+                  class="text-xs text-primary hover:underline font-medium whitespace-nowrap">← Choose different photo</button>
               </div>
               <p v-if="photoModal.error" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{{ photoModal.error }}</p>
             </div>
@@ -566,7 +567,7 @@
             <button @click="closePhotoModal"
               class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">Cancel</button>
             <button @click="savePhoto" :disabled="photoModal.saving"
-              class="inline-flex items-center gap-2 px-5 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
+              class="inline-flex items-center gap-2 px-5 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
               <svg v-if="photoModal.saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -588,6 +589,7 @@ import { ref, reactive, computed, watch, inject, onMounted, onBeforeUnmount, nex
 import { Link, router } from '@inertiajs/vue3'
 import { profileApi } from '@/services/api'
 import Cropper from 'cropperjs'
+import 'cropperjs/dist/cropper.css'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 import PersonalInfoTab from './Profile/PersonalInfoTab.vue'
 import QualificationsTab from './Profile/QualificationsTab.vue'
@@ -692,7 +694,7 @@ const tabs = computed(() => [
     complete: !!(personal.gender && personal.civil_status && personal.birthday && personal.mobile_number && personal.region),
   },
   {
-    key: 'qualifications', label: 'Experience & Education',
+    key: 'qualifications', label: 'Qualifications',
     icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
     complete: !!(personal.eligibility),
   },
@@ -812,6 +814,43 @@ watch(() => ({ ...personal }), saveDraft, { deep: true })
 
 // ─── Unsaved changes guard ───────────────────────────────────────────────────
 
+// Snapshot of the last server-persisted personal/name state; empty until the
+// profile has loaded so the guard stays quiet during initial population.
+const serverSnapshot = ref('')
+
+function takeSnapshot() {
+  serverSnapshot.value = JSON.stringify({ ...personal, ...nameForm })
+}
+
+const hasUnsavedChanges = computed(() =>
+  Object.keys(docFiles).length > 0 ||
+  (serverSnapshot.value !== '' && JSON.stringify({ ...personal, ...nameForm }) !== serverSnapshot.value)
+)
+
+const UNSAVED_MESSAGE = 'You have unsaved profile changes. Leave this page anyway?'
+
+// Inertia's before-visit hook must answer synchronously, so this uses the
+// native confirm rather than the async useConfirm dialog.
+const removeNavGuard = router.on('before', (event) => {
+  if (hasUnsavedChanges.value && !window.confirm(UNSAVED_MESSAGE)) {
+    event.preventDefault()
+  }
+})
+
+function onBeforeUnload(e) {
+  if (hasUnsavedChanges.value) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
+}
+
+window.addEventListener('beforeunload', onBeforeUnload)
+
+onBeforeUnmount(() => {
+  removeNavGuard()
+  window.removeEventListener('beforeunload', onBeforeUnload)
+})
+
 async function switchTab(tabKey) {
   const hasDocChanges = Object.keys(docFiles).length > 0
   if (hasDocChanges && activeTab.value !== tabKey) {
@@ -871,6 +910,7 @@ onMounted(async () => {
     window.dispatchEvent(new CustomEvent('profile-complete-changed'))
     localStorage.removeItem(DRAFT_KEY())
   } catch {}
+  takeSnapshot()
   pageLoading.value = false
 })
 
@@ -914,6 +954,7 @@ async function savePersonal() {
       refreshAuthUser()
       window.dispatchEvent(new CustomEvent('auth-user-updated'))
     }
+    takeSnapshot()
     showSaveIndicator()
   } catch (e) {
     await alert(e.response?.data?.message ?? 'Failed to save.')
@@ -1157,6 +1198,7 @@ async function savePhoto() {
     photoModal.open = false
     destroyCropper()
     showSaveIndicator()
+    window.dispatchEvent(new CustomEvent('auth-avatar-updated'))
   } catch (e) {
     photoModal.error = e.response?.data?.message ?? 'Upload failed.'
   } finally {

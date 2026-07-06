@@ -327,7 +327,7 @@ onMounted(loadData)
 <style scoped>
 @reference "../../../css/app.css";
 .btn-primary {
-  @apply inline-flex items-center px-5 py-2.5 bg-[#2a338f] text-white text-sm font-semibold rounded-xl hover:bg-[#1e2570] disabled:opacity-50 transition shadow-sm;
+  @apply inline-flex items-center px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-dark disabled:opacity-50 transition shadow-sm;
 }
 .btn-secondary {
   @apply inline-flex items-center px-5 py-2.5 border border-gray-300 text-sm font-semibold rounded-xl text-gray-700 hover:bg-gray-50 transition;

@@ -22,7 +22,15 @@ export function useSessionExpiry() {
     return null
   }
 
+  // "Remember me" and Google OAuth logins hold long-lived tokens — the 2-hour
+  // countdown only applies to standard logins (mirrors useIdleTimer).
+  function isRememberedSession() {
+    return localStorage.getItem('auth_remember') === '1'
+  }
+
   function checkExpiry() {
+    if (isRememberedSession()) return
+
     const createdAt = getTokenCreatedAt()
     if (!createdAt) return
 

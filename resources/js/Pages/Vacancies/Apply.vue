@@ -51,8 +51,8 @@
               </p>
               <p class="text-xs text-white/70 mt-1">
                 Deadline: <span class="font-semibold text-white">{{ formatDate(vacancy.deadline_at) }}</span>
-                <span v-if="daysRemaining !== null && daysRemaining >= 0"
-                  :class="daysRemaining <= 2 ? 'text-red-300' : 'text-amber-300'"
+                <span v-if="urgency.level !== 'none'"
+                  :class="urgency.level === 'danger' ? 'text-red-300' : 'text-amber-300'"
                   class="block sm:inline text-xs font-semibold mt-0.5 sm:mt-0 sm:ml-1">
                   ({{ daysRemaining === 0 ? 'Closes today' : `${daysRemaining}d left` }})
                 </span>
@@ -60,7 +60,14 @@
             </div>
           </div>
 
-          <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-5 border-t border-white/20">
+          <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 pt-5 border-t border-white/20">
+            <div>
+              <p class="text-xs text-white/60 font-medium flex items-center gap-1.5">
+                <Icon name="briefcase" size="3.5" color="text-white/60" class="flex-shrink-0" />
+                Experience Req.
+              </p>
+              <p class="text-sm text-white mt-0.5">{{ vacancy.experience_req ?? '—' }}</p>
+            </div>
             <div>
               <p class="text-xs text-white/60 font-medium flex items-center gap-1.5">
                 <Icon name="academicCap" size="3.5" color="text-white/60" class="flex-shrink-0" />
@@ -70,10 +77,10 @@
             </div>
             <div>
               <p class="text-xs text-white/60 font-medium flex items-center gap-1.5">
-                <Icon name="briefcase" size="3.5" color="text-white/60" class="flex-shrink-0" />
-                Experience Req.
+                <Icon name="document" size="3.5" color="text-white/60" class="flex-shrink-0" />
+                Training Req.
               </p>
-              <p class="text-sm text-white mt-0.5">{{ vacancy.experience_req ?? '—' }}</p>
+              <p class="text-sm text-white mt-0.5">{{ vacancy.training_req || 'None required' }}</p>
             </div>
             <div>
               <p class="text-xs text-white/60 font-medium flex items-center gap-1.5">
@@ -413,7 +420,7 @@ import { vacancyApi, applicationApi, profileApi, feedbackApi } from '@/services/
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 import Icon from '@/Components/UI/Icon.vue'
 import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
-import { formatDate, formatDateLong, formatDateTime, formatDateRange } from '@/utils/dates'
+import { formatDate, formatDateLong, formatDateTime, formatDateRange, deadlineUrgency } from '@/utils/dates'
 import regionsData from '@/data/regions.json'
 import provincesData from '@/data/provinces.json'
 import citiesJsonData from '@/data/cities.json'
@@ -450,11 +457,8 @@ const authUser = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
 
 // ── Derived ──────────────────────────────────────────────────────────────────
 
-const daysRemaining = computed(() => {
-  if (!vacancy.value?.deadline_at) return null
-  const ms = new Date(vacancy.value.deadline_at) - new Date()
-  return ms < 0 ? -1 : Math.ceil(ms / (1000 * 60 * 60 * 24))
-})
+const urgency = computed(() => deadlineUrgency(vacancy.value?.deadline_at))
+const daysRemaining = computed(() => urgency.value.daysRemaining)
 
 const deadlinePassed = computed(() => daysRemaining.value !== null && daysRemaining.value < 0)
 

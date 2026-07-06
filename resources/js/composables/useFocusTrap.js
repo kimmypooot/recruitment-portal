@@ -1,6 +1,6 @@
-import { onMounted, onBeforeUnmount } from 'vue'
+import { watch, onBeforeUnmount } from 'vue'
 
-export function useFocusTrap(showRef, rootRef) {
+export function useFocusTrap(showRef, rootRef, { closeOnEscape = true } = {}) {
   let previouslyFocused = null
 
   function getFocusableElements() {
@@ -28,7 +28,7 @@ export function useFocusTrap(showRef, rootRef) {
   }
 
   function handleKeydown(e) {
-    if (e.key === 'Escape' && showRef.value) {
+    if (closeOnEscape && e.key === 'Escape' && showRef.value) {
       showRef.value = false
     }
     if (e.key === 'Tab') {
@@ -53,12 +53,16 @@ export function useFocusTrap(showRef, rootRef) {
     previouslyFocused = null
   }
 
-  onMounted(() => {
-    if (showRef.value) open()
-  })
+  // Reacts to `visible` toggling on an already-mounted modal (e.g. a
+  // component that stays mounted and flips a ref) as well as the more common
+  // case of a `v-if`-gated modal that mounts already-open.
+  watch(showRef, (isOpen, wasOpen) => {
+    if (isOpen && !wasOpen) open()
+    else if (!isOpen && wasOpen) close()
+  }, { immediate: true })
 
   onBeforeUnmount(() => {
-    close()
+    if (showRef.value) close()
   })
 
   return { open, close }

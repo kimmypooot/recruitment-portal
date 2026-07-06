@@ -167,15 +167,23 @@
 
         <!-- Header -->
         <div class="flex items-start gap-4 px-6 pt-6 pb-4 border-b border-gray-100">
-          <div v-if="editTarget" class="relative w-12 h-12 rounded-full flex-shrink-0 overflow-hidden">
-            <img v-if="editTarget.photo_url" :src="editTarget.photo_url"
-              class="w-full h-full object-cover rounded-full"
-              @error="e => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex' }"
-              alt="" />
-            <div :class="[avatarBg(form.role), editTarget.photo_url ? 'hidden' : '']"
-              class="w-full h-full rounded-full flex items-center justify-center text-sm font-bold">
-              {{ initials({ first_name: form.first_name, last_name: form.last_name }) || initials(editTarget) }}
+          <div v-if="editTarget" class="relative w-12 h-12 rounded-full flex-shrink-0 group">
+            <div class="w-full h-full rounded-full overflow-hidden">
+              <img v-if="editTarget.photo_url" :src="editTarget.photo_url"
+                class="w-full h-full object-cover rounded-full"
+                @error="e => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex' }"
+                alt="" />
+              <div :class="[avatarBg(form.role), editTarget.photo_url ? 'hidden' : '']"
+                class="w-full h-full rounded-full flex items-center justify-center text-sm font-bold">
+                {{ initials({ first_name: form.first_name, last_name: form.last_name }) || initials(editTarget) }}
+              </div>
             </div>
+            <label
+              class="absolute inset-0 rounded-full flex items-center justify-center bg-black/0 group-hover:bg-black/40 cursor-pointer transition-colors"
+              title="Change photo">
+              <Icon name="photo" size="4" class="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              <input type="file" accept="image/jpeg,image/png,image/jpg" class="sr-only" @change="onPhotoSelect" />
+            </label>
           </div>
           <div v-else class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <Icon name="user" size="6" class="text-primary" />
@@ -348,11 +356,50 @@
     </div>
     </Teleport>
 
+    <!-- ── Crop Photo Modal ────────────────────────────────────────────────────── -->
+    <Teleport to="body">
+    <div v-if="photoModal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      @mousedown.self="closePhotoModal">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+        <div class="flex items-center justify-between px-7 py-5 border-b border-gray-100 flex-shrink-0">
+          <div>
+            <h3 class="text-base font-semibold text-gray-900">Crop Photo</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Drag to move · Handles to resize</p>
+          </div>
+          <button @click="closePhotoModal"
+            class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+            <Icon name="xmark" size="5" />
+          </button>
+        </div>
+        <div class="overflow-y-auto flex-1 px-7 py-5">
+          <div class="rounded-xl overflow-hidden bg-gray-900 min-h-[200px] max-h-[55vh]" style="height: 55vw;">
+            <img ref="cropperImgRef" :src="photoModal.imgSrc" class="block w-full h-full object-contain" alt="Crop preview" />
+          </div>
+          <p v-if="photoModal.error" class="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{{ photoModal.error }}</p>
+        </div>
+        <div class="flex items-center justify-end gap-3 px-7 py-4 border-t border-gray-100 flex-shrink-0">
+          <button @click="closePhotoModal"
+            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">Cancel</button>
+          <button @click="saveCroppedPhoto" :disabled="photoModal.saving"
+            class="inline-flex items-center gap-2 px-5 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60">
+            <svg v-if="photoModal.saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+            </svg>
+            {{ photoModal.saving ? 'Saving…' : 'Save Photo' }}
+          </button>
+        </div>
+      </div>
+    </div>
+    </Teleport>
+
   </AdminLayout>
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
+import Cropper from 'cropperjs'
+import 'cropperjs/dist/cropper.css'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useToast } from '@/composables/useToast'
@@ -374,6 +421,10 @@ const deleteTarget = ref(null)
 const modalTab     = ref('Account')
 const currentPage  = ref(1)
 const perPage      = 15
+
+const photoModal = reactive({ open: false, saving: false, error: '', imgSrc: '' })
+const cropperImgRef = ref(null)
+let cropperInstance = null
 
 const form = reactive({
   first_name: '', last_name: '', middle_name: '', suffix: '',
@@ -522,6 +573,67 @@ async function submitUser() {
     toast.error(msg)
   } finally {
     saving.value = false
+  }
+}
+
+function destroyCropper() {
+  if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null }
+}
+
+function closePhotoModal() {
+  photoModal.open = false
+  destroyCropper()
+}
+
+async function onPhotoSelect(e) {
+  const file = e.target.files[0]
+  e.target.value = ''
+  if (!file || !editTarget.value) return
+
+  if (!file.type.startsWith('image/')) { toast.error('Please select a JPG or PNG image.'); return }
+  if (file.size > 3 * 1024 * 1024) { toast.error('Image must be under 3 MB.'); return }
+
+  const reader = new FileReader()
+  reader.onload = async (ev) => {
+    photoModal.imgSrc = ev.target.result
+    photoModal.error  = ''
+    photoModal.open   = true
+    destroyCropper()
+    await nextTick()
+    if (cropperImgRef.value) {
+      cropperInstance = new Cropper(cropperImgRef.value, {
+        viewMode: 1, dragMode: 'move', aspectRatio: 1, autoCropArea: 0.85,
+        guides: true, center: true, highlight: false, background: true,
+        cropBoxMovable: true, cropBoxResizable: true, toggleDragModeOnDblclick: false,
+      })
+    }
+  }
+  reader.readAsDataURL(file)
+}
+
+async function saveCroppedPhoto() {
+  if (!cropperInstance || !editTarget.value) return
+  photoModal.saving = true
+  photoModal.error  = ''
+  try {
+    const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 800, maxHeight: 800, imageSmoothingEnabled: true, imageSmoothingQuality: 'high' })
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92))
+    const fd = new FormData()
+    fd.append('photo', blob, 'profile-photo.jpg')
+    const { data } = await axios.post(`/api/admin/users/${editTarget.value.id}/photo`, fd, { headers: authHeaders() })
+    editTarget.value.photo_url = data.photo_url
+    const listed = users.value.find(u => u.id === editTarget.value.id)
+    if (listed) listed.photo_url = data.photo_url
+    const currentUser = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+    if (currentUser.id === editTarget.value.id) {
+      window.dispatchEvent(new CustomEvent('auth-avatar-updated'))
+    }
+    toast.success('Photo updated.')
+    closePhotoModal()
+  } catch (e) {
+    photoModal.error = e.response?.data?.message ?? 'Failed to upload photo.'
+  } finally {
+    photoModal.saving = false
   }
 }
 

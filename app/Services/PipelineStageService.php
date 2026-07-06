@@ -29,6 +29,19 @@ class PipelineStageService
         'deliberation'   => 'background_check_locked',
     ];
 
+    // Own-stage data flag to fall back on when the upstream prerequisite marker
+    // is missing (e.g. seeded/legacy records) but the stage's own data already
+    // exists — a stage that has data must, by definition, be reachable.
+    private const OWN_DATA_FALLBACK = [
+        'qs'           => 'qs_exists',
+        'twe'          => 'twe_exists',
+        'cbwe'         => 'cbwe_exists',
+        'bei'          => 'bei_exists',
+        'eopt'         => 'eopt_exists',
+        'background'   => 'background_check_exists',
+        'deliberation' => 'deliberation_exists',
+    ];
+
     public function isStageAccessible(string $stageKey, Vacancy $vacancy): bool
     {
         if (!isset(self::PREREQUISITES[$stageKey])) {
@@ -43,7 +56,13 @@ class PipelineStageService
 
         $flags = $this->resolveFlags($vacancy);
 
-        return $flags[$prerequisite] ?? false;
+        if ($flags[$prerequisite] ?? false) {
+            return true;
+        }
+
+        $fallback = self::OWN_DATA_FALLBACK[$stageKey] ?? null;
+
+        return $fallback !== null && ($flags[$fallback] ?? false);
     }
 
     public function resolveFlags(Vacancy $vacancy): array

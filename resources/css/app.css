@@ -15,12 +15,6 @@
   --color-accent-dark: #c9111f;
 }
 
-:root {
-  --color-primary: #2a338f;
-  --color-primary-dark: #1e2570;
-  --color-accent: #ec1c2d;
-}
-
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;

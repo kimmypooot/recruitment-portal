@@ -57,7 +57,7 @@ class BeiRatingController extends Controller
                 $isUnmasked = $token?->isUnmasked();
                 $profile = $app->applicant;
 
-                $docExists = fn ($col) => $profile?->$col && Storage::disk('public')->exists($profile->$col);
+                $docExists = fn ($col) => $profile?->$col && Storage::disk('local')->exists($profile->$col);
                 $docLink = fn ($col, $type) => $docExists($col) ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}" : null;
 
                 $base = [

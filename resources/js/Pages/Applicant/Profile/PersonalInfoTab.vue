@@ -5,8 +5,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
-          <div class="w-9 h-9 rounded-lg bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
           </div>
@@ -18,9 +18,9 @@
         <div class="px-6 py-5 flex items-center gap-6">
           <div class="flex-shrink-0">
             <div class="relative w-28 h-28 rounded-full border-2 overflow-hidden flex items-center justify-center bg-gray-50"
-              :class="photoPath ? 'border-[#2a338f]/30' : 'border-dashed border-gray-300'">
+              :class="photoPath ? 'border-primary/30' : 'border-dashed border-gray-300'">
               <div v-if="photoSaving || photoLoading || (!photoPath && googleAvatar && googleAvatarLoading)"
-                class="absolute inset-0 bg-[#2a338f] flex items-center justify-center z-10 rounded-full">
+                class="absolute inset-0 bg-primary flex items-center justify-center z-10 rounded-full">
                 <div class="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
               </div>
               <img v-if="photoPath" :src="photoUrl" @load="photoLoading = false" @error="photoLoading = false" class="w-full h-full object-cover" :class="photoSaving || photoLoading ? 'opacity-50' : ''" alt="Profile photo" />
@@ -41,7 +41,7 @@
               Use a recent photo with a plain background. Face the camera directly, no sunglasses or hats.
             </p>
             <button @click="$emit('open-photo-modal')"
-              class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-[#2a338f] hover:bg-[#1e2570] text-white text-xs font-semibold rounded-lg transition-colors">
+              class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-xs font-semibold rounded-lg transition-colors">
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
               </svg>
@@ -80,7 +80,7 @@
             </div>
             <button v-if="!hasGoogle" @click="linkGoogle" :disabled="linking"
               class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-              :class="linking ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#2a338f] text-white hover:bg-[#1e2570]'">
+              :class="linking ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary-dark'">
               <svg v-if="linking" class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -94,6 +94,22 @@
             </button>
           </div>
           <p v-if="linkError" class="mt-3 text-xs text-red-500">{{ linkError }}</p>
+          <div class="mt-5 pt-5 border-t border-gray-100 grid grid-cols-2 gap-3">
+            <button @click="showDeactivateModal = true"
+              class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 transition-colors">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+              </svg>
+              Deactivate Account
+            </button>
+            <button @click="showDeleteModal = true"
+              class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+              Delete Account
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -101,8 +117,8 @@
     <!-- Full name card -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
-        <div class="w-9 h-9 rounded-lg bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
-          <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
           </svg>
         </div>
@@ -117,28 +133,28 @@
             First Name <span class="text-red-500 normal-case">*</span>
           </label>
           <input v-model="name.first_name" type="text" @blur="validateName('first_name')" @input="validateName('first_name')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.first_name ? 'border-red-400' : 'border-gray-300'" />
           <p v-if="errors.first_name" class="mt-1 text-xs text-red-500">{{ errors.first_name }}</p>
         </div>
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Middle Name</label>
           <input v-model="name.middle_name" type="text"
-            class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
         </div>
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Last Name <span class="text-red-500 normal-case">*</span>
           </label>
           <input v-model="name.last_name" type="text" @blur="validateName('last_name')" @input="validateName('last_name')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.last_name ? 'border-red-400' : 'border-gray-300'" />
           <p v-if="errors.last_name" class="mt-1 text-xs text-red-500">{{ errors.last_name }}</p>
         </div>
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Suffix</label>
           <select v-model="name.suffix"
-            class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition">
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition">
             <option value="">None</option>
             <option>Jr.</option>
             <option>Sr.</option>
@@ -153,8 +169,8 @@
     <!-- Personal details card -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
-        <div class="w-9 h-9 rounded-lg bg-[#2a338f]/10 flex items-center justify-center flex-shrink-0">
-          <svg class="w-5 h-5 text-[#2a338f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
           </svg>
         </div>
@@ -169,7 +185,7 @@
             Gender <span class="text-red-500 normal-case">*</span>
           </label>
           <select v-model="personal.gender" @blur="validate('gender')" @change="validate('gender')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.gender ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select —</option>
             <option value="Male">Male</option>
@@ -184,7 +200,7 @@
             Civil Status <span class="text-red-500 normal-case">*</span>
           </label>
           <select v-model="personal.civil_status" @blur="validate('civil_status')" @change="validate('civil_status')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.civil_status ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select —</option>
             <option value="Single">Single</option>
@@ -201,7 +217,7 @@
             Date of Birth <span class="text-red-500 normal-case">*</span>
           </label>
           <input v-model="personal.birthday" type="date" @blur="validate('birthday')" @input="validate('birthday')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.birthday ? 'border-red-400' : 'border-gray-300'" />
           <p v-if="errors.birthday" class="mt-1 text-xs text-red-500">{{ errors.birthday }}</p>
         </div>
@@ -209,7 +225,7 @@
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Religion</label>
           <input v-model="personal.religion" type="text" placeholder="e.g. Roman Catholic"
-            class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition" />
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
         </div>
       </div>
     </div>
@@ -234,7 +250,7 @@
             Region <span class="text-red-500 normal-case">*</span>
           </label>
           <select v-model="personal.region" @blur="validate('region')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.region ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select Region —</option>
             <option v-for="r in regionsData" :key="r.reg_code" :value="r.reg_code">{{ r.reg_name }}</option>
@@ -246,7 +262,7 @@
             Province <span class="text-red-500 normal-case">*</span>
           </label>
           <select v-model="personal.province" @blur="validate('province')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.province ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select Province —</option>
             <option v-for="p in availableProvinces" :key="p.prov_code" :value="p.prov_code">{{ p.prov_name }}</option>
@@ -258,7 +274,7 @@
             City / Municipality <span class="text-red-500 normal-case">*</span>
           </label>
           <select v-model="personal.city_municipality" @blur="validate('city_municipality')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.city_municipality ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select City/Municipality —</option>
             <option v-for="c in availableCities" :key="c.city_code" :value="c.city_code">{{ c.city_name }}</option>
@@ -270,7 +286,7 @@
             Barangay <span class="text-red-500 normal-case">*</span>
           </label>
           <select v-model="personal.barangay" @blur="validate('barangay')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.barangay ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select Barangay —</option>
             <option v-for="b in availableBarangays" :key="b.brgy_code" :value="b.brgy_code">{{ b.brgy_name }}</option>
@@ -299,26 +315,152 @@
             Mobile Number <span class="text-red-500 normal-case">*</span>
           </label>
           <input v-model="personal.mobile_number" type="tel" placeholder="09XX XXX XXXX" @blur="validate('mobile_number')" @input="validate('mobile_number')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none transition"
+            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.mobile_number ? 'border-red-400' : 'border-gray-300'" />
           <p v-if="errors.mobile_number" class="mt-1 text-xs text-red-500">{{ errors.mobile_number }}</p>
         </div>
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Email Address</label>
-          <input :value="authEmail" type="email" disabled
-            class="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-400 cursor-not-allowed" />
+          <div class="flex items-center gap-2">
+            <input :value="authEmail" type="email" disabled
+              class="flex-1 px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-400 cursor-not-allowed" />
+            <span v-if="emailVerified"
+              class="inline-flex items-center gap-1 text-xs font-medium text-[#1877F2] flex-shrink-0">
+              <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1877F2]">
+                <svg class="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+              Verified
+            </span>
+            <span v-else
+              class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 flex-shrink-0">
+              <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-gray-400">
+                <svg class="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </span>
+              Not Verified
+            </span>
+          </div>
           <p class="text-xs text-gray-400 mt-1.5">Set from your account — cannot be changed here.</p>
         </div>
       </div>
     </div>
 
+  <!-- Deactivate Account Modal -->
+  <BaseModal :show="showDeactivateModal" title="Deactivate Account" @close="showDeactivateModal = false">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-lg font-semibold text-gray-900">Deactivate Account</p>
+            <p class="text-sm text-gray-500">Temporarily disable your account</p>
+          </div>
+        </div>
+        <div class="space-y-3 text-sm text-gray-600 mb-6">
+          <p>When you deactivate your account:</p>
+          <ul class="space-y-2 pl-4">
+            <li class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01"/></svg>
+              <span>Your profile, applications, and all data will be preserved.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <span>You can reactivate at any time simply by signing back in.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="flex gap-3 justify-end">
+          <button @click="showDeactivateModal = false"
+            class="px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+            Cancel
+          </button>
+          <button @click="deactivateAccount" :disabled="deactivating"
+            class="px-4 py-2.5 text-sm font-semibold text-white rounded-lg transition-colors"
+            :class="deactivating ? 'bg-amber-400 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-700'">
+            <svg v-if="deactivating" class="animate-spin h-4 w-4 mx-auto" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            <span v-else>Deactivate</span>
+          </button>
+        </div>
+  </BaseModal>
+
+  <!-- Delete Account Modal -->
+  <BaseModal :show="showDeleteModal" title="Delete Account" @close="closeDeleteModal">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-lg font-semibold text-gray-900">Delete Account</p>
+            <p class="text-sm text-gray-500">Permanently remove your account and data</p>
+          </div>
+        </div>
+        <div class="space-y-3 text-sm text-gray-600 mb-6">
+          <p>This action is <strong class="text-red-600">permanent and irreversible</strong>. When you delete your account:</p>
+          <ul class="space-y-2 pl-4">
+            <li class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              <span>Your profile, applications, documents, and all associated data will be permanently deleted.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              <span>You will lose access to all your submitted applications and their records.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              <span>This cannot be undone — there is no recovery after deletion.</span>
+            </li>
+          </ul>
+          <div class="mt-4 p-3 bg-red-50 rounded-lg border border-red-200">
+            <p class="text-xs text-red-700">Please ensure you have downloaded any important information before proceeding.</p>
+          </div>
+          <div class="mt-4">
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Type <span class="font-mono text-red-600 bg-red-50 px-1 rounded">DELETE</span> to confirm</label>
+            <input v-model="deleteConfirm" type="text" placeholder="DELETE"
+              class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none transition text-center uppercase tracking-widest"
+              :class="deleteConfirm === 'DELETE' ? 'border-red-500' : 'border-gray-300'" />
+          </div>
+          <div v-if="hasPassword" class="mt-3">
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Enter your password to confirm</label>
+            <input v-model="deletePassword" type="password" placeholder="Password" autocomplete="current-password"
+              class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none transition" />
+            <p v-if="deleteError" class="mt-1.5 text-xs text-red-600">{{ deleteError }}</p>
+          </div>
+        </div>
+        <div class="flex gap-3 justify-end">
+          <button @click="closeDeleteModal"
+            class="px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+            Cancel
+          </button>
+          <button @click="deleteAccount" :disabled="deleting || !canDelete"
+            class="px-4 py-2.5 text-sm font-semibold text-white rounded-lg transition-colors"
+            :class="deleting || !canDelete ? 'bg-red-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'">
+            <svg v-if="deleting" class="animate-spin h-4 w-4 mx-auto" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            <span v-else>Delete Permanently</span>
+          </button>
+        </div>
+  </BaseModal>
   </div>
 </template>
 
 <script setup>
 import { reactive, ref, computed, watch } from 'vue'
 import api from '@/services/api'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import { useConfirm } from '@/composables/useConfirm'
+import { navigateTo } from '@/utils/navigate'
 import regionsData from '@/data/regions.json'
 import provincesData from '@/data/provinces.json'
 import citiesData from '@/data/cities.json'
@@ -332,6 +474,7 @@ const props = defineProps({
   photoSaving: { type: Boolean, default: false },
   regions:     { type: Array,  default: () => [] },
   authEmail:   { type: String, default: '' },
+  emailVerifiedAt: { type: [String, null], default: null },
   googleId:    { type: String, default: null },
   googleAvatar: { type: String, default: null },
   errors:      { type: Object, default: () => ({}) },
@@ -347,10 +490,73 @@ watch(() => props.photoPath, (val) => {
   if (val) photoLoading.value = true
 })
 
+const emailVerified = computed(() => !!props.emailVerifiedAt)
 const hasGoogle = ref(!!props.googleId)
 const linking = ref(false)
 const unlinking = ref(false)
 const linkError = ref('')
+const showDeactivateModal = ref(false)
+const showDeleteModal = ref(false)
+const deactivating = ref(false)
+const deleting = ref(false)
+const deleteConfirm = ref('')
+const deletePassword = ref('')
+const deleteError = ref('')
+
+// Whether the account has a self-set password (Google-created accounts don't
+// until the user sets one). Falls back to true for stale cached user objects.
+const hasPassword = computed(() => {
+  try {
+    return JSON.parse(localStorage.getItem('auth_user') ?? '{}').has_password !== false
+  } catch {
+    return true
+  }
+})
+
+const canDelete = computed(() =>
+  deleteConfirm.value === 'DELETE' && (!hasPassword.value || deletePassword.value.length > 0)
+)
+
+function closeDeleteModal() {
+  showDeleteModal.value = false
+  deleteConfirm.value = ''
+  deletePassword.value = ''
+  deleteError.value = ''
+}
+
+async function deactivateAccount() {
+  deactivating.value = true
+  try {
+    await api.post('/account/deactivate')
+    localStorage.removeItem('auth_token')
+    localStorage.removeItem('auth_user')
+    localStorage.removeItem('auth_remember')
+    localStorage.removeItem('auth_token_created_at')
+    showDeactivateModal.value = false
+    navigateTo('/login')
+  } catch {
+    deactivating.value = false
+  }
+}
+
+async function deleteAccount() {
+  deleting.value = true
+  deleteError.value = ''
+  try {
+    await api.delete('/account/delete', {
+      data: hasPassword.value ? { password: deletePassword.value } : {},
+    })
+    localStorage.removeItem('auth_token')
+    localStorage.removeItem('auth_user')
+    localStorage.removeItem('auth_remember')
+    localStorage.removeItem('auth_token_created_at')
+    showDeleteModal.value = false
+    navigateTo('/login')
+  } catch (err) {
+    deleteError.value = err.response?.data?.message || 'Failed to delete account.'
+    deleting.value = false
+  }
+}
 
 async function linkGoogle() {
   linking.value = true

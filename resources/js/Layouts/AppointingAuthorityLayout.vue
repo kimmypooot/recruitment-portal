@@ -73,69 +73,28 @@
       </div>
 
       <!-- Sign-out preload overlay -->
-      <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100"
-                  leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
-        <div v-if="showSignOutPreload" class="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
-          style="background: linear-gradient(135deg, #f0eef9 0%, #e8eafa 50%, #fdeef0 100%);">
-          <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-20"
-              style="background: radial-gradient(circle, #2a338f 0%, transparent 70%); animation: float 8s ease-in-out infinite;"></div>
-            <div class="absolute -bottom-16 -right-16 w-96 h-96 rounded-full opacity-15"
-              style="background: radial-gradient(circle, #ec1c2d 0%, transparent 70%); animation: float 10s ease-in-out infinite reverse;"></div>
-            <div class="absolute top-1/3 right-1/4 w-48 h-48 rounded-full opacity-10"
-              style="background: radial-gradient(circle, #2a338f 0%, transparent 70%); animation: float 12s ease-in-out infinite 2s;"></div>
-          </div>
-
-          <div class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/40 p-10 text-center max-w-sm w-full mx-4">
-            <div class="relative w-28 h-28 mx-auto mb-6">
-              <svg class="absolute inset-0 w-28 h-28 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="#e5e7eb" stroke-width="2.5"/>
-                <circle cx="12" cy="12" r="10" stroke="#2a338f" stroke-width="2.5"
-                  stroke-linecap="round" stroke-dasharray="62.832" stroke-dashoffset="20"/>
-              </svg>
-              <svg class="absolute inset-2 w-[96px] h-[96px] animate-spin" style="animation-duration:2s;animation-direction:reverse;" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="8" stroke="#e5e7eb" stroke-width="1.5"/>
-                <circle cx="12" cy="12" r="8" stroke="#ec1c2d" stroke-width="1.5"
-                  stroke-linecap="round" stroke-dasharray="50.265" stroke-dashoffset="15"/>
-              </svg>
-              <img src="/images/csc-logo.png" alt="CSC"
-                class="absolute w-12 h-12 rounded-full bg-white shadow-sm object-contain p-1.5"
-                style="top:50%;left:50%;transform:translate(-50%,-50%);"
-                @error="e => e.target.style.display='none'" />
-            </div>
-
-            <div class="space-y-2">
-              <p class="text-xl font-semibold" style="color:#2a338f;">Signing you out</p>
-              <p class="text-gray-500 text-sm">Please wait a moment…</p>
-            </div>
-
-            <div class="flex justify-center gap-1.5 mt-6">
-              <span v-for="i in 3" :key="i" class="w-2 h-2 rounded-full transition-all duration-300"
-                :style="{ backgroundColor: soDot === i - 1 ? '#ec1c2d' : '#2a338f',
-                          transform: soDot === i - 1 ? 'scale(1.25)' : 'scale(1)' }"></span>
-            </div>
-          </div>
-        </div>
-      </Transition>
+      <AuthSplashOverlay :visible="showSignOutPreload">
+        <p class="text-xl font-semibold text-primary">Signing you out</p>
+        <p class="text-gray-500 text-sm">Please wait a moment…</p>
+      </AuthSplashOverlay>
     </Teleport>
   </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import api from '@/services/api'
 import axios from 'axios'
 import Icon from '@/Components/UI/Icon.vue'
+import AuthSplashOverlay from '@/Components/UI/AuthSplashOverlay.vue'
 import { navigateTo } from '@/utils/navigate'
 
 const page = usePage()
 const showLogoutModal = ref(false)
 const showSignOutPreload = ref(false)
 const assignedVacancies = ref([])
-const soDot = ref(0)
-let soTimer = null
 
 function isActive(href) {
   return page.url.startsWith(href)
@@ -148,7 +107,6 @@ function logout() {
 async function confirmLogout() {
   showLogoutModal.value    = false
   showSignOutPreload.value = true
-  soTimer = setInterval(() => { soDot.value = (soDot.value + 1) % 3 }, 400)
 
   const token = localStorage.getItem('auth_token')
 
@@ -157,7 +115,6 @@ async function confirmLogout() {
     new Promise(r => setTimeout(r, 900)),
   ])
 
-  clearInterval(soTimer)
   localStorage.removeItem('auth_token')
   localStorage.removeItem('auth_user')
   navigateTo('/login')
@@ -174,8 +131,4 @@ async function loadVacancies() {
 }
 
 onMounted(loadVacancies)
-
-onUnmounted(() => {
-  if (soTimer) clearInterval(soTimer)
-})
 </script>

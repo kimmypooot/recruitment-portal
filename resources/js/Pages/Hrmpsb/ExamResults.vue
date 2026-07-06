@@ -13,7 +13,7 @@
         <div class="mt-4 flex items-center gap-1">
           <a :href="`/hrmpsb/exam-results/${props.vacancyId}?exam_type=TWE`"
             class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors"
-            :class="examType === 'TWE' ? 'bg-[#2a338f] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+            :class="examType === 'TWE' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
             TWE — Technical Written Exam
           </a>
 
@@ -59,7 +59,7 @@
           @click="encodeOpen = !encodeOpen"
           class="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors">
           <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-[#2a338f] flex items-center justify-center flex-shrink-0">
+            <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
               <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
               </svg>
@@ -256,7 +256,7 @@
                 <td class="px-3 py-4">
                   <div>
                     <p v-if="app.unmasked" class="text-sm font-semibold text-gray-900">{{ app.name }}</p>
-                    <p v-else class="text-sm font-bold font-mono text-[#2a338f]">{{ app.token ?? '—' }}</p>
+                    <p v-else class="text-sm font-bold font-mono text-primary">{{ app.token ?? '—' }}</p>
                     <span class="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded mt-1"
                       :class="app.status === 'qualified'
                         ? 'bg-blue-50 text-blue-600'
@@ -479,10 +479,10 @@ onMounted(load)
   @apply block text-xs font-semibold text-gray-600 mb-1.5;
 }
 .input {
-  @apply w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#2a338f] focus:border-transparent outline-none transition;
+  @apply w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition;
 }
 .btn-primary {
-  @apply inline-flex items-center px-5 py-2.5 bg-[#2a338f] text-white text-sm font-semibold rounded-xl hover:bg-[#1e2570] disabled:opacity-50 transition shadow-sm;
+  @apply inline-flex items-center px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-dark disabled:opacity-50 transition shadow-sm;
 }
 .btn-secondary {
   @apply inline-flex items-center px-5 py-2.5 border border-gray-300 text-sm font-semibold rounded-xl text-gray-700 hover:bg-gray-50 transition;

@@ -20,10 +20,10 @@
           <div class="flex-1 min-w-64">
             <input v-model="vacancySearch" @input="onVacancySearch" type="text"
               placeholder="Search by position title…"
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a338f] focus:border-[#2a338f] focus:outline-none" />
+              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none" />
           </div>
           <select v-model="selectedVacancyId" @change="loadVacancyCompetencies"
-            class="flex-1 min-w-64 px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
+            class="flex-1 min-w-64 px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-primary focus:outline-none">
             <option value="">— Choose a vacancy —</option>
             <option v-for="v in filteredVacancies" :key="v.id" :value="v.id">
               {{ v.position_title }} (SG-{{ v.salary_grade }}) — {{ v.place_of_assignment }}
@@ -49,18 +49,18 @@
 
           <div class="p-5 space-y-5">
             <div v-for="groupName in groupOrder" :key="groupName">
-              <h3 class="text-xs font-semibold text-[#2a338f] uppercase tracking-wider mb-2">{{ groupName }}</h3>
+              <h3 class="text-xs font-semibold text-primary uppercase tracking-wider mb-2">{{ groupName }}</h3>
               <div class="space-y-1">
                 <div v-for="comp in competenciesByGroup[groupName]" :key="comp.competency_key"
                   @click="toggleCompetency(comp)"
                   :class="[
                     'flex items-center justify-between gap-3 p-2.5 rounded-lg cursor-pointer transition-colors',
                     isAssigned(comp.competency_key)
-                      ? 'bg-[#2a338f]/5 border border-[#2a338f]/20'
+                      ? 'bg-primary/5 border border-primary/20'
                       : 'hover:bg-gray-50 border border-transparent'
                   ]">
                   <div class="flex items-center gap-2.5 min-w-0">
-                    <div :class="isAssigned(comp.competency_key) ? 'bg-[#2a338f]' : 'bg-gray-200'"
+                    <div :class="isAssigned(comp.competency_key) ? 'bg-primary' : 'bg-gray-200'"
                       class="w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition-colors">
                       <svg v-if="isAssigned(comp.competency_key)" class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
@@ -89,7 +89,7 @@
               <p class="text-xs text-gray-400 mt-0.5">{{ draftAssignments.length }} competenc{{ draftAssignments.length === 1 ? 'y' : 'ies' }} required</p>
             </div>
             <button v-if="draftAssignments.length" @click="saveAssignments" :disabled="saving"
-              class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#2a338f] hover:bg-[#1e2570] disabled:opacity-60 rounded-lg transition-colors">
+              class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark disabled:opacity-60 rounded-lg transition-colors">
               <svg v-if="saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -115,7 +115,7 @@
                 <p class="text-xs text-gray-400">{{ item.competency_group }}</p>
               </div>
               <select v-model="item.level"
-                class="text-xs border border-gray-200 rounded-lg px-2 pr-7 py-1.5 bg-white text-gray-700 focus:ring-2 focus:ring-[#2a338f] focus:outline-none">
+                class="text-xs border border-gray-200 rounded-lg px-2 pr-7 py-1.5 bg-white text-gray-700 focus:ring-2 focus:ring-primary focus:outline-none">
                 <option :value="1">1 – Basic</option>
                 <option :value="2">2 – Intermediate</option>
                 <option :value="3">3 – Advanced</option>

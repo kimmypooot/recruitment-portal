@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CSC RO VIII - Recruitment Portal — a Laravel 13 + Inertia.js (Vue 3) SPA for the Civil Service Commission. Applicants browse vacancies and submit applications; HR officers manage the pipeline; admins oversee users and audit logs.
+CSC RO VIII - Recruitment Portal — a Laravel 13 + Inertia.js (Vue 3) SPA for the Civil Service Commission Regional Office VIII. It implements the full HRMPSB (HR Merit Promotion and Selection Board) recruitment pipeline: applicants browse vacancies and submit applications; an HRMPSB board screens, examines, interviews, and deliberates on candidates; an Appointing Authority makes the final selection; admins oversee users, audit logs, and system configuration.
 
 ## Commands
 
@@ -17,7 +17,7 @@ composer run setup
 ### Development (all services together)
 ```bash
 composer run dev
-# Runs concurrently: php artisan serve | queue:listen | pail (log tail) | npm run dev (Vite HMR)
+# Runs concurrently: php artisan serve --port=8010 | queue:listen | npm run dev (Vite HMR)
 ```
 
 ### Frontend only
@@ -37,6 +37,7 @@ php artisan migrate:fresh --seed   # Wipe and reseed
 composer run test                  # Clears config cache then runs PHPUnit
 php artisan test --filter TestName # Single test
 ```
+`tests/Feature/` currently has `ApplicationSubmissionTest.php` and `CsFormGenerationTest.php`; `tests/Unit/` is just the stock example.
 
 ### Code style
 ```bash
@@ -54,114 +55,127 @@ php artisan tinker                 # REPL
 
 ### Request flow
 
-1. XAMPP routes all traffic to `public/index.php` (Laravel entry point)
-2. `bootstrap/app.php` configures routing (`routes/web.php` + `routes/api.php`), middleware, and exception handling
-3. **Web requests** (`/`) → `routes/web.php` closure → `Inertia::render('Home')` → `resources/views/app.blade.php` (single Blade shell) → Vue SPA boots via `resources/js/app.js`
-4. **API requests** (`/api/*`) → `routes/api.php` → JSON controllers
+1. XAMPP routes all traffic to `public/index.php` (Laravel entry point).
+2. `bootstrap/app.php` configures routing (`routes/web.php` + `routes/api.php`), the three custom middleware aliases (`role`, `admin-access`, `pipeline-stage`), and exception handling.
+3. **Web requests** → `routes/web.php` closures → `Inertia::render(...)` → the single Blade shell (`resources/views/app.blade.php`) → Vue SPA boots via `resources/js/app.js`.
+4. **API requests** (`/api/*`) → `routes/api.php` → JSON controllers. This is where real authorization is enforced (see below) — `web.php` page routes mostly carry **no** server-side auth middleware.
 
 ### Inertia.js pattern
 
-The app is a true SPA using Inertia. There is only one Blade view (`resources/views/app.blade.php`). Page components live in `resources/js/Pages/`. The Inertia resolver maps controller calls like `Inertia::render('Home')` to `Pages/Home.vue`, `Inertia::render('Vacancies/Apply')` to `Pages/Vacancies/Apply.vue`, etc.
+The app is a true SPA using Inertia. Page components live in `resources/js/Pages/`, grouped to match the route structure: `Admin/` (with `Applications/`, `Vacancies/` subfolders), `Applicant/` (with `Profile/`), `Hrmpsb/`, `AppointingAuthority/`, `Auth/`, `Public/`, `Vacancies/`. `Inertia::render('Hrmpsb/QsMatrix')` maps to `Pages/Hrmpsb/QsMatrix.vue`, etc.
 
-Props passed to `Inertia::render()` arrive as Vue `defineProps` in the page component. Server-side data (e.g. initial vacancies on the homepage) is passed this way to avoid a loading flash; subsequent filtering/pagination uses `axios` calls to `/api/*`.
+`HandleInertiaRequests::share()` shares `auth.user` (full user model) and `auth.profile_complete` on every page — this is how the Vue frontend does its client-side role gating, since most `web.php` page routes have no server guard. Server-side authorization on mutations happens through the API.
 
 ### Backend structure
 
 | Path | Purpose |
 |------|---------|
-| `app/Http/Controllers/` | 9 controllers; all return `JsonResponse` (API) or `Inertia\Response` (web) |
-| `app/Models/` | Eloquent models: `User`, `Vacancy`, `Application`, `ApplicantProfile`, `Document`, `ExamSchedule`, `InterviewSchedule`, `WorkExperience`, `EducationalAttainment`, `Training` |
-| `app/Notifications/` | 5 queued notifications (mail + database channels); use Laravel 13 `#[Tries]` / `#[Timeout]` attributes |
-| `app/Services/AuditLog.php` | Static `record(action, model)` helper; writes to `audit_logs` table; silently swallows errors |
+| `app/Http/Controllers/` | 32 controllers covering the full pipeline (vacancies, applications, examinations, interviews, QS/BEI/CBWE/EOPT ratings, background checks, deliberation, appointing-authority decisions, CS forms, email templates, reports/exports) |
+| `app/Models/` | 30 Eloquent models — see "Recruitment pipeline models" below |
+| `app/Policies/` | `VacancyPolicy`, `ApplicationPolicy`, `DocumentPolicy`, `EvaluationPolicy` — registered via `Gate::policy()`/`Gate::define()` in `AppServiceProvider::boot()` (no `AuthServiceProvider` in Laravel 13) |
+| `app/Http/Middleware/EnsureRole.php` | `role:<list>` alias — 403s unless `$user->role` is in the given list |
+| `app/Http/Middleware/EnsureAdminAccess.php` | `admin-access` alias — delegates to `User::canAccessAdminModule()` |
+| `app/Http/Middleware/EnsurePipelineStageAccessible.php` | `pipeline-stage:<key>` alias — delegates to `PipelineStageService`; gates *workflow progression*, not role |
+| `app/Services/PipelineStageService.php` | Central stage-gating logic — see below |
+| `app/Services/AuditLog.php` | Static `record(action, model)` helper; writes to `audit_logs`; silently swallows errors |
+| `app/Services/AnonymizationService.php` | Issues/unmasks `AnonymizationToken`s for blind deliberation |
+| `app/Services/FormGeneratorService.php` | Renders CS Form 33-A/33-B/Form-1 PDFs (DomPDF, views in `resources/views/forms/`) into `CsForm` records |
+| `app/Services/PnpkiService.php` | Stub for PNPKI digital signatures on CS Forms — `sign()` just sets `signed_at`, no real crypto yet |
+| `app/Services/EmailTemplateMailBuilder.php` | Renders admin-configurable `EmailTemplate` rows into `MailMessage`s, with a generic fallback if none configured |
+| `app/Services/HrmpsbCompositionService.php` | Merges global `HrmbsboardComposition` rows with the per-vacancy dynamic "Head of Unit" role |
 | `app/Http/Resources/VacancyResource.php` | JSON:API-style resource transformer for vacancy responses |
-| `app/Http/Requests/StoreVacancyRequest.php` | Only form request class; all other controllers use `$request->validated()` without declaring rules |
+| `app/Http/Requests/StoreVacancyRequest.php` | Only form-request class; other controllers mostly call `$request->validate([...])` inline |
 
 ### Frontend structure
 
 | Path | Purpose |
 |------|---------|
-| `resources/js/app.js` | Inertia bootstrap; auto-resolves `Pages/**/*.vue` |
-| `resources/js/Pages/` | Full-page components — one per route |
-| `resources/js/Layouts/` | `PublicLayout.vue`, `ApplicantLayout.vue`, `AdminLayout.vue` |
-| `resources/js/Components/DataPrivacyModal.vue` | Rendered in root app component; shown globally |
-| `resources/js/services/api.js` | Axios instance pre-configured with CSRF + `/api` base URL; exports `vacancyApi` and `applicationApi` |
+| `resources/js/app.js` | Inertia bootstrap; Pinia; global `ProgressBar`/`ToastContainer`/`ConfirmDialog`; `useSessionExpiry()`/`useIdleTimer()` composables run globally; axios base URL is rewritten to `window.location.origin` to survive subpath/proxy deployments; `inertia:error` listener toasts on 419/403 |
+| `resources/js/Pages/` | Full-page components, grouped by area (see above) |
+| `resources/js/Layouts/` | `PublicLayout.vue`, `ApplicantLayout.vue`, `AdminLayout.vue`, `HrmbsboardLayout.vue`, `AppointingAuthorityLayout.vue` |
+| `resources/js/services/api.js` | Axios instance; attaches `Bearer` token from `localStorage['auth_token']`; on 401 clears auth and redirects to `/login?next=...` |
 
-Tailwind v4 is used via `@tailwindcss/vite`. The CSS warnings during `npm run build` about unknown `@theme`/`@plugin`/`@source` rules from LightningCSS minifier are harmless — Tailwind handles them before minification.
+Tailwind v4 is used via `@tailwindcss/vite`. Build-time CSS warnings about unknown `@theme`/`@plugin`/`@source` rules from the LightningCSS minifier are harmless.
 
-### Authentication & roles
+### Authentication & authorization
 
-API auth uses Laravel Sanctum (token-based). Sanctum token is stored in `localStorage` on the frontend and attached as a `Bearer` token via an axios interceptor in `api.js`. The `User` model has a `role` column with values: `applicant`, `hr-officer`, `hr-manager`, `admin`.
+API auth uses Laravel Sanctum (bearer tokens). The token is stored in `localStorage` and attached via the axios interceptor in `api.js`.
 
-**Token expiry:** Non-remember logins expire after 2 hours (`now()->addHours(2)`). Remember-me logins and Google OAuth tokens never expire (`null`). Password reset requires: min 8 chars, at least one uppercase, one lowercase, one number (`Password::min(8)->letters()->mixedCase()->numbers()`).
+**Roles** (`users.role` enum) — collapsed by migration `2026_06_27_100000_simplify_users_role_to_three.php` down to exactly three values: `applicant`, `hrmpsb`, `admin`. (Older values like `hr-officer`/`hr-manager`/`hrmpsb-member`/`appointing-authority` existed transiently and were migrated into `admin`/`hrmpsb` — don't expect to see them in current data.) `UserController::ALLOWED_ROLES` enforces this same set on create/update.
 
-No custom role-checking middleware exists. Route groups only apply `auth:sanctum`; role enforcement is manual inside controllers (where it exists at all — see Known Issues).
+**Finer-grained HRMPSB roles live outside `users.role`**, in the `hrmpsb_compositions` table (model `HrmbsboardComposition`), which is now global rather than per-vacancy. `HrmbsboardComposition::ROLES` includes `chairperson`, `secretariat`, `appointing-authority`, `director-representative`, `division-chief-representative`, `hr-chief`, `pintig-representative-1st`, `pintig-representative-2nd`, plus a dynamically-resolved `head-of-unit` role per vacancy's place of assignment (resolved by `HrmpsbCompositionService`, excluding HRD/ORD).
 
-Google OAuth (`/auth/google`, `/auth/google/callback`) is wired via Laravel Socialite but the `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI` values are empty in `.env`.
+**`User::canAccessAdminModule()`** (app/Models/User.php) is the crux of the whole authorization scheme — true if `role === 'admin'`, or if `role === 'hrmpsb'` *and* the user holds an active `secretariat`/`hr-chief` designation (`hasAdminDesignation()`). Almost every policy and the `admin-access` middleware defer to it.
 
-### User name columns
+Authorization is enforced in three layers, all on the API side:
+1. **Route middleware** (`routes/api.php`): `auth:sanctum` (any authenticated user), `admin-access` (admin module), `role:hrmpsb,admin` (the bulk of pipeline-stage endpoints).
+2. **Policies/Gates** (registered in `AppServiceProvider::boot()`): `VacancyPolicy` (delete is admin-only, not just admin-module), `ApplicationPolicy` (owners can view their own application via `applicantProfile->id`), `DocumentPolicy` (verify), and gate-based `EvaluationPolicy` (`evaluate-application`, `lock-evaluation`, `unmask-identities` — driven by active `hrmpsb_compositions` rows, since access depends on board membership, not ownership).
+3. **`pipeline-stage:<key>` middleware** on `hrmpsb/*` web routes — gates workflow *progression* (has the prerequisite stage been locked/completed?), independent of role.
 
-`users` has both a composite `name` (legacy, computed as "First Middle Last, Suffix") and separate `first_name`, `last_name`, `middle_name`, `suffix` columns added in the June 27 migration. Registration and Google OAuth both write all five columns. Duplicate detection on registration checks `first_name + last_name (+ middle_name)` inside a `lockForUpdate()` transaction to prevent races.
+Password reset requires: min 8 chars, at least one uppercase, one lowercase, one number (`Password::min(8)->letters()->mixedCase()->numbers()`). Non-remember logins expire after 2 hours; remember-me and Google OAuth tokens never expire. Google OAuth is wired via Socialite but `GOOGLE_CLIENT_ID`/`SECRET`/`REDIRECT_URI` are empty in `.env` by default.
 
-### Key model relationships
+### Recruitment pipeline models
 
-- `User` → `hasOne(ApplicantProfile)` (applicants only; HR/admin users have no profile)
-- `ApplicantProfile` → `hasMany(Application)` — **`Application.applicant_id` is a FK to `applicant_profiles`, not `users`**
-- `ApplicantProfile.user_id` has a unique constraint (June 27 migration) — one profile per user enforced at DB level
-- `Application` → `hasMany(Document)`, `hasMany(ExamSchedule)`, `hasMany(InterviewSchedule)`
-- `ApplicantProfile` → `hasMany(WorkExperience)`, `hasMany(EducationalAttainment)`, `hasMany(Training)`
-- `Vacancy` → soft-deleted (`SoftDeletes`); `Application` → soft-deleted
+`Application` is the central record (`belongsTo Vacancy`, `belongsTo ApplicantProfile as applicant` — **`Application.applicant_id` is a FK to `applicant_profiles`, not `users`**) and `hasMany`/`hasOne` to nearly every stage model below. Pipeline order, per `PipelineStageService::PREREQUISITES`:
 
-`Vacancy` has scopes: `published()` and `open()` (published + deadline not yet passed).
+```
+pre-assessment → qs → twe (written exam) → cbwe → bei → eopt → background → deliberation → (appointing-authority decision)
+```
 
-`ApplicantProfile::isComplete()` checks only 6 fields: `gender`, `civil_status`, `birthday`, `mobile_number`, `region`, `eligibility`.
+| Model | Represents |
+|---|---|
+| `PreAssessment` | Initial screening before formal QS |
+| `QsEvaluation` | Qualification Standards screening per evaluator; boolean "meets" flags + `overall_qualified`; `locked_at` |
+| `ExamResult` | Written exam (TWE) score per application |
+| `CbweRating` | Competency-Based Written Exam rating (JSON `competency_scores` against `CbweRating::COMPETENCY_KEYS`) — replaced an earlier written-CBWE approach |
+| `BeiRating` | Behavioral Event Interview score (JSON `competency_scores` against the 5 CSC competencies in `BeiRating::COMPETENCIES`); `locked_at` |
+| `EoptResult` | Employee orientation/personality test (Big-Five-style traits, `EoptResult::CATEGORIES` × `RATINGS` scale) |
+| `BackgroundCheck` | HR-conducted checklist (employment/education/character-ref/NBI); `locked_at` |
+| `BackgroundInvestigationReport` | External investigator's report, submitted via a tokenized public upload link (`token`/`token_expires_at`) |
+| `AnonymizationToken` | Masks applicant identity for blind deliberation; `unmasked_at`/`unmasked_by` |
+| `DeliberationResult` | HRMPSB board's ranking/action per application within a vacancy's deliberation; `locked_at` |
+| `ComparativeAssessmentResult` | Generated comparison file/PDF summarizing candidates per vacancy |
+| `AppointingAuthorityDecision` | Appointing Authority's final decision on a deliberated application |
+| `CsForm` | Generated CSC forms (`CsForm::TYPES`: `33A`, `33B`, `form1`); `signed_at` via the `PnpkiService` stub, `submitted_to_csc_at` |
+| `HrmbsboardComposition` | Assigns a `User` to a global HRMPSB role (see roles above) |
+
+Most stage tables have a `locked_at` column gating downstream progression — `PipelineStageService::resolveFlags()` computes ~15 boolean flags per vacancy by querying these tables (note: `qs_exists`/`qs_locked` intentionally consider *all* application IDs while most other flags exclude withdrawn applications). If an upstream "locked" flag is missing but the stage's own data already exists, `OWN_DATA_FALLBACK` still allows access (defensive fallback for legacy/seeded data).
+
+### User name & profile fields
+
+`first_name`, `last_name`, `middle_name`, `suffix` live only on `User` (the legacy composite `name` column and the duplicate name columns on `applicant_profiles` were both dropped). `ApplicantProfile` exposes `first_name`/`last_name`/etc. as accessors that proxy to the related `User`. `User::full_name` is a computed accessor (`"{first} {middle_initial}. {last}, {suffix}"`).
+
+`ApplicantProfile` has a single `birthday` date column (the old duplicate `birthdate` column is gone). `ApplicantProfile::isComplete()` checks `gender`, `civil_status`, `birthday`, `mobile_number`, `region`, `eligibility`. `ApplicantProfile::hasRequiredDocuments()` requires PDS, application letter, COE, TOR (IPCR is optional). `ApplicantProfile.user_id` has a unique DB constraint — one profile per user.
 
 ### Status enums
 
-**Application status** (stored as string): `submitted`, `under_review`, `exam_scheduled`, `interviewed`, `passed`, `failed`, `withdrawn`
-— `ApplicationController::updateStatus()` also accepts: `screened`, `qualified`, `disqualified`, `shortlisted`, `for_interview`, `recommended`, `appointed`, `completed`
+**Application status**: `submitted`, `under_review`, `exam_scheduled`, `interviewed`, `passed`, `failed`, `withdrawn`, plus additional values accepted by `ApplicationController::updateStatus()`: `screened`, `qualified`, `disqualified`, `shortlisted`, `for_interview`, `recommended`, `appointed`, `completed`. `ApplicationStatusUpdated::KNOWN_STATUSES` lists 14 known statuses.
 
-**Vacancy status**: `draft`, `published`, `closed`, `filled` — stored as `VARCHAR(50)`, not an ENUM (changed in June 27 migration; the `down()` method is a no-op, this change is irreversible)
+**Vacancy status**: `draft`, `published`, `closed`, `filled` — stored as `VARCHAR(50)` (changed from ENUM; that migration's `down()` is a no-op and irreversible). `Vacancy` has `published()` and `open()` (published + deadline not passed) scopes; `Vacancy` and `Application` are both soft-deleted.
 
-### Routes summary
+### Notifications
 
-Web routes serve Inertia pages:
-- Public: `/`, `/how-to-apply`, `/about`, `/login`, `/register`
-- Applicant (auth): `/applicant/dashboard`, `/applicant/applications`, `/applicant/complete-profile`, `/vacancies/{id}/apply`
-- Admin (auth): `/admin/dashboard`, `/admin/vacancies`, `/admin/applications`, `/admin/users`, `/admin/audit-logs`
-- File serving: `/profile/photo`, `/profile/documents/{path}` (token-authenticated, owner-only)
-
-API routes are under `/api/*` with `auth:sanctum` for authenticated endpoints. Dashboard stats are cached for 1 hour via `Cache::remember`.
+All notification classes implement `ShouldQueue` (`composer run dev` runs `queue:listen`; production needs a persistent `queue:work`). Custom flows worth knowing:
+- `VerifyEmail` / password reset use a 6-digit-code flow, not Laravel's default signed-URL/notification.
+- `ApplicationStatusUpdated` is the generic lifecycle notification, templated via `EmailTemplateMailBuilder`, and supports a `silent` (database-only) mode.
+- `BackgroundInvestigationRequest` emails the named investigator/referee a tokenized upload link consumed by the public, unauthenticated background-investigation-report routes.
 
 ### Database
 
-MySQL database `csc_recruitment` (root, no password for local XAMPP). Session, cache, and queue all use the `database` driver.
+MySQL database (local: `csc_recruitment`, root/no password under XAMPP). Session, cache, and queue all use the `database` driver. Migrations are additive — check migration dates when something looks contradictory; the `role` enum, `vacancies.status`, and the name-column layout have each gone through multiple superseding migrations, so trust the model + latest migration over older ones.
 
-Migrations are additive: the base `applicant_profiles` table (June 19) has only a few columns; the June 21 migration adds the full set of profile fields. The `ApplicantProfile` model has a duplicate column issue: both `birthday` and `birthdate` exist (the newer migrations use `birthday`; use that one).
+### Routes summary
 
-**Note:** The two vacancies migrations (`2026_06_19_131050` and `2026_06_19_131658`) both target the `vacancies` table — the second one is a stub and will fail if the first already ran.
+`routes/web.php` — Inertia page routes only, mostly ungated server-side (client-side guards + the fact that underlying API calls 401/403). Notable exception: `hrmpsb/*` pages are individually gated by `pipeline-stage:<key>` middleware for stage keys `pre-assessment`, `qs`, `twe`, `cbwe`, `bei`, `eopt`, `background`, `deliberation`.
 
-### Notifications queue
+`routes/api.php` — where real enforcement lives:
+- Public: vacancy list/show/status-counts, testimonials, competency list, visitor count; login/register are throttled.
+- `auth:sanctum`: account/profile/self-service endpoints (my-applications, documents, notifications, feedback).
+- `auth:sanctum + admin-access`: vacancy CRUD, HR-side application review, examinations/interviews management, `admin/*` (users, audit logs, dashboard stats, competency library, HRMPSB composition management, email templates), `exports/*`.
+- `auth:sanctum + role:hrmpsb,admin`: the bulk of the pipeline — QS, exam/BEI scheduling & results, CBWE, EOPT, pre-assessment, deliberation, comparative assessment, appointing-authority decisions, CS forms, background checks/investigation reports.
 
-All 5 notification classes implement `ShouldQueue`. The `composer run dev` command runs `queue:listen` alongside the server. In production, run a persistent queue worker (`php artisan queue:work`).
-
-### Audit logging
-
-`AuditLog::record(string $action, Model $model)` inserts to `audit_logs` with the current user's id. It silently catches all exceptions. Currently only called from `VacancyController` (created, published, archived, deleted).
+Dashboard stats are cached for 1 hour via `Cache::remember`.
 
 ### Installed but unused packages
 
-`pinia` (Vue state store), `cropperjs` (image cropper), `maatwebsite/excel`, and `spatie/laravel-backup` are installed but not integrated.
-
-## Known Issues
-
-These are active gaps in the codebase — not things to work around but things to be aware of before touching the affected areas:
-
-1. **No authorization policies exist.** `VacancyController` calls `$this->authorize('create', Vacancy::class)` etc., but no `VacancyPolicy` class is defined. These calls will throw an `AuthorizationException` in production.
-
-2. **`ApplicationStatusUpdated` notification is broken at runtime.** It accesses `$this->application->applicant->full_name`, but `Application::applicant` resolves to `ApplicantProfile` (not `User`), and `ApplicantProfile` has no `full_name` attribute.
-
-3. **`UserFactory` missing role state methods.** `Feature/ApplicationSubmissionTest.php` calls `.applicant()` and `.hrOfficer()` factory states that don't exist — the test suite will fail.
-
-4. **`ExaminationController` and `InterviewController` have no validation or auth checks.** They call `$request->validated()` without any `rules()` — it returns an empty array silently.
-
-5. **`UserController` has no role-based protection.** Any authenticated user can list/create/update all users via `/api/admin/users`.
+`pinia` is now actually used (see `app.js`). `cropperjs`, `maatwebsite/excel`, and `spatie/laravel-backup` remain installed but not integrated — verify before assuming otherwise.
