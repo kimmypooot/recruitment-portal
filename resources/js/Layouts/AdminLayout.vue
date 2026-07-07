@@ -126,7 +126,9 @@
 
       <!-- Page content -->
       <main id="main-content" class="flex-1 p-4 sm:p-6" tabindex="-1">
-        <slot />
+        <div class="mx-auto w-full max-w-7xl">
+          <slot />
+        </div>
       </main>
 
       <AppFooter />
@@ -179,7 +181,7 @@
 </style>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, provide, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import BaseModal from '@/Components/UI/BaseModal.vue'
@@ -197,6 +199,7 @@ defineProps({ title: { type: String, default: 'Dashboard' } })
 
 const sidebarOpen       = ref(false)
 const sidebarCollapsed  = ref(localStorage.getItem('sidebar_collapsed') === 'true')
+provide('sidebarCollapsed', sidebarCollapsed)
 const dropdownOpen      = ref(false)
 const dropdownRef       = ref(null)
 const showLogoutModal     = ref(false)

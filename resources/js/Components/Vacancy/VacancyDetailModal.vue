@@ -1,7 +1,10 @@
 <template>
   <Teleport to="body">
     <div ref="modalRef" role="dialog" aria-modal="true" aria-labelledby="vacancy-modal-title"
-      class="fixed inset-0 z-50 flex items-start justify-center p-0 sm:p-4 overflow-y-auto" @keydown.escape="$emit('close')">
+      class="fixed inset-y-0 z-50 flex items-start justify-center p-0 sm:p-4 overflow-y-auto"
+      :class="sidebarOffset ? 'left-0' : 'inset-x-0'"
+      :style="sidebarOffset ? { left: sidebarOffset + 'px', width: `calc(100% - ${sidebarOffset}px)` } : {}"
+      @keydown.escape="$emit('close')">
       <div class="absolute inset-0 bg-black/60" @click="$emit('close')"></div>
 
       <div class="relative bg-white rounded-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-4xl my-0 sm:my-6 flex flex-col max-h-full sm:max-h-[90vh]">
@@ -200,7 +203,9 @@
     </div>
 
     <!-- Confirmation modal -->
-    <div v-if="confirmBeforeApply && showConfirmModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div v-if="confirmBeforeApply && showConfirmModal" class="fixed inset-y-0 z-[60] flex items-center justify-center p-4"
+      :class="sidebarOffset ? 'left-0' : 'inset-x-0'"
+      :style="sidebarOffset ? { left: sidebarOffset + 'px', width: `calc(100% - ${sidebarOffset}px)` } : {}">
       <div class="absolute inset-0 bg-black/60" @click="showConfirmModal = false"></div>
       <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
         <div class="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
@@ -233,6 +238,7 @@ import { ref, computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import { deadlineUrgency } from '@/utils/dates'
 import { useFocusTrap } from '@/composables/useFocusTrap'
+import { useSidebarOffset } from '@/composables/useSidebarOffset'
 
 const props = defineProps({
   vacancy:            { type: Object, required: true },
@@ -254,6 +260,8 @@ const isApplied = computed(() => props.appliedIds.includes(props.vacancy.id))
 
 const activeTooltip = ref(null)
 const showConfirmModal = ref(false)
+
+const { sidebarOffset } = useSidebarOffset()
 
 const groupedCompetencies = computed(() => {
   if (!props.vacancy.competencies?.length) return {}

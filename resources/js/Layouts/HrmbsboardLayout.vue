@@ -78,7 +78,7 @@
       class="fixed inset-0 z-40 bg-black/50 lg:hidden" />
 
     <!-- Main content -->
-    <div class="flex flex-col min-h-screen">
+    <div class="flex flex-col min-w-0 min-h-screen">
 
       <!-- Top bar — sticky so it stays visible while scrolling -->
       <header class="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 sm:px-6 h-16 flex items-center justify-between flex-shrink-0">
@@ -134,7 +134,9 @@
       </header>
 
       <main id="main-content" class="flex-1 p-4 sm:p-6" tabindex="-1">
-        <slot />
+        <div class="mx-auto w-full max-w-7xl">
+          <slot />
+        </div>
       </main>
 
       <AppFooter />
@@ -187,7 +189,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, provide, onMounted, onBeforeUnmount } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import BaseModal from '@/Components/UI/BaseModal.vue'
@@ -207,6 +209,7 @@ const props2 = defineProps({
 
 const sidebarOpen       = ref(false)
 const sidebarCollapsed  = ref(localStorage.getItem('sidebar_collapsed') === 'true')
+provide('sidebarCollapsed', sidebarCollapsed)
 const dropdownOpen      = ref(false)
 const dropdownRef       = ref(null)
 const showLogoutModal     = ref(false)

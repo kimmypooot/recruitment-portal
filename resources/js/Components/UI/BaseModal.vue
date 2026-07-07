@@ -1,9 +1,11 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      <div v-if="show" class="fixed inset-y-0 z-50 flex items-center justify-center p-4"
+        :class="sidebarOffset ? 'left-0' : 'inset-x-0'"
+        :style="sidebarOffset ? { left: sidebarOffset + 'px', width: `calc(100% - ${sidebarOffset}px)` } : {}"
         @click.self="onBackdrop">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="onBackdrop"></div>
+        <div class="fixed inset-0 bg-black/40" @click="onBackdrop"></div>
         <div ref="panel" role="dialog" aria-modal="true" :aria-label="title || undefined"
           class="relative bg-white rounded-2xl shadow-xl w-full" :class="[maxWidth, panelClass]">
           <slot />
@@ -16,6 +18,7 @@
 <script setup>
 import { computed, ref, watch, onBeforeUnmount } from 'vue'
 import { useFocusTrap } from '@/composables/useFocusTrap'
+import { useSidebarOffset } from '@/composables/useSidebarOffset'
 
 const props = defineProps({
   show:            { type: Boolean, required: true },
@@ -26,6 +29,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
+
+const { sidebarOffset } = useSidebarOffset()
 
 const panel = ref(null)
 

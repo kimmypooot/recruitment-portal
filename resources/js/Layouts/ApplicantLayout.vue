@@ -73,7 +73,7 @@
     </aside>
 
     <!-- Main content -->
-    <div class="flex flex-col min-h-screen">
+    <div class="flex flex-col min-w-0 min-h-screen">
 
       <!-- Top bar -->
       <header class="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 sm:px-6 h-16 flex items-center justify-between flex-shrink-0">
@@ -153,8 +153,10 @@
       </header>
 
       <!-- Page content -->
-      <main id="main-content" class="flex-1" tabindex="-1">
-        <slot />
+      <main id="main-content" class="flex-1 p-4 sm:p-6" tabindex="-1">
+        <div class="mx-auto w-full max-w-7xl">
+          <slot />
+        </div>
       </main>
 
       <AppFooter />
