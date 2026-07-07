@@ -40,7 +40,8 @@ Route::get('/vacancies/{vacancy}', [VacancyController::class, 'show']);
 Route::get('/testimonials', [FeedbackController::class, 'testimonials']);
 Route::get('/competencies', [VacancyCompetencyController::class, 'index']);
 Route::get('/visitor-count', [VisitorCountController::class, 'show']);
-Route::post('/visitor-count/increment', [VisitorCountController::class, 'increment']);
+Route::post('/visitor-count/increment', [VisitorCountController::class, 'increment'])
+    ->middleware('throttle:30,1');
 
 // Authentication — throttled to prevent brute-force and registration spam
 Route::middleware('throttle:5,1')->post('/login', [AuthController::class, 'login']);

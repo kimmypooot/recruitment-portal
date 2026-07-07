@@ -247,11 +247,8 @@
     </div>
 
     <!-- ═══ MODAL — Add Work Experience ═══ -->
-    <Teleport to="body">
-      <div v-if="expModal.open"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-        @mousedown.self="expModal.open = false">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <BaseModal :show="expModal.open" title="Work Experience" max-width="max-w-2xl"
+      panel-class="max-h-[90vh] flex flex-col" @close="expModal.open = false">
           <div class="flex items-start justify-between gap-3 px-7 py-5 border-b border-gray-100 flex-shrink-0">
             <div class="min-w-0">
               <h3 class="text-base font-semibold text-gray-900 truncate">{{ expModal.editingId ? 'Edit Work Experience' : 'Add Work Experience' }}</h3>
@@ -326,16 +323,11 @@
               {{ expModal.saving ? 'Saving…' : expModal.editingId ? 'Save Changes' : 'Add Experience' }}
             </button>
           </div>
-        </div>
-      </div>
-    </Teleport>
+    </BaseModal>
 
     <!-- ═══ MODAL — Add Education ═══ -->
-    <Teleport to="body">
-      <div v-if="eduModal.open"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-        @mousedown.self="eduModal.open = false">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <BaseModal :show="eduModal.open" title="Educational Attainment" max-width="max-w-2xl"
+      panel-class="max-h-[90vh] flex flex-col" @close="eduModal.open = false">
           <div class="flex items-start justify-between gap-3 px-7 py-5 border-b border-gray-100 flex-shrink-0">
             <div class="min-w-0">
               <h3 class="text-base font-semibold text-gray-900 truncate">{{ eduModal.editingId ? 'Edit Education' : 'Add Educational Attainment' }}</h3>
@@ -421,16 +413,11 @@
               {{ eduModal.saving ? 'Saving…' : eduModal.editingId ? 'Save Changes' : 'Add Education' }}
             </button>
           </div>
-        </div>
-      </div>
-    </Teleport>
+    </BaseModal>
 
     <!-- ═══ MODAL — Add Training ═══ -->
-    <Teleport to="body">
-      <div v-if="trainingModal.open"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-        @mousedown.self="trainingModal.open = false">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <BaseModal :show="trainingModal.open" title="Training" max-width="max-w-2xl"
+      panel-class="max-h-[90vh] flex flex-col" @close="trainingModal.open = false">
           <div class="flex items-start justify-between gap-3 px-7 py-5 border-b border-gray-100 flex-shrink-0">
             <div class="min-w-0">
               <h3 class="text-base font-semibold text-gray-900 truncate">{{ trainingModal.editingId ? 'Edit Training' : 'Add Training' }}</h3>
@@ -495,16 +482,11 @@
               {{ trainingModal.saving ? 'Saving…' : trainingModal.editingId ? 'Save Changes' : 'Add Training' }}
             </button>
           </div>
-        </div>
-      </div>
-    </Teleport>
+    </BaseModal>
 
     <!-- ═══ MODAL — Upload Profile Photo ═══ -->
-    <Teleport to="body">
-      <div v-if="photoModal.open"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-        @mousedown.self="closePhotoModal">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+    <BaseModal :show="photoModal.open" title="Profile Photo" max-width="max-w-lg"
+      panel-class="max-h-[90vh] flex flex-col" @close="closePhotoModal">
           <div class="flex items-center justify-between px-7 py-5 border-b border-gray-100 flex-shrink-0">
             <div>
               <h3 class="text-base font-semibold text-gray-900">
@@ -575,9 +557,7 @@
               {{ photoModal.saving ? 'Saving…' : 'Save Photo' }}
             </button>
           </div>
-        </div>
-      </div>
-    </Teleport>
+    </BaseModal>
 
     </div>
 
@@ -591,6 +571,7 @@ import { profileApi } from '@/services/api'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import PersonalInfoTab from './Profile/PersonalInfoTab.vue'
 import QualificationsTab from './Profile/QualificationsTab.vue'
 import DocumentsTab from './Profile/DocumentsTab.vue'

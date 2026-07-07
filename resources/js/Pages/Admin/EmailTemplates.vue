@@ -69,9 +69,8 @@
     </div>
 
     <!-- ── Edit modal ─────────────────────────────────────────────────────── -->
-    <Teleport to="body">
-      <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" @click.self="closeModal">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" @click.stop>
+    <BaseModal :show="modal.open" title="Edit Email Template" max-width="max-w-2xl"
+      panel-class="max-h-[90vh] flex flex-col" @close="closeModal">
 
           <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
             <div>
@@ -148,14 +147,11 @@
               </button>
             </div>
           </form>
-        </div>
-      </div>
-    </Teleport>
+    </BaseModal>
 
     <!-- ── Preview modal ──────────────────────────────────────────────────── -->
-    <Teleport to="body">
-      <div v-if="preview.open" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" @click.self="preview.open = false">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col" @click.stop>
+    <BaseModal :show="preview.open" title="Preview" max-width="max-w-lg"
+      panel-class="max-h-[90vh] flex flex-col" @close="preview.open = false">
           <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
             <h2 class="text-base font-bold text-gray-900">Preview</h2>
             <button @click="preview.open = false" class="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
@@ -176,9 +172,7 @@
               <p class="text-xs text-gray-400 mt-5 pt-3 border-t border-gray-200">{{ preview.data?.footer }}</p>
             </div>
           </div>
-        </div>
-      </div>
-    </Teleport>
+    </BaseModal>
 
   </AdminLayout>
 </template>
@@ -187,6 +181,7 @@
 import { ref, computed, reactive, onMounted } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import Icon from '@/Components/UI/Icon.vue'
 import { useToast } from '@/composables/useToast'
 
@@ -286,7 +281,14 @@ const preview = reactive({ open: false, loading: false, data: null })
 const previewLines = computed(() => (preview.data?.body ?? '').split(/\r?\n/).filter(l => l.trim() !== ''))
 
 function formatLine(line) {
-  return line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  // Escape HTML before applying the **bold** markup so template content
+  // can never inject live markup into the preview.
+  const escaped = line
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+  return escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
 }
 
 function wrapPlaceholder(name) {

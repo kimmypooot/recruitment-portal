@@ -1,12 +1,8 @@
 <template>
-  <Teleport to="body">
-    <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/60" @click="$emit('close')"></div>
-
+  <BaseModal :show="open" :title="isEditing ? 'Edit Vacancy' : 'New Vacancy'" max-width="max-w-3xl"
+    panel-class="overflow-hidden" @close="$emit('close')">
       <!-- Modal shell: fixed height so tabs scroll, not the modal itself -->
-      <form @submit.prevent="submitVacancy"
-        class="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col"
-        style="max-height: 88vh;">
+      <form @submit.prevent="submitVacancy" class="flex flex-col" style="max-height: 88vh;">
 
         <!-- ── Header ── -->
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
@@ -257,13 +253,13 @@
         </div>
 
       </form>
-    </div>
-  </Teleport>
+  </BaseModal>
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import axios from 'axios'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import Icon from '@/Components/UI/Icon.vue'
 import { useToast } from '@/composables/useToast'
 import { CSC_FIELD_OFFICES, REGIONAL_SUPPORT_UNITS } from '@/constants/officesOfAssignment'

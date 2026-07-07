@@ -257,9 +257,8 @@
     </div>
 
     <!-- Lock confirmation modal -->
-    <div v-if="showLockConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/50" @click="showLockConfirm = false"></div>
-      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+    <BaseModal :show="showLockConfirm" title="Lock QS Evaluations" max-width="max-w-sm"
+      @close="showLockConfirm = false">
         <h3 class="text-base font-semibold text-gray-900 mb-2">Lock QS Evaluations?</h3>
         <p class="text-sm text-gray-500 mb-6">
           This will permanently lock all QS evaluations and automatically update application statuses.
@@ -276,8 +275,7 @@
             {{ locking ? 'Locking…' : 'Confirm Lock' }}
           </button>
         </div>
-      </div>
-    </div>
+    </BaseModal>
 
     <!-- Applicant Profile Drawer -->
     <ApplicantProfileDrawer
@@ -292,6 +290,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import ApplicantProfileDrawer from '@/Components/Hrmpsb/ApplicantProfileDrawer.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'

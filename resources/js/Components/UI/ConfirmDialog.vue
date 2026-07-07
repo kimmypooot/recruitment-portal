@@ -2,7 +2,8 @@
   <Teleport to="body">
     <div v-if="state.show" class="fixed inset-0 z-[9999] flex items-center justify-center p-4" @keydown.escape="state.alert ? onConfirm() : onCancel()">
       <div class="absolute inset-0 bg-black/50" @click="state.alert ? onConfirm() : onCancel()"></div>
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+      <div ref="panel" role="alertdialog" aria-modal="true" :aria-label="state.title"
+        class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
         <div :class="iconBgClass"
           class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg class="w-6 h-6" :class="iconColorClass" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -35,10 +36,15 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import { useConfirm } from '@/composables/useConfirm'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const { state, onConfirm, onCancel } = useConfirm()
+
+const panel = ref(null)
+// Escape is already handled by the template's keydown listener.
+useFocusTrap(toRef(state, 'show'), panel, { closeOnEscape: false })
 
 const iconMap = {
   warning: { path: 'M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z', bg: 'bg-red-50', color: 'text-red-500' },

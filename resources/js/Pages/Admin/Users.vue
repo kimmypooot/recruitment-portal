@@ -160,10 +160,8 @@
     </div>
 
     <!-- ── Create / Edit Modal ─────────────────────────────────────────────────── -->
-    <Teleport to="body">
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/60" @click="showModal = false"></div>
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col" style="max-height: 90vh;">
+    <BaseModal :show="showModal" :title="editTarget ? 'Edit User' : 'Create User'" max-width="max-w-md"
+      panel-class="max-h-[90vh] flex flex-col" @close="showModal = false">
 
         <!-- Header -->
         <div class="flex items-start gap-4 px-6 pt-6 pb-4 border-b border-gray-100">
@@ -312,16 +310,11 @@
             </button>
           </div>
         </form>
-
-      </div>
-    </div>
-    </Teleport>
+    </BaseModal>
 
     <!-- ── Delete Confirm ─────────────────────────────────────────────────────── -->
-    <Teleport to="body">
-    <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/60" @click="deleteTarget = null"></div>
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+    <BaseModal :show="!!deleteTarget" title="Delete User" max-width="max-w-sm" @close="deleteTarget = null">
+      <template v-if="deleteTarget">
         <div class="flex items-center gap-4 mb-4">
           <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
             <Icon name="alert" size="6" class="text-red-600" />
@@ -352,15 +345,12 @@
             {{ saving ? 'Deleting…' : 'Yes, Delete User' }}
           </button>
         </div>
-      </div>
-    </div>
-    </Teleport>
+      </template>
+    </BaseModal>
 
     <!-- ── Crop Photo Modal ────────────────────────────────────────────────────── -->
-    <Teleport to="body">
-    <div v-if="photoModal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      @mousedown.self="closePhotoModal">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+    <BaseModal :show="photoModal.open" title="Crop Photo" max-width="max-w-lg"
+      panel-class="max-h-[90vh] flex flex-col" @close="closePhotoModal">
         <div class="flex items-center justify-between px-7 py-5 border-b border-gray-100 flex-shrink-0">
           <div>
             <h3 class="text-base font-semibold text-gray-900">Crop Photo</h3>
@@ -389,9 +379,7 @@
             {{ photoModal.saving ? 'Saving…' : 'Save Photo' }}
           </button>
         </div>
-      </div>
-    </div>
-    </Teleport>
+    </BaseModal>
 
   </AdminLayout>
 </template>
@@ -402,6 +390,7 @@ import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import { useToast } from '@/composables/useToast'
 import Icon from '@/Components/UI/Icon.vue'
 import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'

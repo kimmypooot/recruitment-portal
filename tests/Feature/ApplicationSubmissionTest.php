@@ -15,7 +15,7 @@ class ApplicationSubmissionTest extends TestCase
     public function test_applicant_can_submit_application_to_published_vacancy(): void
     {
         $applicant = User::factory()->applicant()->create();
-        $profile   = ApplicantProfile::factory()->complete()->create(['user_id' => $applicant->id]);
+        $profile   = ApplicantProfile::factory()->complete()->withDocuments()->create(['user_id' => $applicant->id]);
         $vacancy   = Vacancy::factory()->published()->create();
 
         $response = $this->actingAs($applicant, 'sanctum')
@@ -53,7 +53,7 @@ class ApplicationSubmissionTest extends TestCase
     public function test_applicant_cannot_apply_to_same_vacancy_twice(): void
     {
         $applicant = User::factory()->applicant()->create();
-        $profile   = ApplicantProfile::factory()->complete()->create(['user_id' => $applicant->id]);
+        $profile   = ApplicantProfile::factory()->complete()->withDocuments()->create(['user_id' => $applicant->id]);
         $vacancy   = Vacancy::factory()->published()->create();
 
         $this->actingAs($applicant, 'sanctum')

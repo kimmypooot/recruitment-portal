@@ -50,10 +50,8 @@
     </main>
 
     <!-- Logout modal -->
-    <Teleport to="body">
-      <div v-if="showLogoutModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50" @click="showLogoutModal = false"></div>
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+    <BaseModal :show="showLogoutModal" title="Sign out" max-width="max-w-sm" @close="showLogoutModal = false">
+      <div class="text-center">
           <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
             <Icon name="logout" class="w-6 h-6 text-red-500" />
           </div>
@@ -69,15 +67,14 @@
               Sign out
             </button>
           </div>
-        </div>
       </div>
+    </BaseModal>
 
-      <!-- Sign-out preload overlay -->
-      <AuthSplashOverlay :visible="showSignOutPreload">
-        <p class="text-xl font-semibold text-primary">Signing you out</p>
-        <p class="text-gray-500 text-sm">Please wait a moment…</p>
-      </AuthSplashOverlay>
-    </Teleport>
+    <!-- Sign-out preload overlay -->
+    <AuthSplashOverlay :visible="showSignOutPreload">
+      <p class="text-xl font-semibold text-primary">Signing you out</p>
+      <p class="text-gray-500 text-sm">Please wait a moment…</p>
+    </AuthSplashOverlay>
   </div>
   </div>
 </template>
@@ -87,6 +84,7 @@ import { ref, onMounted } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import api from '@/services/api'
 import axios from 'axios'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import Icon from '@/Components/UI/Icon.vue'
 import AuthSplashOverlay from '@/Components/UI/AuthSplashOverlay.vue'
 import { navigateTo } from '@/utils/navigate'

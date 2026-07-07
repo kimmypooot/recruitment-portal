@@ -138,10 +138,8 @@
     />
 
     <!-- Auth gate modal -->
-    <Teleport to="body">
-      <div v-if="showAuthModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50" @click="showAuthModal = false"></div>
-        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
+    <BaseModal :show="showAuthModal" title="Sign in to apply" max-width="max-w-sm" @close="showAuthModal = false">
+      <div class="text-center">
           <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <svg class="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -163,9 +161,8 @@
           <button @click="showAuthModal = false" class="mt-4 text-xs text-gray-400 hover:text-gray-600 transition-colors">
             Cancel
           </button>
-        </div>
       </div>
-    </Teleport>
+    </BaseModal>
 
   </article>
 </template>
@@ -173,6 +170,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import VacancyDetailModal from '@/Components/Vacancy/VacancyDetailModal.vue'
 import { deadlineUrgency } from '@/utils/dates'

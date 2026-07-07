@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Application;
+use App\Support\SpreadsheetSanitizer;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -51,7 +52,7 @@ class ApplicantsExport implements FromCollection, WithHeadings, WithMapping
             ? "{$applicant->last_name}, {$applicant->first_name}"
             : ($application->applicant->user->full_name ?? 'N/A');
 
-        return [
+        return SpreadsheetSanitizer::row([
             $name,
             $application->applicant->user->email ?? 'N/A',
             $application->vacancy->position_title ?? 'N/A',
@@ -59,6 +60,6 @@ class ApplicantsExport implements FromCollection, WithHeadings, WithMapping
             'SG-' . ($application->vacancy->salary_grade ?? 'N/A'),
             ucfirst(str_replace('_', ' ', $application->status)),
             $application->created_at->format('M d, Y'),
-        ];
+        ]);
     }
 }

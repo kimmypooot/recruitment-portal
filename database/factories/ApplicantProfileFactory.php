@@ -29,4 +29,18 @@ class ApplicantProfileFactory extends Factory
             'eligibility'    => 'Career Service Professional',
         ]);
     }
+
+    /**
+     * Satisfies ApplicantProfile::hasRequiredDocuments() (PDS, application
+     * letter, COE, TOR) so the profile can pass application submission.
+     */
+    public function withDocuments(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'pds_path'        => 'profile-documents/test/pds.pdf',
+            'app_letter_path' => 'profile-documents/test/app_letter.pdf',
+            'coe_path'        => 'profile-documents/test/coe.pdf',
+            'tor_path'        => 'profile-documents/test/tor.pdf',
+        ]);
+    }
 }

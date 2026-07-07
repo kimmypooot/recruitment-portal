@@ -239,8 +239,8 @@
             </form>
 
             <!-- ── Preview Modal ── -->
-            <div v-if="showPreview" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="showPreview = false">
-              <div class="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-lg mx-4 max-h-[85vh] overflow-y-auto">
+            <BaseModal :show="showPreview" title="Preview Your BEI Rating" max-width="max-w-lg"
+              panel-class="max-h-[85vh] overflow-y-auto" @close="showPreview = false">
                 <div class="p-6">
                   <h3 class="text-lg font-bold text-gray-900 mb-4">Preview Your BEI Rating</h3>
 
@@ -278,8 +278,7 @@
                     </button>
                   </div>
                 </div>
-              </div>
-            </div>
+            </BaseModal>
 
 
           </div>
@@ -304,6 +303,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import axios from 'axios'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import { useEvaluationStore } from '@/stores/evaluation'

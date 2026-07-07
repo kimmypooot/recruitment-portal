@@ -156,9 +156,7 @@
     </div>
 
     <!-- ── Assign Member Modal ──────────────────────────────────────────── -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/60" @click="showModal = false"></div>
-      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md">
+    <BaseModal :show="showModal" title="Add HRMPSB Member" panel-class="" @close="showModal = false">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <h3 class="text-base font-semibold text-gray-900">Add HRMPSB Member</h3>
           <button @click="showModal = false" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
@@ -208,13 +206,11 @@
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </BaseModal>
 
     <!-- ── Assign/Edit Place of Assignment Head Modal ───────────────────── -->
-    <div v-if="showPoaHeadModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/60" @click="showPoaHeadModal = false"></div>
-      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md">
+    <BaseModal :show="showPoaHeadModal" :title="editingPoaHead ? 'Change Head of Unit' : 'Assign Head of Unit'"
+      panel-class="" @close="showPoaHeadModal = false">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <h3 class="text-base font-semibold text-gray-900">{{ editingPoaHead ? 'Change Head of Unit' : 'Assign Head of Unit' }}</h3>
           <button @click="showPoaHeadModal = false" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
@@ -262,8 +258,7 @@
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </BaseModal>
 
   </AdminLayout>
 </template>
@@ -272,6 +267,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import { CSC_FIELD_OFFICES, REGIONAL_SUPPORT_UNITS } from '@/constants/officesOfAssignment'

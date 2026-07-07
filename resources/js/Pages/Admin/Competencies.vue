@@ -103,19 +103,8 @@
     </div>
 
     <!-- ── Create / Edit modal ────────────────────────────────────────────── -->
-    <Transition
-      enter-active-class="transition ease-out duration-150"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition ease-in duration-100"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0">
-      <div v-if="modal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
-        @click.self="closeModal">
-
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg"
-          @click.stop>
-
+    <BaseModal :show="modal.open" :title="modal.mode === 'create' ? 'Add Competency' : 'Edit Competency'"
+      max-width="max-w-lg" panel-class="" @close="closeModal">
           <!-- Modal header -->
           <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
             <h2 class="text-base font-bold text-gray-900">
@@ -178,21 +167,12 @@
               </button>
             </div>
           </form>
-        </div>
-      </div>
-    </Transition>
+    </BaseModal>
 
     <!-- ── Delete confirmation modal ─────────────────────────────────────── -->
-    <Transition
-      enter-active-class="transition ease-out duration-150"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition ease-in duration-100"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0">
-      <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
-        @click.self="deleteTarget = null">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+    <BaseModal :show="!!deleteTarget" title="Delete Competency" @close="deleteTarget = null; deleteError = null">
+      <template v-if="deleteTarget">
+        <div class="space-y-4">
           <div class="flex items-start gap-4">
             <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
               <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -218,8 +198,8 @@
             </button>
           </div>
         </div>
-      </div>
-    </Transition>
+      </template>
+    </BaseModal>
 
   </AdminLayout>
 </template>
@@ -228,6 +208,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import { useToast } from '@/composables/useToast'
 
 const toast = useToast()

@@ -338,13 +338,12 @@
 
     </div>
 
-    <!-- Success / Feedback modal -->
-    <Teleport to="body">
-      <div v-if="showSuccess"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <!-- Success / Feedback modal (deliberately not dismissible — user picks an action) -->
+    <BaseModal :show="showSuccess" title="Application Submitted" max-width="max-w-sm"
+      panel-class="p-8" :close-on-backdrop="false">
 
         <!-- Step 1: Success confirmation -->
-        <div v-if="feedbackStep === 'success'" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center">
+        <div v-if="feedbackStep === 'success'" class="text-center">
           <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5">
             <Icon name="check" size="8" color="text-green-600" />
           </div>
@@ -363,7 +362,7 @@
         </div>
 
         <!-- Step 2: Feedback form -->
-        <div v-else-if="feedbackStep === 'form'" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8">
+        <div v-else-if="feedbackStep === 'form'">
           <div class="text-center mb-6">
             <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-4">
               <Icon name="star" size="6" color="text-yellow-500" />
@@ -406,9 +405,7 @@
             Skip
           </Link>
         </div>
-
-      </div>
-    </Teleport>
+    </BaseModal>
 
   </ApplicantLayout>
 </template>
@@ -418,6 +415,7 @@ import { ref, computed, onMounted } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { vacancyApi, applicationApi, profileApi, feedbackApi } from '@/services/api'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import Icon from '@/Components/UI/Icon.vue'
 import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
 import { formatDate, formatDateLong, formatDateTime, formatDateRange, deadlineUrgency } from '@/utils/dates'

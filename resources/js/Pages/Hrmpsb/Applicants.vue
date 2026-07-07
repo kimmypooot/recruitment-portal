@@ -132,10 +132,7 @@
     </template>
 
     <!-- Download Requirements Modal -->
-    <Teleport to="body">
-      <div v-if="showDownloadModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60" @click="showDownloadModal = false"></div>
-        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+    <BaseModal :show="showDownloadModal" title="Download Requirements" @close="showDownloadModal = false">
           <h3 class="text-base font-semibold text-gray-900 mb-1">Download Requirements</h3>
           <p class="text-sm text-gray-500 mb-5">
             {{ selectedIds.length }} applicant{{ selectedIds.length !== 1 ? 's' : '' }} selected.
@@ -180,15 +177,14 @@
               {{ downloading ? 'Downloading…' : 'Download' }}
             </button>
           </div>
-        </div>
-      </div>
-    </Teleport>
+    </BaseModal>
   </HrmbsboardLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 

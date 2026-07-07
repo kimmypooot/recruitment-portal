@@ -10,4 +10,7 @@ Artisan::command('inspire', function () {
 
 Schedule::command('account:deactivate-inactive')->daily();
 Schedule::command('sanctum:prune-expired --hours=24')->daily();
+Schedule::command('backup:run')->dailyAt('02:00');
+Schedule::command('backup:clean')->weekly();
+Schedule::command('backup:monitor')->dailyAt('03:00');
 

@@ -1,9 +1,7 @@
 <template>
-  <Teleport to="body">
-    <div v-if="app" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/60" @click="$emit('close')"></div>
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col" style="max-height: 90vh;">
-
+  <BaseModal :show="!!app" title="Application Attachments" max-width="max-w-lg"
+    panel-class="max-h-[90vh] flex flex-col" @close="$emit('close')">
+    <template v-if="app">
         <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
           <div>
             <h3 class="text-base font-semibold text-gray-900">Application Attachments</h3>
@@ -73,14 +71,13 @@
             </div>
           </div>
         </div>
-
-      </div>
-    </div>
-  </Teleport>
+    </template>
+  </BaseModal>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 
 const props = defineProps({
   app: { type: Object, default: null },

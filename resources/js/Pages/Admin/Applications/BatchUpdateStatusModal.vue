@@ -1,9 +1,6 @@
 <template>
-  <Teleport to="body">
-    <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/60" @click="close"></div>
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col">
-
+  <BaseModal :show="open" title="Batch Update Status" max-width="max-w-md"
+    panel-class="flex flex-col" @close="close">
         <div class="px-6 py-5 border-b border-gray-100">
           <h3 class="text-base font-semibold text-gray-900">Batch Update Status</h3>
           <p class="text-xs text-gray-400 mt-1">
@@ -83,15 +80,13 @@
             <span v-else>Apply to {{ ids.length }} Applicant{{ ids.length !== 1 ? 's' : '' }}</span>
           </button>
         </div>
-
-      </div>
-    </div>
-  </Teleport>
+  </BaseModal>
 </template>
 
 <script setup>
 import { ref, reactive, watch } from 'vue'
 import axios from 'axios'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import { useToast } from '@/composables/useToast'
 
 const props = defineProps({

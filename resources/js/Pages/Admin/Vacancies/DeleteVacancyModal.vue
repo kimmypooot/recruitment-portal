@@ -1,8 +1,6 @@
 <template>
-  <Teleport to="body">
-    <div v-if="vacancy" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/50" @click="$emit('close')"></div>
-      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+  <BaseModal :show="!!vacancy" title="Delete Vacancy" max-width="max-w-sm" @close="$emit('close')">
+    <template v-if="vacancy">
         <h3 class="text-base font-semibold text-gray-900 mb-2">Delete Vacancy?</h3>
         <p class="text-sm text-gray-500 mb-6">
           "<strong>{{ vacancy.position_title }}</strong>" will be removed from all listings. This cannot be undone from this screen.
@@ -15,14 +13,14 @@
             {{ deleting ? 'Deleting…' : 'Delete' }}
           </button>
         </div>
-      </div>
-    </div>
-  </Teleport>
+    </template>
+  </BaseModal>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import { useToast } from '@/composables/useToast'
 
 const props = defineProps({

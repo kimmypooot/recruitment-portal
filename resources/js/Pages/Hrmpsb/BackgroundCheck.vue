@@ -159,8 +159,7 @@
       </div>
 
       <!-- Generate Link Modal -->
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="closeModal">
-        <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+      <BaseModal :show="showModal" title="Generate Upload Link" @close="closeModal">
           <h3 class="text-lg font-semibold text-gray-800 mb-4">Generate Upload Link</h3>
           <p class="text-sm text-gray-500 mb-4">
             For: <span class="font-medium text-gray-700">{{ modalApplicantName }}</span>
@@ -192,13 +191,11 @@
               {{ generating ? 'Sending…' : 'Send Link' }}
             </button>
           </div>
-        </div>
-      </div>
+      </BaseModal>
 
       <!-- Lock confirmation modal -->
-      <div v-if="showLockConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50" @click="showLockConfirm = false"></div>
-        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+      <BaseModal :show="showLockConfirm" title="Lock Background Investigation" max-width="max-w-sm"
+        @close="showLockConfirm = false">
           <h3 class="text-base font-semibold text-gray-900 mb-2">Lock Background Investigation?</h3>
           <p class="text-sm text-gray-500 mb-6">
             This will permanently lock the background investigation stage and update applicant statuses. This action <strong>cannot be undone</strong>.
@@ -214,8 +211,7 @@
               {{ locking ? 'Locking…' : 'Confirm Lock' }}
             </button>
           </div>
-        </div>
-      </div>
+      </BaseModal>
 
       <div class="flex justify-between pt-2">
         <a :href="`/hrmpsb/eopt/${vacancyId}`" class="btn-secondary">← EOPT Assessment</a>
@@ -227,6 +223,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import { useToast } from '@/composables/useToast'

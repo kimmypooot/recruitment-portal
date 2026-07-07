@@ -83,9 +83,10 @@ class VacancyController extends Controller
         // This route has no auth:sanctum middleware (it must stay open to
         // public browsing), so the default 'web' session guard checked by
         // plain auth()->check() is never true for the SPA's Bearer-token
-        // requests. Resolve the 'sanctum' guard explicitly so authenticated
-        // admin/HR requests are correctly recognized.
-        if (! auth('sanctum')->check()) {
+        // requests. Resolve the 'sanctum' guard explicitly.
+        // Only admin-module users may see unpublished/expired vacancies —
+        // an authenticated applicant is still a member of the public.
+        if (! auth('sanctum')->user()?->canAccessAdminModule()) {
             $query->where('status', 'published')
                 ->where('deadline_at', '>=', now());
         }
@@ -113,6 +114,12 @@ class VacancyController extends Controller
      */
     public function show(Vacancy $vacancy): JsonResponse
     {
+        // Unpublished vacancies are pre-decisional — only admin-module users
+        // may view them. 404 (not 403) to avoid confirming the ID exists.
+        if ($vacancy->status !== 'published' && ! auth('sanctum')->user()?->canAccessAdminModule()) {
+            abort(404);
+        }
+
         return (new VacancyResource($vacancy->load('postedBy', 'competencies')))
             ->response();
     }

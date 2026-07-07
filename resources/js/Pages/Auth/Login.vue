@@ -63,7 +63,12 @@
         <!-- Error banner -->
         <div v-if="error" role="alert" class="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 flex items-center gap-2">
           <Icon name="alert" size="4" class="flex-shrink-0" />
-          <span v-html="error"></span>
+          <span>
+            {{ error }}
+            <template v-if="showResetHint">
+              Having trouble? <a href="/forgot-password" class="underline font-medium">Reset your password</a>.
+            </template>
+          </span>
         </div>
 
         <form @submit.prevent="submit" class="space-y-5">
@@ -167,6 +172,7 @@ function safeNext() {
 }
 const loading       = ref(false)
 const error         = ref('')
+const showResetHint = ref(false)
 const attemptCount  = ref(0)
 const showPassword  = ref(false)
 
@@ -241,10 +247,12 @@ async function submit() {
     preloadWelcome.value = false
     attemptCount.value++
     const status = err.response?.status
+    showResetHint.value = false
     if (status === 429) {
       error.value = 'Too many login attempts. Please wait a moment before trying again.'
     } else if (status === 401 && attemptCount.value >= 3) {
-      error.value = 'Invalid email or password. Having trouble? <a href="/forgot-password" class="underline font-medium">Reset your password</a>.'
+      error.value = 'Invalid email or password.'
+      showResetHint.value = true
     } else {
       error.value = err.response?.data?.message ?? 'Invalid email or password.'
     }

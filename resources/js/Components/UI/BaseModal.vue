@@ -5,7 +5,7 @@
         @click.self="onBackdrop">
         <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="onBackdrop"></div>
         <div ref="panel" role="dialog" aria-modal="true" :aria-label="title || undefined"
-          class="relative bg-white rounded-2xl shadow-xl w-full p-6" :class="maxWidth">
+          class="relative bg-white rounded-2xl shadow-xl w-full" :class="[maxWidth, panelClass]">
           <slot />
         </div>
       </div>
@@ -21,6 +21,7 @@ const props = defineProps({
   show:            { type: Boolean, required: true },
   title:           { type: String, default: '' },
   maxWidth:        { type: String, default: 'max-w-md' },
+  panelClass:      { type: String, default: 'p-6' },
   closeOnBackdrop: { type: Boolean, default: true },
 })
 

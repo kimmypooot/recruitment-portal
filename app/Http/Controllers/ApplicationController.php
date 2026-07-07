@@ -59,7 +59,7 @@ class ApplicationController extends Controller
 
         $vacancy = Vacancy::findOrFail($data['vacancy_id']);
 
-        if ($vacancy->status !== 'published') {
+        if ($vacancy->status !== 'published' || ($vacancy->deadline_at && $vacancy->deadline_at->isPast())) {
             return response()->json(['message' => 'This vacancy is no longer accepting applications.'], 422);
         }
 
@@ -131,7 +131,7 @@ class ApplicationController extends Controller
             $query->chunk(200, function ($chunk) use ($out) {
                 foreach ($chunk as $app) {
                     $user = $app->applicant?->user;
-                    fputcsv($out, [
+                    fputcsv($out, \App\Support\SpreadsheetSanitizer::row([
                         $user?->last_name,
                         $user?->first_name,
                         $user?->middle_name,
@@ -143,7 +143,7 @@ class ApplicationController extends Controller
                         $app->vacancy?->position_title,
                         $app->status,
                         $app->submitted_at?->format('Y-m-d H:i'),
-                    ], ',', '"', '\\');
+                    ]), ',', '"', '\\');
                 }
             });
 

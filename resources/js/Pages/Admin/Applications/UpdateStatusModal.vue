@@ -1,9 +1,7 @@
 <template>
-  <Teleport to="body">
-    <div v-if="app" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/60" @click="$emit('close')"></div>
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col" style="max-height: 90vh;">
-
+  <BaseModal :show="!!app" title="Update Application Status" max-width="max-w-md"
+    panel-class="max-h-[90vh] flex flex-col" @close="$emit('close')">
+    <template v-if="app">
         <div class="px-6 py-5 border-b border-gray-100 flex-shrink-0">
           <h3 class="text-base font-semibold text-gray-900">Update Application Status</h3>
           <p class="text-xs text-gray-400 mt-1">
@@ -102,15 +100,14 @@
             <span v-else>Save Status</span>
           </button>
         </div>
-
-      </div>
-    </div>
-  </Teleport>
+    </template>
+  </BaseModal>
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import axios from 'axios'
+import BaseModal from '@/Components/UI/BaseModal.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import { useToast } from '@/composables/useToast'
 
