@@ -120,7 +120,7 @@
                       class="flex items-start justify-between gap-3 p-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group">
                       <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-1.5">
-                          <p class="text-sm font-medium text-gray-800 truncate">{{ comp.competency_name }}</p>
+                          <p class="text-sm font-medium text-gray-800">{{ comp.competency_name }}</p>
                           <div v-if="comp.description" class="relative">
                             <button type="button"
                               @mouseenter="activeTooltip = comp.competency_key"

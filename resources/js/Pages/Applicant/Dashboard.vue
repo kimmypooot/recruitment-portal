@@ -1,11 +1,45 @@
 <template>
   <ApplicantLayout>
-    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-2">
 
       <!-- Full-page skeleton overlay (shown while data loads) -->
       <div v-if="pageLoading" class="space-y-6">
+        <div class="space-y-2">
+          <div class="h-7 bg-gray-200 rounded w-72 animate-pulse"></div>
+          <div class="h-4 bg-gray-100 rounded w-96 animate-pulse"></div>
+        </div>
+        <div class="h-4 bg-gray-100 rounded w-80 animate-pulse"></div>
+        <div class="flex gap-2">
+          <div class="h-10 w-32 bg-gray-200 rounded-lg animate-pulse"></div>
+          <div class="h-10 w-40 bg-gray-100 rounded-lg animate-pulse"></div>
+        </div>
         <SkeletonLoader variant="stat-card" :count="4" wrapper-class="grid grid-cols-2 xl:grid-cols-4 gap-4" />
-        <SkeletonLoader variant="card" :count="6" wrapper-class="grid grid-cols-1 sm:grid-cols-2 gap-5" />
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 space-y-5">
+            <div class="h-10 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <SkeletonLoader v-for="n in 6" :key="n" variant="card" />
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-4">
+              <div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+              <div v-for="n in 7" :key="n" class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded-full bg-gray-100 animate-pulse flex-shrink-0"></div>
+                <div class="h-3 bg-gray-100 rounded animate-pulse flex-1"></div>
+              </div>
+              <div class="h-2 bg-gray-100 rounded-full animate-pulse"></div>
+              <div class="h-9 bg-gray-100 rounded-lg animate-pulse"></div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-3">
+              <div class="h-4 w-28 bg-gray-200 rounded animate-pulse"></div>
+              <div v-for="n in 3" :key="n" class="flex items-center gap-2">
+                <div class="h-3 bg-gray-100 rounded animate-pulse flex-1"></div>
+                <div class="h-4 w-16 bg-gray-100 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Real content -->

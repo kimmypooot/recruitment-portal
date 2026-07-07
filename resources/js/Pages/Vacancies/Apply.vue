@@ -1,6 +1,6 @@
 <template>
   <ApplicantLayout>
-    <div class="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+    <div class="max-w-4xl mx-auto w-full px-2">
 
       <!-- Loading state -->
       <div v-if="loading" class="space-y-4">
@@ -477,7 +477,7 @@ const docList = computed(() => {
   const p = profile.value ?? {}
   const url = (path) => path ? `/profile/documents/${path}` : null
   return [
-    { key: 'pds',        label: 'Personal Data Sheet (PDS)', required: true,  uploaded: !!p.pds_path,        url: url(p.pds_path) },
+    { key: 'pds',        label: 'Personal Data Sheet (PDS) x Work Experience Sheet', required: true,  uploaded: !!p.pds_path,        url: url(p.pds_path) },
     { key: 'app_letter', label: 'Application Letter',        required: true,  uploaded: !!p.app_letter_path, url: url(p.app_letter_path) },
     { key: 'coe',        label: 'Certificate of Eligibility',required: true,  uploaded: !!p.coe_path,        url: url(p.coe_path) },
     { key: 'tor',        label: 'Transcript of Records',     required: true,  uploaded: !!p.tor_path,        url: url(p.tor_path) },

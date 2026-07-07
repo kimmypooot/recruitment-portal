@@ -1,6 +1,6 @@
 <template>
   <ApplicantLayout>
-    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 pb-36">
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-2">
 
       <!-- Full-page skeleton overlay -->
       <div v-if="pageLoading" class="animate-pulse space-y-6">
@@ -703,7 +703,7 @@ const progressPct = computed(() =>
 
 const docFields = [
   { key: 'pds',        label: 'Personal Data Sheet (PDS) with Work Experience Sheet', required: true, full: true,
-    note: 'CS Form No. 212 (Revised 2025)' },
+    note: 'CS Form No. 212 (Revised 2025)', templateUrl: '' },
   { key: 'app_letter', label: 'Application Letter', required: true },
   { key: 'ipcr',       label: 'IPCR', required: false },
   { key: 'coe',        label: 'Certificate of Eligibility', required: true },

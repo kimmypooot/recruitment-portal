@@ -1,6 +1,6 @@
 <template>
   <ApplicantLayout>
-    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-2">
 
       <!-- Page header -->
       <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
