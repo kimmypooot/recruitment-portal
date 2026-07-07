@@ -118,7 +118,7 @@
             </div>
           </div>
 
-          <!-- Tab 3: Competencies (edit only) -->
+          <!-- Tab 3: Competencies -->
           <div v-else-if="modalTab === 'competencies'" class="grid grid-cols-2 divide-x divide-gray-100" style="min-height: 400px;">
 
             <!-- Left: master list -->
@@ -224,30 +224,22 @@
             </button>
 
             <template v-else-if="modalTab === 'qualifications'">
-              <button type="submit" :disabled="saving"
-                class="px-4 py-2 text-sm bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-60 transition-colors">
-                <span v-if="saving" class="flex items-center gap-1.5">
-                  <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                  </svg>
-                  Saving…
-                </span>
-                <span v-else>{{ isEditing ? 'Save Changes' : 'Create Vacancy' }}</span>
+              <button type="button" @click="modalTab = 'competencies'"
+                class="px-4 py-2 text-sm bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark transition-colors">
+                Next: Competencies →
               </button>
             </template>
 
-            <button v-else-if="modalTab === 'competencies'" type="button"
-              @click="saveCompetencies" :disabled="compSaving"
+            <button v-else-if="modalTab === 'competencies'" type="submit" :disabled="saving"
               class="px-4 py-2 text-sm bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-60 transition-colors">
-              <span v-if="compSaving" class="flex items-center gap-1.5">
+              <span v-if="saving" class="flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                 </svg>
                 Saving…
               </span>
-              <span v-else>Save Competencies</span>
+              <span v-else>{{ isEditing ? 'Save Changes' : 'Create Vacancy' }}</span>
             </button>
           </div>
         </div>
@@ -296,7 +288,7 @@ const activeTabs = computed(() => {
     { id: 'position',       label: 'Position Info' },
     { id: 'qualifications', label: 'Qualification Standards' },
   ]
-  if (isEditing.value) base.push({ id: 'competencies', label: 'Competencies' })
+  base.push({ id: 'competencies', label: 'Competencies' })
   return base
 })
 
@@ -309,7 +301,6 @@ function authHeaders() {
 const groupOrder       = ['Core', 'Organizational', 'Leadership', 'Technical']
 const allCompetencies  = ref([])
 const draftAssignments = ref([])
-const compSaving       = ref(false)
 const compSearch       = ref('')
 
 const competenciesByGroup = computed(() => {
@@ -379,23 +370,6 @@ async function loadVacancyCompetencies(vacancyId) {
   }
 }
 
-async function saveCompetencies() {
-  compSaving.value = true
-  try {
-    await axios.post(`/api/admin/competencies/vacancy/${props.vacancy.id}/sync`, {
-      competencies: draftAssignments.value.map(d => ({
-        competency_key: d.competency_key,
-        level: d.level,
-      })),
-    }, { headers: authHeaders() })
-    toast.success('Competencies saved.')
-  } catch (e) {
-    toast.error(e.response?.data?.message ?? 'Failed to save competencies.')
-  } finally {
-    compSaving.value = false
-  }
-}
-
 // ── Open / populate ────────────────────────────────────────────────────────
 watch(() => props.open, async (isOpen) => {
   if (!isOpen) return
@@ -424,15 +398,29 @@ watch(() => props.open, async (isOpen) => {
 })
 
 async function submitVacancy() {
+  if (!draftAssignments.value.length) {
+    toast.error('Please assign at least one competency before saving.')
+    return
+  }
   saving.value = true
   try {
+    let vacancyId = props.vacancy?.id
+
     if (isEditing.value) {
-      await axios.put(`/api/vacancies/${props.vacancy.id}`, form, { headers: authHeaders() })
-      toast.success('Vacancy updated successfully.')
+      await axios.put(`/api/vacancies/${vacancyId}`, form, { headers: authHeaders() })
     } else {
-      await axios.post('/api/vacancies', form, { headers: authHeaders() })
-      toast.success('Vacancy created successfully.')
+      const { data } = await axios.post('/api/vacancies', form, { headers: authHeaders() })
+      vacancyId = data?.data?.id ?? data?.id
     }
+
+    await axios.post(`/api/admin/competencies/vacancy/${vacancyId}/sync`, {
+      competencies: draftAssignments.value.map(d => ({
+        competency_key: d.competency_key,
+        level: d.level,
+      })),
+    }, { headers: authHeaders() })
+
+    toast.success(isEditing.value ? 'Vacancy updated successfully.' : 'Vacancy created successfully.')
     emit('saved')
   } catch (e) {
     toast.error(e.response?.data?.message ?? 'Failed to save vacancy.')

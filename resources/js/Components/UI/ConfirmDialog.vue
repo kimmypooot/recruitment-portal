@@ -1,8 +1,6 @@
 <template>
   <Teleport to="body">
-    <div v-if="state.show" class="fixed inset-y-0 z-[9999] flex items-center justify-center p-4"
-      :class="sidebarOffset ? 'left-0' : 'inset-x-0'"
-      :style="sidebarOffset ? { left: sidebarOffset + 'px', width: `calc(100% - ${sidebarOffset}px)` } : {}"
+    <div v-if="state.show" class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       @keydown.escape="state.alert ? onConfirm() : onCancel()">
       <div class="absolute inset-0 bg-black/50" @click="state.alert ? onConfirm() : onCancel()"></div>
       <div ref="panel" role="alertdialog" aria-modal="true" :aria-label="state.title"
@@ -42,11 +40,7 @@
 import { computed, ref, toRef } from 'vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { useFocusTrap } from '@/composables/useFocusTrap'
-import { useSidebarOffset } from '@/composables/useSidebarOffset'
-
 const { state, onConfirm, onCancel } = useConfirm()
-
-const { sidebarOffset } = useSidebarOffset()
 
 const panel = ref(null)
 // Escape is already handled by the template's keydown listener.

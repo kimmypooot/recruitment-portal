@@ -1,9 +1,8 @@
 <template>
   <Teleport to="body">
     <div v-if="visible" ref="modalRef" role="dialog" aria-modal="true" aria-labelledby="dp-modal-title"
-      class="fixed inset-y-0 z-[9999] flex items-center justify-center p-4"
-      :class="sidebarOffset ? 'left-0' : 'inset-x-0'"
-      :style="{ ...(sidebarOffset ? { left: sidebarOffset + 'px', width: `calc(100% - ${sidebarOffset}px)` } : {}), background: 'rgba(0,0,0,0.70)' }">
+      class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      :style="{ background: 'rgba(0,0,0,0.70)' }">
 
       <!-- Step 1: Image Privacy Notice -->
       <div v-if="step === 1"
@@ -193,11 +192,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useFocusTrap } from '@/composables/useFocusTrap'
-import { useSidebarOffset } from '@/composables/useSidebarOffset'
-
 const STORAGE_KEY = 'dp_accepted_v1'
-
-const { sidebarOffset } = useSidebarOffset()
 
 const visible      = ref(false)
 const step         = ref(1)
