@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\ExamResult;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\Vacancy;
 use App\Services\AuditLog;
 use App\Traits\FormatsApplicantName;
@@ -17,7 +19,7 @@ class ExamResultController extends Controller
 
     private function isActiveMember(int $userId): bool
     {
-        return HrmbsboardComposition::where('user_id', $userId)
+        return HrmpsbComposition::where('user_id', $userId)
             ->where('is_active', true)
             ->exists();
     }

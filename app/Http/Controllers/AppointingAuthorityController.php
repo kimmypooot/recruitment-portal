@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\AppointingAuthorityDecision;
 use App\Models\EoptResult;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\Vacancy;
 use App\Notifications\AppointmentSelectedByAa;
 use App\Services\AuditLog;
@@ -92,7 +94,7 @@ class AppointingAuthorityController extends Controller
             ->keyBy('application_id');
 
         $canDecide = $user->canAccessAdminModule()
-            || HrmbsboardComposition::where('user_id', $user->id)
+            || HrmpsbComposition::where('user_id', $user->id)
                 ->whereIn('hrmpsb_role', ['chairperson', 'secretariat', 'appointing-authority'])
                 ->where('is_active', true)
                 ->exists();
@@ -123,7 +125,7 @@ class AppointingAuthorityController extends Controller
         $user = $request->user();
 
         $canDecide = $user->canAccessAdminModule()
-            || HrmbsboardComposition::where('user_id', $user->id)
+            || HrmpsbComposition::where('user_id', $user->id)
                 ->whereIn('hrmpsb_role', ['chairperson', 'secretariat', 'appointing-authority'])
                 ->where('is_active', true)
                 ->exists();
@@ -163,7 +165,7 @@ class AppointingAuthorityController extends Controller
                 AuditLog::record('filled', $vacancy);
             }
 
-            $secretariat = HrmbsboardComposition::where('hrmpsb_role', 'secretariat')
+            $secretariat = HrmpsbComposition::where('hrmpsb_role', 'secretariat')
                 ->where('is_active', true)
                 ->get()
                 ->pluck('user');
@@ -188,7 +190,7 @@ class AppointingAuthorityController extends Controller
     {
         $user = $request->user();
 
-        $isSecretariat = HrmbsboardComposition::where('user_id', $user->id)
+        $isSecretariat = HrmpsbComposition::where('user_id', $user->id)
             ->where('hrmpsb_role', 'secretariat')
             ->where('is_active', true)
             ->exists();

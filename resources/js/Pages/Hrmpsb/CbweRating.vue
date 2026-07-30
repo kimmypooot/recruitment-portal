@@ -1,5 +1,5 @@
 <template>
-  <HrmbsboardLayout title="CBWE Rating" :vacancyId="props.vacancyId">
+  <HrmpsbLayout title="CBWE Rating" :vacancyId="props.vacancyId">
     <div class="space-y-4 pb-20 sm:pb-6">
 
       <!-- Vacancy Banner -->
@@ -237,13 +237,13 @@
         <a :href="`/hrmpsb/bei-schedule/${vacancyId}`" class="btn-primary">BEI Schedule →</a>
       </div>
     </div>
-  </HrmbsboardLayout>
+  </HrmpsbLayout>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import BaseModal from '@/Components/UI/BaseModal.vue'
-import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import HrmpsbLayout from '@/Layouts/HrmpsbLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import api from '@/services/api'
 import { useToast } from '@/composables/useToast'

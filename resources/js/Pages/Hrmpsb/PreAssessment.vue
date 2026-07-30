@@ -1,5 +1,5 @@
 <template>
-  <HrmbsboardLayout title="Pre-Assessment Matrix">
+  <HrmpsbLayout title="Pre-Assessment Matrix">
     <div class="space-y-6 pb-20 sm:pb-6">
 
     <!-- Vacancy Banner -->
@@ -555,14 +555,14 @@
     </p>
 
     </div>
-  </HrmbsboardLayout>
+  </HrmpsbLayout>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
 import axios from 'axios'
-import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import HrmpsbLayout from '@/Layouts/HrmpsbLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import { useToast } from '@/composables/useToast'
 

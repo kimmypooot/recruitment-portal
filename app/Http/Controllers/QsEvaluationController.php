@@ -1,28 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Application;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\QsEvaluation;
 use App\Models\Vacancy;
 use App\Services\AnonymizationService;
-use App\Services\AuditLog;
+use App\Events\ApplicationStatusUpdated;
+use App\Events\QSEvaluationsLocked;
+use App\Http\Requests\StoreQsEvaluationRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class QsEvaluationController extends Controller
 {
-    private function getComposition(int $userId): ?HrmbsboardComposition
+    private function getComposition(int $userId): ?HrmpsbComposition
     {
-        return HrmbsboardComposition::where('user_id', $userId)
+        return HrmpsbComposition::where('user_id', $userId)
             ->where('is_active', true)
             ->first();
     }
 
     private function isSecretariat(int $userId): bool
     {
-        return HrmbsboardComposition::where('user_id', $userId)
+        return HrmpsbComposition::where('user_id', $userId)
             ->where('hrmpsb_role', 'secretariat')
             ->where('is_active', true)
             ->exists();
@@ -42,7 +46,7 @@ class QsEvaluationController extends Controller
         $isSecretariat = $this->isSecretariat($user->id) || $user->canAccessAdminModule();
 
         // Resolve the active secretariat user so members can reference their evaluation
-        $secretariatComp = HrmbsboardComposition::where('hrmpsb_role', 'secretariat')
+        $secretariatComp = HrmpsbComposition::where('hrmpsb_role', 'secretariat')
             ->where('is_active', true)
             ->first();
 
@@ -109,16 +113,9 @@ class QsEvaluationController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreQsEvaluationRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'application_id'    => 'required|exists:applications,id',
-            'education_meets'   => 'required|boolean',
-            'experience_meets'  => 'required|boolean',
-            'training_meets'    => 'required|boolean',
-            'eligibility_meets' => 'required|boolean',
-            'remarks'           => 'nullable|string|max:1000',
-        ]);
+        $data = $request->validated();
 
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
@@ -131,7 +128,7 @@ class QsEvaluationController extends Controller
         $isSubmitterSecretariat = $this->isSecretariat($user->id) || $user->canAccessAdminModule();
 
         if (!$isSubmitterSecretariat) {
-            $secretariatComp = HrmbsboardComposition::where('hrmpsb_role', 'secretariat')
+            $secretariatComp = HrmpsbComposition::where('hrmpsb_role', 'secretariat')
                 ->where('is_active', true)
                 ->first();
 
@@ -237,15 +234,20 @@ class QsEvaluationController extends Controller
             $totalCount     = $evaluations->count();
             $isQualified    = $qualifiedCount > ($totalCount / 2);
 
-            Application::find($appId)?->update([
-                'status' => $isQualified ? 'qualified' : 'disqualified',
-            ]);
+            $application = Application::find($appId);
+            if ($application) {
+                $oldStatus = $application->status;
+                $application->update([
+                    'status' => $isQualified ? 'qualified' : 'disqualified',
+                ]);
+                ApplicationStatusUpdated::dispatch($application, $oldStatus, $application->status, true);
+            }
         }
 
         // Generate anonymization tokens for all qualifying applications
         (new AnonymizationService())->generateForVacancy($vacancy);
 
-        AuditLog::record('qs_evaluations_locked', $vacancy);
+        QSEvaluationsLocked::dispatch($vacancy);
 
         return response()->json([
             'message'       => 'QS evaluations locked successfully.',

@@ -374,8 +374,8 @@ async function loadVacancyCompetencies(vacancyId) {
 watch(() => props.open, async (isOpen) => {
   if (!isOpen) return
   modalTab.value = 'position'
-  await loadAllCompetencies()
 
+  // Populate form synchronously first so the modal never flashes blank fields
   if (props.vacancy) {
     Object.assign(form, {
       position_title:         props.vacancy.position_title ?? '',
@@ -391,9 +391,13 @@ watch(() => props.open, async (isOpen) => {
       training_req:           props.vacancy.training_req ?? '',
       eligibility_req:        props.vacancy.eligibility_req ?? '',
     })
-    await loadVacancyCompetencies(props.vacancy.id)
   } else {
     Object.assign(form, { ...blankForm })
+  }
+
+  await loadAllCompetencies()
+  if (props.vacancy) {
+    await loadVacancyCompetencies(props.vacancy.id)
   }
 })
 

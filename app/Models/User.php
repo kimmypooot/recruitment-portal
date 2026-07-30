@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Notifications\ResetPassword as ResetPasswordNotification;
@@ -110,12 +112,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hrmbsCompositions(): HasMany
     {
-        return $this->hasMany(HrmbsboardComposition::class);
+        return $this->hasMany(HrmpsbComposition::class);
     }
 
     public function hrmbsDesignation(): ?string
     {
-        return HrmbsboardComposition::where('user_id', $this->id)
+        return HrmpsbComposition::where('user_id', $this->id)
             ->where('is_active', true)
             ->value('hrmpsb_role');
     }

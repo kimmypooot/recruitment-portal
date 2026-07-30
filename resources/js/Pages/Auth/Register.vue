@@ -234,6 +234,7 @@ import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import Icon from '@/Components/UI/Icon.vue'
+import { useAuthStore } from '@/stores/auth'
 import PasswordRequirements from '@/Components/UI/PasswordRequirements.vue'
 
 const PRIVACY_POLICY_VERSION = '1.0'
@@ -273,9 +274,7 @@ async function submit() {
       ...form,
       privacy_policy_version: PRIVACY_POLICY_VERSION,
     })
-    localStorage.setItem('auth_token', data.token)
-    localStorage.setItem('auth_token_created_at', String(Date.now()))
-    localStorage.setItem('auth_user', JSON.stringify(data.user))
+    useAuthStore().setAuth(data.token, data.user)
     router.visit('/email/verify')
   } catch (err) {
     const status = err.response?.status

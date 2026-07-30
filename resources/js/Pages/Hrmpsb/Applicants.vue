@@ -1,5 +1,5 @@
 <template>
-  <HrmbsboardLayout title="Applicants &amp; Documents">
+  <HrmpsbLayout title="Applicants &amp; Documents">
     <div v-if="loading" class="space-y-4 pb-20 sm:pb-6">
       <div v-for="n in 5" :key="n" class="h-14 bg-white rounded-xl border border-gray-200 animate-pulse"></div>
     </div>
@@ -178,14 +178,14 @@
             </button>
           </div>
     </BaseModal>
-  </HrmbsboardLayout>
+  </HrmpsbLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import BaseModal from '@/Components/UI/BaseModal.vue'
-import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import HrmpsbLayout from '@/Layouts/HrmpsbLayout.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 
 const props = defineProps({ vacancyId: Number })

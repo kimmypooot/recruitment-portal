@@ -123,15 +123,43 @@
                   <Icon v-else name="externalLink" size="3" />
                   Preview
                 </button>
-                <select :value="v.status" @change="updateRowStatus(v, $event)"
-                  :disabled="statusLoading === v.id"
-                  class="px-2 py-1 pr-6 text-xs font-medium border border-gray-200 rounded-md bg-white focus:ring-2 focus:ring-primary focus:outline-none disabled:opacity-60 cursor-pointer">
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="closed">Closed</option>
-                  <option value="filled">Filled</option>
-                  <option value="archived">Archived</option>
-                </select>
+                <div class="relative">
+                  <button :data-dropdown-btn="v.id" @click="toggleStatusDropdown(v.id, $event)"
+                    :disabled="statusLoading === v.id"
+                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium border border-gray-200 rounded-md bg-white hover:bg-gray-50 transition-colors disabled:opacity-60">
+                    <svg v-if="statusLoading === v.id" class="w-3 h-3 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                    </svg>
+                    {{ statusLabel(v.status) }}
+                    <svg class="w-3 h-3 text-gray-400 transition-transform duration-200" :class="openDropdownId === v.id ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  </button>
+                </div>
+                <Teleport to="body">
+                  <Transition
+                    enter-active-class="transition ease-out duration-100"
+                    enter-from-class="opacity-0 scale-95"
+                    enter-to-class="opacity-100 scale-100"
+                    leave-active-class="transition ease-in duration-75"
+                    leave-from-class="opacity-100 scale-100"
+                    leave-to-class="opacity-0 scale-95">
+                    <div v-if="openDropdownId === v.id"
+                      class="fixed z-[999] w-36 bg-white rounded-xl border border-gray-200 shadow-lg py-1"
+                      :style="{ top: dropdownPos.top + 'px', right: dropdownPos.right + 'px' }">
+                      <button v-for="opt in statusOptions" :key="opt.value"
+                        @click="changeRowStatus(v, opt.value)"
+                        class="w-full text-left px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-between"
+                        :class="v.status === opt.value ? 'text-primary font-semibold' : ''">
+                        {{ opt.label }}
+                        <svg v-if="v.status === opt.value" class="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </Transition>
+                </Teleport>
                 <button @click="deleteTarget = v"
                   class="px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors">
                   Delete
@@ -217,22 +245,29 @@ import { useConfirm } from '@/composables/useConfirm'
 import Icon from '@/Components/UI/Icon.vue'
 import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
 import { formatDate } from '@/utils/dates'
+import { statusLabel } from '@/config/statusConfig'
 
 const toast = useToast()
 const { confirm } = useConfirm()
 
 // ── State ────────────────────────────────────────────────────────────────────────
-const loading         = ref(true)
-const statusLoading    = ref(null)
-const vacancies        = ref([])
-const meta             = ref({})
-const showModal        = ref(false)
-const editingVacancy   = ref(null)
-const deleteTarget     = ref(null)
-const selectedIds      = ref([])
-const bulkStatus       = ref('')
-const bulkLoading      = ref(false)
-const statusCounts     = ref({})
+const loading            = ref(true)
+const statusLoading       = ref(null)
+const vacancies           = ref([])
+const meta                = ref({})
+const showModal           = ref(false)
+const editingVacancy      = ref(null)
+const deleteTarget        = ref(null)
+const selectedIds         = ref([])
+const bulkStatus          = ref('')
+const bulkLoading         = ref(false)
+const statusCounts        = ref({})
+const openDropdownId      = ref(null)
+const dropdownPos         = ref({ top: 0, right: 0 })
+
+const statusOptions = computed(() =>
+  STATUS_TAB_DEFS.filter(t => t.value !== '')
+)
 
 const STATUS_TAB_DEFS = [
   { value: '',          label: 'All' },
@@ -376,6 +411,27 @@ function clearFilters()  {
   fetchStatusCounts()
 }
 
+function toggleStatusDropdown(id, e) {
+  if (openDropdownId.value === id) {
+    openDropdownId.value = null
+    return
+  }
+  const rect = e.currentTarget.getBoundingClientRect()
+  dropdownPos.value = {
+    top: rect.bottom + 4,
+    right: window.innerWidth - rect.right,
+  }
+  openDropdownId.value = id
+}
+
+function handleOutsideClick(e) {
+  if (!openDropdownId.value) return
+  const btn = e.target.closest('[data-dropdown-btn]')
+  if (!btn || +btn.dataset.dropdownBtn !== openDropdownId.value) {
+    openDropdownId.value = null
+  }
+}
+
 function openCreate() {
   editingVacancy.value = null
   showModal.value = true
@@ -398,22 +454,20 @@ function onDeleted() {
   fetchStatusCounts()
 }
 
-async function updateRowStatus(vacancy, event) {
+async function changeRowStatus(vacancy, newStatus) {
   const oldStatus = vacancy.status
-  const newStatus = event.target.value
   if (newStatus === oldStatus) return
 
   const label = STATUS_TAB_DEFS.find(t => t.value === newStatus)?.label ?? newStatus
   const ok = await confirm(`Change "${vacancy.position_title}" status to ${label}?`)
-  if (!ok) {
-    event.target.value = oldStatus // the native select already shows the newly picked option — reset it
-    return
-  }
+  if (!ok) return
+  openDropdownId.value = null
 
   statusLoading.value = vacancy.id
+  vacancy.status = newStatus
+
   try {
     if (newStatus === 'published') {
-      // Dedicated endpoint — also (re)sets published_at and extends the deadline
       await axios.patch(`/api/vacancies/${vacancy.id}/publish`, {}, { headers: authHeaders() })
     } else if (newStatus === 'archived') {
       await axios.patch(`/api/vacancies/${vacancy.id}/archive`, {}, { headers: authHeaders() })
@@ -421,10 +475,9 @@ async function updateRowStatus(vacancy, event) {
       await axios.patch('/api/vacancies/bulk-status', { ids: [vacancy.id], status: newStatus }, { headers: authHeaders() })
     }
     toast.success(`Vacancy "${vacancy.position_title}" status changed to ${label}.`)
-    fetchVacancies()
     fetchStatusCounts()
   } catch (e) {
-    event.target.value = oldStatus
+    vacancy.status = oldStatus
     toast.error(e.response?.data?.message ?? 'Status change failed.')
   } finally {
     statusLoading.value = null
@@ -436,16 +489,19 @@ function handleKeydown(e) {
   if (e.key === 'Escape') {
     showModal.value = false
     deleteTarget.value = null
+    openDropdownId.value = null
   }
 }
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown)
+  document.addEventListener('click', handleOutsideClick)
   fetchVacancies()
   fetchStatusCounts()
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown)
+  document.removeEventListener('click', handleOutsideClick)
 })
 </script>

@@ -87,8 +87,10 @@ import axios from 'axios'
 import BaseModal from '@/Components/UI/BaseModal.vue'
 import Icon from '@/Components/UI/Icon.vue'
 import AuthSplashOverlay from '@/Components/UI/AuthSplashOverlay.vue'
+import { useAuthStore } from '@/stores/auth'
 import { navigateTo } from '@/utils/navigate'
 
+const auth = useAuthStore()
 const page = usePage()
 const showLogoutModal = ref(false)
 const showSignOutPreload = ref(false)
@@ -106,15 +108,12 @@ async function confirmLogout() {
   showLogoutModal.value    = false
   showSignOutPreload.value = true
 
-  const token = localStorage.getItem('auth_token')
-
   await Promise.allSettled([
-    axios.post('/api/logout', {}, { headers: { Authorization: `Bearer ${token}` } }),
+    axios.post('/api/logout', {}, { headers: { Authorization: `Bearer ${auth.token}` } }),
     new Promise(r => setTimeout(r, 900)),
   ])
 
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('auth_user')
+  auth.clear()
   navigateTo('/login')
 }
 

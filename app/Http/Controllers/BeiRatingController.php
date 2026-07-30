@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\BeiRating;
 use App\Models\CbweRating;
 use App\Models\ExamResult;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\Vacancy;
 use App\Models\VacancyCompetency;
 use App\Services\AuditLog;
@@ -21,16 +23,16 @@ class BeiRatingController extends Controller
 
     private const PASSING_THRESHOLD = 70.0;
 
-    private function getComposition(int $userId): ?HrmbsboardComposition
+    private function getComposition(int $userId): ?HrmpsbComposition
     {
-        return HrmbsboardComposition::where('user_id', $userId)
+        return HrmpsbComposition::where('user_id', $userId)
             ->where('is_active', true)
             ->first();
     }
 
     private function isSecretariat(int $userId): bool
     {
-        return HrmbsboardComposition::where('user_id', $userId)
+        return HrmpsbComposition::where('user_id', $userId)
             ->where('hrmpsb_role', 'secretariat')
             ->where('is_active', true)
             ->exists();

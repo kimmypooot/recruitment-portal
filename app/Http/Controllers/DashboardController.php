@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ApplicationResource;
 use App\Models\Application;
 use App\Models\ExamSchedule;
 use App\Models\InterviewSchedule;
@@ -43,7 +46,7 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        return response()->json($applications);
+        return response()->json(ApplicationResource::collection($applications));
     }
 
     public function pipeline(): JsonResponse

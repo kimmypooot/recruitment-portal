@@ -1,5 +1,5 @@
 <template>
-  <HrmbsboardLayout title="Final Deliberation" :vacancyId="props.vacancyId">
+  <HrmpsbLayout title="Final Deliberation" :vacancyId="props.vacancyId">
     <div class="space-y-6 pb-20 sm:pb-6">
 
       <!-- Vacancy Banner -->
@@ -234,13 +234,13 @@
         <a :href="`/hrmpsb/background-check/${vacancyId}`" class="btn-secondary">← Background Investigation</a>
       </div>
     </div>
-  </HrmbsboardLayout>
+  </HrmpsbLayout>
 </template>
 
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
-import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import HrmpsbLayout from '@/Layouts/HrmpsbLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import api from '@/services/api'
 import { useToast } from '@/composables/useToast'

@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Application;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\PreAssessment;
 use App\Models\QsEvaluation;
 use App\Models\User;
 use App\Models\Vacancy;
-use App\Notifications\ApplicationStatusUpdated;
+use App\Events\ApplicationStatusUpdated;
 use App\Services\HrmpsbCompositionService;
 use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
@@ -131,7 +133,7 @@ class PreAssessmentController extends Controller
             'hrmpsb_members' => $members->map(fn ($m) => [
                 'user_id' => $m->user_id,
                 'name' => $this->formatNameWithMiddleInitial($m->user),
-                'role' => HrmbsboardComposition::ALL_ROLES[$m->hrmpsb_role] ?? $m->hrmpsb_role,
+                'role' => HrmpsbComposition::ALL_ROLES[$m->hrmpsb_role] ?? $m->hrmpsb_role,
             ]),
         ]);
     }
@@ -175,7 +177,7 @@ class PreAssessmentController extends Controller
             $oldStatus = $application->status;
             $application->update(['status' => 'screened', 'reviewed_at' => now()]);
             if ($user = $application->applicant?->user) {
-                $user->notify(new ApplicationStatusUpdated($application, $oldStatus, 'screened', silent: true));
+                ApplicationStatusUpdated::dispatch($application, $oldStatus, 'screened', true);
             }
         }
 

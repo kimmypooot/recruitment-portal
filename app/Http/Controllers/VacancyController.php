@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreVacancyRequest;
 use App\Http\Resources\VacancyResource;
 use App\Models\Vacancy;
-use App\Services\AuditLog;
+use App\Events\VacancyStateChanged;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -148,7 +150,7 @@ class VacancyController extends Controller
 
         $vacancy->update($data);
 
-        AuditLog::record('updated', $vacancy);
+        VacancyStateChanged::dispatch($vacancy, 'updated');
 
         return (new VacancyResource($vacancy->fresh()))
             ->response();
@@ -167,7 +169,7 @@ class VacancyController extends Controller
             'status' => 'draft',
         ]);
 
-        AuditLog::record('created', $vacancy);
+        VacancyStateChanged::dispatch($vacancy, 'created');
 
         return (new VacancyResource($vacancy))
             ->response()
@@ -190,7 +192,7 @@ class VacancyController extends Controller
             'deadline_at' => $deadline,
         ]);
 
-        AuditLog::record('published', $vacancy);
+        VacancyStateChanged::dispatch($vacancy, 'published');
 
         return response()->json([
             'success' => true,
@@ -209,7 +211,7 @@ class VacancyController extends Controller
             'status' => 'archived',
         ]);
 
-        AuditLog::record('archived', $vacancy);
+        VacancyStateChanged::dispatch($vacancy, 'archived');
 
         return response()->json([
             'success' => true,
@@ -229,7 +231,8 @@ class VacancyController extends Controller
             'status' => $request->status,
         ]);
 
-        AuditLog::record("bulk_vacancy_status_update:{$request->status}", new Vacancy);
+        VacancyStateChanged::dispatch(new Vacancy, "bulk_vacancy_status_update:{$request->status}");
+
 
         return response()->json([
             'success' => true,
@@ -244,7 +247,7 @@ class VacancyController extends Controller
     {
         $this->authorize('delete', $vacancy);
 
-        AuditLog::record('deleted', $vacancy);
+        VacancyStateChanged::dispatch($vacancy, 'deleted');
 
         $vacancy->delete();
 

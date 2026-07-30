@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\PlaceOfAssignmentHead;
 use App\Models\User;
 use App\Models\Vacancy;
@@ -40,7 +42,7 @@ class HrmpsbCompositionService
      */
     public function forVacancy(Vacancy $vacancy): Collection
     {
-        $static = HrmbsboardComposition::with('user:id,first_name,last_name,middle_name,suffix,email,role')
+        $static = HrmpsbComposition::with('user:id,first_name,last_name,middle_name,suffix,email,role')
             ->where('is_active', true)
             ->orderBy('hrmpsb_role')
             ->get();

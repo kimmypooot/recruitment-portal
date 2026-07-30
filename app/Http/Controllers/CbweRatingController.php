@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\CbweRating;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\QsEvaluation;
 use App\Models\Vacancy;
 use App\Models\VacancyCompetency;
@@ -17,16 +19,16 @@ class CbweRatingController extends Controller
 {
     use FormatsApplicantName;
 
-    private function getComposition(int $userId): ?HrmbsboardComposition
+    private function getComposition(int $userId): ?HrmpsbComposition
     {
-        return HrmbsboardComposition::where('user_id', $userId)
+        return HrmpsbComposition::where('user_id', $userId)
             ->where('is_active', true)
             ->first();
     }
 
     private function isSecretariat(int $userId): bool
     {
-        return HrmbsboardComposition::where('user_id', $userId)
+        return HrmpsbComposition::where('user_id', $userId)
             ->where('hrmpsb_role', 'secretariat')
             ->where('is_active', true)
             ->exists();

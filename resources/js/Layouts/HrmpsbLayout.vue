@@ -97,7 +97,7 @@
                 <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               </div>
               <span v-if="avatarError">{{ userInitial }}</span>
-              <img v-if="authToken" :src="`/profile/photo?token=${authToken}&_=${avatarVersion}`"
+              <img v-if="auth.token" :src="`/profile/photo?token=${auth.token}&_=${avatarVersion}`"
                 class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
                 :class="avatarLoaded ? 'opacity-100' : 'opacity-0'"
                 @load="e => { if (e.target.naturalWidth === 1 && e.target.naturalHeight === 1) { avatarLoading = false; avatarError = true } else { avatarLoaded = true; avatarLoading = false; avatarError = false } }"
@@ -197,10 +197,13 @@ import Icon from '@/Components/UI/Icon.vue'
 import AppFooter from '@/Components/UI/AppFooter.vue'
 import WorkspaceSwitcher from '@/Components/UI/WorkspaceSwitcher.vue'
 import AuthSplashOverlay from '@/Components/UI/AuthSplashOverlay.vue'
+import { useAuthStore } from '@/stores/auth'
 import { useIdleTimer } from '@/composables/useIdleTimer'
 import { navigateTo } from '@/utils/navigate'
 
 useIdleTimer()
+
+const auth = useAuthStore()
 
 const props2 = defineProps({
   title:     { type: String, default: 'HRMPSB' },
@@ -218,16 +221,13 @@ const showSignOutPreload  = ref(false)
 const stages           = ref(null)
 const myRole           = ref(null)
 const page             = usePage()
-const authToken        = ref('')
-const authUser         = ref({})
 const avatarLoaded     = ref(false)
 const avatarLoading    = ref(true)
 const avatarError      = ref(false)
 const avatarVersion    = ref(Date.now())
-watch(authToken, (token) => {
+watch(auth.token, (token) => {
   if (token) { avatarLoading.value = true; avatarLoaded.value = false; avatarError.value = false }
 })
-
 function refreshAvatar() {
   avatarVersion.value = Date.now()
   avatarLoading.value = true
@@ -266,31 +266,28 @@ const requiredStage = {
   '/hrmpsb/applicants/':            { flag: null,                         reason: null },
 }
 
-const userName    = computed(() => authUser.value?.full_name ?? 'HRMPSB Member')
-const userEmail   = computed(() => authUser.value?.email ?? '')
-const userInitial = computed(() => (authUser.value?.full_name ?? 'H')[0].toUpperCase())
 const canSchedule = computed(() => {
-  const role = authUser.value?.role
+  const role = auth.user?.role
   if (role === 'admin') return true
   if (myRole.value && ['secretariat', 'hr-chief'].includes(myRole.value.hrmpsb_role)) return true
   return false
 })
 
 const canSwitchToAdmin = computed(() => {
-  const role = authUser.value?.role
+  const role = auth.user?.role
   if (role === 'admin') return true
   return canSchedule.value
 })
 
 const canViewAaDecisions = computed(() => {
-  const role = authUser.value?.role
+  const role = auth.user?.role
   if (role === 'admin') return true
   if (myRole.value && myRole.value.hrmpsb_role === 'secretariat') return true
   return false
 })
 
 const canViewEopt = computed(() => {
-  const role = authUser.value?.role
+  const role = auth.user?.role
   if (role === 'admin') return true
   if (myRole.value) return true
   return false
@@ -323,18 +320,17 @@ function handleKeydown(e) {
 // which additionally requires a secretariat/hr-chief designation). Everyone
 // else — including applicants — is redirected before any content renders.
 onMounted(async () => {
-  authToken.value = localStorage.getItem('auth_token') ?? ''
-  authUser.value  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+  auth.refreshFromStorage()
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeydown)
   window.addEventListener('auth-avatar-updated', refreshAvatar)
 
-  if (!authToken.value) {
+  if (!auth.token) {
     navigateTo('/login')
     return
   }
 
-  const role = authUser.value?.role
+  const role = auth.user?.role
 
   if (role !== 'admin' && role !== 'hrmpsb') {
     navigateTo(role === 'applicant' ? '/applicant/dashboard' : '/login')
@@ -345,7 +341,7 @@ onMounted(async () => {
 
   try {
     const { data } = await axios.get('/api/hrmpsb/my-role', {
-      headers: { Authorization: `Bearer ${authToken.value}` }
+      headers: { Authorization: `Bearer ${auth.token}` }
     })
     myRole.value = data.composition
   } catch {
@@ -361,7 +357,7 @@ async function loadStages() {
   try {
     const { data } = await axios.get('/api/hrmpsb/pipeline-stages', {
       params: { vacancy_ids: [props2.vacancyId] },
-      headers: { Authorization: `Bearer ${authToken.value}` },
+      headers: { Authorization: `Bearer ${auth.token}` },
     })
     stages.value = data[props2.vacancyId] ?? null
   } catch {
@@ -546,14 +542,12 @@ async function confirmLogout() {
   showLogoutModal.value    = false
   showSignOutPreload.value = true
 
-  // API call and minimum display time run in parallel
   await Promise.allSettled([
-    axios.post('/api/logout', {}, { headers: { Authorization: `Bearer ${authToken.value}` } }),
+    axios.post('/api/logout', {}, { headers: { Authorization: `Bearer ${auth.token}` } }),
     new Promise(r => setTimeout(r, 900)),
   ])
 
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('auth_user')
+  auth.clear()
   navigateTo('/login')
 }
 </script>

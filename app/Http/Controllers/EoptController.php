@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\BeiRating;
 use App\Models\EoptResult;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\Vacancy;
 use App\Services\AuditLog;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +17,7 @@ class EoptController extends Controller
 {
     private function isSecretariat(int $userId): bool
     {
-        return HrmbsboardComposition::where('user_id', $userId)
+        return HrmpsbComposition::where('user_id', $userId)
             ->where('hrmpsb_role', 'secretariat')
             ->where('is_active', true)
             ->exists();
@@ -23,7 +25,7 @@ class EoptController extends Controller
 
     private function isMemberOrAbove(int $userId): bool
     {
-        return HrmbsboardComposition::where('user_id', $userId)
+        return HrmpsbComposition::where('user_id', $userId)
             ->where('is_active', true)
             ->exists();
     }

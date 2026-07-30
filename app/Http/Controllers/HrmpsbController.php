@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Application;
@@ -13,7 +15,7 @@ use App\Models\DeliberationResult;
 use App\Models\EoptResult;
 use App\Models\ExamResult;
 use App\Models\ExamSchedule;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\InterviewSchedule;
 use App\Models\PlaceOfAssignmentHead;
 use App\Models\PreAssessment;
@@ -28,7 +30,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use ZipArchive;
 
-class HrmbsboardController extends Controller
+class HrmpsbController extends Controller
 {
     use FormatsApplicantName;
 
@@ -68,17 +70,17 @@ class HrmbsboardController extends Controller
 
             return response()->json([
                 'compositions' => $compositions,
-                'roles' => HrmbsboardComposition::ALL_ROLES,
+                'roles' => HrmpsbComposition::ALL_ROLES,
             ]);
         }
 
-        $compositions = HrmbsboardComposition::with(['user:id,first_name,last_name,middle_name,suffix,email,role', 'assignedBy:id,first_name,last_name,middle_name,suffix'])
+        $compositions = HrmpsbComposition::with(['user:id,first_name,last_name,middle_name,suffix,email,role', 'assignedBy:id,first_name,last_name,middle_name,suffix'])
             ->orderBy('hrmpsb_role')
             ->get();
 
         return response()->json([
             'compositions' => $compositions,
-            'roles' => HrmbsboardComposition::ROLES,
+            'roles' => HrmpsbComposition::ROLES,
         ]);
     }
 
@@ -86,11 +88,11 @@ class HrmbsboardController extends Controller
     {
         $data = $request->validate([
             'user_id' => ['required', Rule::exists('users', 'id')->where('role', 'hrmpsb')],
-            'hrmpsb_role' => ['required', Rule::in(array_keys(HrmbsboardComposition::ROLES))],
+            'hrmpsb_role' => ['required', Rule::in(array_keys(HrmpsbComposition::ROLES))],
             'member_type' => 'required|in:principal,alternate',
         ]);
 
-        $composition = HrmbsboardComposition::updateOrCreate(
+        $composition = HrmpsbComposition::updateOrCreate(
             [
                 'user_id' => $data['user_id'],
                 'hrmpsb_role' => $data['hrmpsb_role'],
@@ -108,7 +110,7 @@ class HrmbsboardController extends Controller
         return response()->json($composition->load('user:id,first_name,last_name,middle_name,suffix,email,role'), 201);
     }
 
-    public function remove(HrmbsboardComposition $composition): JsonResponse
+    public function remove(HrmpsbComposition $composition): JsonResponse
     {
         AuditLog::record("hrmpsb_removed:{$composition->hrmpsb_role}", $composition);
 
@@ -117,7 +119,7 @@ class HrmbsboardController extends Controller
         return response()->json(['message' => 'Member removed from HRMPSB.']);
     }
 
-    public function toggleActive(HrmbsboardComposition $composition): JsonResponse
+    public function toggleActive(HrmpsbComposition $composition): JsonResponse
     {
         $composition->update(['is_active' => ! $composition->is_active]);
 
@@ -126,7 +128,7 @@ class HrmbsboardController extends Controller
         return response()->json($composition->fresh());
     }
 
-    public function toggleType(HrmbsboardComposition $composition): JsonResponse
+    public function toggleType(HrmpsbComposition $composition): JsonResponse
     {
         $composition->update([
             'member_type' => $composition->member_type === 'principal' ? 'alternate' : 'principal',
@@ -139,14 +141,14 @@ class HrmbsboardController extends Controller
 
     public function myRole(Request $request): JsonResponse
     {
-        $composition = HrmbsboardComposition::with('user:id,first_name,last_name,middle_name,suffix,email')
+        $composition = HrmpsbComposition::with('user:id,first_name,last_name,middle_name,suffix,email')
             ->where('user_id', $request->user()->id)
             ->where('is_active', true)
             ->first();
 
         return response()->json([
             'composition' => $composition,
-            'roles' => HrmbsboardComposition::ROLES,
+            'roles' => HrmpsbComposition::ROLES,
             'user' => [
                 'id' => $request->user()->id,
                 'first_name' => $request->user()->first_name,
@@ -260,7 +262,7 @@ class HrmbsboardController extends Controller
         $user = $request->user();
 
         $isAdmin = $user->canAccessAdminModule();
-        $isMember = HrmbsboardComposition::where('user_id', $user->id)
+        $isMember = HrmpsbComposition::where('user_id', $user->id)
             ->where('is_active', true)
             ->exists();
 
@@ -312,7 +314,7 @@ class HrmbsboardController extends Controller
         $user = $request->user();
 
         $isAdmin = $user->canAccessAdminModule();
-        $isMember = HrmbsboardComposition::where('user_id', $user->id)
+        $isMember = HrmpsbComposition::where('user_id', $user->id)
             ->where('is_active', true)
             ->exists();
 
@@ -346,7 +348,7 @@ class HrmbsboardController extends Controller
         $user = $request->user();
 
         $isAdmin = $user->canAccessAdminModule();
-        $isMember = HrmbsboardComposition::where('user_id', $user->id)
+        $isMember = HrmpsbComposition::where('user_id', $user->id)
             ->where('is_active', true)
             ->exists();
 
@@ -444,7 +446,7 @@ class HrmbsboardController extends Controller
         $user = $request->user();
 
         $isAdmin = $user->canAccessAdminModule();
-        $isMember = HrmbsboardComposition::where('user_id', $user->id)
+        $isMember = HrmpsbComposition::where('user_id', $user->id)
             ->where('is_active', true)
             ->exists();
 

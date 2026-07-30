@@ -1,5 +1,5 @@
 <template>
-  <HrmbsboardLayout title="BEI Rating" :vacancyId="props.vacancyId">
+  <HrmpsbLayout title="BEI Rating" :vacancyId="props.vacancyId">
     <div class="space-y-4 pb-20 sm:pb-6">
 
       <!-- Vacancy Banner -->
@@ -297,14 +297,14 @@
         <a :href="`/hrmpsb/eopt/${vacancyId}`" class="btn-primary">EOPT Assessment →</a>
       </div>
     </div>
-  </HrmbsboardLayout>
+  </HrmpsbLayout>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import axios from 'axios'
 import BaseModal from '@/Components/UI/BaseModal.vue'
-import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import HrmpsbLayout from '@/Layouts/HrmpsbLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import { useEvaluationStore } from '@/stores/evaluation'
 import api from '@/services/api'

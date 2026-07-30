@@ -86,8 +86,8 @@
                 <div v-if="avatarLoading" class="absolute inset-0 flex items-center justify-center">
                   <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 </div>
-                <span v-if="avatarError">{{ userInitial }}</span>
-                <img v-if="authToken" :src="`/profile/photo?token=${authToken}&_=${avatarVersion}`"
+                <span v-if="avatarError">{{ auth.userInitial }}</span>
+                <img v-if="auth.token" :src="`/profile/photo?token=${auth.token}&_=${avatarVersion}`"
                   class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
                   :class="avatarLoaded ? 'opacity-100' : 'opacity-0'"
                   @load="e => { if (e.target.naturalWidth === 1 && e.target.naturalHeight === 1) { avatarLoading = false; avatarError = true } else { avatarLoaded = true; avatarLoading = false; avatarError = false } }"
@@ -95,8 +95,8 @@
                   alt="" />
               </div>
               <div class="hidden sm:block text-left">
-                <p class="text-sm font-semibold text-gray-800 leading-none">{{ userName }}</p>
-                <p class="text-xs text-gray-400 mt-0.5">{{ roleLabel(authUser.role) }}</p>
+                <p class="text-sm font-semibold text-gray-800 leading-none">{{ auth.fullName }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">{{ roleLabel(auth.user?.role) }}</p>
               </div>
               <Icon name="chevronDown" class="w-4 h-4 text-gray-400 hidden sm:block transition-transform flex-shrink-0"
                 :class="dropdownOpen ? 'rotate-180' : ''" />
@@ -191,9 +191,12 @@ import { navigateTo } from '@/utils/navigate'
 import AppFooter from '@/Components/UI/AppFooter.vue'
 import WorkspaceSwitcher from '@/Components/UI/WorkspaceSwitcher.vue'
 import AuthSplashOverlay from '@/Components/UI/AuthSplashOverlay.vue'
+import { useAuthStore } from '@/stores/auth'
 import { useIdleTimer } from '@/composables/useIdleTimer'
 
 useIdleTimer()
+
+const auth = useAuthStore()
 
 defineProps({ title: { type: String, default: 'Dashboard' } })
 
@@ -206,13 +209,11 @@ const showLogoutModal     = ref(false)
 const showWorkspaceSwitch = ref(false)
 const showSignOutPreload  = ref(false)
 const page              = usePage()
-const authToken      = ref('')
-const authUser       = ref({})
 const avatarLoaded   = ref(false)
 const avatarLoading  = ref(true)
 const avatarError    = ref(false)
 const avatarVersion  = ref(Date.now())
-watch(authToken, (token) => {
+watch(auth.token, (token) => {
   if (token) { avatarLoading.value = true; avatarLoaded.value = false; avatarError.value = false }
 })
 
@@ -225,11 +226,8 @@ function refreshAvatar() {
 const myRole         = ref(null)
 const authorized     = ref(false)
 
-const userName    = computed(() => authUser.value?.full_name ?? 'Admin')
-const userEmail   = computed(() => authUser.value?.email ?? '')
-const userInitial = computed(() => (authUser.value?.full_name ?? 'A')[0].toUpperCase())
 const canSwitchToHrmpsb = computed(() => {
-  const role = authUser.value?.role
+  const role = auth.user?.role
   return role === 'admin' || role === 'hrmpsb'
 })
 
@@ -256,22 +254,18 @@ function handleKeydown(e) {
   }
 }
 
-// Mirrors the backend's User::canAccessAdminModule() — admin, or an hrmpsb
-// user with a secretariat/hr-chief designation. Everyone else (including
-// applicants) is redirected before any admin content or nav renders.
 onMounted(async () => {
-  authToken.value = localStorage.getItem('auth_token') ?? ''
-  authUser.value  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+  auth.refreshFromStorage()
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeydown)
   window.addEventListener('auth-avatar-updated', refreshAvatar)
 
-  if (!authToken.value) {
+  if (!auth.token) {
     navigateTo('/login')
     return
   }
 
-  const role = authUser.value?.role
+  const role = auth.user?.role
 
   if (role === 'admin') {
     authorized.value = true
@@ -281,7 +275,7 @@ onMounted(async () => {
   if (role === 'hrmpsb') {
     try {
       const { data } = await axios.get('/api/hrmpsb/my-role', {
-        headers: { Authorization: `Bearer ${authToken.value}` }
+        headers: { Authorization: `Bearer ${auth.token}` }
       })
       myRole.value = data.composition
     } catch {
@@ -307,7 +301,7 @@ onBeforeUnmount(() => {
 })
 
 const navGroups = computed(() => {
-  const role = authUser.value?.role
+  const role = auth.user?.role
   const allGroups = [
     {
       label: 'Overview',
@@ -362,15 +356,12 @@ async function confirmLogout() {
   showLogoutModal.value    = false
   showSignOutPreload.value = true
 
-  // API call and minimum display time run in parallel
   await Promise.allSettled([
-    axios.post('/api/logout', {}, { headers: { Authorization: `Bearer ${authToken.value}` } }),
+    axios.post('/api/logout', {}, { headers: { Authorization: `Bearer ${auth.token}` } }),
     new Promise(r => setTimeout(r, 900)),
   ])
 
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('auth_user')
-  localStorage.removeItem('auth_remember')
+  auth.clear()
   navigateTo('/login')
 }
 </script>

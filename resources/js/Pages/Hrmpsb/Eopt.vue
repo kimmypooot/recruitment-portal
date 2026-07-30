@@ -1,5 +1,5 @@
 <template>
-  <HrmbsboardLayout title="EOPT Assessment" :vacancyId="props.vacancyId">
+  <HrmpsbLayout title="EOPT Assessment" :vacancyId="props.vacancyId">
     <div class="space-y-6 pb-20 sm:pb-6">
 
       <!-- Vacancy Banner -->
@@ -125,12 +125,12 @@
         <a :href="`/hrmpsb/background-check/${vacancyId}`" class="btn-primary">Background Investigation →</a>
       </div>
     </div>
-  </HrmbsboardLayout>
+  </HrmpsbLayout>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import HrmpsbLayout from '@/Layouts/HrmpsbLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import api from '@/services/api'
 

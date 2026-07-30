@@ -1,5 +1,6 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 
 const IDLE_TIMEOUT = 30 * 60 * 1000
@@ -20,18 +21,12 @@ export function useIdleTimer(timeout = IDLE_TIMEOUT) {
 
   function logout() {
     isIdle.value = true
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('auth_user')
-    localStorage.removeItem('auth_token_created_at')
-    localStorage.removeItem('auth_remember')
+    useAuthStore().clear()
     router.visit('/login')
   }
 
-  // "Remember me" and Google OAuth logins get a long-lived (30-day) token —
-  // forcing them out after 30 idle minutes anyway defeats the point of
-  // "remember me". Skip the idle-driven logout for those sessions.
   function isRememberedSession() {
-    return localStorage.getItem('auth_remember') === '1'
+    return useAuthStore().remember
   }
 
   function resetTimer() {

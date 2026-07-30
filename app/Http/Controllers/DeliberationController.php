@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\DeliberationResult;
 use App\Models\EoptResult;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\Vacancy;
 use App\Services\AnonymizationService;
 use App\Services\AuditLog;
@@ -22,7 +24,7 @@ class DeliberationController extends Controller
         $user = $request->user();
 
         $isMember = $user->canAccessAdminModule()
-            || HrmbsboardComposition::where('user_id', $user->id)
+            || HrmpsbComposition::where('user_id', $user->id)
                 ->where('is_active', true)
                 ->exists();
 
@@ -115,12 +117,12 @@ class DeliberationController extends Controller
             'applications' => $applications,
             'can_unmask' => $user->canAccessAdminModule(),
             'can_decide' => $user->canAccessAdminModule()
-                || HrmbsboardComposition::where('user_id', $user->id)
+                || HrmpsbComposition::where('user_id', $user->id)
                     ->whereIn('hrmpsb_role', ['chairperson'])
                     ->where('is_active', true)
                     ->exists(),
             'can_lock' => $user->canAccessAdminModule()
-                || HrmbsboardComposition::where('user_id', $user->id)
+                || HrmpsbComposition::where('user_id', $user->id)
                     ->whereIn('hrmpsb_role', ['chairperson', 'secretariat'])
                     ->where('is_active', true)
                     ->exists(),
@@ -149,7 +151,7 @@ class DeliberationController extends Controller
         $user = $request->user();
 
         $isChairOrAbove = $user->canAccessAdminModule()
-            || HrmbsboardComposition::where('user_id', $user->id)
+            || HrmpsbComposition::where('user_id', $user->id)
                 ->whereIn('hrmpsb_role', ['chairperson'])
                 ->where('is_active', true)
                 ->exists();
@@ -206,7 +208,7 @@ class DeliberationController extends Controller
         $user = $request->user();
 
         $canLock = $user->canAccessAdminModule()
-            || HrmbsboardComposition::where('user_id', $user->id)
+            || HrmpsbComposition::where('user_id', $user->id)
                 ->whereIn('hrmpsb_role', ['chairperson', 'secretariat'])
                 ->where('is_active', true)
                 ->exists();

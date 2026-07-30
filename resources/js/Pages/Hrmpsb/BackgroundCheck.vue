@@ -1,5 +1,5 @@
 <template>
-  <HrmbsboardLayout title="Background Investigation" :vacancyId="props.vacancyId">
+  <HrmpsbLayout title="Background Investigation" :vacancyId="props.vacancyId">
     <div class="space-y-4 pb-20 sm:pb-6">
 
       <VacancyBanner
@@ -218,13 +218,13 @@
         <a :href="`/hrmpsb/deliberation/${vacancyId}`" class="btn-primary">Deliberation →</a>
       </div>
     </div>
-  </HrmbsboardLayout>
+  </HrmpsbLayout>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import BaseModal from '@/Components/UI/BaseModal.vue'
-import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import HrmpsbLayout from '@/Layouts/HrmpsbLayout.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'

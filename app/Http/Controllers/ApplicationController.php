@@ -1,15 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ApplicationResource;
+use App\Http\Resources\ApplicantProfileResource;
+use App\Http\Resources\VacancyResource;
 use App\Models\Application;
 use App\Models\Vacancy;
-use App\Notifications\ApplicationStatusUpdated;
-use App\Notifications\ApplicationSubmitted;
-use App\Notifications\ShortlistResult;
+use App\Events\ApplicationStatusUpdated;
+use App\Events\ApplicationSubmitted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use App\Services\AuditLog;
+use App\Http\Requests\UpdateApplicationStatusRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,7 +34,7 @@ class ApplicationController extends Controller
             ->latest()
             ->get();
 
-        return response()->json($applications);
+        return response()->json(ApplicationResource::collection($applications));
     }
 
     public function store(Request $request): JsonResponse
@@ -79,16 +83,16 @@ class ApplicationController extends Controller
             'submitted_at' => now(),
         ]);
 
-        $request->user()->notify(new ApplicationSubmitted($application->load('vacancy')));
+        ApplicationSubmitted::dispatch($application);
 
-        return response()->json($application->load('vacancy'), 201);
+        return response()->json(ApplicationResource::make($application->load('vacancy')), 201);
     }
 
     public function show(Application $application): JsonResponse
     {
         $this->authorize('view', $application);
 
-        return response()->json($application->load(['vacancy', 'documents']));
+        return response()->json(ApplicationResource::make($application->load(['vacancy', 'documents'])));
     }
 
     public function hrIndex(Request $request): JsonResponse
@@ -102,6 +106,8 @@ class ApplicationController extends Controller
         $this->applySort($query, $request);
 
         $applications = $query->paginate(20)->withQueryString();
+
+        $applications->getCollection()->transform(fn ($app) => ApplicationResource::make($app));
 
         return response()->json($this->paginatedResponse($applications));
     }
@@ -255,19 +261,9 @@ class ApplicationController extends Controller
 
         $vacancies = $query->paginate($perPage)->withQueryString();
 
-        $vacancies->getCollection()->transform(fn (Vacancy $v) => [
-            'id'                  => $v->id,
-            'position_title'      => $v->position_title,
-            'salary_grade'        => $v->salary_grade,
-            'monthly_salary'      => $v->monthly_salary,
-            'place_of_assignment' => $v->place_of_assignment,
-            'plantilla_no'        => $v->plantilla_no,
-            'status'              => $v->status,
-            'published_at'        => $v->published_at,
-            'deadline_at'         => $v->deadline_at,
-            'applications_count'  => $v->applications_count,
-            'status_breakdown'    => $v->applications->groupBy('status')->map->count(),
-        ]);
+        $vacancies->getCollection()->transform(fn (Vacancy $v) => VacancyResource::make($v)->additional([
+            'status_breakdown' => $v->applications->groupBy('status')->map->count(),
+        ]));
 
         return response()->json($this->paginatedResponse($vacancies));
     }
@@ -301,7 +297,7 @@ class ApplicationController extends Controller
             'trainings',
         ]);
 
-        return response()->json($applicant);
+        return response()->json(ApplicantProfileResource::make($applicant));
     }
 
     public function serveApplicantDocument(Request $request, Application $application, string $type): StreamedResponse
@@ -346,19 +342,13 @@ class ApplicationController extends Controller
 
         $oldStatus = $application->status;
         $application->update(['status' => 'withdrawn', 'reviewed_at' => now()]);
-        AuditLog::record("application_status_changed:{$oldStatus}→withdrawn", $application);
+        ApplicationStatusUpdated::dispatch($application, $oldStatus, 'withdrawn');
 
-        return response()->json(['message' => 'Application withdrawn successfully.', 'data' => $application->fresh()]);
+        return response()->json(['message' => 'Application withdrawn successfully.', 'data' => ApplicationResource::make($application->fresh())]);
     }
 
-    public function updateStatus(Request $request, Application $application): JsonResponse
+    public function updateStatus(UpdateApplicationStatusRequest $request, Application $application): JsonResponse
     {
-        $request->validate([
-            'status'  => 'required|in:under_review,screened,qualified,disqualified,exam_scheduled,interviewed,shortlisted,for_interview,recommended,appointed,completed,withdrawn',
-            'remarks' => 'nullable|string|max:1000',
-            'reason'  => 'nullable|string|max:1000',
-        ]);
-
         $oldStatus = $application->status;
 
         $updateData = [
@@ -369,23 +359,11 @@ class ApplicationController extends Controller
 
         $application->update($updateData);
 
-        AuditLog::record("application_status_changed:{$oldStatus}→{$request->status}", $application);
-
-        // Notify the applicant via their user account
-        $applicantUser = $application->applicant?->user;
-        if ($applicantUser) {
-            $applicantUser->notify(new ApplicationStatusUpdated($application, $oldStatus, $request->status));
-
-            if ($request->status === 'shortlisted') {
-                $applicantUser->notify(new ShortlistResult($application, true));
-            } elseif ($request->status === 'disqualified') {
-                $applicantUser->notify(new ShortlistResult($application, false));
-            }
-        }
+        ApplicationStatusUpdated::dispatch($application, $oldStatus, $request->status);
 
         return response()->json([
             'message' => 'Application status updated successfully.',
-            'data'    => $application->fresh(),
+            'data'    => ApplicationResource::make($application->fresh()),
         ]);
     }
 }

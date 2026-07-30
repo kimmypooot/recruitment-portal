@@ -10,7 +10,7 @@ use App\Models\BeiRating;
 use App\Models\CbweRating;
 use App\Models\DeliberationResult;
 use App\Models\ExamResult;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\PlaceOfAssignmentHead;
 use App\Models\PreAssessment;
 use App\Models\QsEvaluation;
@@ -96,7 +96,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($staticRoles as $comp) {
-            HrmbsboardComposition::create([
+            HrmpsbComposition::create([
                 'user_id' => $comp['user']->id,
                 'hrmpsb_role' => $comp['role'],
                 'member_type' => $comp['type'],

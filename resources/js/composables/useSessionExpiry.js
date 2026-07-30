@@ -1,5 +1,6 @@
 import { onMounted, onBeforeUnmount } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 
 const TOKEN_DURATION = 2 * 60 * 60 * 1000
@@ -14,7 +15,8 @@ export function useSessionExpiry() {
   function getTokenCreatedAt() {
     const stored = localStorage.getItem('auth_token_created_at')
     if (stored) return parseInt(stored, 10)
-    if (localStorage.getItem('auth_token')) {
+    const auth = useAuthStore()
+    if (auth.token) {
       const now = Date.now()
       localStorage.setItem('auth_token_created_at', String(now))
       return now
@@ -22,10 +24,8 @@ export function useSessionExpiry() {
     return null
   }
 
-  // "Remember me" and Google OAuth logins hold long-lived tokens — the 2-hour
-  // countdown only applies to standard logins (mirrors useIdleTimer).
   function isRememberedSession() {
-    return localStorage.getItem('auth_remember') === '1'
+    return useAuthStore().remember
   }
 
   function checkExpiry() {
@@ -38,9 +38,7 @@ export function useSessionExpiry() {
     const remaining = TOKEN_DURATION - elapsed
 
     if (remaining <= 0) {
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('auth_user')
-      localStorage.removeItem('auth_token_created_at')
+      useAuthStore().clear()
       router.visit('/login')
       return
     }

@@ -1,5 +1,5 @@
 <template>
-  <HrmbsboardLayout :title="`QS Evaluation — ${vacancy?.position_title ?? '…'}`" :vacancyId="props.vacancyId">
+  <HrmpsbLayout :title="`QS Evaluation — ${vacancy?.position_title ?? '…'}`" :vacancyId="props.vacancyId">
     <div class="space-y-6 pb-20 sm:pb-6">
 
     <!-- Vacancy Banner -->
@@ -284,14 +284,14 @@
       :display-code="drawerDisplayCode" />
 
     </div>
-  </HrmbsboardLayout>
+  </HrmpsbLayout>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
 import BaseModal from '@/Components/UI/BaseModal.vue'
-import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import HrmpsbLayout from '@/Layouts/HrmpsbLayout.vue'
 import ApplicantProfileDrawer from '@/Components/Hrmpsb/ApplicantProfileDrawer.vue'
 import VacancyBanner from '@/Components/Hrmpsb/VacancyBanner.vue'
 import { formatName } from '@/utils/formatName'

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\PrivacyConsent;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
@@ -42,7 +45,7 @@ class AuthController extends Controller
         $expiresAt = $request->boolean('remember') ? now()->addDays(30) : now()->addHours(2);
         $token = $user->createToken('api-token', ['*'], $expiresAt)->plainTextToken;
 
-        return response()->json(['token' => $token, 'user' => $user]);
+        return response()->json(['token' => $token, 'user' => UserResource::make($user)]);
     }
 
     public function logout(Request $request): JsonResponse
@@ -164,7 +167,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token', ['*'], now()->addHours(2))->plainTextToken;
 
-        return response()->json(['token' => $token, 'user' => $user], 201);
+        return response()->json(['token' => $token, 'user' => UserResource::make($user)], 201);
     }
 
     // Re-consent endpoint
@@ -215,7 +218,7 @@ class AuthController extends Controller
         $user = $request->user();
 
         if ($user->hasVerifiedEmail()) {
-            return response()->json(['message' => 'Email already verified.', 'user' => $user]);
+            return response()->json(['message' => 'Email already verified.', 'user' => UserResource::make($user)]);
         }
 
         if (! $user->isValidEmailVerificationCode($request->input('code'))) {
@@ -227,7 +230,7 @@ class AuthController extends Controller
             event(new Verified($user));
         }
 
-        return response()->json(['message' => 'Email verified successfully.', 'user' => $user->fresh()]);
+        return response()->json(['message' => 'Email verified successfully.', 'user' => UserResource::make($user->fresh())]);
     }
 
     public function resendVerification(Request $request): RedirectResponse
@@ -258,7 +261,7 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json(['user' => $request->user()->fresh()]);
+        return response()->json(['user' => UserResource::make($request->user()->fresh())]);
     }
 
     // ── Google OAuth: Login flow ──────────────────────────────────────────

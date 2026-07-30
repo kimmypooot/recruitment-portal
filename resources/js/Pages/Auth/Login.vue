@@ -158,6 +158,7 @@ import axios from 'axios'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import Icon from '@/Components/UI/Icon.vue'
 import AuthSplashOverlay from '@/Components/UI/AuthSplashOverlay.vue'
+import { useAuthStore } from '@/stores/auth'
 import { navigateTo } from '@/utils/navigate'
 
 const page  = usePage()
@@ -197,10 +198,7 @@ async function submit() {
     ])
 
     attemptCount.value = 0
-    localStorage.setItem('auth_token', data.token)
-    localStorage.setItem('auth_token_created_at', String(Date.now()))
-    localStorage.setItem('auth_user', JSON.stringify(data.user))
-    localStorage.setItem('auth_remember', form.remember ? '1' : '0')
+    useAuthStore().setAuth(data.token, data.user, form.remember)
     const role = data.user?.role
 
     preloadName.value    = data.user?.first_name ? `${data.user.first_name}!` : ''

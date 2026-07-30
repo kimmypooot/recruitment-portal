@@ -1,5 +1,5 @@
 <template>
-  <HrmbsboardLayout title="AA Decisions">
+  <HrmpsbLayout title="AA Decisions">
     <div class="space-y-6 pb-20 sm:pb-6">
 
       <!-- Header -->
@@ -74,12 +74,12 @@
       <p v-if="error" class="text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">{{ error }}</p>
 
     </div>
-  </HrmbsboardLayout>
+  </HrmpsbLayout>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import HrmpsbLayout from '@/Layouts/HrmpsbLayout.vue'
 import api from '@/services/api'
 
 const loading = ref(true)

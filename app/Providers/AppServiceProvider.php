@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Models\Application;
 use App\Models\Document;
 use App\Models\Vacancy;
+use App\Observers\ApplicationObserver;
 use App\Policies\ApplicationPolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\EvaluationPolicy;
@@ -31,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('evaluate-application', [EvaluationPolicy::class, 'evaluate']);
         Gate::define('lock-evaluation', [EvaluationPolicy::class, 'lock']);
         Gate::define('unmask-identities', [EvaluationPolicy::class, 'unmask']);
+
+        Application::observe(ApplicationObserver::class);
 
         RateLimiter::for('login', function (Request $request) {
             $key = Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());

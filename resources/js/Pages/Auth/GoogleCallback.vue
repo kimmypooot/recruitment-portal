@@ -71,6 +71,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '@/services/api'
+import { useAuthStore } from '@/stores/auth'
 import { navigateTo } from '@/utils/navigate'
 import AmbientBlobs from '@/Components/UI/AmbientBlobs.vue'
 import BrandRings from '@/Components/UI/BrandRings.vue'
@@ -104,7 +105,7 @@ onMounted(async () => {
   if (userData) {
     try {
       const user = JSON.parse(atob(userData))
-      localStorage.setItem('auth_user', JSON.stringify(user))
+      useAuthStore().updateUser(user)
     } catch {}
   }
 
@@ -121,12 +122,8 @@ onMounted(async () => {
   }
 
   if (token) {
-    localStorage.setItem('auth_token', token)
-    localStorage.setItem('auth_token_created_at', String(Date.now()))
-    // Google OAuth tokens never expire server-side (see AuthController) — treat
-    // them the same as a "remember me" login for idle-timeout purposes.
-    localStorage.setItem('auth_remember', '1')
-    const user = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
+    useAuthStore().setAuth(token, userData ? JSON.parse(atob(userData)) : {}, true)
+    const user = useAuthStore().user
     const firstName = user.first_name ?? ''
     userName.value = firstName ? `${firstName}!` : '!'
     statusText.value = 'Signing you in…'
@@ -157,7 +154,7 @@ onMounted(async () => {
         })
         navigateTo(data.is_complete ? `${appUrl}/applicant/dashboard` : `${appUrl}/applicant/complete-profile`)
       } catch {
-        navigateTo(`${appUrl}/applicant/dashboard`)
+        navigateTo(`${appUrl}/applicant/complete-profile`)
       }
     }
     return

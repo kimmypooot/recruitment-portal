@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Application;
@@ -29,7 +31,7 @@ class ComparativeAssessmentController extends Controller
         $user = $request->user();
 
         $canGenerate = $user->canAccessAdminModule()
-            || \App\Models\HrmbsboardComposition::where('user_id', $user->id)
+            || \App\Models\HrmpsbComposition::where('user_id', $user->id)
                 ->whereIn('hrmpsb_role', ['chairperson', 'secretariat'])
                 ->where('is_active', true)
                 ->exists();

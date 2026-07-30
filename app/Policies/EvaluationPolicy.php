@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\Application;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\User;
 
 class EvaluationPolicy
@@ -14,7 +16,7 @@ class EvaluationPolicy
             return true;
         }
 
-        return HrmbsboardComposition::where('user_id', $user->id)
+        return HrmpsbComposition::where('user_id', $user->id)
             ->where('is_active', true)
             ->exists();
     }
@@ -25,7 +27,7 @@ class EvaluationPolicy
             return true;
         }
 
-        return HrmbsboardComposition::where('user_id', $user->id)
+        return HrmpsbComposition::where('user_id', $user->id)
             ->whereIn('hrmpsb_role', ['secretariat', 'hr-chief'])
             ->where('is_active', true)
             ->exists();

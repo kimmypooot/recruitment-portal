@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\BackgroundInvestigationReport;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\Vacancy;
 use App\Notifications\BackgroundInvestigationRequest;
 use App\Services\AuditLog;
@@ -22,7 +24,7 @@ class BackgroundInvestigationController extends Controller
 {
     private function isSecretariat(int $userId): bool
     {
-        return HrmbsboardComposition::where('user_id', $userId)
+        return HrmpsbComposition::where('user_id', $userId)
             ->where('hrmpsb_role', 'secretariat')
             ->where('is_active', true)
             ->exists();
@@ -35,7 +37,7 @@ class BackgroundInvestigationController extends Controller
             return true;
         }
 
-        return HrmbsboardComposition::where('user_id', $userId)
+        return HrmpsbComposition::where('user_id', $userId)
             ->where('is_active', true)
             ->exists();
     }

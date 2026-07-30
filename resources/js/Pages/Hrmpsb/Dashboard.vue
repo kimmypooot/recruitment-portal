@@ -1,5 +1,5 @@
 <template>
-  <HrmbsboardLayout title="Dashboard">
+  <HrmpsbLayout title="Dashboard">
     <div class="space-y-6 pb-20 sm:pb-6">
 
       <!-- Board role banner -->
@@ -187,13 +187,13 @@
       </div>
 
     </div>
-  </HrmbsboardLayout>
+  </HrmpsbLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import axios from 'axios'
-import HrmbsboardLayout from '@/Layouts/HrmbsboardLayout.vue'
+import HrmpsbLayout from '@/Layouts/HrmpsbLayout.vue'
 
 /* ── State ───────────────────────────────────────────────────────────────── */
 const loading     = ref(true)

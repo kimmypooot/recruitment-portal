@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\ExamSchedule;
-use App\Models\HrmbsboardComposition;
+use App\Models\HrmpsbComposition;
 use App\Models\Vacancy;
-use App\Notifications\ApplicationStatusUpdated;
+use App\Events\ApplicationStatusUpdated;
 use App\Notifications\ExaminationScheduled;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,7 +22,7 @@ class ExaminationController extends Controller
             return true;
         }
 
-        return HrmbsboardComposition::where('user_id', $user->id)
+        return HrmpsbComposition::where('user_id', $user->id)
             ->whereIn('hrmpsb_role', ['secretariat', 'hr-chief'])
             ->where('is_active', true)
             ->exists();
@@ -128,7 +130,7 @@ class ExaminationController extends Controller
             $oldStatus = $application->status;
             $application->update(['status' => 'exam_scheduled', 'reviewed_at' => now()]);
             if ($user = $application->applicant?->user) {
-                $user->notify(new ApplicationStatusUpdated($application, $oldStatus, 'exam_scheduled', silent: true));
+                ApplicationStatusUpdated::dispatch($application, $oldStatus, 'exam_scheduled', true);
             }
         }
 

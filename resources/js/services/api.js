@@ -30,6 +30,7 @@ api.interceptors.response.use(
       localStorage.removeItem('auth_user');
       localStorage.removeItem('auth_token_created_at');
       localStorage.removeItem('auth_remember');
+      localStorage.removeItem('profile_complete');
 
       const onLoginPage = window.location.pathname === '/login';
       if (!onLoginPage && !sessionExpiredHandled) {

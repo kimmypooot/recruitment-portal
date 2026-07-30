@@ -94,7 +94,7 @@
                   <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 </div>
                 <span v-if="avatarError">{{ userInitial }}</span>
-                <img v-if="authToken" :src="`/profile/photo?token=${authToken}&_=${avatarVersion}`"
+                <img v-if="auth.token" :src="`/profile/photo?token=${auth.token}&_=${avatarVersion}`"
                   class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
                   :class="avatarLoaded ? 'opacity-100' : 'opacity-0'"
                   @load="e => { if (e.target.naturalWidth === 1 && e.target.naturalHeight === 1) { avatarLoading = false; avatarError = true } else { avatarLoaded = true; avatarLoading = false; avatarError = false } }"
@@ -102,7 +102,7 @@
                   alt="" />
               </div>
               <div class="hidden sm:block text-left">
-                <p class="text-sm font-semibold text-gray-800 leading-none">{{ userName }}</p>
+                <p class="text-sm font-semibold text-gray-800 leading-none">{{ auth.fullName }}</p>
                 <p class="text-xs text-gray-400 mt-0.5">Applicant</p>
               </div>
               <Icon name="chevronDown" class="w-4 h-4 text-gray-400 hidden sm:block transition-transform flex-shrink-0"
@@ -120,8 +120,8 @@
                 class="absolute right-0 mt-1 w-56 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
                 <div class="px-4 py-3 border-b border-gray-100">
                   <div class="flex items-center gap-1.5">
-                    <p class="text-xs text-gray-500 truncate">{{ authUser.email }}</p>
-                    <span v-if="authUser.email_verified_at"
+                    <p class="text-xs text-gray-500 truncate">{{ auth.email }}</p>
+                    <span v-if="auth.user?.email_verified_at"
                       class="inline-flex items-center gap-0.5 text-[10px] font-medium text-[#1877F2]">
                       <span class="inline-flex items-center justify-center w-3 h-3 rounded-full bg-[#1877F2]">
                         <svg class="w-1.5 h-1.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
@@ -298,10 +298,13 @@ import NotificationBell from '@/Components/UI/NotificationBell.vue'
 import AppFooter from '@/Components/UI/AppFooter.vue'
 import PasswordRequirements from '@/Components/UI/PasswordRequirements.vue'
 import AuthSplashOverlay from '@/Components/UI/AuthSplashOverlay.vue'
+import { useAuthStore } from '@/stores/auth'
 import { useIdleTimer } from '@/composables/useIdleTimer'
 import { navigateTo } from '@/utils/navigate'
 
 useIdleTimer()
+
+const auth = useAuthStore()
 
 const sidebarOpen       = ref(false)
 const sidebarCollapsed  = ref(localStorage.getItem('sidebar_collapsed') === 'true')
@@ -349,13 +352,12 @@ async function submitChangePassword() {
   cpSaving.value = true
   try {
     await axios.post('/api/change-password', cpForm.value, {
-      headers: { Authorization: `Bearer ${authToken.value}` },
+      headers: { Authorization: `Bearer ${auth.token}` },
     })
     cpSuccess.value = 'Password updated successfully.'
     cpForm.value = { current_password: '', password: '', password_confirmation: '' }
-    if (authUser.value) {
-      authUser.value = { ...authUser.value, has_password: true }
-      localStorage.setItem('auth_user', JSON.stringify(authUser.value))
+    if (auth.user) {
+      auth.updateUser({ has_password: true })
     }
     setTimeout(() => closeChangePassword(), 1500)
   } catch (e) {
@@ -372,13 +374,11 @@ async function submitChangePassword() {
   }
 }
 const page              = usePage()
-const authToken      = ref('')
-const authUser       = ref({})
 const avatarLoaded   = ref(false)
 const avatarLoading  = ref(true)
 const avatarError    = ref(false)
 const avatarVersion  = ref(Date.now())
-watch(authToken, (token) => {
+watch(auth.token, (token) => {
   if (token) { avatarLoading.value = true; avatarLoaded.value = false; avatarError.value = false }
 })
 
@@ -389,21 +389,17 @@ function refreshAvatar() {
   avatarError.value   = false
 }
 
-const profileComplete = ref(localStorage.getItem('profile_complete') === 'true')
-
 function refreshProfileStatus() {
-  profileComplete.value = localStorage.getItem('profile_complete') === 'true'
+  auth.refreshFromStorage()
 }
 
-const userName    = computed(() => authUser.value?.full_name ?? 'Applicant')
-const userInitial = computed(() => (authUser.value?.full_name ?? 'A')[0].toUpperCase())
 // "Google-only" means the account has never set its own password — a linked
 // Google account alone still requires the current password to change it.
-const isGoogleOnly = computed(() => authUser.value?.has_password === false)
+const isGoogleOnly = computed(() => auth.user?.has_password === false)
 
 function disabledHint(item) {
   if (item.label === 'My Profile') return false
-  return !profileComplete.value
+  return !auth.profileComplete
 }
 
 const navGroups = [
@@ -475,40 +471,31 @@ async function confirmLogout() {
   sidebarOpen.value        = false
   showSignOutPreload.value = true
 
-  // API call and minimum display time run in parallel
   await Promise.allSettled([
-    axios.post('/api/logout', {}, { headers: { Authorization: `Bearer ${authToken.value}` } }),
+    axios.post('/api/logout', {}, { headers: { Authorization: `Bearer ${auth.token}` } }),
     new Promise(r => setTimeout(r, 900)),
   ])
 
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('auth_user')
-  localStorage.removeItem('auth_remember')
+  auth.clear()
   navigateTo('/login')
 }
 
-function refreshAuthUser() {
-  authUser.value = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
-}
-
 onMounted(() => {
-  authToken.value = localStorage.getItem('auth_token') ?? ''
-  authUser.value  = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
-  refreshProfileStatus()
+  auth.refreshFromStorage()
   document.addEventListener('click', handleClickOutside)
   window.addEventListener('scroll', handleScroll, { passive: true })
-  window.addEventListener('storage', refreshProfileStatus)
-  window.addEventListener('profile-complete-changed', refreshProfileStatus)
-  window.addEventListener('auth-user-updated', refreshAuthUser)
+  window.addEventListener('storage', () => auth.refreshFromStorage())
+  window.addEventListener('profile-complete-changed', () => auth.refreshFromStorage())
+  window.addEventListener('auth-user-updated', () => auth.refreshFromStorage())
   window.addEventListener('auth-avatar-updated', refreshAvatar)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
   window.removeEventListener('scroll', handleScroll)
-  window.removeEventListener('storage', refreshProfileStatus)
-  window.removeEventListener('profile-complete-changed', refreshProfileStatus)
-  window.removeEventListener('auth-user-updated', refreshAuthUser)
+  window.removeEventListener('storage', () => auth.refreshFromStorage())
+  window.removeEventListener('profile-complete-changed', () => auth.refreshFromStorage())
+  window.removeEventListener('auth-user-updated', () => auth.refreshFromStorage())
   window.removeEventListener('auth-avatar-updated', refreshAvatar)
 })
 </script>

@@ -20,7 +20,7 @@ use App\Http\Controllers\ExaminationController;
 use App\Http\Controllers\ExamResultController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FeedbackController;
-use App\Http\Controllers\HrmbsboardController;
+use App\Http\Controllers\HrmpsbController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PreAssessmentController;
@@ -44,7 +44,7 @@ Route::post('/visitor-count/increment', [VisitorCountController::class, 'increme
     ->middleware('throttle:30,1');
 
 // Authentication — throttled to prevent brute-force and registration spam
-Route::middleware('throttle:5,1')->post('/login', [AuthController::class, 'login']);
+Route::middleware('throttle:login')->post('/login', [AuthController::class, 'login']);
 Route::middleware('throttle:3,60')->post('/register', [AuthController::class, 'register']);
 
 // Privacy consent re-acknowledgment (for existing users when policy updates)
@@ -152,16 +152,16 @@ Route::middleware(['auth:sanctum', 'admin-access'])->prefix('admin')->group(func
     Route::delete('/competencies/vacancy/{vacancy}/{competencyKey}', [VacancyCompetencyController::class, 'remove']);
 
     // HRMPSB fixed board composition management
-    Route::get('/hrmpsb/compositions', [HrmbsboardController::class, 'compositions']);
-    Route::post('/hrmpsb/compositions', [HrmbsboardController::class, 'assign']);
-    Route::delete('/hrmpsb/compositions/{composition}', [HrmbsboardController::class, 'remove']);
-    Route::patch('/hrmpsb/compositions/{composition}/toggle-type', [HrmbsboardController::class, 'toggleType']);
-    Route::patch('/hrmpsb/compositions/{composition}/toggle-active', [HrmbsboardController::class, 'toggleActive']);
+    Route::get('/hrmpsb/compositions', [HrmpsbController::class, 'compositions']);
+    Route::post('/hrmpsb/compositions', [HrmpsbController::class, 'assign']);
+    Route::delete('/hrmpsb/compositions/{composition}', [HrmpsbController::class, 'remove']);
+    Route::patch('/hrmpsb/compositions/{composition}/toggle-type', [HrmpsbController::class, 'toggleType']);
+    Route::patch('/hrmpsb/compositions/{composition}/toggle-active', [HrmpsbController::class, 'toggleActive']);
 
     // Place of Assignment Heads (dynamic Head of Unit mapping)
-    Route::get('/place-of-assignment-heads', [HrmbsboardController::class, 'poaHeads']);
-    Route::post('/place-of-assignment-heads', [HrmbsboardController::class, 'assignPoaHead']);
-    Route::delete('/place-of-assignment-heads/{head}', [HrmbsboardController::class, 'removePoaHead']);
+    Route::get('/place-of-assignment-heads', [HrmpsbController::class, 'poaHeads']);
+    Route::post('/place-of-assignment-heads', [HrmpsbController::class, 'assignPoaHead']);
+    Route::delete('/place-of-assignment-heads/{head}', [HrmpsbController::class, 'removePoaHead']);
 
     // Email template management
     Route::get('/email-templates', [EmailTemplateController::class, 'index']);
@@ -177,12 +177,12 @@ Route::middleware(['auth:sanctum', 'admin-access'])->prefix('exports')->group(fu
 
 // HRMPSB evaluation routes (all hrmpsb users + admin)
 Route::middleware(['auth:sanctum', 'role:hrmpsb,admin'])->group(function () {
-    Route::get('/hrmpsb/my-role', [HrmbsboardController::class, 'myRole']);
-    Route::get('/hrmpsb/pipeline-stages', [HrmbsboardController::class, 'pipelineStages']);
-    Route::get('/hrmpsb/applications/{application}/profile', [HrmbsboardController::class, 'applicantProfile']);
-    Route::get('/hrmpsb/applications/{application}/documents/{type}', [HrmbsboardController::class, 'serveDocument']);
-    Route::get('/hrmpsb/vacancies/{vacancy}/applicants', [HrmbsboardController::class, 'vacancyApplicants']);
-    Route::post('/hrmpsb/vacancies/{vacancy}/download-requirements', [HrmbsboardController::class, 'downloadRequirements']);
+    Route::get('/hrmpsb/my-role', [HrmpsbController::class, 'myRole']);
+    Route::get('/hrmpsb/pipeline-stages', [HrmpsbController::class, 'pipelineStages']);
+    Route::get('/hrmpsb/applications/{application}/profile', [HrmpsbController::class, 'applicantProfile']);
+    Route::get('/hrmpsb/applications/{application}/documents/{type}', [HrmpsbController::class, 'serveDocument']);
+    Route::get('/hrmpsb/vacancies/{vacancy}/applicants', [HrmpsbController::class, 'vacancyApplicants']);
+    Route::post('/hrmpsb/vacancies/{vacancy}/download-requirements', [HrmpsbController::class, 'downloadRequirements']);
     // QS Evaluation
     Route::get('/qs-evaluations/{vacancy}', [QsEvaluationController::class, 'index']);
     Route::post('/qs-evaluations', [QsEvaluationController::class, 'store']);

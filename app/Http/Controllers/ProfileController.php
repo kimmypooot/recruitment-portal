@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\ApplicantProfile;
@@ -8,6 +10,7 @@ use App\Models\WorkExperience;
 use App\Models\EducationalAttainment;
 use App\Models\Training;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\UpdateProfileRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -30,28 +33,9 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(Request $request): JsonResponse
+    public function update(UpdateProfileRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'first_name'        => 'sometimes|required|string|max:100',
-            'last_name'         => 'sometimes|required|string|max:100',
-            'middle_name'       => 'nullable|string|max:100',
-            'suffix'            => 'nullable|string|max:20',
-            'gender'            => 'nullable|string|max:20',
-            'civil_status'      => 'nullable|string|max:30',
-            'birthday'          => 'nullable|date',
-            'religion'          => 'nullable|string|max:100',
-            'region'            => 'nullable|string|max:100',
-            'province'          => 'nullable|string|max:100',
-            'city_municipality' => 'nullable|string|max:100',
-            'barangay'          => 'nullable|string|max:100',
-            'mobile_number'     => 'nullable|string|max:20',
-            'eligibility'       => 'nullable|string|max:150',
-            'eligibility_other' => 'nullable|string|max:200',
-            'indigenous_group'  => 'nullable|string|in:Yes,No',
-            'pwd'               => 'nullable|string|in:Yes,No',
-            'solo_parent'       => 'nullable|string|in:Yes,No',
-        ]);
+        $data = $request->validated();
 
         $nameKeys  = ['first_name', 'last_name', 'middle_name', 'suffix'];
         $nameData  = array_intersect_key($data, array_flip($nameKeys));
