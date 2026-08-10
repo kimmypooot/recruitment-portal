@@ -206,20 +206,27 @@ class CsFormGenerationTest extends TestCase
         $this->assertTrue($pnpki->isConfigured());
     }
 
-    public function test_pnpki_sign_sets_signed_at_timestamp(): void
+    /**
+     * Previously asserted that sign() stamped signed_at and returned true. It
+     * did that without performing any cryptography, so a form could be reported
+     * as digitally signed when nothing had been signed. Signing now fails closed
+     * until CSC supplies the PNPKI SDK and certificates.
+     */
+    public function test_pnpki_sign_refuses_until_it_is_really_implemented(): void
     {
         $service = new FormGeneratorService();
         $form = $service->generate($this->application, '33A', $this->hrManager);
 
         $this->assertNull($form->signed_at);
-        $this->assertFalse($form->isSigned());
 
-        $pnpki = new PnpkiService();
-        $result = $pnpki->sign($form, 'Test Signer');
+        try {
+            (new PnpkiService())->sign($form, 'Test Signer');
+            $this->fail('signing should refuse while PNPKI is unimplemented');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('not implemented', $e->getMessage());
+        }
 
-        $this->assertTrue($result);
-        $this->assertNotNull($form->fresh()->signed_at);
-        $this->assertTrue($form->fresh()->isSigned());
+        $this->assertNull($form->fresh()->signed_at, 'the form must not be marked signed');
     }
 
     public function test_pnpki_verify_returns_false_for_unsigned_form(): void
@@ -237,7 +244,11 @@ class CsFormGenerationTest extends TestCase
         $this->assertFalse($pnpki->verify($form));
     }
 
-    public function test_pnpki_verify_returns_true_for_signed_form(): void
+    /**
+     * A signed_at timestamp is not cryptographic proof of anything, so verify()
+     * must not treat it as one. It stays false until real verification exists.
+     */
+    public function test_pnpki_verify_does_not_treat_a_timestamp_as_proof(): void
     {
         $form = CsForm::create([
             'application_id' => $this->application->id,
@@ -249,7 +260,7 @@ class CsFormGenerationTest extends TestCase
         ]);
 
         $pnpki = new PnpkiService();
-        $this->assertTrue($pnpki->verify($form));
+        $this->assertFalse($pnpki->verify($form));
     }
 
     public function test_sign_endpoint_returns_422_when_pnpki_not_configured(): void
@@ -265,7 +276,12 @@ class CsFormGenerationTest extends TestCase
             ->assertJsonFragment(['message' => 'PNPKI is not yet configured. Contact CSC for credentials.']);
     }
 
-    public function test_sign_endpoint_succeeds_when_pnpki_configured(): void
+    /**
+     * Configuring an API key is not enough — there is no implementation behind
+     * it. The endpoint reports 501 Not Implemented rather than claiming a
+     * success it cannot deliver.
+     */
+    public function test_sign_endpoint_reports_not_implemented_even_when_configured(): void
     {
         config(['services.pnpki.api_key' => 'test-key-123']);
 
@@ -274,9 +290,8 @@ class CsFormGenerationTest extends TestCase
 
         $this->actingAs($this->hrManager, 'sanctum')
             ->patchJson("/api/forms/{$form->id}/sign")
-            ->assertOk()
-            ->assertJsonFragment(['message' => 'Form signed successfully.']);
+            ->assertStatus(501);
 
-        $this->assertTrue($form->fresh()->isSigned());
+        $this->assertFalse($form->fresh()->isSigned());
     }
 }

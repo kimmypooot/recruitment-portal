@@ -78,10 +78,14 @@ class CsFormController extends Controller
             ], 422);
         }
 
-        $success = $pnpki->sign($csForm, $request->user()->full_name);
+        try {
+            $pnpki->sign($csForm, $request->user()->full_name);
+        } catch (\RuntimeException $e) {
+            // Signing is deliberately unimplemented; surface why rather than
+            // reporting a success the system cannot actually deliver.
+            return response()->json(['message' => $e->getMessage()], 501);
+        }
 
-        return response()->json([
-            'message' => $success ? 'Form signed successfully.' : 'Signing failed.',
-        ], $success ? 200 : 500);
+        return response()->json(['message' => 'Form signed successfully.']);
     }
 }

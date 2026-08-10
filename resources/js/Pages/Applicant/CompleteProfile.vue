@@ -280,6 +280,17 @@
               <input v-model="expForm.department_agency" type="text" placeholder="e.g. Civil Service Commission"
                 class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
             </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                Description of Duties
+              </label>
+              <textarea v-model="expForm.duties" rows="3"
+                placeholder="Summarise your actual duties and responsibilities in this position."
+                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"></textarea>
+              <p class="mt-1 text-xs text-gray-400">
+                Printed on the Work Experience Sheet attached to the PDS, not on the PDS itself.
+              </p>
+            </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-5">
               <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Salary Grade</label>
@@ -785,7 +796,7 @@ const eduModal      = reactive({ open: false, saving: false, error: '', editingI
 const trainingModal = reactive({ open: false, saving: false, error: '', editingId: null })
 
 const expForm = reactive({
-  position_title: '', department_agency: '',
+  position_title: '', department_agency: '', duties: '',
   salary_grade: '', appointment_status: '', government_service: false,
   date_from: '', date_to: '', is_present: false,
 })
@@ -1037,6 +1048,7 @@ async function uploadDocuments() {
 function openExpModal(exp = null) {
   Object.assign(expForm, {
     position_title: exp?.position_title ?? '', department_agency: exp?.department_agency ?? '',
+    duties: exp?.duties ?? '',
     salary_grade: exp?.salary_grade ?? '', appointment_status: exp?.appointment_status ?? '',
     government_service: exp?.government_service ?? false,
     date_from: exp?.date_from ?? '', date_to: exp?.date_to ?? '', is_present: exp?.is_present ?? false,

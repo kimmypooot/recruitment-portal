@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class WorkExperience extends Model
 {
     protected $fillable = [
-        'applicant_profile_id', 'position_title', 'department_agency',
+        'applicant_profile_id', 'position_title', 'department_agency', 'duties',
         'monthly_salary', 'salary_grade', 'appointment_status',
         'government_service', 'date_from', 'date_to', 'is_present',
     ];

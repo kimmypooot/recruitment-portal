@@ -192,6 +192,7 @@ class ProfileController extends Controller
         $data = $request->validate([
             'position_title'     => 'required|string|max:200',
             'department_agency'  => 'required|string|max:200',
+            'duties'             => 'nullable|string|max:2000',
             'monthly_salary'     => 'nullable|numeric|min:0',
             'salary_grade'       => 'nullable|string|max:10',
             'appointment_status' => 'nullable|string|max:50',
@@ -211,6 +212,7 @@ class ProfileController extends Controller
         $data = $request->validate([
             'position_title'     => 'required|string|max:200',
             'department_agency'  => 'required|string|max:200',
+            'duties'             => 'nullable|string|max:2000',
             'monthly_salary'     => 'nullable|numeric|min:0',
             'salary_grade'       => 'nullable|string|max:10',
             'appointment_status' => 'nullable|string|max:50',

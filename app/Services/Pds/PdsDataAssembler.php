@@ -217,6 +217,9 @@ class PdsDataAssembler
                 'date_to'           => $work->is_present ? 'PRESENT' : $this->date($work->date_to),
                 'position_title'    => $this->text($work->position_title),
                 'department_agency' => $this->text($work->department_agency),
+                // Printed on the Work Experience Sheet attachment, not the PDS
+                // itself, but carried here so both render from one source.
+                'duties'            => $this->text($work->duties),
                 'monthly_salary'    => $this->money($work->monthly_salary),
                 'salary_grade'      => $this->text($work->salary_grade),
                 'appointment_status' => $this->text($work->appointment_status),
@@ -225,7 +228,7 @@ class PdsDataAssembler
             self::PRINTED_ROWS['work'],
             [
                 'date_from' => '', 'date_to' => '', 'position_title' => '',
-                'department_agency' => '', 'monthly_salary' => '', 'salary_grade' => '',
+                'department_agency' => '', 'duties' => '', 'monthly_salary' => '', 'salary_grade' => '',
                 'appointment_status' => '', 'government_service' => '',
             ]
         );
