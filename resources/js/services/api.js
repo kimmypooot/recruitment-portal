@@ -94,3 +94,27 @@ export const profileApi = {
   updateTraining: (id, data) => api.put(`/profile/trainings/${id}`, data),
   deleteTraining: (id)       => api.delete(`/profile/trainings/${id}`),
 };
+
+/**
+ * CS Form No. 212 (Revised 2026) — the PDS sections that profileApi does not
+ * already cover, plus generation.
+ *
+ * `section` is one of: children, eligibilities, voluntary-works, other-info,
+ * references.
+ */
+export const pdsApi = {
+  show:         ()     => api.get('/profile/pds'),
+  limits:       ()     => api.get('/profile/pds/limits'),
+  completeness: ()     => api.get('/profile/pds/completeness'),
+
+  updateFamilyBackground: (data) => api.put('/profile/pds/family-background', data),
+  updateDeclaration:      (data) => api.put('/profile/pds/declaration', data),
+
+  addItem:    (section, data)     => api.post(`/profile/pds/${section}`, data),
+  updateItem: (section, id, data) => api.put(`/profile/pds/${section}/${id}`, data),
+  deleteItem: (section, id)       => api.delete(`/profile/pds/${section}/${id}`),
+
+  /** Streams a file; format is 'xlsx' or 'pdf'. */
+  download: (format = 'xlsx') =>
+    api.get(`/profile/pds/download?format=${format}`, { responseType: 'blob' }),
+};

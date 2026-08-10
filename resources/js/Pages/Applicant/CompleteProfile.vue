@@ -12,7 +12,7 @@
         <!-- Skeleton tab bar -->
         <div class="bg-white border border-gray-200 rounded-xl p-1.5 shadow-sm">
           <div class="flex gap-1">
-            <div v-for="n in 3" :key="n" class="flex-1 h-9 bg-gray-100 rounded-lg"></div>
+            <div v-for="n in 4" :key="n" class="flex-1 h-9 bg-gray-100 rounded-lg"></div>
           </div>
         </div>
         <!-- Skeleton form rows -->
@@ -157,7 +157,13 @@
         @delete-training="deleteTraining($event)"
       />
 
-      <!-- ═══ Tab 3 — Documents ═══ -->
+      <!-- ═══ Tab 3 — PDS Details (CS Form No. 212, Revised 2026) ═══ -->
+      <PdsDetailsTab
+        v-show="activeTab === 'pds'"
+        :personal="personal"
+      />
+
+      <!-- ═══ Tab 4 — Documents ═══ -->
       <DocumentsTab
         v-show="activeTab === 'documents'"
         :doc-fields="docFields"
@@ -165,6 +171,7 @@
         :doc-paths="docPaths"
         :doc-timestamps="docTimestamps"
         :auth-token="authToken"
+        :pds-generated-at="personal.pds_generated_at"
         :is-complete="canApply"
         :saving="savingDocs"
         :errors="docErrors"
@@ -574,6 +581,7 @@ import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 import BaseModal from '@/Components/UI/BaseModal.vue'
 import PersonalInfoTab from './Profile/PersonalInfoTab.vue'
 import QualificationsTab from './Profile/QualificationsTab.vue'
+import PdsDetailsTab from './Profile/PdsDetailsTab.vue'
 import DocumentsTab from './Profile/DocumentsTab.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
@@ -657,6 +665,23 @@ const personal = reactive({
   mobile_number: '',
   eligibility: '', eligibility_other: '',
   indigenous_group: '', pwd: '', solo_parent: '',
+
+  // CS Form No. 212 (Revised 2026), Section I — edited on the PDS Details tab.
+  // Listed here because the loader copies by key and savePersonal() spreads the
+  // whole object into the update request.
+  place_of_birth: '', civil_status_other: '',
+  height_m: '', weight_kg: '', blood_type: '',
+  citizenship: '', citizenship_basis: '', dual_citizenship_country: '',
+  gsis_id_no: '', pagibig_id_no: '', philhealth_no: '', sss_no: '',
+  tin_no: '', umid_id_no: '', philsys_number: '', agency_employee_no: '',
+  telephone_no: '',
+  res_house_block_lot: '', res_street: '', res_subdivision: '', res_barangay: '',
+  res_city_municipality: '', res_province: '', res_zip_code: '',
+  perm_house_block_lot: '', perm_street: '', perm_subdivision: '', perm_barangay: '',
+  perm_city_municipality: '', perm_province: '', perm_zip_code: '',
+
+  // Read-only; surfaced on the Documents tab by GeneratePdsPanel.
+  pds_generated_at: null,
 })
 
 const nameForm = reactive({
@@ -678,6 +703,11 @@ const tabs = computed(() => [
     key: 'qualifications', label: 'Qualifications',
     icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
     complete: !!(personal.eligibility),
+  },
+  {
+    key: 'pds', label: 'PDS Details',
+    icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    complete: !!(personal.place_of_birth && personal.citizenship && personal.perm_city_municipality),
   },
   {
     key: 'documents', label: 'Documents',
