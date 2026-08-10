@@ -767,7 +767,7 @@ const tabs = computed(() => [
 
 const profileStepsDone = computed(() => [
   !!(personal.gender && personal.civil_status && personal.birthday),
-  !!(personal.region && personal.province),
+  !!(personal.region && personal.res_province),
   !!(personal.mobile_number),
   !!(experiences.value.length || education.value.length),
   !!(trainings.value.length),
@@ -1007,8 +1007,11 @@ function showSaveIndicator() {
 // ─── Personal info ────────────────────────────────────────────────────────────
 
 function validateRequired() {
-  const required = ['gender', 'civil_status', 'birthday', 'region', 'province', 'city_municipality', 'barangay', 'mobile_number']
-  const labels = { gender: 'Gender', civil_status: 'Civil Status', birthday: 'Date of Birth', region: 'Region', province: 'Province', city_municipality: 'City/Municipality', barangay: 'Barangay', mobile_number: 'Mobile Number' }
+  // Province, city and barangay moved to the PDS Details tab as part of the
+  // full residential address; they are checked by PdsCompletenessChecker there
+  // rather than blocking the Personal Info save.
+  const required = ['gender', 'civil_status', 'birthday', 'region', 'mobile_number']
+  const labels = { gender: 'Gender', civil_status: 'Civil Status', birthday: 'Date of Birth', region: 'Region', mobile_number: 'Mobile Number' }
   let valid = true
   required.forEach(f => {
     if (!personal[f]) { errors[f] = `${labels[f]} is required.`; valid = false }

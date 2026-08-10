@@ -252,46 +252,22 @@
           <select v-model="personal.region" @blur="validate('region')"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.region ? 'border-red-400' : 'border-gray-300'">
+            <!-- Stores the name, not the PSGC code: this value is printed on
+                 CS Form 212 and shown in reports. -->
             <option value="">— Select Region —</option>
-            <option v-for="r in regionsData" :key="r.reg_code" :value="r.reg_code">{{ r.reg_name }}</option>
+            <option v-for="r in regionsData" :key="r.reg_code" :value="r.reg_name">{{ r.reg_name }}</option>
           </select>
           <p v-if="errors.region" class="mt-1 text-xs text-red-500">{{ errors.region }}</p>
         </div>
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-            Province <span class="text-red-500 normal-case">*</span>
-          </label>
-          <select v-model="personal.province" @blur="validate('province')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
-            :class="errors.province ? 'border-red-400' : 'border-gray-300'">
-            <option value="">— Select Province —</option>
-            <option v-for="p in availableProvinces" :key="p.prov_code" :value="p.prov_code">{{ p.prov_name }}</option>
-          </select>
-          <p v-if="errors.province" class="mt-1 text-xs text-red-500">{{ errors.province }}</p>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-            City / Municipality <span class="text-red-500 normal-case">*</span>
-          </label>
-          <select v-model="personal.city_municipality" @blur="validate('city_municipality')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
-            :class="errors.city_municipality ? 'border-red-400' : 'border-gray-300'">
-            <option value="">— Select City/Municipality —</option>
-            <option v-for="c in availableCities" :key="c.city_code" :value="c.city_code">{{ c.city_name }}</option>
-          </select>
-          <p v-if="errors.city_municipality" class="mt-1 text-xs text-red-500">{{ errors.city_municipality }}</p>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-            Barangay <span class="text-red-500 normal-case">*</span>
-          </label>
-          <select v-model="personal.barangay" @blur="validate('barangay')"
-            class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
-            :class="errors.barangay ? 'border-red-400' : 'border-gray-300'">
-            <option value="">— Select Barangay —</option>
-            <option v-for="b in availableBarangays" :key="b.brgy_code" :value="b.brgy_code">{{ b.brgy_name }}</option>
-          </select>
-          <p v-if="errors.barangay" class="mt-1 text-xs text-red-500">{{ errors.barangay }}</p>
+        <!-- Province, city/municipality and barangay live on the PDS Details
+             tab, where they are part of the full residential address the form
+             prints. They cascade from the region chosen here. -->
+        <div class="sm:col-span-2 lg:col-span-3">
+          <p class="text-xs text-gray-500 leading-relaxed">
+            Your full address — province, city/municipality, barangay, street and ZIP —
+            is entered on the <span class="font-semibold text-gray-700">PDS Details</span> tab,
+            where it prints on CS Form No. 212. The choices there are narrowed to the region you pick here.
+          </p>
         </div>
       </div>
     </div>
@@ -462,8 +438,6 @@ import BaseModal from '@/Components/UI/BaseModal.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { navigateTo } from '@/utils/navigate'
 import regionsData from '@/data/regions.json'
-import provincesData from '@/data/provinces.json'
-import citiesData from '@/data/cities.json'
 const { confirm } = useConfirm()
 
 const props = defineProps({
@@ -589,57 +563,19 @@ async function unlinkGoogle() {
   }
 }
 
-// ── PSGC Cascading Data (codes as values, client-side filtering) ──────────────
-
-const barangaysAll = ref([])
-
-async function loadBarangays() {
-  try {
-    const res = await fetch('/data/barangays.json')
-    if (!res.ok) return
-    const raw = await res.json()
-    barangaysAll.value = raw.sort((a, b) =>
-      (a.brgy_name || '').localeCompare(b.brgy_name || '')
-    )
-  } catch {
-    // silently fail — dropdown stays empty
+/**
+ * Changing region invalidates the address chosen on the PDS Details tab, so
+ * clear it here rather than leaving a province that no longer belongs to the
+ * selected region.
+ */
+watch(() => props.personal.region, (next, previous) => {
+  if (previous === undefined || next === previous) {
+    return
   }
-}
-loadBarangays()
 
-const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
-
-const availableProvinces = computed(() =>
-  provincesData
-    .filter(p => p.reg_code === props.personal.region)
-    .sort((a, b) => collator.compare(a.prov_name, b.prov_name))
-)
-
-const availableCities = computed(() =>
-  citiesData
-    .filter(c => c.prov_code === props.personal.province)
-    .sort((a, b) => collator.compare(a.city_name, b.city_name))
-)
-
-const availableBarangays = computed(() =>
-  barangaysAll.value
-    .filter(b => b.city_code === props.personal.city_municipality)
-    .sort((a, b) => collator.compare(a.brgy_name, b.brgy_name))
-)
-
-watch(() => props.personal.region, () => {
-  props.personal.province = ''
-  props.personal.city_municipality = ''
-  props.personal.barangay = ''
-}, { flush: 'sync' })
-
-watch(() => props.personal.province, () => {
-  props.personal.city_municipality = ''
-  props.personal.barangay = ''
-}, { flush: 'sync' })
-
-watch(() => props.personal.city_municipality, () => {
-  props.personal.barangay = ''
+  props.personal.res_province = ''
+  props.personal.res_city_municipality = ''
+  props.personal.res_barangay = ''
 }, { flush: 'sync' })
 
 const fieldLabels = {
@@ -647,9 +583,6 @@ const fieldLabels = {
   civil_status: 'Civil Status',
   birthday: 'Date of Birth',
   region: 'Region',
-  province: 'Province',
-  city_municipality: 'City/Municipality',
-  barangay: 'Barangay',
   mobile_number: 'Mobile Number',
 }
 

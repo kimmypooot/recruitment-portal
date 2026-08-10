@@ -91,10 +91,41 @@
               Residential Address <span class="text-red-500 normal-case">*</span>
             </p>
           </div>
+          <p v-if="!personal.region" class="mb-3 text-xs text-amber-600">
+            Choose your Region on the Personal Info tab first — the province list is narrowed to it.
+          </p>
+
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-5">
-            <div v-for="field in addressFields" :key="`res_${field.key}`">
+            <div v-for="field in addressTextFields" :key="`res_${field.key}`">
               <label :class="labelClass">{{ field.label }}</label>
               <input v-model="personal[`res_${field.key}`]" type="text" :class="inputClass" />
+            </div>
+
+            <div>
+              <label :class="labelClass">Province</label>
+              <select v-model="personal.res_province" :disabled="!personal.region" :class="inputClass">
+                <option value="">— Select Province —</option>
+                <option v-for="p in residentialProvinces" :key="p.prov_code" :value="p.prov_name">{{ p.prov_name }}</option>
+              </select>
+            </div>
+            <div>
+              <label :class="labelClass">City / Municipality</label>
+              <select v-model="personal.res_city_municipality" :disabled="!personal.res_province" :class="inputClass">
+                <option value="">— Select City/Municipality —</option>
+                <option v-for="c in residentialCities" :key="c.city_code" :value="c.city_name">{{ c.city_name }}</option>
+              </select>
+            </div>
+            <div>
+              <label :class="labelClass">Barangay</label>
+              <select v-model="personal.res_barangay" :disabled="!personal.res_city_municipality" :class="inputClass">
+                <option value="">— Select Barangay —</option>
+                <option v-for="b in residentialBarangays" :key="b.brgy_code" :value="b.brgy_name">{{ b.brgy_name }}</option>
+              </select>
+            </div>
+
+            <div>
+              <label :class="labelClass">ZIP Code</label>
+              <input v-model="personal.res_zip_code" type="text" :class="inputClass" />
             </div>
           </div>
         </div>
@@ -110,9 +141,38 @@
             </button>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-5">
-            <div v-for="field in addressFields" :key="`perm_${field.key}`">
+            <div v-for="field in addressTextFields" :key="`perm_${field.key}`">
               <label :class="labelClass">{{ field.label }}</label>
               <input v-model="personal[`perm_${field.key}`]" type="text" :class="inputClass" />
+            </div>
+
+            <!-- Not narrowed by region: a permanent address is often in a
+                 different region from where the applicant currently lives. -->
+            <div>
+              <label :class="labelClass">Province</label>
+              <select v-model="personal.perm_province" :class="inputClass">
+                <option value="">— Select Province —</option>
+                <option v-for="p in allProvinces" :key="p.prov_code" :value="p.prov_name">{{ p.prov_name }}</option>
+              </select>
+            </div>
+            <div>
+              <label :class="labelClass">City / Municipality</label>
+              <select v-model="personal.perm_city_municipality" :disabled="!personal.perm_province" :class="inputClass">
+                <option value="">— Select City/Municipality —</option>
+                <option v-for="c in permanentCities" :key="c.city_code" :value="c.city_name">{{ c.city_name }}</option>
+              </select>
+            </div>
+            <div>
+              <label :class="labelClass">Barangay</label>
+              <select v-model="personal.perm_barangay" :disabled="!personal.perm_city_municipality" :class="inputClass">
+                <option value="">— Select Barangay —</option>
+                <option v-for="b in permanentBarangays" :key="b.brgy_code" :value="b.brgy_name">{{ b.brgy_name }}</option>
+              </select>
+            </div>
+
+            <div>
+              <label :class="labelClass">ZIP Code</label>
+              <input v-model="personal.perm_zip_code" type="text" :class="inputClass" />
             </div>
           </div>
         </div>
@@ -318,6 +378,9 @@ import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 import PdsRepeatingSection from './PdsRepeatingSection.vue'
 import PdsDeclarations from './PdsDeclarations.vue'
+import regionsData from '@/data/regions.json'
+import provincesData from '@/data/provinces.json'
+import citiesData from '@/data/cities.json'
 
 const props = defineProps({
   // Section I fields live on the shared profile object so the page's existing
@@ -349,15 +412,106 @@ const idFields = [
   { key: 'agency_employee_no', label: 'Agency Employee No.' },
 ]
 
-const addressFields = [
+/** Free-text parts; barangay/city/province are cascading selects. */
+const addressTextFields = [
   { key: 'house_block_lot', label: 'House / Block / Lot No.' },
   { key: 'street', label: 'Street' },
   { key: 'subdivision', label: 'Subdivision / Village' },
+]
+
+/** Every sub-field, used by "Same as residential". */
+const addressFields = [
+  ...addressTextFields,
   { key: 'barangay', label: 'Barangay' },
   { key: 'city_municipality', label: 'City / Municipality' },
   { key: 'province', label: 'Province' },
   { key: 'zip_code', label: 'ZIP Code' },
 ]
+
+// ── PSGC cascade ────────────────────────────────────────────────────────────
+// Selects store names, not codes: these values print on CS Form 212 and appear
+// in reports, so a PSGC code would surface as e.g. "0837" instead of "Leyte".
+// The codes are resolved back from the stored names to drive the next level.
+
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
+const barangaysAll = ref([])
+
+async function loadBarangays() {
+  try {
+    const response = await fetch('/data/barangays.json')
+    if (! response.ok) return
+    barangaysAll.value = await response.json()
+  } catch {
+    // Silent: the barangay select simply stays empty.
+  }
+}
+
+const byName = (rows, key, value) => rows.find(row => row[key] === value)
+
+const allProvinces = computed(() =>
+  [...provincesData].sort((a, b) => collator.compare(a.prov_name, b.prov_name))
+)
+
+const residentialProvinces = computed(() => {
+  const region = byName(regionsData, 'reg_name', props.personal.region)
+
+  return region
+    ? allProvinces.value.filter(p => p.reg_code === region.reg_code)
+    : []
+})
+
+function citiesIn(provinceName) {
+  const province = byName(provincesData, 'prov_name', provinceName)
+
+  return province
+    ? citiesData.filter(c => c.prov_code === province.prov_code)
+        .sort((a, b) => collator.compare(a.city_name, b.city_name))
+    : []
+}
+
+function barangaysIn(provinceName, cityName) {
+  const cities = citiesIn(provinceName)
+  const city   = byName(cities, 'city_name', cityName)
+
+  return city
+    ? barangaysAll.value.filter(b => b.city_code === city.city_code)
+        .sort((a, b) => collator.compare(a.brgy_name, b.brgy_name))
+    : []
+}
+
+const residentialCities   = computed(() => citiesIn(props.personal.res_province))
+const residentialBarangays = computed(() =>
+  barangaysIn(props.personal.res_province, props.personal.res_city_municipality)
+)
+
+const permanentCities   = computed(() => citiesIn(props.personal.perm_province))
+const permanentBarangays = computed(() =>
+  barangaysIn(props.personal.perm_province, props.personal.perm_city_municipality)
+)
+
+// Clear dependents when a parent changes, so a stale city cannot survive a
+// province switch. `undefined` means the profile is still loading.
+watch(() => props.personal.res_province, (next, previous) => {
+  if (previous === undefined || next === previous) return
+  props.personal.res_city_municipality = ''
+  props.personal.res_barangay = ''
+})
+
+watch(() => props.personal.res_city_municipality, (next, previous) => {
+  if (previous === undefined || next === previous) return
+  props.personal.res_barangay = ''
+})
+
+watch(() => props.personal.perm_province, (next, previous) => {
+  if (previous === undefined || next === previous) return
+  props.personal.perm_city_municipality = ''
+  props.personal.perm_barangay = ''
+})
+
+watch(() => props.personal.perm_city_municipality, (next, previous) => {
+  if (previous === undefined || next === previous) return
+  props.personal.perm_barangay = ''
+})
 
 const spouseFields = [
   { key: 'spouse_surname', label: 'Surname' },
@@ -548,7 +702,10 @@ function copyResidentialAddress() {
   })
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  loadBarangays()
+})
 
 defineExpose({ reload: load })
 </script>

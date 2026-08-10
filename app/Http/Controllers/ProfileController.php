@@ -77,6 +77,15 @@ class ProfileController extends Controller
         $profile = $this->getOrCreateProfile();
         $profile->fill($profileData);
 
+        // The residential address is now the single source of truth; mirror it
+        // into the legacy columns so ApplicantProfileResource and the vacancy
+        // application flow keep working while they are migrated off them.
+        foreach (['province', 'city_municipality', 'barangay'] as $column) {
+            if ($profile->{'res_'.$column} !== null && $profile->{'res_'.$column} !== '') {
+                $profile->{$column} = $profile->{'res_'.$column};
+            }
+        }
+
         if ($profile->isComplete() && $profile->profile_completed_at === null) {
             $profile->profile_completed_at = now();
         }
