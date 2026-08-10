@@ -37,7 +37,9 @@ class PdsDataAssembler
 
     public function assemble(ApplicantProfile $profile): array
     {
-        $profile->loadMissing(ApplicantProfile::PDS_RELATIONS);
+        // load(), not loadMissing(): a relation cached earlier in the request may
+        // predate writes made since, and stale data here means a wrong form.
+        $profile->load(ApplicantProfile::PDS_RELATIONS);
 
         return [
             'personal_information' => $this->personalInformation($profile),

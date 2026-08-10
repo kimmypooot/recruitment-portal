@@ -210,7 +210,8 @@ class PdsProfileController extends Controller
 
     private function profile(Request $request): ApplicantProfile
     {
-        $profile = $request->user()->applicantProfile;
+        // Queried, not read off the cached relation accessor — see PdsController.
+        $profile = $request->user()->applicantProfile()->first();
 
         if ($profile === null) {
             abort(Response::HTTP_NOT_FOUND, 'You do not have an applicant profile yet.');

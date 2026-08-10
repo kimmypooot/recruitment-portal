@@ -202,6 +202,67 @@
       </div>
     </section>
 
+    <!-- Sections IV, VI, VIII — repeating lists -->
+    <section class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <header class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
+        <div class="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-900">Eligibility, Voluntary Work &amp; Other Information</p>
+          <p class="text-xs text-gray-500 mt-0.5">Sections IV, VI and VIII</p>
+        </div>
+      </header>
+
+      <div class="px-6 py-6 space-y-8">
+        <PdsRepeatingSection
+          section="eligibilities"
+          title="Civil Service Eligibility"
+          description="Section IV, item 27 — include board/bar eligibility under RA 1080."
+          add-label="Add eligibility"
+          empty-text="No eligibility recorded yet."
+          :fields="eligibilityFields"
+          :items="eligibilities"
+          :max="7"
+          @changed="$emit('changed')"
+        />
+
+        <div class="pt-6 border-t border-gray-100">
+          <PdsRepeatingSection
+            section="voluntary-works"
+            title="Voluntary Work"
+            description="Section VI, item 29 — civic, non-government, people's or voluntary organisations."
+            add-label="Add voluntary work"
+            empty-text="No voluntary work recorded yet."
+            :fields="voluntaryFields"
+            :items="voluntaryWorks"
+            :max="7"
+            @changed="$emit('changed')"
+          />
+        </div>
+
+        <div v-for="group in otherInfoGroups" :key="group.kind" class="pt-6 border-t border-gray-100">
+          <PdsRepeatingSection
+            section="other-info"
+            :title="group.title"
+            :description="group.description"
+            :add-label="group.addLabel"
+            :empty-text="group.emptyText"
+            :fields="otherInfoFields"
+            :items="otherInfoFor(group.kind)"
+            :defaults="{ kind: group.kind }"
+            :max="7"
+            @changed="$emit('changed')"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- Page 4 — Declarations -->
+    <PdsDeclarations @changed="$emit('changed')" />
+
     <!-- Item 41 — References -->
     <section class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <header class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
@@ -255,6 +316,8 @@ import { ref, reactive, watch, nextTick, onMounted } from 'vue'
 import { pdsApi } from '@/services/api'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
+import PdsRepeatingSection from './PdsRepeatingSection.vue'
+import PdsDeclarations from './PdsDeclarations.vue'
 
 const props = defineProps({
   // Section I fields live on the shared profile object so the page's existing
@@ -320,9 +383,54 @@ const motherFields = [
   { key: 'mother_maiden_middle_name', label: 'Middle name' },
 ]
 
-const family     = reactive({})
-const children   = ref([])
-const references = ref([])
+const eligibilityFields = [
+  { key: 'eligibility_name', label: 'Eligibility', required: true, placeholderValue: 'New eligibility' },
+  { key: 'rating', label: 'Rating (if applicable)' },
+  { key: 'examination_date', label: 'Date of exam / conferment', type: 'date' },
+  { key: 'examination_place', label: 'Place of exam / conferment' },
+  { key: 'license_number', label: 'License number' },
+  { key: 'license_valid_until', label: 'Valid until', type: 'date' },
+]
+
+const voluntaryFields = [
+  { key: 'organization_name_address', label: 'Name & address of organisation', required: true, placeholderValue: 'New organisation' },
+  { key: 'date_from', label: 'From', type: 'date' },
+  { key: 'date_to', label: 'To', type: 'date' },
+  { key: 'number_of_hours', label: 'No. of hours', type: 'number', step: '1' },
+  { key: 'position_nature_of_work', label: 'Position / nature of work' },
+]
+
+const otherInfoFields = [
+  { key: 'value', label: 'Entry', required: true, placeholderValue: 'New entry' },
+]
+
+/**
+ * Section VIII prints three separate columns that share one table, so each is
+ * rendered as its own list filtered by `kind`.
+ */
+const otherInfoGroups = [
+  {
+    kind: 'special_skill_hobby', title: 'Special Skills and Hobbies',
+    description: 'Item 31.', addLabel: 'Add skill or hobby', emptyText: 'No skills or hobbies recorded yet.',
+  },
+  {
+    kind: 'non_academic_distinction', title: 'Non-Academic Distinctions / Recognition',
+    description: 'Item 32. Write in full.', addLabel: 'Add distinction', emptyText: 'No distinctions recorded yet.',
+  },
+  {
+    kind: 'membership', title: 'Membership in Association / Organization',
+    description: 'Item 33. Write in full.', addLabel: 'Add membership', emptyText: 'No memberships recorded yet.',
+  },
+]
+
+const family        = reactive({})
+const children      = ref([])
+const references    = ref([])
+const eligibilities = ref([])
+const voluntaryWorks = ref([])
+const otherInfo     = ref([])
+
+const otherInfoFor = (kind) => otherInfo.value.filter(row => row.kind === kind)
 
 /**
  * Family background has no save button of its own, so it autosaves on a debounce.
@@ -344,8 +452,11 @@ async function load() {
     const { data } = await pdsApi.show()
 
     Object.assign(family, data.family_background ?? {})
-    children.value   = (data.children ?? []).map(normaliseDates)
-    references.value = data.references ?? []
+    children.value       = (data.children ?? []).map(normaliseDates)
+    references.value     = data.references ?? []
+    eligibilities.value  = data.eligibilities ?? []
+    voluntaryWorks.value = data.voluntary_works ?? []
+    otherInfo.value      = data.other_info ?? []
   } catch {
     toast.error('Could not load your PDS details.')
   } finally {
