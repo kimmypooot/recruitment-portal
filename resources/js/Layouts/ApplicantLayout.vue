@@ -42,7 +42,7 @@
           <div class="space-y-0.5">
             <template v-for="item in group.items" :key="item.href">
               <span
-                v-if="item.disabled && !profileComplete"
+                v-if="item.disabled && !auth.profileComplete"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/30 cursor-not-allowed">
                 <Icon :name="item.icon" size="4" class="flex-shrink-0" />
                 {{ item.label }}
@@ -378,7 +378,9 @@ const avatarLoaded   = ref(false)
 const avatarLoading  = ref(true)
 const avatarError    = ref(false)
 const avatarVersion  = ref(Date.now())
-watch(auth.token, (token) => {
+// Getter, not `auth.token`: Pinia unwraps store refs on access, so passing it
+// directly hands watch() a plain string rather than a reactive source.
+watch(() => auth.token, (token) => {
   if (token) { avatarLoading.value = true; avatarLoaded.value = false; avatarError.value = false }
 })
 

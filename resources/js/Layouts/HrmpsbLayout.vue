@@ -225,7 +225,7 @@ const avatarLoaded     = ref(false)
 const avatarLoading    = ref(true)
 const avatarError      = ref(false)
 const avatarVersion    = ref(Date.now())
-watch(auth.token, (token) => {
+watch(() => auth.token, (token) => {
   if (token) { avatarLoading.value = true; avatarLoaded.value = false; avatarError.value = false }
 })
 function refreshAvatar() {
