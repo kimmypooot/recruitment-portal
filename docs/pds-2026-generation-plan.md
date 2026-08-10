@@ -1,7 +1,8 @@
 # Plan — Generate CS Form No. 212 (Revised 2026) Personal Data Sheet from the Applicant Profile
 
-Status: **plan only, nothing implemented.**
-Author: drafted 2026-08-10.
+Status: **implemented.** All phases complete except real PNPKI signing, which is
+deliberately unimplemented and fails closed (a wet signature is valid on the 2026
+form). Drafted and delivered 2026-08-10 on branch `feature/pds-2026-generation`.
 
 ---
 
@@ -340,11 +341,11 @@ Do not skip to phase 3.
 | 1 | ✅ **Done** — migrations `2026_08_10_100001`–`100009`, 7 new models, relations on `ApplicantProfile`. No UI. Verified: rollback/re-migrate clean on MySQL, 58/58 tests pass on SQLite. |
 | 2 | ✅ **Done** — `PdsDataAssembler`, `PdsCompletenessChecker`, `ApplicantProfileFactory::pdsPersonalInfo()`, 21 tests. Also fixed a phase-1 omission: `WorkExperience`/`Training` were missing `date` casts after their columns were converted. |
 | 3 | ✅ **Done** — official template committed to `resources/templates/`, `config/pds_cell_map.php`, `config/pds_checkbox_map.php`, `PdsExcelGenerator`, `XlsxCheckboxWriter`, 12 tests. Still to wire: the controller/route that streams it (phase 5). |
-| 4 | ⚠️ **Code complete, unverified** — `PdsPdfGenerator` + `config/pds.php`. Option A (LibreOffice) chosen; Option B and PhpSpreadsheet's own PDF writers were tested and rejected (see 4.4). **The render test is skipped until LibreOffice is installed on a host.** |
+| 4 | ✅ **Done and verified** — LibreOffice installed; PDS renders as exactly 4 pages, WES as 1. Option B and PhpSpreadsheet PDF writers were measured and rejected (see 4.4). |
 | 5a | ✅ **Backend done** — `PdsController`, `ApplicantProfilePolicy`, routes, 14 tests. Board access granted per decision of 2026-08-10. |
 | 5b | ✅ **Done** — write API (`PdsProfileController`), `pdsApi`, `GeneratePdsPanel.vue`, and the **PDS Details** tab covering every section: Section I extras, Family Background + children, eligibility (IV), voluntary work (VI), other information (VIII), page-4 declarations, and references. Verified by `PdsEndToEndTest`, which fills the whole form over HTTP and generates it. |
 | 6 | ✅ **Done** — generating stores the PDS to the private disk as `pds_generated_path` (kept separate from the uploaded `pds_path` so the provenance stays visible), and `hasRequiredDocuments()` accepts either via the new `hasPds()`. Uploads remain fully supported; phase 3 of the migration path (retiring the upload) is **not** done. |
-| 7 | 🟡 **Partly done, rest blocked externally.** Added the `work_experiences.duties` field the Work Experience Sheet needs (Section V says duties belong on the attachment; they were never captured anywhere) with API and UI. Hardened `PnpkiService` to fail closed. **Blocked:** the WES itself needs the official *CS Form No. 212 Attachment* template, and real PNPKI needs CSC's SDK and certificates. |
+| 7 | ✅ **Done** — `WorkExperienceSheetGenerator` fills the official `.docx` attachment: the template's worked samples are replaced with the applicant's entries while the heading, table and signature block are preserved. Downloadable as docx or PDF. **PNPKI remains deliberately unimplemented and fails closed** — a wet signature is valid per the 2026 form, so this is optional unless CSC supplies an SDK and certificates. |
 
 ---
 

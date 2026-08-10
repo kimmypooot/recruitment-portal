@@ -93,6 +93,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Personal Data Sheet (CS Form No. 212, Revised 2026)
     Route::get('/profile/pds/completeness', [PdsController::class, 'completeness']);
     Route::get('/profile/pds/download', [PdsController::class, 'download']);
+    Route::get('/profile/pds/work-experience-sheet', [PdsController::class, 'downloadWorkExperienceSheet']);
 
     Route::get('/profile/pds', [PdsProfileController::class, 'show']);
     Route::get('/profile/pds/limits', [PdsProfileController::class, 'limits']);

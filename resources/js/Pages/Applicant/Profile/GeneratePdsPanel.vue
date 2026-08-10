@@ -86,6 +86,27 @@
           Print, sign, and have the form notarised before submitting it. The generated file follows
           CSC Memorandum Circular No. 05, s. 2026.
         </p>
+
+        <!-- The attachment stands on its own: it needs work history, not a
+             complete PDS, so it is not gated on the checklist above. -->
+        <div class="mt-5 pt-5 border-t border-gray-200">
+          <p class="text-sm font-medium text-gray-800">Work Experience Sheet</p>
+          <p class="mt-0.5 mb-3 text-xs text-gray-500">
+            Attachment to CS Form No. 212, built from the duties and accomplishments on your work history.
+          </p>
+          <div class="flex flex-wrap items-center gap-3">
+            <button type="button" :disabled="downloading === 'wes-docx'"
+              @click="downloadSheet('docx')"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50">
+              {{ downloading === 'wes-docx' ? 'Preparing…' : 'Download Word' }}
+            </button>
+            <button type="button" :disabled="downloading === 'wes-pdf'"
+              @click="downloadSheet('pdf')"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50">
+              {{ downloading === 'wes-pdf' ? 'Preparing…' : 'Download PDF' }}
+            </button>
+          </div>
+        </div>
       </div>
     </template>
   </div>
@@ -208,6 +229,18 @@ async function download(format) {
  * Errors come back as a blob because the request asks for one, so the JSON body
  * has to be read back out before it can be shown.
  */
+async function downloadSheet(format) {
+  downloading.value = `wes-${format}`
+  try {
+    const response = await pdsApi.downloadWorkExperienceSheet(format)
+    saveBlob(response.data, `WorkExperienceSheet.${format}`, response.headers)
+  } catch (error) {
+    toast.error(await readError(error, format))
+  } finally {
+    downloading.value = null
+  }
+}
+
 async function readError(error, format) {
   const status = error?.response?.status
 

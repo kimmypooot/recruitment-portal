@@ -10,6 +10,7 @@ use App\Services\AuditLog;
 use App\Services\Pds\PdsCompletenessChecker;
 use App\Services\Pds\PdsExcelGenerator;
 use App\Services\Pds\PdsPdfGenerator;
+use App\Services\Pds\WorkExperienceSheetGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -32,6 +33,7 @@ class PdsController extends Controller
         private readonly PdsCompletenessChecker $checker,
         private readonly PdsExcelGenerator $excelGenerator,
         private readonly PdsPdfGenerator $pdfGenerator,
+        private readonly WorkExperienceSheetGenerator $wesGenerator,
     ) {}
 
     /** Per-section completeness for the signed-in applicant. */
@@ -64,6 +66,41 @@ class PdsController extends Controller
         }
 
         return $this->stream($request, $profile, 'pds_viewed_by_board', $application);
+    }
+
+    /**
+     * The Work Experience Sheet attachment. Unlike the PDS it is not gated on
+     * overall completeness — it only needs work history, and an applicant with
+     * none simply has no sheet to file.
+     */
+    public function downloadWorkExperienceSheet(Request $request): BinaryFileResponse|JsonResponse
+    {
+        $profile = $this->ownProfile($request);
+        $format  = strtolower((string) $request->query('format', 'docx'));
+
+        if (! in_array($format, ['docx', 'pdf'], true)) {
+            return response()->json(['message' => 'Unsupported format. Use docx or pdf.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $name = 'WES_'.preg_replace('/[^A-Za-z0-9_]+/', '_', trim(($profile->last_name ?? 'applicant').'_'.($profile->first_name ?? '')));
+        $path = storage_path('app/pds-tmp/'.$name.'.docx');
+
+        try {
+            $this->wesGenerator->generate($profile, $path);
+
+            if ($format === 'pdf') {
+                $pdf = storage_path('app/pds-tmp/'.$name.'.pdf');
+                $this->pdfGenerator->convert($path, $pdf);
+                @unlink($path);
+                $path = $pdf;
+            }
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        AuditLog::record('work_experience_sheet_generated', $profile);
+
+        return response()->download($path, $name.'.'.$format)->deleteFileAfterSend();
     }
 
     // --- Internals ----------------------------------------------------------

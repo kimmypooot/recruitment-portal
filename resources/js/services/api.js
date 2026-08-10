@@ -117,4 +117,8 @@ export const pdsApi = {
   /** Streams a file; format is 'xlsx' or 'pdf'. */
   download: (format = 'xlsx') =>
     api.get(`/profile/pds/download?format=${format}`, { responseType: 'blob' }),
+
+  /** The Work Experience Sheet attachment; format is 'docx' or 'pdf'. */
+  downloadWorkExperienceSheet: (format = 'docx') =>
+    api.get(`/profile/pds/work-experience-sheet?format=${format}`, { responseType: 'blob' }),
 };
