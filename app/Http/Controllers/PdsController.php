@@ -12,6 +12,7 @@ use App\Services\Pds\PdsExcelGenerator;
 use App\Services\Pds\PdsPdfGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -119,11 +120,40 @@ class PdsController extends Controller
             ], Response::HTTP_SERVICE_UNAVAILABLE);
         }
 
-        $profile->forceFill(['pds_generated_at' => now()])->save();
+        // Only the applicant's own download becomes their PDS of record; a board
+        // member pulling a copy must not overwrite it.
+        if ($application === null) {
+            $this->retain($profile, $path, $format);
+        }
 
         AuditLog::record($auditAction, $application ?? $profile);
 
         return response()->download($path, $this->fileName($profile, $format))->deleteFileAfterSend();
+    }
+
+    /**
+     * Keep a copy of the generated PDS alongside the applicant's other documents,
+     * so it satisfies ApplicantProfile::hasRequiredDocuments() and HR has an
+     * actual file to open rather than just a timestamp.
+     *
+     * Stored on the same private disk as the uploads, and the previous generated
+     * copy is removed so regenerating does not accumulate files.
+     */
+    private function retain(ApplicantProfile $profile, string $sourcePath, string $format): void
+    {
+        $directory = 'profile-documents/'.$profile->user_id;
+        $stored    = $directory.'/pds-generated-'.now()->format('Ymd-His').'.'.$format;
+
+        Storage::disk('local')->put($stored, (string) file_get_contents($sourcePath));
+
+        if ($profile->pds_generated_path !== null) {
+            Storage::disk('local')->delete($profile->pds_generated_path);
+        }
+
+        $profile->forceFill([
+            'pds_generated_path' => $stored,
+            'pds_generated_at'   => now(),
+        ])->save();
     }
 
     private function fileName(ApplicantProfile $profile, string $format): string

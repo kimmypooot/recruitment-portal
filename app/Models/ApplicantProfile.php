@@ -35,7 +35,7 @@ class ApplicantProfile extends Model
         'region', 'province', 'city_municipality', 'barangay',
         'mobile_number', 'eligibility', 'eligibility_other',
         'indigenous_group', 'pwd', 'solo_parent',
-        'pds_path', 'pds_uploaded_at',
+        'pds_path', 'pds_uploaded_at', 'pds_generated_path',
         'app_letter_path', 'app_letter_uploaded_at',
         'ipcr_path', 'ipcr_uploaded_at',
         'coe_path', 'coe_uploaded_at',
@@ -158,12 +158,22 @@ class ApplicantProfile extends Model
      * Required documents to submit an application: PDS, Application Letter,
      * Certificate of Eligibility, and Transcript of Records. IPCR is optional
      * (mirrors the required flags in CompleteProfile.vue's docFields).
+     *
+     * The PDS is satisfied either by a copy the applicant uploaded or by one
+     * generated from their profile — generation is gated on the form being
+     * complete, so a generated PDS is at least as trustworthy as an upload.
      */
     public function hasRequiredDocuments(): bool
     {
-        return $this->pds_path !== null
+        return $this->hasPds()
             && $this->app_letter_path !== null
             && $this->coe_path !== null
             && $this->tor_path !== null;
+    }
+
+    /** True when a PDS is on file, however it got there. */
+    public function hasPds(): bool
+    {
+        return $this->pds_path !== null || $this->pds_generated_path !== null;
     }
 }

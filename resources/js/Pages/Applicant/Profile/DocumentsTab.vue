@@ -117,7 +117,7 @@
 
     <!-- Generate the PDS from the details already captured, instead of
          uploading a separately hand-filled copy. -->
-    <GeneratePdsPanel :generated-at="pdsGeneratedAt" />
+    <GeneratePdsPanel :generated-at="pdsGeneratedAt" @generated="$emit('pds-generated')" />
 
   </div>
 </template>
@@ -140,7 +140,7 @@ const props = defineProps({
   errors:         { type: Object, default: () => ({}) },
 })
 
-const emit = defineEmits(['file-select'])
+const emit = defineEmits(['file-select', 'pds-generated'])
 
 async function onFileSelect(event, key) {
   const file = event.target.files[0]

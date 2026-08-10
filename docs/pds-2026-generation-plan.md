@@ -343,7 +343,7 @@ Do not skip to phase 3.
 | 4 | ⚠️ **Code complete, unverified** — `PdsPdfGenerator` + `config/pds.php`. Option A (LibreOffice) chosen; Option B and PhpSpreadsheet's own PDF writers were tested and rejected (see 4.4). **The render test is skipped until LibreOffice is installed on a host.** |
 | 5a | ✅ **Backend done** — `PdsController`, `ApplicantProfilePolicy`, routes, 14 tests. Board access granted per decision of 2026-08-10. |
 | 5b | ✅ **Done** — write API (`PdsProfileController`), `pdsApi`, `GeneratePdsPanel.vue`, and the **PDS Details** tab covering every section: Section I extras, Family Background + children, eligibility (IV), voluntary work (VI), other information (VIII), page-4 declarations, and references. Verified by `PdsEndToEndTest`, which fills the whole form over HTTP and generates it. |
-| 6 | Flip `hasRequiredDocuments()` to phase-2 semantics. |
+| 6 | ✅ **Done** — generating stores the PDS to the private disk as `pds_generated_path` (kept separate from the uploaded `pds_path` so the provenance stays visible), and `hasRequiredDocuments()` accepts either via the new `hasPds()`. Uploads remain fully supported; phase 3 of the migration path (retiring the upload) is **not** done. |
 | 7 | *Later:* Work Experience Sheet attachment; e-signature/digital certificate via `PnpkiService` (the 2026 form explicitly permits it — this is where that stub stops being a stub). |
 
 ---

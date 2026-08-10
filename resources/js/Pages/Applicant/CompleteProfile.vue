@@ -176,6 +176,7 @@
         :saving="savingDocs"
         :errors="docErrors"
         @file-select="onDocFileSelect"
+        @pds-generated="refreshPdsDocumentState"
       />
 
       <!-- Sticky save bar -->
@@ -680,8 +681,10 @@ const personal = reactive({
   perm_house_block_lot: '', perm_street: '', perm_subdivision: '', perm_barangay: '',
   perm_city_municipality: '', perm_province: '', perm_zip_code: '',
 
-  // Read-only; surfaced on the Documents tab by GeneratePdsPanel.
+  // Read-only; surfaced on the Documents tab by GeneratePdsPanel. A generated
+  // PDS satisfies the document requirement in place of an upload.
   pds_generated_at: null,
+  pds_generated_path: null,
 })
 
 const nameForm = reactive({
@@ -712,7 +715,7 @@ const tabs = computed(() => [
   {
     key: 'documents', label: 'Documents',
     icon: 'M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13',
-    complete: !!(docPaths.pds && docPaths.app_letter && docPaths.coe && docPaths.tor),
+    complete: hasRequiredDocuments.value,
   },
 ])
 
@@ -723,7 +726,7 @@ const profileStepsDone = computed(() => [
   !!(experiences.value.length || education.value.length),
   !!(trainings.value.length),
   !!(personal.eligibility),
-  !!(docPaths.pds && docPaths.app_letter && docPaths.coe && docPaths.tor),
+  hasRequiredDocuments.value,
 ])
 const completedChecks = computed(() => profileStepsDone.value.filter(Boolean).length)
 const totalChecks = computed(() => profileStepsDone.value.length)
@@ -733,15 +736,20 @@ const progressPct = computed(() =>
 
 const docFields = [
   { key: 'pds',        label: 'Personal Data Sheet (PDS) with Work Experience Sheet', required: true, full: true,
-    note: 'CS Form No. 212 (Revised 2025)', templateUrl: '' },
+    note: 'CS Form No. 212 (Revised 2026) — or generate it below instead of uploading', templateUrl: '' },
   { key: 'app_letter', label: 'Application Letter', required: true },
   { key: 'ipcr',       label: 'IPCR', required: false },
   { key: 'coe',        label: 'Certificate of Eligibility', required: true },
   { key: 'tor',        label: 'Authenticated Transcript of Records', required: true },
 ]
 
+// A PDS generated from the profile counts the same as an uploaded one; mirrors
+// ApplicantProfile::hasPds() on the server.
+const hasPds = computed(() => !!docPaths.pds || !!personal.pds_generated_path)
+
 const hasRequiredDocuments = computed(() =>
-  docFields.filter(d => d.required).every(d => !!docPaths[d.key])
+  docFields.filter(d => d.required)
+    .every(d => d.key === 'pds' ? hasPds.value : !!docPaths[d.key])
 )
 
 // "Complete" here means actually eligible to apply — basic profile info
@@ -884,11 +892,30 @@ function goToNextTab() {
   if (nextTab.value) switchTab(nextTab.value.key)
 }
 
+/**
+ * Generating a PDS stores it as the applicant's PDS of record, which can satisfy
+ * the document requirement on its own — so pull the profile again to pick up the
+ * new path and let the Browse Vacancies prompt appear without a page reload.
+ */
+async function refreshPdsDocumentState() {
+  try {
+    const { data } = await profileApi.show()
+    if (!data.profile) return
+
+    personal.pds_generated_path = data.profile.pds_generated_path ?? null
+    personal.pds_generated_at   = data.profile.pds_generated_at ?? null
+
+    isComplete.value = data.is_complete ?? isComplete.value
+  } catch {
+    // Non-fatal: the download already succeeded, only the badge lags behind.
+  }
+}
+
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 onMounted(async () => {
   const tabParam = new URLSearchParams(window.location.search).get('tab')
-  if (tabParam && ['personal', 'qualifications', 'documents'].includes(tabParam)) {
+  if (tabParam && ['personal', 'qualifications', 'pds', 'documents'].includes(tabParam)) {
     activeTab.value = tabParam
   }
 
