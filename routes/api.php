@@ -24,6 +24,8 @@ use App\Http\Controllers\HrmpsbController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PreAssessmentController;
+use App\Http\Controllers\PdsController;
+use App\Http\Controllers\PdsProfileController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QsEvaluationController;
 use App\Http\Controllers\ReportController;
@@ -87,6 +89,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::post('/profile/photo', [ProfileController::class, 'uploadPhoto']);
     Route::post('/profile/documents', [ProfileController::class, 'uploadDocuments']);
+
+    // Personal Data Sheet (CS Form No. 212, Revised 2026)
+    Route::get('/profile/pds/completeness', [PdsController::class, 'completeness']);
+    Route::get('/profile/pds/download', [PdsController::class, 'download']);
+
+    Route::get('/profile/pds', [PdsProfileController::class, 'show']);
+    Route::get('/profile/pds/limits', [PdsProfileController::class, 'limits']);
+    Route::put('/profile/pds/family-background', [PdsProfileController::class, 'updateFamilyBackground']);
+    Route::put('/profile/pds/declaration', [PdsProfileController::class, 'updateDeclaration']);
+
+    // Repeating sections: children, eligibilities, voluntary-works, other-info, references
+    Route::post('/profile/pds/{section}', [PdsProfileController::class, 'store']);
+    Route::put('/profile/pds/{section}/{id}', [PdsProfileController::class, 'update']);
+    Route::delete('/profile/pds/{section}/{id}', [PdsProfileController::class, 'destroy']);
 
     // Work Experience
     Route::post('/profile/experiences', [ProfileController::class, 'storeExperience']);
@@ -181,6 +197,9 @@ Route::middleware(['auth:sanctum', 'role:hrmpsb,admin'])->group(function () {
     Route::get('/hrmpsb/pipeline-stages', [HrmpsbController::class, 'pipelineStages']);
     Route::get('/hrmpsb/applications/{application}/profile', [HrmpsbController::class, 'applicantProfile']);
     Route::get('/hrmpsb/applications/{application}/documents/{type}', [HrmpsbController::class, 'serveDocument']);
+
+    // Candidate's generated PDS. Authorization is in ApplicantProfilePolicy.
+    Route::get('/hrmpsb/applications/{application}/pds', [PdsController::class, 'downloadForApplication']);
     Route::get('/hrmpsb/vacancies/{vacancy}/applicants', [HrmpsbController::class, 'vacancyApplicants']);
     Route::post('/hrmpsb/vacancies/{vacancy}/download-requirements', [HrmpsbController::class, 'downloadRequirements']);
     // QS Evaluation

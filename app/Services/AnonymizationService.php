@@ -92,13 +92,13 @@ class AnonymizationService
             ->where('token', 'like', "{$prefix}-%")
             ->count();
 
-        $seq = str_pad($existingCount + 1, 3, '0', STR_PAD_LEFT);
+        $seq = str_pad((string) ($existingCount + 1), 3, '0', STR_PAD_LEFT);
         $token = "{$prefix}-{$seq}";
 
         // Ensure global uniqueness (safety net)
         while (AnonymizationToken::where('token', $token)->exists()) {
             $existingCount++;
-            $seq = str_pad($existingCount + 1, 3, '0', STR_PAD_LEFT);
+            $seq = str_pad((string) ($existingCount + 1), 3, '0', STR_PAD_LEFT);
             $token = "{$prefix}-{$seq}";
         }
 
