@@ -32,6 +32,36 @@ class XlsxCheckboxWriter
             return;
         }
 
+        /**
+         * ZipArchive::close() commits by renaming a temp file over the original,
+         * which Windows refuses while any other handle to it is open. A failed
+         * close also invalidates the object, so the whole open/modify/close
+         * cycle is retried rather than just the close.
+         */
+        for ($attempt = 1; ; $attempt++) {
+            if ($this->attempt($path, $anchorsBySheet)) {
+                return;
+            }
+
+            if ($attempt >= 3) {
+                throw new RuntimeException(
+                    "Unable to commit checkbox changes to {$path}; the file is locked by another process."
+                );
+            }
+
+            gc_collect_cycles();
+            usleep(150_000);
+        }
+    }
+
+    /**
+     * One open/modify/close cycle. Returns false only when the commit itself
+     * failed — a malformed workbook still throws, since retrying cannot help.
+     *
+     * @param  array<string, list<string>>  $anchorsBySheet
+     */
+    private function attempt(string $path, array $anchorsBySheet): bool
+    {
         $zip = new ZipArchive;
 
         if ($zip->open($path) !== true) {
@@ -56,9 +86,13 @@ class XlsxCheckboxWriter
 
                 $zip->addFromString($vmlPart, $this->check($vml, $anchors, $sheetName));
             }
-        } finally {
-            $zip->close();
+        } catch (\Throwable $e) {
+            @$zip->close();
+
+            throw $e;
         }
+
+        return @$zip->close();
     }
 
     /**

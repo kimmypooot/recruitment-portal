@@ -217,9 +217,15 @@ class PdsDataAssembler
                 'date_to'           => $work->is_present ? 'PRESENT' : $this->date($work->date_to),
                 'position_title'    => $this->text($work->position_title),
                 'department_agency' => $this->text($work->department_agency),
-                // Printed on the Work Experience Sheet attachment, not the PDS
-                // itself, but carried here so both render from one source.
-                'duties'            => $this->text($work->duties),
+                // The block below prints on the Work Experience Sheet attachment,
+                // not the PDS itself, but is carried here so both render from
+                // one source. Raw values: the WES is prose, and "N/A" reads
+                // badly in a narrative sheet.
+                'duties'               => (string) $work->duties,
+                'office_unit'          => (string) $work->office_unit,
+                'agency_location'      => (string) $work->agency_location,
+                'immediate_supervisor' => (string) $work->immediate_supervisor,
+                'accomplishments'      => (string) $work->accomplishments,
                 'monthly_salary'    => $this->money($work->monthly_salary),
                 'salary_grade'      => $this->text($work->salary_grade),
                 'appointment_status' => $this->text($work->appointment_status),
@@ -228,7 +234,9 @@ class PdsDataAssembler
             self::PRINTED_ROWS['work'],
             [
                 'date_from' => '', 'date_to' => '', 'position_title' => '',
-                'department_agency' => '', 'duties' => '', 'monthly_salary' => '', 'salary_grade' => '',
+                'department_agency' => '', 'duties' => '', 'office_unit' => '',
+                'agency_location' => '', 'immediate_supervisor' => '', 'accomplishments' => '',
+                'monthly_salary' => '', 'salary_grade' => '',
                 'appointment_status' => '', 'government_service' => '',
             ]
         );

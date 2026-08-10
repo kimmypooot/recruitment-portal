@@ -280,16 +280,53 @@
               <input v-model="expForm.department_agency" type="text" placeholder="e.g. Civil Service Commission"
                 class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
             </div>
-            <div>
-              <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                Description of Duties
-              </label>
-              <textarea v-model="expForm.duties" rows="3"
-                placeholder="Summarise your actual duties and responsibilities in this position."
-                class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"></textarea>
-              <p class="mt-1 text-xs text-gray-400">
-                Printed on the Work Experience Sheet attached to the PDS, not on the PDS itself.
+            <!-- Everything below prints on the Work Experience Sheet attachment
+                 rather than on the PDS itself. -->
+            <div class="pt-4 mt-1 border-t border-gray-100">
+              <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Work Experience Sheet</p>
+              <p class="text-xs text-gray-400 mt-0.5 mb-4">
+                Attachment to CS Form No. 212. Fill this in for experience relevant to the position you are applying for.
               </p>
+
+              <div class="space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-5">
+                  <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Name of Office / Unit</label>
+                    <input v-model="expForm.office_unit" type="text" placeholder="e.g. Finance and Administrative Service"
+                      class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Immediate Supervisor</label>
+                    <input v-model="expForm.immediate_supervisor" type="text" placeholder="e.g. Maria Estrada"
+                      class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Agency Location</label>
+                  <input v-model="expForm.agency_location" type="text" placeholder="e.g. Palo, Leyte"
+                    class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                    Summary of Actual Duties
+                  </label>
+                  <textarea v-model="expForm.duties" rows="3"
+                    placeholder="Summarise your actual duties and responsibilities in this position."
+                    class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"></textarea>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                    Accomplishments and Contributions
+                  </label>
+                  <textarea v-model="expForm.accomplishments" rows="3"
+                    placeholder="One per line, e.g. Developed recruitment plan"
+                    class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"></textarea>
+                  <p class="mt-1 text-xs text-gray-400">Optional. Each line prints as a separate bullet.</p>
+                </div>
+              </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-5">
               <div>
@@ -797,6 +834,7 @@ const trainingModal = reactive({ open: false, saving: false, error: '', editingI
 
 const expForm = reactive({
   position_title: '', department_agency: '', duties: '',
+  office_unit: '', agency_location: '', immediate_supervisor: '', accomplishments: '',
   salary_grade: '', appointment_status: '', government_service: false,
   date_from: '', date_to: '', is_present: false,
 })
@@ -1048,7 +1086,9 @@ async function uploadDocuments() {
 function openExpModal(exp = null) {
   Object.assign(expForm, {
     position_title: exp?.position_title ?? '', department_agency: exp?.department_agency ?? '',
-    duties: exp?.duties ?? '',
+    duties: exp?.duties ?? '', office_unit: exp?.office_unit ?? '',
+    agency_location: exp?.agency_location ?? '', immediate_supervisor: exp?.immediate_supervisor ?? '',
+    accomplishments: exp?.accomplishments ?? '',
     salary_grade: exp?.salary_grade ?? '', appointment_status: exp?.appointment_status ?? '',
     government_service: exp?.government_service ?? false,
     date_from: exp?.date_from ?? '', date_to: exp?.date_to ?? '', is_present: exp?.is_present ?? false,

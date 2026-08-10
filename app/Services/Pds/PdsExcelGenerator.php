@@ -46,8 +46,16 @@ class PdsExcelGenerator
             mkdir($directory, 0775, true);
         }
 
-        IOFactory::createWriter($book, 'Xlsx')->save($destination);
+        $writer = IOFactory::createWriter($book, 'Xlsx');
+        $writer->save($destination);
+
+        // The checkbox pass reopens this file as an archive, and ZipArchive::close()
+        // works by renaming a temp file over the original — which Windows refuses
+        // while any handle to it is still open. Release the writer and the
+        // workbook, and collect cycles, before touching the file again.
         $book->disconnectWorksheets();
+        unset($writer, $book);
+        gc_collect_cycles();
 
         $this->checkboxWriter->tick($destination, $this->checkboxAnchors($data));
 
