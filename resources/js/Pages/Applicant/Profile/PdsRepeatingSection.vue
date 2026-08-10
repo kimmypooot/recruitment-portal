@@ -101,16 +101,15 @@ function payload(row) {
   }, {})
 }
 
+/**
+ * New rows start genuinely empty. They used to be seeded with placeholder text
+ * to satisfy a required-field rule, which meant an unfilled row printed words
+ * like "New eligibility" onto the form. The API now accepts blank rows and the
+ * assembler drops them, so nothing unfilled reaches the document.
+ */
 async function add() {
-  const required = props.fields.find(f => f.required)
-
   try {
-    const { data } = await pdsApi.addItem(props.section, {
-      ...props.defaults,
-      // The API requires its mandatory field on create, so seed a placeholder
-      // the applicant immediately overwrites.
-      ...(required ? { [required.key]: required.placeholderValue ?? 'Untitled' } : {}),
-    })
+    const { data } = await pdsApi.addItem(props.section, { ...props.defaults })
     rows.value.push(normalise(data))
     emit('changed')
   } catch {
@@ -119,9 +118,6 @@ async function add() {
 }
 
 async function save(row) {
-  const required = props.fields.find(f => f.required)
-  if (required && !String(row[required.key] ?? '').trim()) return
-
   try {
     await pdsApi.updateItem(props.section, row.id, payload(row))
     emit('changed')

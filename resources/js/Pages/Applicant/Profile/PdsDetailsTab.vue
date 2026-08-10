@@ -384,7 +384,7 @@ const motherFields = [
 ]
 
 const eligibilityFields = [
-  { key: 'eligibility_name', label: 'Eligibility', required: true, placeholderValue: 'New eligibility' },
+  { key: 'eligibility_name', label: 'Eligibility', required: true },
   { key: 'rating', label: 'Rating (if applicable)' },
   { key: 'examination_date', label: 'Date of exam / conferment', type: 'date' },
   { key: 'examination_place', label: 'Place of exam / conferment' },
@@ -393,7 +393,7 @@ const eligibilityFields = [
 ]
 
 const voluntaryFields = [
-  { key: 'organization_name_address', label: 'Name & address of organisation', required: true, placeholderValue: 'New organisation' },
+  { key: 'organization_name_address', label: 'Name & address of organisation', required: true },
   { key: 'date_from', label: 'From', type: 'date' },
   { key: 'date_to', label: 'To', type: 'date' },
   { key: 'number_of_hours', label: 'No. of hours', type: 'number', step: '1' },
@@ -401,7 +401,7 @@ const voluntaryFields = [
 ]
 
 const otherInfoFields = [
-  { key: 'value', label: 'Entry', required: true, placeholderValue: 'New entry' },
+  { key: 'value', label: 'Entry', required: true },
 ]
 
 /**
@@ -482,7 +482,8 @@ async function saveFamily() {
 
 async function addChild() {
   try {
-    const { data } = await pdsApi.addItem('children', { full_name: 'New child' })
+    // Blank on purpose — see PdsRepeatingSection.add().
+    const { data } = await pdsApi.addItem('children', {})
     children.value.push(normaliseDates(data))
   } catch {
     toast.error('Could not add a child row.')
@@ -490,11 +491,9 @@ async function addChild() {
 }
 
 async function saveChild(child) {
-  if (!child.full_name?.trim()) return
-
   try {
     await pdsApi.updateItem('children', child.id, {
-      full_name: child.full_name,
+      full_name: child.full_name || null,
       date_of_birth: child.date_of_birth || null,
     })
     emit('changed')
@@ -505,7 +504,7 @@ async function saveChild(child) {
 
 async function addReference() {
   try {
-    const { data } = await pdsApi.addItem('references', { name: '' })
+    const { data } = await pdsApi.addItem('references', {})
     references.value.push(data)
   } catch {
     toast.error('Could not add a reference.')
@@ -515,7 +514,7 @@ async function addReference() {
 async function saveReference(reference) {
   try {
     await pdsApi.updateItem('references', reference.id, {
-      name: reference.name || '',
+      name: reference.name || null,
       office_residential_address: reference.office_residential_address || null,
       contact_no_or_email: reference.contact_no_or_email || null,
     })

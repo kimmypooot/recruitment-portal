@@ -120,6 +120,38 @@ class PdsProfileSectionTest extends TestCase
         ];
     }
 
+    /**
+     * The editors add an empty row for the applicant to type into, so creating
+     * one must not be rejected. This previously 422'd on references, and the
+     * other sections dodged it by seeding placeholder text like "New eligibility"
+     * — which would then print onto the form.
+     */
+    public function test_an_empty_row_can_be_created_for_every_repeating_section(): void
+    {
+        $sections = [
+            'children'        => [],
+            'eligibilities'   => [],
+            'voluntary-works' => [],
+            'other-info'      => ['kind' => PdsOtherInfo::KIND_MEMBERSHIP],
+            'references'      => [],
+        ];
+
+        foreach ($sections as $section => $payload) {
+            $this->actor()->postJson("/api/profile/pds/{$section}", $payload)
+                ->assertCreated();
+        }
+    }
+
+    public function test_a_row_can_be_cleared_back_to_empty(): void
+    {
+        $created = $this->actor()->postJson('/api/profile/pds/references', ['name' => 'Maria Santos'])
+            ->assertCreated()->json();
+
+        $this->actor()->putJson("/api/profile/pds/references/{$created['id']}", ['name' => null])
+            ->assertOk()
+            ->assertJsonPath('name', null);
+    }
+
     public function test_an_unknown_section_is_rejected(): void
     {
         $this->actor()->postJson('/api/profile/pds/not-a-section', ['x' => 1])
@@ -132,11 +164,15 @@ class PdsProfileSectionTest extends TestCase
             ->assertStatus(422);
     }
 
-    public function test_required_fields_are_enforced(): void
+    /**
+     * `kind` stays required even though the text fields are now nullable — it is
+     * a discriminator chosen by the UI, not something the applicant types.
+     */
+    public function test_other_info_still_requires_a_kind(): void
     {
-        $this->actor()->postJson('/api/profile/pds/children', [])
+        $this->actor()->postJson('/api/profile/pds/other-info', ['value' => 'PASUC'])
             ->assertStatus(422)
-            ->assertJsonValidationErrors('full_name');
+            ->assertJsonValidationErrors('kind');
     }
 
     public function test_a_user_cannot_touch_another_applicants_records(): void

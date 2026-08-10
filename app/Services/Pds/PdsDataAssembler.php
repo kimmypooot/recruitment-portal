@@ -140,7 +140,7 @@ class PdsDataAssembler
                 'middle_name' => $this->text($family?->mother_maiden_middle_name),
             ],
             'children' => $this->pad(
-                $profile->children->map(fn ($child) => [
+                collect($this->filled($profile->children, 'full_name'))->map(fn ($child) => [
                     'full_name'     => $this->text($child->full_name),
                     'date_of_birth' => $this->date($child->date_of_birth),
                 ])->all(),
@@ -186,7 +186,7 @@ class PdsDataAssembler
     private function civilServiceEligibility(ApplicantProfile $profile): array
     {
         return $this->pad(
-            $profile->civilServiceEligibilities->map(fn ($eligibility) => [
+            collect($this->filled($profile->civilServiceEligibilities, 'eligibility_name'))->map(fn ($eligibility) => [
                 'eligibility_name'    => $this->text($eligibility->eligibility_name),
                 'rating'              => $this->text($eligibility->rating),
                 'examination_date'    => $this->date($eligibility->examination_date),
@@ -247,7 +247,7 @@ class PdsDataAssembler
     private function voluntaryWork(ApplicantProfile $profile): array
     {
         return $this->pad(
-            $profile->voluntaryWorks->map(fn ($work) => [
+            collect($this->filled($profile->voluntaryWorks, 'organization_name_address'))->map(fn ($work) => [
                 'organization_name_address' => $this->text($work->organization_name_address),
                 'date_from'                 => $this->date($work->date_from),
                 'date_to'                   => $this->date($work->date_to),
@@ -290,7 +290,8 @@ class PdsDataAssembler
         $grouped = $profile->otherInfos->groupBy('kind');
 
         $column = fn (string $kind) => $this->pad(
-            ($grouped->get($kind)?->pluck('value')->map(fn ($v) => $this->text($v))->all() ?? []),
+            collect($this->filled($grouped->get($kind) ?? collect(), 'value'))
+                ->pluck('value')->all(),
             self::PRINTED_ROWS['other_info'],
             ''
         );
@@ -341,7 +342,7 @@ class PdsDataAssembler
             'q40c_id_no' => $this->text($declaration?->q40c_id_no),
 
             'references' => $this->pad(
-                $profile->references->map(fn ($reference) => [
+                collect($this->filled($profile->references, 'name'))->map(fn ($reference) => [
                     'name'                       => $this->text($reference->name),
                     'office_residential_address' => $this->text($reference->office_residential_address),
                     'contact_no_or_email'        => $this->text($reference->contact_no_or_email),
@@ -414,5 +415,22 @@ class PdsDataAssembler
         $rows = array_slice($rows, 0, $count);
 
         return array_pad($rows, $count, $filler);
+    }
+
+    /**
+     * Drop rows the applicant added but never filled in.
+     *
+     * The editors create an empty row for the applicant to type into, so a
+     * half-finished list can contain blanks. Without this they would print as
+     * "N/A" in the middle of an otherwise real list.
+     *
+     * @param  \Illuminate\Support\Collection<int, mixed>  $rows
+     * @return array<int, mixed>
+     */
+    private function filled(mixed $rows, string $keyField): array
+    {
+        return $rows->filter(
+            fn ($row) => trim((string) $row->{$keyField}) !== ''
+        )->values()->all();
     }
 }

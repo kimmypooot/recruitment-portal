@@ -179,11 +179,11 @@
         @pds-generated="refreshPdsDocumentState"
       />
 
-      <!-- Sticky save bar -->
+      <!-- Save / navigation bar — sits in the flow at the end of the tab
+           content rather than floating over it. -->
       <div v-if="activeTab !== 'documents'"
-        class="fixed bottom-14 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-md transition-all duration-500"
-        :class="sidebarCollapsed ? 'left-0' : 'left-0 lg:left-64'">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+        class="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm">
+        <div class="px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <button v-if="previousTab" @click="goToPreviousTab" type="button"
             class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -221,9 +221,8 @@
 
       <!-- Document upload bar (separate because docs use FormData upload) -->
       <div v-if="activeTab === 'documents'"
-        class="fixed bottom-14 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-md transition-all duration-500"
-        :class="sidebarCollapsed ? 'left-0' : 'left-0 lg:left-64'">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+        class="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm">
+        <div class="px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <button v-if="previousTab" @click="goToPreviousTab" type="button"
             class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -621,7 +620,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, inject, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { profileApi } from '@/services/api'
 import Cropper from 'cropperjs'
@@ -701,7 +700,6 @@ const docTimestamps = reactive({})
 const authUser  = ref(JSON.parse(localStorage.getItem('auth_user') ?? '{}'))
 const authToken = localStorage.getItem('auth_token') ?? ''
 
-const sidebarCollapsed = inject('sidebarCollapsed', false)
 
 function refreshAuthUser() {
   const updated = JSON.parse(localStorage.getItem('auth_user') ?? '{}')

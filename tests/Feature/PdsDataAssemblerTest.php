@@ -171,6 +171,34 @@ class PdsDataAssemblerTest extends TestCase
         $this->assertNull($data['q34a'], 'an unanswered question must not render as No');
     }
 
+    /**
+     * The editors create an empty row for the applicant to type into. If one is
+     * left unfilled it must not reach the form — it would otherwise print as
+     * "N/A" in the middle of an otherwise real list.
+     */
+    public function test_rows_the_applicant_never_filled_in_are_dropped(): void
+    {
+        $profile = $this->profile();
+
+        $profile->references()->create(['name' => 'Maria Santos', 'sort_order' => 0]);
+        $profile->references()->create(['name' => null, 'sort_order' => 1]);
+        $profile->children()->create(['full_name' => 'Ana Dela Cruz']);
+        $profile->children()->create(['full_name' => null]);
+        $profile->civilServiceEligibilities()->create(['eligibility_name' => null]);
+        $profile->otherInfos()->create(['kind' => PdsOtherInfo::KIND_MEMBERSHIP, 'value' => null]);
+
+        $data = $this->assemble($profile);
+
+        $this->assertSame('Maria Santos', $data['declarations']['references'][0]['name']);
+        $this->assertSame('', $data['declarations']['references'][1]['name'], 'the blank row must not print');
+
+        $this->assertSame('Ana Dela Cruz', $data['family_background']['children'][0]['full_name']);
+        $this->assertSame('', $data['family_background']['children'][1]['full_name']);
+
+        $this->assertSame('', $data['civil_service_eligibility'][0]['eligibility_name']);
+        $this->assertSame('', $data['other_information']['memberships'][0]);
+    }
+
     public function test_other_information_is_split_into_its_three_columns(): void
     {
         $profile = $this->profile();

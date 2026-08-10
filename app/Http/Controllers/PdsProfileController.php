@@ -30,6 +30,12 @@ class PdsProfileController extends Controller
     /**
      * Repeating sections: relation name + validation rules.
      *
+     * The identifying field of each section is nullable, not required: the
+     * editors create an empty row for the applicant to type into, and demanding
+     * a value up front would either reject the row or force the UI to invent
+     * placeholder text — which would then print onto the form. Blank rows are
+     * dropped at assembly instead, so they never reach the document.
+     *
      * @return array<string, array{relation: string, rules: array<string, mixed>}>
      */
     private function sections(): array
@@ -38,14 +44,14 @@ class PdsProfileController extends Controller
             'children' => [
                 'relation' => 'children',
                 'rules'    => [
-                    'full_name'     => ['required', 'string', 'max:255'],
+                    'full_name'     => ['nullable', 'string', 'max:255'],
                     'date_of_birth' => ['nullable', 'date'],
                 ],
             ],
             'eligibilities' => [
                 'relation' => 'civilServiceEligibilities',
                 'rules'    => [
-                    'eligibility_name'    => ['required', 'string', 'max:255'],
+                    'eligibility_name'    => ['nullable', 'string', 'max:255'],
                     'rating'              => ['nullable', 'string', 'max:255'],
                     'examination_date'    => ['nullable', 'date'],
                     'examination_place'   => ['nullable', 'string', 'max:255'],
@@ -56,7 +62,7 @@ class PdsProfileController extends Controller
             'voluntary-works' => [
                 'relation' => 'voluntaryWorks',
                 'rules'    => [
-                    'organization_name_address' => ['required', 'string', 'max:500'],
+                    'organization_name_address' => ['nullable', 'string', 'max:500'],
                     'date_from'                 => ['nullable', 'date'],
                     'date_to'                   => ['nullable', 'date'],
                     'number_of_hours'           => ['nullable', 'numeric', 'min:0'],
@@ -67,13 +73,13 @@ class PdsProfileController extends Controller
                 'relation' => 'otherInfos',
                 'rules'    => [
                     'kind'  => ['required', Rule::in(PdsOtherInfo::KINDS)],
-                    'value' => ['required', 'string', 'max:500'],
+                    'value' => ['nullable', 'string', 'max:500'],
                 ],
             ],
             'references' => [
                 'relation' => 'references',
                 'rules'    => [
-                    'name'                       => ['required', 'string', 'max:255'],
+                    'name'                       => ['nullable', 'string', 'max:255'],
                     'office_residential_address' => ['nullable', 'string', 'max:500'],
                     'contact_no_or_email'        => ['nullable', 'string', 'max:255'],
                 ],
