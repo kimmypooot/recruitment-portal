@@ -312,12 +312,21 @@ class HrmpsbController extends Controller
                 'ipcr' => (bool) $profile->ipcr_path,
                 'coe' => (bool) $profile->coe_path,
             ],
-            'document_links' => [
+            // The documents themselves (PDS especially — full name, photo,
+            // address on its face) are as identifying as `name` above, so
+            // they're withheld under the same $isUnmasked gate rather than
+            // being handed out unconditionally while identity is supposed
+            // to be blind. `documents` above (existence only) stays
+            // unconditional — that alone doesn't identify anyone, and
+            // completeness-checking is a legitimate pre-unmask need.
+            'document_links' => $isUnmasked ? [
                 'pds' => $profile->pds_path ? "/api/hrmpsb/applications/{$application->id}/documents/pds" : null,
                 'tor' => $profile->tor_path ? "/api/hrmpsb/applications/{$application->id}/documents/tor" : null,
                 'app_letter' => $profile->app_letter_path ? "/api/hrmpsb/applications/{$application->id}/documents/app_letter" : null,
                 'ipcr' => $profile->ipcr_path ? "/api/hrmpsb/applications/{$application->id}/documents/ipcr" : null,
                 'coe' => $profile->coe_path ? "/api/hrmpsb/applications/{$application->id}/documents/coe" : null,
+            ] : [
+                'pds' => null, 'tor' => null, 'app_letter' => null, 'ipcr' => null, 'coe' => null,
             ],
         ]);
     }
@@ -337,6 +346,18 @@ class HrmpsbController extends Controller
 
         if (! $isAdmin && ! $isMember) {
             abort(403);
+        }
+
+        // Defense in depth for the same rule applicantProfile() enforces on
+        // document_links: while identity is masked, the underlying files
+        // (PDS especially — full name, photo, address on its face) must not
+        // be reachable either, even by a board member hitting this route
+        // directly with a known application id rather than the link the
+        // frontend would have withheld.
+        $token = $application->anonymizationToken;
+        $isUnmasked = $isAdmin || $token?->isUnmasked();
+        if (! $isUnmasked) {
+            abort(403, 'Applicant identity is masked until deliberation unmasking.');
         }
 
         $pathMap = [

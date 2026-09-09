@@ -74,12 +74,18 @@ class BeiRatingController extends Controller
                         'has_ipcr' => $docExists('ipcr_path'),
                         'has_coe' => $docExists('coe_path'),
                     ],
-                    'document_links' => [
+                    // Withheld while masked, same as `name` above — the PDS
+                    // especially carries the same identity (name, photo,
+                    // address) that masking is supposed to hide. `documents`
+                    // above (existence only) stays unconditional.
+                    'document_links' => $isUnmasked ? [
                         'pds' => $docLink('pds_path', 'pds'),
                         'tor' => $docLink('tor_path', 'tor'),
                         'app_letter' => $docLink('app_letter_path', 'app_letter'),
                         'ipcr' => $docLink('ipcr_path', 'ipcr'),
                         'coe' => $docLink('coe_path', 'coe'),
+                    ] : [
+                        'pds' => null, 'tor' => null, 'app_letter' => null, 'ipcr' => null, 'coe' => null,
                     ],
                 ];
 

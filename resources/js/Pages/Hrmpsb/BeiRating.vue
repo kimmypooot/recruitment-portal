@@ -98,9 +98,9 @@
                 v-for="doc in documentTypes"
                 :key="doc.key"
                 @click="viewDocument(selected.document_links[doc.key])"
-                :disabled="!selected.documents[doc.hasKey]"
+                :disabled="!selected.document_links?.[doc.key]"
                 class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors"
-                :class="selected.documents[doc.hasKey]
+                :class="selected.document_links?.[doc.key]
                   ? 'bg-indigo-100 text-indigo-700 border border-indigo-300 hover:bg-indigo-200 shadow-sm'
                   : 'bg-gray-100 text-gray-300 cursor-not-allowed'"
               >
