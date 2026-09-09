@@ -9,6 +9,7 @@ use App\Models\Application;
 use App\Models\Document;
 use App\Models\Vacancy;
 use App\Observers\ApplicationObserver;
+use App\Observers\VacancyObserver;
 use App\Policies\ApplicantProfilePolicy;
 use App\Policies\ApplicationPolicy;
 use App\Policies\DocumentPolicy;
@@ -39,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('unmask-identities', [EvaluationPolicy::class, 'unmask']);
 
         Application::observe(ApplicationObserver::class);
+        Vacancy::observe(VacancyObserver::class);
 
         RateLimiter::for('login', function (Request $request) {
             $key = Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());

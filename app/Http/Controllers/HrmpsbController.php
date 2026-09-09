@@ -172,81 +172,98 @@ class HrmpsbController extends Controller
             return response()->json([]);
         }
 
+        $emptyStageFlags = [
+            'pre_assessment_exists' => false,
+            'qs_exists' => false,
+            'qs_locked' => false,
+            'twe_scheduled' => false,
+            'twe_exists' => false,
+            'cbwe_scheduled' => false,
+            'cbwe_exists' => false,
+            'cbwe_locked' => false,
+            'bei_scheduled' => false,
+            'bei_exists' => false,
+            'bei_locked' => false,
+            'eopt_exists' => false,
+            'background_check_exists' => false,
+            'background_check_locked' => false,
+            'deliberation_exists' => false,
+            'comparative_assessment_exists' => false,
+            'appointing_authority_exists' => false,
+            'appointing_authority_appointed' => false,
+        ];
+
+        // Previously this issued ~17 queries per vacancy (a 30-vacancy
+        // dashboard load meant 500+ queries). One query per application-
+        // keyed table across every requested vacancy, then grouped in PHP,
+        // replaces that with a small constant number of queries regardless
+        // of how many vacancies are asked for. qs_exists/qs_locked
+        // intentionally consider every application id including withdrawn
+        // ones (matching PipelineStageService's convention); every other
+        // flag excludes withdrawn applications.
+        $applications = Application::whereIn('vacancy_id', $vacancyIds)->get(['id', 'vacancy_id', 'status']);
+        $vacancyIdOf = $applications->pluck('vacancy_id', 'id');
+        $allAppIds = $applications->pluck('id');
+        $appIds = $applications->where('status', '!=', 'withdrawn')->pluck('id');
+        // Grouped from ALL applications (withdrawn included) so the "does this
+        // vacancy have any applications at all" check below matches the
+        // original $allAppIds->isEmpty() early-return exactly.
+        $allAppIdsByVacancy = $applications->groupBy('vacancy_id');
+
+        $groupByVacancy = fn ($rows) => $rows->groupBy(fn ($row) => $vacancyIdOf[$row->application_id] ?? null);
+
+        $preAssessments = $groupByVacancy(PreAssessment::whereIn('application_id', $appIds)->get(['application_id']));
+        $qsEvaluations = $groupByVacancy(QsEvaluation::whereIn('application_id', $allAppIds)->get(['application_id', 'locked_at']));
+        $tweSchedules = $groupByVacancy(ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->get(['application_id']));
+        $tweResults = $groupByVacancy(ExamResult::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->get(['application_id']));
+        $cbweSchedules = $groupByVacancy(ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'CBWE')->get(['application_id']));
+        $cbweRatings = $groupByVacancy(CbweRating::whereIn('application_id', $appIds)->get(['application_id', 'locked_at']));
+        $beiSchedules = $groupByVacancy(InterviewSchedule::whereIn('application_id', $appIds)->get(['application_id']));
+        $beiRatings = $groupByVacancy(BeiRating::whereIn('application_id', $appIds)->get(['application_id', 'locked_at']));
+        $backgroundChecks = $groupByVacancy(BackgroundCheck::whereIn('application_id', $appIds)->get(['application_id', 'locked_at']));
+        $bgReports = $groupByVacancy(BackgroundInvestigationReport::whereIn('application_id', $appIds)->get(['application_id', 'locked_at']));
+        $eoptResults = $groupByVacancy(EoptResult::whereIn('application_id', $appIds)->get(['application_id']));
+
+        $deliberations = DeliberationResult::whereIn('vacancy_id', $vacancyIds)->whereNotNull('locked_at')->get(['vacancy_id'])->groupBy('vacancy_id');
+        $comparativeAssessments = ComparativeAssessmentResult::whereIn('vacancy_id', $vacancyIds)->get(['vacancy_id'])->groupBy('vacancy_id');
+        $aaDecisions = AppointingAuthorityDecision::whereIn('vacancy_id', $vacancyIds)->get(['vacancy_id', 'action'])->groupBy('vacancy_id');
+
+        $empty = collect();
         $stages = [];
 
         foreach ($vacancyIds as $vacancyId) {
-            $allAppIds = Application::where('vacancy_id', $vacancyId)->pluck('id');
-            $appIds = Application::where('vacancy_id', $vacancyId)
-                ->whereNotIn('status', ['withdrawn'])
-                ->pluck('id');
-
-            if ($allAppIds->isEmpty()) {
-                $stages[$vacancyId] = [
-                    'pre_assessment_exists' => false,
-                    'qs_exists' => false,
-                    'qs_locked' => false,
-                    'twe_scheduled' => false,
-                    'twe_exists' => false,
-                    'cbwe_scheduled' => false,
-                    'cbwe_exists' => false,
-                    'cbwe_locked' => false,
-                    'bei_scheduled' => false,
-                    'bei_exists' => false,
-                    'bei_locked' => false,
-                    'eopt_exists' => false,
-                    'background_check_exists' => false,
-                    'background_check_locked' => false,
-                    'deliberation_exists' => false,
-                    'comparative_assessment_exists' => false,
-                    'appointing_authority_exists' => false,
-                    'appointing_authority_appointed' => false,
-                ];
+            if (($allAppIdsByVacancy->get($vacancyId) ?? $empty)->isEmpty()) {
+                $stages[$vacancyId] = $emptyStageFlags;
 
                 continue;
             }
 
-            $preAssessmentExists = PreAssessment::whereIn('application_id', $appIds)->exists();
-            $qsExists = QsEvaluation::whereIn('application_id', $allAppIds)->exists();
-            $qsLocked = QsEvaluation::whereIn('application_id', $allAppIds)->whereNotNull('locked_at')->exists();
-            $tweScheduled = ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->exists();
-            $tweExists = ExamResult::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->exists();
-            $cbweScheduled = ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'CBWE')->exists();
-            $cbweExists = CbweRating::whereIn('application_id', $appIds)->exists();
-            $cbweLocked = CbweRating::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
-            $beiScheduled = InterviewSchedule::whereIn('application_id', $appIds)->exists();
-            $beiExists = BeiRating::whereIn('application_id', $appIds)->exists();
-            $beiLocked = BeiRating::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
-            $bgCheckExists = BackgroundCheck::whereIn('application_id', $appIds)->exists()
-                || BackgroundInvestigationReport::whereIn('application_id', $appIds)->exists();
-            $bgCheckLocked = BackgroundCheck::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists()
-                || BackgroundInvestigationReport::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
-            $eoptExists = EoptResult::whereIn('application_id', $appIds)->exists();
-            $deliExists = DeliberationResult::where('vacancy_id', $vacancyId)->whereNotNull('locked_at')->exists();
-            $carExists = ComparativeAssessmentResult::where('vacancy_id', $vacancyId)->exists();
-            $aaExists = AppointingAuthorityDecision::where('vacancy_id', $vacancyId)->exists();
-            $aaAppointed = AppointingAuthorityDecision::where('vacancy_id', $vacancyId)
-                ->where('action', 'appointed')
-                ->exists();
+            $qsRows = $qsEvaluations->get($vacancyId, $empty);
+            $cbweRows = $cbweRatings->get($vacancyId, $empty);
+            $beiRows = $beiRatings->get($vacancyId, $empty);
+            $bgCheckRows = $backgroundChecks->get($vacancyId, $empty);
+            $bgReportRows = $bgReports->get($vacancyId, $empty);
+            $aaRows = $aaDecisions->get($vacancyId, $empty);
 
             $stages[$vacancyId] = [
-                'pre_assessment_exists' => $preAssessmentExists,
-                'qs_exists' => $qsExists,
-                'qs_locked' => $qsLocked,
-                'twe_scheduled' => $tweScheduled,
-                'twe_exists' => $tweExists,
-                'cbwe_scheduled' => $cbweScheduled,
-                'cbwe_exists' => $cbweExists,
-                'cbwe_locked' => $cbweLocked,
-                'bei_scheduled' => $beiScheduled,
-                'bei_exists' => $beiExists,
-                'bei_locked' => $beiLocked,
-                'eopt_exists' => $eoptExists,
-                'background_check_exists' => $bgCheckExists,
-                'background_check_locked' => $bgCheckLocked,
-                'deliberation_exists' => $deliExists,
-                'comparative_assessment_exists' => $carExists,
-                'appointing_authority_exists' => $aaExists,
-                'appointing_authority_appointed' => $aaAppointed,
+                'pre_assessment_exists' => $preAssessments->get($vacancyId, $empty)->isNotEmpty(),
+                'qs_exists' => $qsRows->isNotEmpty(),
+                'qs_locked' => $qsRows->whereNotNull('locked_at')->isNotEmpty(),
+                'twe_scheduled' => $tweSchedules->get($vacancyId, $empty)->isNotEmpty(),
+                'twe_exists' => $tweResults->get($vacancyId, $empty)->isNotEmpty(),
+                'cbwe_scheduled' => $cbweSchedules->get($vacancyId, $empty)->isNotEmpty(),
+                'cbwe_exists' => $cbweRows->isNotEmpty(),
+                'cbwe_locked' => $cbweRows->whereNotNull('locked_at')->isNotEmpty(),
+                'bei_scheduled' => $beiSchedules->get($vacancyId, $empty)->isNotEmpty(),
+                'bei_exists' => $beiRows->isNotEmpty(),
+                'bei_locked' => $beiRows->whereNotNull('locked_at')->isNotEmpty(),
+                'eopt_exists' => $eoptResults->get($vacancyId, $empty)->isNotEmpty(),
+                'background_check_exists' => $bgCheckRows->isNotEmpty() || $bgReportRows->isNotEmpty(),
+                'background_check_locked' => $bgCheckRows->whereNotNull('locked_at')->isNotEmpty() || $bgReportRows->whereNotNull('locked_at')->isNotEmpty(),
+                'deliberation_exists' => $deliberations->has($vacancyId),
+                'comparative_assessment_exists' => $comparativeAssessments->has($vacancyId),
+                'appointing_authority_exists' => $aaRows->isNotEmpty(),
+                'appointing_authority_appointed' => $aaRows->where('action', 'appointed')->isNotEmpty(),
             ];
         }
 

@@ -107,6 +107,18 @@ class AuthController extends Controller
 
         $user->update(['password' => Hash::make($request->password), 'has_password' => true]);
 
+        // Revoke every other outstanding token so a session hijacked before
+        // this change doesn't survive it — the same reasoning already applied
+        // to deactivate()/deleteAccount() below, just not to this endpoint.
+        // The token used to make this very request stays valid so the user
+        // isn't unexpectedly signed out of their own password change.
+        $currentTokenId = $user->currentAccessToken()?->id;
+        if ($currentTokenId) {
+            $user->tokens()->where('id', '!=', $currentTokenId)->delete();
+        } else {
+            $user->tokens()->delete();
+        }
+
         return response()->json(['message' => $isGoogleOnly ? 'Password set successfully. You can now sign in with your email and password.' : 'Password changed successfully.']);
     }
 

@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\CsForm;
+use App\Models\HrmpsbComposition;
 use App\Services\FormGeneratorService;
 use App\Services\PnpkiService;
 use Illuminate\Http\JsonResponse;
@@ -15,8 +16,30 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CsFormController extends Controller
 {
-    public function index(Application $application): JsonResponse
+    /**
+     * These routes previously relied on nothing but the blanket
+     * role:hrmpsb,admin route middleware — unlike QS/CBWE/BEI, which also
+     * require an active HrmpsbComposition row (HRMPSB composition is global,
+     * not per-vacancy, so that's the only membership check those stages
+     * apply either; there's no narrower "assigned to this vacancy" concept
+     * to match). That gap let an hrmpsb-role account with no board seat at
+     * all — never assigned, or since deactivated — generate, sign, or mark
+     * CS Forms as submitted to CSC.
+     */
+    private function isActiveHrmpsbMember(int $userId): bool
     {
+        return HrmpsbComposition::where('user_id', $userId)
+            ->where('is_active', true)
+            ->exists();
+    }
+
+    public function index(Request $request, Application $application): JsonResponse
+    {
+        $user = $request->user();
+        if (! $user->canAccessAdminModule() && ! $this->isActiveHrmpsbMember($user->id)) {
+            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
+        }
+
         $forms = CsForm::where('application_id', $application->id)
             ->with('generatedBy:id,first_name,last_name,middle_name,suffix')
             ->get()
@@ -39,6 +62,11 @@ class CsFormController extends Controller
 
     public function generate(Request $request, Application $application): JsonResponse
     {
+        $user = $request->user();
+        if (! $user->canAccessAdminModule() && ! $this->isActiveHrmpsbMember($user->id)) {
+            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
+        }
+
         $data = $request->validate([
             'form_type' => ['required', \Illuminate\Validation\Rule::in(array_keys(CsForm::TYPES))],
         ]);
@@ -52,8 +80,13 @@ class CsFormController extends Controller
         ], 201);
     }
 
-    public function download(CsForm $csForm): StreamedResponse
+    public function download(Request $request, CsForm $csForm): StreamedResponse|JsonResponse
     {
+        $user = $request->user();
+        if (! $user->canAccessAdminModule() && ! $this->isActiveHrmpsbMember($user->id)) {
+            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
+        }
+
         abort_unless(Storage::disk('local')->exists($csForm->file_path), 404, 'Form file not found.');
 
         $filename = "CSForm-{$csForm->form_type}-App{$csForm->application_id}.pdf";
@@ -63,6 +96,11 @@ class CsFormController extends Controller
 
     public function markSubmitted(Request $request, CsForm $csForm): JsonResponse
     {
+        $user = $request->user();
+        if (! $user->canAccessAdminModule() && ! $this->isActiveHrmpsbMember($user->id)) {
+            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
+        }
+
         (new FormGeneratorService())->markSubmitted($csForm);
 
         return response()->json(['message' => 'Form marked as submitted to CSC.']);
@@ -70,6 +108,11 @@ class CsFormController extends Controller
 
     public function sign(Request $request, CsForm $csForm): JsonResponse
     {
+        $user = $request->user();
+        if (! $user->canAccessAdminModule() && ! $this->isActiveHrmpsbMember($user->id)) {
+            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
+        }
+
         $pnpki = new PnpkiService();
 
         if (!$pnpki->isConfigured()) {

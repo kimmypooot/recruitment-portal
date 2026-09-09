@@ -6,6 +6,7 @@ namespace App\Observers;
 
 use App\Models\Application;
 use App\Services\AuditLog;
+use Illuminate\Support\Facades\Cache;
 
 class ApplicationObserver
 {
@@ -29,5 +30,31 @@ class ApplicationObserver
         if (! empty($application->getChanges())) {
             AuditLog::record('application_updated', $application);
         }
+
+        $this->forgetDashboardCache();
+    }
+
+    public function created(Application $application): void
+    {
+        $this->forgetDashboardCache();
+    }
+
+    public function deleted(Application $application): void
+    {
+        $this->forgetDashboardCache();
+    }
+
+    /**
+     * DashboardController::stats() cached its result for a flat hour with no
+     * invalidation anywhere in the codebase — an HR user who submits,
+     * withdraws, or decides on an application would see stale counts on the
+     * dashboard for up to 60 minutes, including right after their own
+     * action. Centralized here (rather than a Cache::forget() call added to
+     * every controller that touches Application) so it can't be missed by a
+     * future write path the way scattered calls could be.
+     */
+    private function forgetDashboardCache(): void
+    {
+        Cache::forget('dashboard_stats');
     }
 }
