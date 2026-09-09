@@ -184,6 +184,16 @@ class DeliberationController extends Controller
 
             $application = Application::findOrFail($data['application_id']);
 
+            // application_id is caller-supplied and only checked for
+            // existence by the validator above — without this, a decision
+            // could be recorded under this route's $vacancy while actually
+            // belonging to a different one, corrupting both the decision
+            // record's vacancy_id and (on "appointed") the wrong vacancy's
+            // filled status.
+            if ($application->vacancy_id !== $vacancy->id) {
+                abort(422, 'That application does not belong to this vacancy.');
+            }
+
             $result = DeliberationResult::updateOrCreate(
                 [
                     'vacancy_id' => $vacancy->id,
@@ -244,7 +254,7 @@ class DeliberationController extends Controller
         AuditLog::record('deliberation_locked', $vacancy);
 
         return response()->json([
-            'message'      => 'Deliberation results locked successfully.',
+            'message' => 'Deliberation results locked successfully.',
             'locked_count' => $count,
         ]);
     }

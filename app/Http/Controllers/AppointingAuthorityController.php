@@ -143,6 +143,15 @@ class AppointingAuthorityController extends Controller
 
         $application = Application::findOrFail($data['application_id']);
 
+        // application_id is caller-supplied and only checked for existence
+        // by the validator above — without this, a decision could be
+        // recorded under this route's $vacancy while actually belonging to
+        // a different one, corrupting both the decision record's vacancy_id
+        // and (on "appointed") the wrong vacancy's filled status.
+        if ($application->vacancy_id !== $vacancy->id) {
+            return response()->json(['message' => 'That application does not belong to this vacancy.'], 422);
+        }
+
         // The decision record, the application's status, and (when appointed)
         // the vacancy's status are three separate tables that must agree with
         // each other — a failure partway through previously could leave a

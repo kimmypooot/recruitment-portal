@@ -31,6 +31,7 @@ class UserController extends Controller
                 ? Storage::url($path)
                 : $user->google_avatar;
             unset($user->applicantProfile);
+
             return $user;
         });
 
@@ -39,17 +40,35 @@ class UserController extends Controller
 
     private const ALLOWED_ROLES = ['applicant', 'hrmpsb', 'admin'];
 
+    /**
+     * `admin-access` (see EnsureAdminAccess/User::canAccessAdminModule) admits
+     * two different trust levels: a true admin, and an hrmpsb user with a
+     * delegated secretariat/hr-chief designation. Both reach every method
+     * below equally, but only a true admin may hand out the `admin` role
+     * itself — otherwise a delegated user could use this endpoint to promote
+     * themselves (or anyone) past what their designation was ever meant to
+     * grant.
+     */
+    private function canGrantAdminRole(Request $request): bool
+    {
+        return $request->user()->role === 'admin';
+    }
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
             'first_name' => 'required|string|max:100',
-            'last_name'  => 'required|string|max:100',
-            'middle_name'=> 'nullable|string|max:100',
-            'suffix'     => 'nullable|string|max:20',
-            'email'      => 'required|email|unique:users,email',
-            'password'   => 'required|string|min:8|confirmed',
-            'role'       => ['required', Rule::in(self::ALLOWED_ROLES)],
+            'last_name' => 'required|string|max:100',
+            'middle_name' => 'nullable|string|max:100',
+            'suffix' => 'nullable|string|max:20',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => ['required', Rule::in(self::ALLOWED_ROLES)],
         ]);
+
+        if ($data['role'] === 'admin' && ! $this->canGrantAdminRole($request)) {
+            return response()->json(['message' => 'Only an administrator can create an admin account.'], 403);
+        }
 
         $user = User::create($data);
 
@@ -82,13 +101,21 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'first_name' => 'sometimes|required|string|max:100',
-            'last_name'  => 'sometimes|required|string|max:100',
-            'middle_name'=> 'nullable|string|max:100',
-            'suffix'     => 'nullable|string|max:20',
-            'email'      => ['sometimes', 'required', 'email', Rule::unique('users')->ignore($user->id)],
-            'role'       => ['sometimes', 'required', Rule::in(self::ALLOWED_ROLES)],
-            'password'   => 'sometimes|required|string|min:8|confirmed',
+            'last_name' => 'sometimes|required|string|max:100',
+            'middle_name' => 'nullable|string|max:100',
+            'suffix' => 'nullable|string|max:20',
+            'email' => ['sometimes', 'required', 'email', Rule::unique('users')->ignore($user->id)],
+            'role' => ['sometimes', 'required', Rule::in(self::ALLOWED_ROLES)],
+            'password' => 'sometimes|required|string|min:8|confirmed',
         ]);
+
+        // Role tampering in either direction — granting admin, or touching an
+        // existing admin's role at all — is restricted to true admins, same
+        // as store() above.
+        $touchesAdminRole = (isset($data['role']) && $data['role'] === 'admin') || $user->role === 'admin';
+        if ($touchesAdminRole && ! $this->canGrantAdminRole($request)) {
+            return response()->json(['message' => 'Only an administrator can grant or modify an admin account.'], 403);
+        }
 
         if ($request->has('password')) {
             $data['password'] = Hash::make($data['password']);
@@ -108,8 +135,12 @@ class UserController extends Controller
         ]);
     }
 
-    public function destroy(User $user): JsonResponse
+    public function destroy(Request $request, User $user): JsonResponse
     {
+        if ($user->role === 'admin' && ! $this->canGrantAdminRole($request)) {
+            return response()->json(['message' => 'Only an administrator can delete an admin account.'], 403);
+        }
+
         AuditLog::record('user_deleted', $user);
 
         $user->delete();
