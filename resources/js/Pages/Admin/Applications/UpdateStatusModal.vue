@@ -17,32 +17,28 @@
             <StatusBadge :status="app.status" />
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">New Status <span class="text-red-500">*</span></label>
-            <select v-model="form.status"
-              class="w-full px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
-              <optgroup label="Initial">
-                <option value="under_review">Under Review</option>
-              </optgroup>
-              <optgroup label="Screening">
-                <option value="screened">Screened</option>
-                <option value="qualified">Qualified</option>
-                <option value="disqualified">Disqualified</option>
-              </optgroup>
-              <optgroup label="Selection">
-                <option value="exam_scheduled">Exam Scheduled</option>
-                <option value="shortlisted">Shortlisted</option>
-                <option value="for_interview">For Interview</option>
-                <option value="interviewed">Interviewed</option>
-                <option value="recommended">Recommended</option>
-              </optgroup>
-              <optgroup label="Final">
-                <option value="appointed">Appointed</option>
-                <option value="completed">Completed</option>
-                <option value="withdrawn">Withdrawn</option>
-              </optgroup>
-            </select>
-          </div>
+          <BaseSelect v-model="form.status" label="New Status" required>
+            <optgroup label="Initial">
+              <option value="under_review">Under Review</option>
+            </optgroup>
+            <optgroup label="Screening">
+              <option value="screened">Screened</option>
+              <option value="qualified">Qualified</option>
+              <option value="disqualified">Disqualified</option>
+            </optgroup>
+            <optgroup label="Selection">
+              <option value="exam_scheduled">Exam Scheduled</option>
+              <option value="shortlisted">Shortlisted</option>
+              <option value="for_interview">For Interview</option>
+              <option value="interviewed">Interviewed</option>
+              <option value="recommended">Recommended</option>
+            </optgroup>
+            <optgroup label="Final">
+              <option value="appointed">Appointed</option>
+              <option value="completed">Completed</option>
+              <option value="withdrawn">Withdrawn</option>
+            </optgroup>
+          </BaseSelect>
 
           <!-- Schedule form: shown when exam or interview status is selected -->
           <div v-if="form.status === 'exam_scheduled' || form.status === 'for_interview'"
@@ -53,52 +49,22 @@
               {{ form.status === 'exam_scheduled' ? 'Exam Schedule' : 'Interview Schedule' }}
               <span class="font-normal text-gray-400 ml-1 normal-case">(optional — create now or schedule later)</span>
             </p>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Date &amp; Time</label>
-              <input type="datetime-local" v-model="schedule.scheduled_at"
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
-              <input type="text" v-model="schedule.venue" placeholder="e.g. CSC Regional Office, Room 201"
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Notes <span class="text-gray-400 font-normal">(optional)</span>
-              </label>
-              <textarea v-model="schedule.notes" rows="2"
-                placeholder="Additional instructions or reminders…"
-                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none resize-none"></textarea>
-            </div>
+            <BaseInput type="datetime-local" v-model="schedule.scheduled_at" label="Date & Time" />
+            <BaseInput type="text" v-model="schedule.venue" label="Venue" placeholder="e.g. CSC Regional Office, Room 201" />
+            <BaseTextarea v-model="schedule.notes" :rows="2" label="Notes" show-optional
+              placeholder="Additional instructions or reminders…" />
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">
-              Remarks <span class="text-gray-400 font-normal">(optional — visible to applicant)</span>
-            </label>
-            <textarea v-model="form.remarks" rows="3"
-              placeholder="Add notes or feedback for the applicant…"
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none resize-none"></textarea>
-          </div>
+          <BaseTextarea v-model="form.remarks" :rows="3" label="Remarks" show-optional
+            hint="Visible to the applicant"
+            placeholder="Add notes or feedback for the applicant…" />
         </div>
 
         <div class="flex justify-between gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl flex-shrink-0">
-          <button @click="$emit('close')"
-            class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
-            Cancel
-          </button>
-          <button @click="submit" :disabled="saving"
-            class="px-4 py-2 text-sm bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-60 transition-colors">
-            <span v-if="saving" class="flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-              </svg>
-              Saving…
-            </span>
-            <span v-else>Save Status</span>
-          </button>
+          <BaseButton variant="secondary" size="sm" @click="$emit('close')">Cancel</BaseButton>
+          <BaseButton size="sm" :loading="saving" @click="submit">
+            {{ saving ? 'Saving…' : 'Save Status' }}
+          </BaseButton>
         </div>
     </template>
   </BaseModal>
@@ -108,6 +74,10 @@
 import { ref, reactive, computed, watch } from 'vue'
 import axios from 'axios'
 import BaseModal from '@/Components/UI/BaseModal.vue'
+import BaseSelect from '@/Components/UI/BaseSelect.vue'
+import BaseInput from '@/Components/UI/BaseInput.vue'
+import BaseTextarea from '@/Components/UI/BaseTextarea.vue'
+import BaseButton from '@/Components/UI/BaseButton.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import { useToast } from '@/composables/useToast'
 

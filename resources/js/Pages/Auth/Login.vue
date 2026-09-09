@@ -73,36 +73,31 @@
 
         <form @submit.prevent="submit" class="space-y-5">
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
-            <input
-              v-model="form.email"
-              type="email"
-              autocomplete="email"
-              required
-              autofocus
-              placeholder="you@example.com"
-              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
-          </div>
+          <BaseInput
+            v-model="form.email"
+            type="email"
+            label="Email address"
+            autocomplete="email"
+            required
+            autofocus
+            placeholder="you@example.com" />
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
-            <div class="relative">
-              <input
-                v-model="form.password"
-                :type="showPassword ? 'text' : 'password'"
-                autocomplete="current-password"
-                required
-                placeholder="••••••••"
-                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition pr-10" />
+          <BaseInput
+            v-model="form.password"
+            :type="showPassword ? 'text' : 'password'"
+            label="Password"
+            autocomplete="current-password"
+            required
+            placeholder="••••••••">
+            <template #suffix>
               <button type="button" @click="showPassword = !showPassword"
                 :aria-label="showPassword ? 'Hide password' : 'Show password'"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                class="text-gray-400 hover:text-gray-600">
                 <Icon v-if="!showPassword" name="eye" size="4" aria-hidden="true" />
                 <Icon v-else name="eyeOff" size="4" aria-hidden="true" />
               </button>
-            </div>
-          </div>
+            </template>
+          </BaseInput>
 
           <div class="flex items-center justify-between">
             <label class="flex items-center gap-2 cursor-pointer">
@@ -115,12 +110,9 @@
             <Link href="/forgot-password" class="text-sm text-primary font-medium hover:underline">Forgot password?</Link>
           </div>
 
-          <button
-            type="submit"
-            :disabled="loading"
-            class="w-full py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+          <BaseButton type="submit" block :loading="loading">
             {{ loading ? 'Signing in…' : 'Sign in' }}
-          </button>
+          </BaseButton>
 
         </form>
 
@@ -157,6 +149,8 @@ import { Head, Link, usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import Icon from '@/Components/UI/Icon.vue'
+import BaseInput from '@/Components/UI/BaseInput.vue'
+import BaseButton from '@/Components/UI/BaseButton.vue'
 import AuthSplashOverlay from '@/Components/UI/AuthSplashOverlay.vue'
 import { useAuthStore } from '@/stores/auth'
 import { navigateTo } from '@/utils/navigate'
