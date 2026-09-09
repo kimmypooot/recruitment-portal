@@ -119,8 +119,13 @@ class EmailTemplateSeeder extends Seeder
             'action_text' => 'View Your Application',
             'action_url' => '/applicant/applications',
             'action_locked' => false,
-            'placeholders' => ['position_title'],
-            'sample_data' => ['position_title' => 'Administrative Officer II'],
+            // Note: {{reference_code}} is always appended after this
+            // template's body by ApplicationSubmitted::toMail() regardless
+            // of whether the body text above references it — it's the
+            // applicant's only copy of the code for the passwordless
+            // "Track My Application" lookup, so it can't be edited away.
+            'placeholders' => ['position_title', 'reference_code'],
+            'sample_data' => ['position_title' => 'Administrative Officer II', 'reference_code' => 'CSC-7F3K9QRT'],
         ];
 
         $templates['exam_scheduled'] = [

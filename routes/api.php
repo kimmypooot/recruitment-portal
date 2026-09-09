@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\ApplicationTrackingController;
 use App\Http\Controllers\AppointingAuthorityController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
@@ -23,9 +24,9 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\HrmpsbController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\PreAssessmentController;
 use App\Http\Controllers\PdsController;
 use App\Http\Controllers\PdsProfileController;
+use App\Http\Controllers\PreAssessmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QsEvaluationController;
 use App\Http\Controllers\ReportController;
@@ -48,6 +49,9 @@ Route::post('/visitor-count/increment', [VisitorCountController::class, 'increme
 // Authentication — throttled to prevent brute-force and registration spam
 Route::middleware('throttle:login')->post('/login', [AuthController::class, 'login']);
 Route::middleware('throttle:3,60')->post('/register', [AuthController::class, 'register']);
+
+// Passwordless application-status lookup — public, throttled (see ApplicationTrackingController)
+Route::middleware('throttle:track')->post('/track', [ApplicationTrackingController::class, 'track']);
 
 // Privacy consent re-acknowledgment (for existing users when policy updates)
 Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/email/verification-notification', [AuthController::class, 'resendVerificationApi']);

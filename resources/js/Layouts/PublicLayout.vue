@@ -156,7 +156,7 @@
               <li><Link href="/" class="text-sm text-white/60 hover:text-white transition-colors">Open Vacancies</Link></li>
               <li><Link href="/how-to-apply" class="text-sm text-white/60 hover:text-white transition-colors">How to Apply</Link></li>
               <li><Link href="/register" class="text-sm text-white/60 hover:text-white transition-colors">Register as Applicant</Link></li>
-              <li><Link href="/login" class="text-sm text-white/60 hover:text-white transition-colors">Track My Application</Link></li>
+              <li><Link href="/track-application" class="text-sm text-white/60 hover:text-white transition-colors">Track My Application</Link></li>
               <li><Link href="/privacy-policy" class="text-sm text-white/60 hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms-of-service" class="text-sm text-white/60 hover:text-white transition-colors">Terms of Service</Link></li>
             </ul>

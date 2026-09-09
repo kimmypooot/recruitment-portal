@@ -116,6 +116,10 @@
                   <Icon name="calendar" size="3" />
                   Submitted {{ formatDate(app.submitted_at ?? app.created_at) }}
                 </span>
+                <span v-if="app.reference_code" class="flex items-center gap-1 font-mono">
+                  <Icon name="document" size="3" />
+                  {{ app.reference_code }}
+                </span>
                 <span v-if="app.reviewed_at" class="flex items-center gap-1">
                   <Icon name="clock" size="3" />
                   Updated {{ formatDate(app.reviewed_at) }}

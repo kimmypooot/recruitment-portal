@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ApplicationResource;
+use App\Events\ApplicationStatusUpdated;
+use App\Events\ApplicationSubmitted;
+use App\Http\Requests\UpdateApplicationStatusRequest;
 use App\Http\Resources\ApplicantProfileResource;
+use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\VacancyResource;
 use App\Models\ApplicantProfile;
 use App\Models\Application;
 use App\Models\Vacancy;
-use App\Events\ApplicationStatusUpdated;
-use App\Events\ApplicationSubmitted;
 use App\Services\AuditLog;
+use App\Support\SpreadsheetSanitizer;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use App\Http\Requests\UpdateApplicationStatusRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ApplicationController extends Controller
@@ -28,7 +29,7 @@ class ApplicationController extends Controller
     {
         $profile = $request->user()->applicantProfile;
 
-        if (!$profile) {
+        if (! $profile) {
             return response()->json([]);
         }
 
@@ -52,15 +53,15 @@ class ApplicationController extends Controller
 
         $profile = $request->user()->applicantProfile;
 
-        if (!$profile) {
+        if (! $profile) {
             return response()->json(['message' => 'Please complete your profile before applying.'], 422);
         }
 
-        if (!$profile->isComplete()) {
+        if (! $profile->isComplete()) {
             return response()->json(['message' => 'Your profile is incomplete. Please fill in all required fields before applying.'], 422);
         }
 
-        if (!$profile->hasRequiredDocuments()) {
+        if (! $profile->hasRequiredDocuments()) {
             return response()->json(['message' => 'Please upload all required documents (PDS, Application Letter, Certificate of Eligibility, and Transcript of Records) before applying.'], 422);
         }
 
@@ -90,10 +91,11 @@ class ApplicationController extends Controller
                 }
 
                 return Application::create([
-                    'vacancy_id'   => $data['vacancy_id'],
+                    'vacancy_id' => $data['vacancy_id'],
                     'applicant_id' => $profile->id,
-                    'status'       => 'submitted',
+                    'status' => 'submitted',
                     'submitted_at' => now(),
+                    'reference_code' => Application::generateReferenceCode(),
                 ]);
             });
         } catch (QueryException $e) {
@@ -173,7 +175,7 @@ class ApplicationController extends Controller
             $query->chunk(200, function ($chunk) use ($out) {
                 foreach ($chunk as $app) {
                     $user = $app->applicant?->user;
-                    fputcsv($out, \App\Support\SpreadsheetSanitizer::row([
+                    fputcsv($out, SpreadsheetSanitizer::row([
                         $user?->last_name,
                         $user?->first_name,
                         $user?->middle_name,
@@ -316,11 +318,11 @@ class ApplicationController extends Controller
             'data' => $paginator->items(),
             'meta' => [
                 'current_page' => $paginator->currentPage(),
-                'last_page'    => $paginator->lastPage(),
-                'from'         => $paginator->firstItem(),
-                'to'           => $paginator->lastItem(),
-                'total'        => $paginator->total(),
-                'per_page'     => $paginator->perPage(),
+                'last_page' => $paginator->lastPage(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+                'total' => $paginator->total(),
+                'per_page' => $paginator->perPage(),
             ],
         ];
     }
@@ -341,19 +343,19 @@ class ApplicationController extends Controller
         $this->authorize('view', $application);
 
         $map = [
-            'pds'        => 'pds_path',
+            'pds' => 'pds_path',
             'app_letter' => 'app_letter_path',
-            'ipcr'       => 'ipcr_path',
-            'coe'        => 'coe_path',
-            'tor'        => 'tor_path',
+            'ipcr' => 'ipcr_path',
+            'coe' => 'coe_path',
+            'tor' => 'tor_path',
         ];
 
-        abort_if(!isset($map[$type]), 404);
+        abort_if(! isset($map[$type]), 404);
 
         $profile = $application->applicant;
-        $path    = $profile?->{$map[$type]};
+        $path = $profile?->{$map[$type]};
 
-        abort_if(!$path || !Storage::disk('local')->exists($path), 404);
+        abort_if(! $path || ! Storage::disk('local')->exists($path), 404);
 
         if ($request->boolean('download')) {
             return Storage::disk('local')->download($path);
@@ -364,10 +366,10 @@ class ApplicationController extends Controller
 
     public function withdraw(Request $request, Application $application): JsonResponse
     {
-        $user    = $request->user();
+        $user = $request->user();
         $profile = $user->applicantProfile;
 
-        if (!$profile || $application->applicant_id !== $profile->id) {
+        if (! $profile || $application->applicant_id !== $profile->id) {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
@@ -392,8 +394,8 @@ class ApplicationController extends Controller
         $oldStatus = $application->status;
 
         $updateData = [
-            'status'      => $request->status,
-            'remarks'     => $request->remarks ?? $request->reason,
+            'status' => $request->status,
+            'remarks' => $request->remarks ?? $request->reason,
             'reviewed_at' => now(),
         ];
 
@@ -410,7 +412,7 @@ class ApplicationController extends Controller
 
         return response()->json([
             'message' => 'Application status updated successfully.',
-            'data'    => ApplicationResource::make($application->fresh()),
+            'data' => ApplicationResource::make($application->fresh()),
         ]);
     }
 }

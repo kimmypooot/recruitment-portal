@@ -5,6 +5,7 @@ use App\Http\Controllers\BackgroundInvestigationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProfileController;
+use App\Models\EoptResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -36,6 +37,8 @@ Route::post('/email/verification-notification', [AuthController::class, 'resendV
     ->middleware('throttle:6,1')->name('verification.send');
 
 Route::get('/vacancies/{id}/apply', fn ($id) => Inertia::render('Vacancies/Apply', ['vacancyId' => (int) $id]));
+
+Route::get('/track-application', fn () => Inertia::render('Public/TrackApplication'));
 
 Route::get('/background-investigation/upload/{token}', [BackgroundInvestigationController::class, 'showUploadForm']);
 Route::post('/background-investigation/upload/{token}', [BackgroundInvestigationController::class, 'upload']);
@@ -107,7 +110,7 @@ Route::prefix('appointing-authority')->group(function () {
     Route::get('/dashboard', fn () => Inertia::render('AppointingAuthority/Dashboard'));
     Route::get('/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/AppointingAuthority', [
         'vacancyId' => (int) $vacancy,
-        'eoptDefinitions' => \App\Models\EoptResult::getAllDefinitions(),
+        'eoptDefinitions' => EoptResult::getAllDefinitions(),
     ]));
 });
 
