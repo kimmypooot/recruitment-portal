@@ -12,6 +12,7 @@ use App\Models\Application;
 use App\Models\Vacancy;
 use App\Events\ApplicationStatusUpdated;
 use App\Events\ApplicationSubmitted;
+use App\Services\AuditLog;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -397,6 +398,13 @@ class ApplicationController extends Controller
         ];
 
         $application->update($updateData);
+
+        // Every other status-changing endpoint in the pipeline (QS/CBWE/BEI/
+        // background-check lock, deliberation decide, appointing-authority
+        // decide) calls AuditLog::record() — this one, the generic HR-side
+        // status override, previously didn't, leaving no audit trail for
+        // what is otherwise the least-constrained way to change a status.
+        AuditLog::record('application_status_updated', $application);
 
         ApplicationStatusUpdated::dispatch($application, $oldStatus, $request->status);
 

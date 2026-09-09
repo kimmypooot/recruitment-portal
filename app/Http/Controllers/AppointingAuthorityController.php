@@ -14,6 +14,7 @@ use App\Services\AuditLog;
 use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 class AppointingAuthorityController extends Controller
@@ -142,44 +143,57 @@ class AppointingAuthorityController extends Controller
 
         $application = Application::findOrFail($data['application_id']);
 
-        $decision = AppointingAuthorityDecision::updateOrCreate(
-            [
-                'vacancy_id' => $vacancy->id,
-                'application_id' => $data['application_id'],
-            ],
-            [
-                'action' => $data['action'],
-                'decided_by' => $user->id,
-                'decided_at' => now(),
-                'remarks' => $data['remarks'] ?? null,
-            ]
-        );
+        // The decision record, the application's status, and (when appointed)
+        // the vacancy's status are three separate tables that must agree with
+        // each other — a failure partway through previously could leave a
+        // decision recorded as "appointed" while the application/vacancy
+        // status disagreed. Notifying the secretariat is deferred until after
+        // the transaction commits, so a slow/failing send can't roll back
+        // (or hold open) the actual decision.
+        $secretariatToNotify = DB::transaction(function () use ($vacancy, $data, $user, $application) {
+            AppointingAuthorityDecision::updateOrCreate(
+                [
+                    'vacancy_id' => $vacancy->id,
+                    'application_id' => $data['application_id'],
+                ],
+                [
+                    'action' => $data['action'],
+                    'decided_by' => $user->id,
+                    'decided_at' => now(),
+                    'remarks' => $data['remarks'] ?? null,
+                ]
+            );
 
-        if ($data['action'] === 'appointed') {
+            $secretariat = collect();
+
+            if ($data['action'] === 'appointed') {
+                $application->update(['status' => 'appointed', 'reviewed_at' => now()]);
+
+                if ($vacancy->status !== 'filled') {
+                    $vacancy->update(['status' => 'filled']);
+                    AuditLog::record('filled', $vacancy);
+                }
+
+                $secretariat = HrmpsbComposition::where('hrmpsb_role', 'secretariat')
+                    ->where('is_active', true)
+                    ->get()
+                    ->pluck('user');
+            }
+
+            AuditLog::record('appointing_authority_decision', $application);
+
+            return $secretariat;
+        });
+
+        if ($data['action'] === 'appointed' && $secretariatToNotify->isNotEmpty()) {
             $applicantName = $this->formatApplicantName($application->applicant) ?: 'An applicant';
 
-            $application->update(['status' => 'appointed', 'reviewed_at' => now()]);
-
-            if ($vacancy->status !== 'filled') {
-                $vacancy->update(['status' => 'filled']);
-                AuditLog::record('filled', $vacancy);
-            }
-
-            $secretariat = HrmpsbComposition::where('hrmpsb_role', 'secretariat')
-                ->where('is_active', true)
-                ->get()
-                ->pluck('user');
-
-            if ($secretariat->isNotEmpty()) {
-                Notification::send($secretariat, new AppointmentSelectedByAa(
-                    $application,
-                    $vacancy,
-                    $applicantName,
-                ));
-            }
+            Notification::send($secretariatToNotify, new AppointmentSelectedByAa(
+                $application,
+                $vacancy,
+                $applicantName,
+            ));
         }
-
-        AuditLog::record('appointing_authority_decision', $application);
 
         return response()->json([
             'message' => 'Decision recorded successfully.',

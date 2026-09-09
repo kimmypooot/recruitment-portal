@@ -14,6 +14,7 @@ use App\Services\AuditLog;
 use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DeliberationController extends Controller
 {
@@ -167,38 +168,51 @@ class DeliberationController extends Controller
             'remarks' => 'nullable|string|max:1000',
         ]);
 
-        $locked = DeliberationResult::where('vacancy_id', $vacancy->id)
-            ->whereNotNull('locked_at')
-            ->exists();
+        // Locked once and re-checked inside the transaction below, holding a
+        // row lock on the vacancy so a concurrent lock() can't slip in
+        // between this check and the write.
+        $result = DB::transaction(function () use ($vacancy, $data, $user) {
+            Vacancy::where('id', $vacancy->id)->lockForUpdate()->first();
 
-        if ($locked) {
+            $locked = DeliberationResult::where('vacancy_id', $vacancy->id)
+                ->whereNotNull('locked_at')
+                ->exists();
+
+            if ($locked) {
+                return null;
+            }
+
+            $application = Application::findOrFail($data['application_id']);
+
+            $result = DeliberationResult::updateOrCreate(
+                [
+                    'vacancy_id' => $vacancy->id,
+                    'application_id' => $data['application_id'],
+                ],
+                [
+                    'action' => $data['action'],
+                    'rank' => $data['rank'] ?? null,
+                    'decided_by' => $user->id,
+                    'decided_at' => now(),
+                    'remarks' => $data['remarks'] ?? null,
+                ]
+            );
+
+            // Update application status if appointed
+            if ($data['action'] === 'appointed') {
+                $application->update(['status' => 'appointed']);
+            } elseif ($data['action'] === 'endorsed') {
+                $application->update(['status' => 'recommended']);
+            }
+
+            AuditLog::record('deliberation_decision', $application);
+
+            return $result;
+        });
+
+        if ($result === null) {
             return response()->json(['message' => 'Deliberation results are locked and cannot be modified.'], 422);
         }
-
-        $application = Application::findOrFail($data['application_id']);
-
-        $result = DeliberationResult::updateOrCreate(
-            [
-                'vacancy_id' => $vacancy->id,
-                'application_id' => $data['application_id'],
-            ],
-            [
-                'action' => $data['action'],
-                'rank' => $data['rank'] ?? null,
-                'decided_by' => $user->id,
-                'decided_at' => now(),
-                'remarks' => $data['remarks'] ?? null,
-            ]
-        );
-
-        // Update application status if appointed
-        if ($data['action'] === 'appointed') {
-            $application->update(['status' => 'appointed']);
-        } elseif ($data['action'] === 'endorsed') {
-            $application->update(['status' => 'recommended']);
-        }
-
-        AuditLog::record('deliberation_decision', $application);
 
         return response()->json($result, 201);
     }
@@ -217,9 +231,15 @@ class DeliberationController extends Controller
             return response()->json(['message' => 'Only the Chairperson, Secretariat, or an admin-level user can lock deliberation results.'], 403);
         }
 
-        $count = DeliberationResult::where('vacancy_id', $vacancy->id)
-            ->whereNull('locked_at')
-            ->update(['locked_at' => now()]);
+        // Same Vacancy row lock as decide() uses, so the two fully serialize
+        // instead of only each individually being atomic.
+        $count = DB::transaction(function () use ($vacancy) {
+            Vacancy::where('id', $vacancy->id)->lockForUpdate()->first();
+
+            return DeliberationResult::where('vacancy_id', $vacancy->id)
+                ->whereNull('locked_at')
+                ->update(['locked_at' => now()]);
+        });
 
         AuditLog::record('deliberation_locked', $vacancy);
 
