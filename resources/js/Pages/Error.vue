@@ -16,7 +16,7 @@
           </p>
           <div class="absolute inset-0 flex items-center justify-center">
             <div class="w-20 h-20 rounded-2xl flex items-center justify-center"
-              :class="statusIconBg">
+              :class="iconBg">
               <Icon :name="iconName" :size="10" :class="iconColor" />
             </div>
           </div>

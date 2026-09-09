@@ -4,6 +4,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -45,4 +47,26 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        // Serve the CSC-branded Error.vue page for standard HTTP error
+        // statuses on web (non-API) requests once debug mode is off, so
+        // applicants hitting a 404/419/429/500/etc. in production see a
+        // branded, actionable page instead of Laravel's default output.
+        // Left alone when APP_DEBUG is on so local/staging debugging still
+        // gets the full diagnostic page.
+        $exceptions->respond(function (SymfonyResponse $response, Throwable $e, Request $request) {
+            if (config('app.debug') || $request->is('api/*')) {
+                return $response;
+            }
+
+            $status = $response->getStatusCode();
+
+            if (! in_array($status, [400, 403, 404, 419, 429, 500, 503], true)) {
+                return $response;
+            }
+
+            return Inertia::render('Error', ['status' => $status])
+                ->toResponse($request)
+                ->setStatusCode($status);
+        });
     })->create();
