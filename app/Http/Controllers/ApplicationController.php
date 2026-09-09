@@ -7,10 +7,12 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ApplicantProfileResource;
 use App\Http\Resources\VacancyResource;
+use App\Models\ApplicantProfile;
 use App\Models\Application;
 use App\Models\Vacancy;
 use App\Events\ApplicationStatusUpdated;
 use App\Events\ApplicationSubmitted;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\UpdateApplicationStatusRequest;
@@ -67,25 +69,58 @@ class ApplicationController extends Controller
             return response()->json(['message' => 'This vacancy is no longer accepting applications.'], 422);
         }
 
-        $existing = Application::where('applicant_id', $profile->id)
-            ->where('vacancy_id', $data['vacancy_id'])
-            ->whereNull('deleted_at')
-            ->first();
+        try {
+            $application = DB::transaction(function () use ($profile, $data) {
+                // Lock the applicant's own profile row so two concurrent submit
+                // requests from the same applicant serialize instead of both
+                // passing the existence check below before either INSERT commits.
+                // The DB-level unique constraint on (vacancy_id, applicant_id,
+                // active_duplicate_guard) backs this up even across processes/
+                // connections that never contend for this lock at all.
+                ApplicantProfile::where('id', $profile->id)->lockForUpdate()->first();
 
-        if ($existing) {
-            return response()->json(['message' => 'You have already applied for this vacancy.'], 422);
+                $existing = Application::where('applicant_id', $profile->id)
+                    ->where('vacancy_id', $data['vacancy_id'])
+                    ->whereNull('deleted_at')
+                    ->first();
+
+                if ($existing) {
+                    return null;
+                }
+
+                return Application::create([
+                    'vacancy_id'   => $data['vacancy_id'],
+                    'applicant_id' => $profile->id,
+                    'status'       => 'submitted',
+                    'submitted_at' => now(),
+                ]);
+            });
+        } catch (QueryException $e) {
+            if ($this->isDuplicateApplicationViolation($e)) {
+                return response()->json(['message' => 'You have already applied for this vacancy.'], 422);
+            }
+            throw $e;
         }
 
-        $application = Application::create([
-            'vacancy_id'   => $data['vacancy_id'],
-            'applicant_id' => $profile->id,
-            'status'       => 'submitted',
-            'submitted_at' => now(),
-        ]);
+        if ($application === null) {
+            return response()->json(['message' => 'You have already applied for this vacancy.'], 422);
+        }
 
         ApplicationSubmitted::dispatch($application);
 
         return response()->json(ApplicationResource::make($application->load('vacancy')), 201);
+    }
+
+    /**
+     * Whether a QueryException came from the applications_active_vacancy_applicant_unique
+     * constraint (MySQL error 1062, SQLite's "UNIQUE constraint failed") rather than
+     * some other integrity failure that should keep propagating.
+     */
+    private function isDuplicateApplicationViolation(QueryException $e): bool
+    {
+        return (int) ($e->errorInfo[1] ?? 0) === 1062
+            || str_contains($e->getMessage(), 'UNIQUE constraint failed')
+            || str_contains($e->getMessage(), 'applications_active_vacancy_applicant_unique');
     }
 
     public function show(Application $application): JsonResponse
@@ -335,7 +370,11 @@ class ApplicationController extends Controller
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
-        $nonWithdrawable = ['withdrawn', 'passed', 'failed', 'appointed', 'completed'];
+        // 'passed'/'failed' were the pre-standardization names for these two
+        // statuses (see 2026_06_21_070001_standardize_application_status_enum) —
+        // this list went stale when that migration remapped them, silently
+        // reopening withdrawal for 'recommended'/'disqualified' applications.
+        $nonWithdrawable = ['withdrawn', 'recommended', 'disqualified', 'appointed', 'completed'];
         if (in_array($application->status, $nonWithdrawable)) {
             return response()->json(['message' => 'This application can no longer be withdrawn.'], 422);
         }

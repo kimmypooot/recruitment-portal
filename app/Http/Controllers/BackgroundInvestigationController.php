@@ -281,7 +281,9 @@ public function revokeLink(Request $request, BackgroundInvestigationReport $repo
 
         if ($token) {
             $accessToken = PersonalAccessToken::findToken($token);
-            if ($accessToken) {
+            // Expired tokens must not authenticate here even though the row
+            // still exists — findToken() alone does not check expires_at.
+            if ($accessToken && (!$accessToken->expires_at || !$accessToken->expires_at->isPast())) {
                 $user = $accessToken->tokenable;
             }
         }

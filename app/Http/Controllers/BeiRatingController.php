@@ -138,6 +138,10 @@ class BeiRatingController extends Controller
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
 
+        if ($application->status === 'withdrawn') {
+            return response()->json(['message' => 'This application has been withdrawn and can no longer be evaluated.'], 422);
+        }
+
         // TWE and CBWE may have been conducted concurrently, but BEI requires both to be
         // done: the applicant must have passed TWE and CBWE ratings must be locked.
         $tweResults = ExamResult::where('application_id', $data['application_id'])
@@ -177,6 +181,15 @@ class BeiRatingController extends Controller
             ->first();
 
         if ($existing?->isLocked()) {
+            return response()->json(['message' => 'BEI ratings are locked and cannot be modified.'], 422);
+        }
+
+        $stageLocked = BeiRating::whereIn(
+            'application_id',
+            Application::where('vacancy_id', $application->vacancy_id)->pluck('id')
+        )->whereNotNull('locked_at')->exists();
+
+        if ($stageLocked) {
             return response()->json(['message' => 'BEI ratings are locked and cannot be modified.'], 422);
         }
 

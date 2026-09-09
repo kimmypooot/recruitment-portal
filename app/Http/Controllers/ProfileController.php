@@ -120,14 +120,8 @@ class ProfileController extends Controller
 
     public function servePhoto(Request $request): \Symfony\Component\HttpFoundation\Response
     {
-        $token       = $request->query('token');
-        $accessToken = PersonalAccessToken::findToken($token);
+        $user = $this->resolveTokenUser($request->query('token'));
 
-        if (! $accessToken) {
-            abort(403, 'Unauthorized');
-        }
-
-        $user    = $accessToken->tokenable;
         $profile = ApplicantProfile::where('user_id', $user->id)->first();
         $path    = $user->photo_path ?? $profile?->photo_path;
 
@@ -338,14 +332,7 @@ class ProfileController extends Controller
 
     public function serveDocument(Request $request, string $path): \Symfony\Component\HttpFoundation\Response
     {
-        $token = $request->query('token');
-        $accessToken = PersonalAccessToken::findToken($token);
-
-        if (! $accessToken) {
-            abort(403, 'Unauthorized');
-        }
-
-        $user = $accessToken->tokenable;
+        $user = $this->resolveTokenUser($request->query('token'));
 
         // Ownership check: path must be profile-documents/{userId}/...
         if (! str_starts_with($path, "profile-documents/{$user->id}/")) {
@@ -360,6 +347,27 @@ class ProfileController extends Controller
     }
 
     // Helpers ─────────────────────────────────────────────────────────────────
+
+    /**
+     * Resolve the user for a query-string bearer token used by <img>/<a> tags
+     * that can't send an Authorization header. Unlike PersonalAccessToken::findToken()
+     * alone, this also enforces expiry — a token past its expires_at must not
+     * authenticate here even though the row still exists in the database.
+     */
+    private function resolveTokenUser(?string $token): User
+    {
+        if (! $token) {
+            abort(403, 'Unauthorized');
+        }
+
+        $accessToken = PersonalAccessToken::findToken($token);
+
+        if (! $accessToken || ($accessToken->expires_at && $accessToken->expires_at->isPast())) {
+            abort(403, 'Unauthorized');
+        }
+
+        return $accessToken->tokenable;
+    }
 
     private function getOrCreateProfile(): ApplicantProfile
     {

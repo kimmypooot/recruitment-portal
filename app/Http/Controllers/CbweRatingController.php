@@ -127,6 +127,10 @@ class CbweRatingController extends Controller
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
 
+        if ($application->status === 'withdrawn') {
+            return response()->json(['message' => 'This application has been withdrawn and can no longer be evaluated.'], 422);
+        }
+
         // CBWE may be conducted concurrently with the TWE exam (board's discretion), so we
         // only require that QS screening — the actual prerequisite for both — is done.
         $qsEvaluations = QsEvaluation::where('application_id', $data['application_id'])->get();
@@ -163,6 +167,15 @@ class CbweRatingController extends Controller
             ->first();
 
         if ($existing?->isLocked()) {
+            return response()->json(['message' => 'CBWE ratings are locked and cannot be modified.'], 422);
+        }
+
+        $stageLocked = CbweRating::whereIn(
+            'application_id',
+            Application::where('vacancy_id', $application->vacancy_id)->pluck('id')
+        )->whereNotNull('locked_at')->exists();
+
+        if ($stageLocked) {
             return response()->json(['message' => 'CBWE ratings are locked and cannot be modified.'], 422);
         }
 

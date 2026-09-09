@@ -9,6 +9,7 @@ use App\Models\HrmpsbComposition;
 use App\Models\QsEvaluation;
 use App\Models\Vacancy;
 use App\Services\AnonymizationService;
+use App\Services\AuditLog;
 use App\Events\ApplicationStatusUpdated;
 use App\Events\QSEvaluationsLocked;
 use App\Http\Requests\StoreQsEvaluationRequest;
@@ -120,6 +121,10 @@ class QsEvaluationController extends Controller
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
 
+        if ($application->status === 'withdrawn') {
+            return response()->json(['message' => 'This application has been withdrawn and can no longer be evaluated.'], 422);
+        }
+
         $composition = $this->getComposition($user->id);
         if (! $composition && ! $user->canAccessAdminModule()) {
             return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
@@ -145,12 +150,26 @@ class QsEvaluationController extends Controller
             }
         }
 
-        // Prevent re-evaluation if already locked
+        // Prevent re-evaluation if this evaluator's own row is already locked...
         $existing = QsEvaluation::where('application_id', $data['application_id'])
             ->where('evaluator_id', $user->id)
             ->first();
 
         if ($existing?->isLocked()) {
+            return response()->json(['message' => 'QS evaluations are locked and cannot be modified.'], 422);
+        }
+
+        // ...and also if the QS stage for this vacancy has already been locked
+        // overall (lock() sets locked_at on every evaluation that existed at
+        // lock time — a late-arriving evaluator who never submitted before
+        // that would otherwise have no $existing row to check above, and
+        // could silently reopen an already-locked stage).
+        $stageLocked = QsEvaluation::whereIn(
+            'application_id',
+            Application::where('vacancy_id', $application->vacancy_id)->pluck('id')
+        )->whereNotNull('locked_at')->exists();
+
+        if ($stageLocked) {
             return response()->json(['message' => 'QS evaluations are locked and cannot be modified.'], 422);
         }
 

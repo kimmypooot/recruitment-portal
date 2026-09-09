@@ -102,6 +102,13 @@ onMounted(async () => {
   const error = params.get('error')
   const linkSuccess = params.get('link_success')
 
+  // The token/user payload only needs to be read once, right here. Strip it
+  // from the address bar immediately so it doesn't linger in browser history
+  // (or get re-sent as a referrer) for the rest of this session.
+  if (token || userData) {
+    window.history.replaceState({}, document.title, window.location.pathname)
+  }
+
   if (userData) {
     try {
       const user = JSON.parse(atob(userData))

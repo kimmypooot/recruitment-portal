@@ -96,6 +96,10 @@ class EoptController extends Controller
 
         $application = Application::findOrFail($data['application_id']);
 
+        if ($application->status === 'withdrawn') {
+            return response()->json(['message' => 'This application has been withdrawn and can no longer be evaluated.'], 422);
+        }
+
         $beiLocked = BeiRating::where('application_id', $data['application_id'])
             ->whereNotNull('locked_at')
             ->exists();

@@ -93,11 +93,30 @@ class BackgroundCheckController extends Controller
             'remarks'                => 'nullable|string|max:2000',
         ]);
 
+        $application = Application::findOrFail($data['application_id']);
+
+        if ($application->status === 'withdrawn') {
+            return response()->json(['message' => 'This application has been withdrawn and can no longer be evaluated.'], 422);
+        }
+
         $existing = BackgroundCheck::where('application_id', $data['application_id'])
             ->where('checked_by', $user->id)
             ->first();
 
         if ($existing?->isLocked()) {
+            return response()->json(['message' => 'Background checks are locked and cannot be modified.'], 422);
+        }
+
+        // As with QS evaluations: a late-arriving checker with no $existing row
+        // would otherwise skip the check above entirely and reopen an
+        // already-locked stage, since lock() only stamps rows that existed at
+        // lock time.
+        $stageLocked = BackgroundCheck::whereIn(
+            'application_id',
+            Application::where('vacancy_id', $application->vacancy_id)->pluck('id')
+        )->whereNotNull('locked_at')->exists();
+
+        if ($stageLocked) {
             return response()->json(['message' => 'Background checks are locked and cannot be modified.'], 422);
         }
 

@@ -1,0 +1,47 @@
+name: CI Pipeline
+
+# NOTE: this workflow only runs the test suite — despite the file's former
+# name (deploy.yml) there is no deployment step here. Nothing in this repo
+# currently deploys the app, runs `composer install --no-dev`, builds
+# production assets on a target host, or triggers `schedule:run`/`queue:work`
+# in production. See the "Production Configuration" section of the readiness
+# audit for what a real deploy pipeline still needs.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run backend tests
+        run: php artisan test
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Run frontend tests
+        run: npm run test:frontend
+
+      - name: Build production assets
+        run: npm run build
