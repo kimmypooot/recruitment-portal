@@ -53,6 +53,12 @@
               :aria-current="$page.url === '/about' ? 'page' : undefined">
               About
             </Link>
+            <Link href="/help"
+              class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              :class="$page.url === '/help' ? 'bg-white/10 text-white' : 'text-white/75 hover:text-white hover:bg-white/10'"
+              :aria-current="$page.url === '/help' ? 'page' : undefined">
+              Help
+            </Link>
           </nav>
 
           <!-- Auth buttons + mobile hamburger -->
@@ -102,6 +108,12 @@
           :class="$page.url === '/about' ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white'"
           :aria-current="$page.url === '/about' ? 'page' : undefined">
           About
+        </Link>
+        <Link href="/help" @click="mobileOpen = false"
+          class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+          :class="$page.url === '/help' ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white'"
+          :aria-current="$page.url === '/help' ? 'page' : undefined">
+          Help
         </Link>
         <hr class="my-2 border-white/10" />
         <Link href="/login" @click="mobileOpen = false"
@@ -155,6 +167,7 @@
             <ul class="space-y-2">
               <li><Link href="/" class="text-sm text-white/60 hover:text-white transition-colors">Open Vacancies</Link></li>
               <li><Link href="/how-to-apply" class="text-sm text-white/60 hover:text-white transition-colors">How to Apply</Link></li>
+              <li><Link href="/help" class="text-sm text-white/60 hover:text-white transition-colors">Help &amp; FAQ</Link></li>
               <li><Link href="/register" class="text-sm text-white/60 hover:text-white transition-colors">Register as Applicant</Link></li>
               <li><Link href="/track-application" class="text-sm text-white/60 hover:text-white transition-colors">Track My Application</Link></li>
               <li><Link href="/privacy-policy" class="text-sm text-white/60 hover:text-white transition-colors">Privacy Policy</Link></li>

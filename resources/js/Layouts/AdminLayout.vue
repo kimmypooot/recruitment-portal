@@ -338,6 +338,12 @@ const navGroups = computed(() => {
         { label: 'Audit Logs', href: '/admin/audit-logs', icon: 'clock' },
       ],
     },
+    {
+      label: 'Support',
+      items: [
+        { label: 'Help & Guide', href: '/admin/help', icon: 'info' },
+      ],
+    },
   ]
 
   return allGroups

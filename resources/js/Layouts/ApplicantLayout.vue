@@ -438,6 +438,17 @@ const navGroups = [
       },
     ],
   },
+  {
+    label: 'Support',
+    items: [
+      {
+        label: 'Help & FAQ',
+        href:  '/help',
+        icon:  'info',
+        disabled: false,
+      },
+    ],
+  },
 ]
 
 function isActive(href) {

@@ -12,6 +12,7 @@ use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index']);
 Route::get('/how-to-apply', fn () => Inertia::render('HowToApply'));
+Route::get('/help', fn () => Inertia::render('Help'));
 Route::get('/about', fn () => Inertia::render('About'));
 Route::get('/privacy-policy', fn () => Inertia::render('PrivacyPolicy'));
 Route::get('/terms-of-service', fn () => Inertia::render('TermsOfService'));
@@ -73,6 +74,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/competencies', fn () => Inertia::render('Admin/Competencies'));
     Route::get('/feedbacks', fn () => Inertia::render('Admin/Feedbacks'));
     Route::get('/email-templates', fn () => Inertia::render('Admin/EmailTemplates'));
+    Route::get('/help', fn () => Inertia::render('Admin/Help'));
 });
 
 // HRMPSB evaluation pages — auth enforced by API routes and client-side guards
