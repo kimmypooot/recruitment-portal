@@ -10,6 +10,7 @@ use App\Models\BackgroundInvestigationReport;
 use App\Models\HrmpsbComposition;
 use App\Models\Vacancy;
 use App\Services\AuditLog;
+use App\Services\HrmpsbCompositionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -28,9 +29,7 @@ class BackgroundCheckController extends Controller
         $user = $request->user();
 
         $isMember = $user->canAccessAdminModule()
-            || HrmpsbComposition::where('user_id', $user->id)
-                ->where('is_active', true)
-                ->exists();
+            || app(HrmpsbCompositionService::class)->isActiveMember($user, $vacancy);
 
         if (!$isMember) {
             return response()->json(['message' => 'Access denied.'], 403);
@@ -75,14 +74,6 @@ class BackgroundCheckController extends Controller
     {
         $user = $request->user();
 
-        $isMember = HrmpsbComposition::where('user_id', $user->id)
-            ->where('is_active', true)
-            ->exists();
-
-        if (!$isMember && !in_array($user->role, ['admin', 'hr-manager', 'hrmpsb-secretariat', 'hr-chief'])) {
-            return response()->json(['message' => 'Access denied.'], 403);
-        }
-
         $data = $request->validate([
             'application_id'         => 'required|exists:applications,id',
             'employment_verified'    => 'nullable|boolean',
@@ -93,7 +84,13 @@ class BackgroundCheckController extends Controller
             'remarks'                => 'nullable|string|max:2000',
         ]);
 
-        $application = Application::findOrFail($data['application_id']);
+        $application = Application::with('vacancy')->findOrFail($data['application_id']);
+
+        $isMember = app(HrmpsbCompositionService::class)->isActiveMember($user, $application->vacancy);
+
+        if (!$isMember && !in_array($user->role, ['admin', 'hr-manager', 'hrmpsb-secretariat', 'hr-chief'])) {
+            return response()->json(['message' => 'Access denied.'], 403);
+        }
 
         if ($application->status === 'withdrawn') {
             return response()->json(['message' => 'This application has been withdrawn and can no longer be evaluated.'], 422);

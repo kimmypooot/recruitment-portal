@@ -1,12 +1,10 @@
 <template>
   <div>
-    <div class="flex items-baseline justify-between mb-1.5" v-if="label">
-      <label class="block text-sm font-medium text-gray-700">
-        {{ label }}
-        <span v-if="required" class="text-red-500">*</span>
-        <span v-else-if="showOptional" class="text-gray-400 font-normal">(optional)</span>
-      </label>
-    </div>
+    <label v-if="label" class="block text-sm font-medium text-gray-700 mb-1.5">
+      {{ label }}
+      <span v-if="required" class="text-red-500">*</span>
+      <span v-else-if="showOptional" class="text-gray-400 font-normal">(optional)</span>
+    </label>
 
     <label
       class="flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl px-4 py-5 cursor-pointer transition-colors group"
@@ -104,27 +102,24 @@ const dropzoneClasses = computed(() => {
   return 'border-gray-200 hover:border-primary/40 hover:bg-primary/5'
 })
 
-function validate(candidate) {
+function selectFile(candidate) {
+  if (!candidate) return
+
   if (props.maxSizeMb && candidate.size > props.maxSizeMb * 1024 * 1024) {
     emit('error', `File is too large. Maximum size is ${props.maxSizeMb} MB.`)
-    return false
+    return
   }
-  return true
-}
 
-function accept(candidate) {
-  if (!candidate) return
-  if (!validate(candidate)) return
   emit('update:modelValue', candidate)
 }
 
 function onPick(event) {
-  accept(event.target.files?.[0] ?? null)
+  selectFile(event.target.files?.[0] ?? null)
 }
 
 function onDrop(event) {
   dragging.value = false
   if (props.disabled) return
-  accept(event.dataTransfer?.files?.[0] ?? null)
+  selectFile(event.dataTransfer?.files?.[0] ?? null)
 }
 </script>

@@ -7,6 +7,7 @@ namespace App\Services\Pds;
 use App\Models\ApplicantProfile;
 use App\Models\PdsOtherInfo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * Flattens an ApplicantProfile and its relations into the shape CS Form No. 212
@@ -26,13 +27,13 @@ class PdsDataAssembler
 
     /** Row counts printed on the blank form; lists are padded to these. */
     public const PRINTED_ROWS = [
-        'children'      => 12,
+        'children' => 12,
         'eligibilities' => 7,
-        'work'          => 28,
-        'voluntary'     => 7,
-        'training'      => 21,
-        'other_info'    => 7,
-        'references'    => 3,
+        'work' => 28,
+        'voluntary' => 7,
+        'training' => 21,
+        'other_info' => 7,
+        'references' => 3,
     ];
 
     public function assemble(ApplicantProfile $profile): array
@@ -43,14 +44,14 @@ class PdsDataAssembler
 
         return [
             'personal_information' => $this->personalInformation($profile),
-            'family_background'    => $this->familyBackground($profile),
+            'family_background' => $this->familyBackground($profile),
             'educational_background' => $this->educationalBackground($profile),
             'civil_service_eligibility' => $this->civilServiceEligibility($profile),
-            'work_experience'      => $this->workExperience($profile),
-            'voluntary_work'       => $this->voluntaryWork($profile),
+            'work_experience' => $this->workExperience($profile),
+            'voluntary_work' => $this->voluntaryWork($profile),
             'learning_development' => $this->learningAndDevelopment($profile),
-            'other_information'    => $this->otherInformation($profile),
-            'declarations'         => $this->declarations($profile),
+            'other_information' => $this->otherInformation($profile),
+            'declarations' => $this->declarations($profile),
         ];
     }
 
@@ -61,53 +62,53 @@ class PdsDataAssembler
         $user = $profile->user;
 
         return [
-            'surname'        => $this->text($user?->last_name),
-            'first_name'     => $this->text($user?->first_name),
-            'middle_name'    => $this->text($user?->middle_name),
+            'surname' => $this->text($user?->last_name),
+            'first_name' => $this->text($user?->first_name),
+            'middle_name' => $this->text($user?->middle_name),
             'name_extension' => $this->text($user?->suffix),
 
-            'date_of_birth'  => $this->date($profile->birthday),
+            'date_of_birth' => $this->date($profile->birthday),
             'place_of_birth' => $this->text($profile->place_of_birth),
-            'sex_at_birth'   => $this->text($profile->gender),
-            'civil_status'   => $this->text($profile->civil_status),
+            'sex_at_birth' => $this->text($profile->gender),
+            'civil_status' => $this->text($profile->civil_status),
             'civil_status_other' => $this->text($profile->civil_status_other),
 
-            'height_m'   => $this->text($profile->height_m),
-            'weight_kg'  => $this->text($profile->weight_kg),
+            'height_m' => $this->text($profile->height_m),
+            'weight_kg' => $this->text($profile->weight_kg),
             'blood_type' => $this->text($profile->blood_type),
 
-            'gsis_id_no'         => $this->text($profile->gsis_id_no),
-            'pagibig_id_no'      => $this->text($profile->pagibig_id_no),
-            'philhealth_no'      => $this->text($profile->philhealth_no),
-            'sss_no'             => $this->text($profile->sss_no),
-            'tin_no'             => $this->text($profile->tin_no),
-            'umid_id_no'         => $this->text($profile->umid_id_no),
-            'philsys_number'     => $this->text($profile->philsys_number),
+            'gsis_id_no' => $this->text($profile->gsis_id_no),
+            'pagibig_id_no' => $this->text($profile->pagibig_id_no),
+            'philhealth_no' => $this->text($profile->philhealth_no),
+            'sss_no' => $this->text($profile->sss_no),
+            'tin_no' => $this->text($profile->tin_no),
+            'umid_id_no' => $this->text($profile->umid_id_no),
+            'philsys_number' => $this->text($profile->philsys_number),
             'agency_employee_no' => $this->text($profile->agency_employee_no),
 
-            'citizenship'              => $this->text($profile->citizenship),
-            'citizenship_basis'        => $this->text($profile->citizenship_basis),
+            'citizenship' => $this->text($profile->citizenship),
+            'citizenship_basis' => $this->text($profile->citizenship_basis),
             'dual_citizenship_country' => $this->text($profile->dual_citizenship_country),
 
             'residential_address' => $this->address($profile, 'res_'),
-            'permanent_address'   => $this->address($profile, 'perm_'),
+            'permanent_address' => $this->address($profile, 'perm_'),
 
             'telephone_no' => $this->text($profile->telephone_no),
-            'mobile_no'    => $this->text($profile->mobile_number),
-            'email'        => $this->text($user?->email),
+            'mobile_no' => $this->text($profile->mobile_number),
+            'email' => $this->text($user?->email),
         ];
     }
 
     private function address(ApplicantProfile $profile, string $prefix): array
     {
         return [
-            'house_block_lot'   => $this->text($profile->{$prefix.'house_block_lot'}),
-            'street'            => $this->text($profile->{$prefix.'street'}),
-            'subdivision'       => $this->text($profile->{$prefix.'subdivision'}),
-            'barangay'          => $this->text($profile->{$prefix.'barangay'}),
+            'house_block_lot' => $this->text($profile->{$prefix.'house_block_lot'}),
+            'street' => $this->text($profile->{$prefix.'street'}),
+            'subdivision' => $this->text($profile->{$prefix.'subdivision'}),
+            'barangay' => $this->text($profile->{$prefix.'barangay'}),
             'city_municipality' => $this->text($profile->{$prefix.'city_municipality'}),
-            'province'          => $this->text($profile->{$prefix.'province'}),
-            'zip_code'          => $this->text($profile->{$prefix.'zip_code'}),
+            'province' => $this->text($profile->{$prefix.'province'}),
+            'zip_code' => $this->text($profile->{$prefix.'zip_code'}),
         ];
     }
 
@@ -119,29 +120,29 @@ class PdsDataAssembler
 
         return [
             'spouse' => [
-                'surname'          => $this->text($family?->spouse_surname),
-                'first_name'       => $this->text($family?->spouse_first_name),
-                'middle_name'      => $this->text($family?->spouse_middle_name),
-                'name_extension'   => $this->text($family?->spouse_name_extension),
-                'occupation'       => $this->text($family?->spouse_occupation),
-                'employer'         => $this->text($family?->spouse_employer),
+                'surname' => $this->text($family?->spouse_surname),
+                'first_name' => $this->text($family?->spouse_first_name),
+                'middle_name' => $this->text($family?->spouse_middle_name),
+                'name_extension' => $this->text($family?->spouse_name_extension),
+                'occupation' => $this->text($family?->spouse_occupation),
+                'employer' => $this->text($family?->spouse_employer),
                 'business_address' => $this->text($family?->spouse_business_address),
-                'telephone'        => $this->text($family?->spouse_telephone),
+                'telephone' => $this->text($family?->spouse_telephone),
             ],
             'father' => [
-                'surname'        => $this->text($family?->father_surname),
-                'first_name'     => $this->text($family?->father_first_name),
-                'middle_name'    => $this->text($family?->father_middle_name),
+                'surname' => $this->text($family?->father_surname),
+                'first_name' => $this->text($family?->father_first_name),
+                'middle_name' => $this->text($family?->father_middle_name),
                 'name_extension' => $this->text($family?->father_name_extension),
             ],
             'mother_maiden' => [
-                'surname'     => $this->text($family?->mother_maiden_surname),
-                'first_name'  => $this->text($family?->mother_maiden_first_name),
+                'surname' => $this->text($family?->mother_maiden_surname),
+                'first_name' => $this->text($family?->mother_maiden_first_name),
                 'middle_name' => $this->text($family?->mother_maiden_middle_name),
             ],
             'children' => $this->pad(
-                collect($this->filled($profile->children, 'full_name'))->map(fn ($child) => [
-                    'full_name'     => $this->text($child->full_name),
+                $this->filled($profile->children, 'full_name')->map(fn ($child) => [
+                    'full_name' => $this->text($child->full_name),
                     'date_of_birth' => $this->date($child->date_of_birth),
                 ])->all(),
                 self::PRINTED_ROWS['children'],
@@ -159,22 +160,20 @@ class PdsDataAssembler
      */
     private function educationalBackground(ApplicantProfile $profile): array
     {
-        $byLevel = $profile->educationalAttainments->groupBy('level');
-
         $levels = ['elementary', 'secondary', 'vocational_trade', 'college', 'graduate_studies'];
-        $rows   = [];
+        $rows = [];
 
         foreach ($levels as $level) {
-            $entry = $byLevel->get($level)?->first();
+            $entry = $profile->educationalAttainments->firstWhere('level', $level);
 
             $rows[$level] = [
-                'school_name'    => $this->text($entry?->school_name),
-                'degree_course'  => $this->text($entry?->degree_course),
-                'period_from'    => $this->text($entry?->period_from),
-                'period_to'      => $this->text($entry?->period_to),
-                'units_earned'   => $this->text($entry?->units_earned),
+                'school_name' => $this->text($entry?->school_name),
+                'degree_course' => $this->text($entry?->degree_course),
+                'period_from' => $this->text($entry?->period_from),
+                'period_to' => $this->text($entry?->period_to),
+                'units_earned' => $this->text($entry?->units_earned),
                 'year_graduated' => $this->text($entry?->year_graduated),
-                'honors'         => $this->text($entry?->honors),
+                'honors' => $this->text($entry?->honors),
             ];
         }
 
@@ -186,12 +185,12 @@ class PdsDataAssembler
     private function civilServiceEligibility(ApplicantProfile $profile): array
     {
         return $this->pad(
-            collect($this->filled($profile->civilServiceEligibilities, 'eligibility_name'))->map(fn ($eligibility) => [
-                'eligibility_name'    => $this->text($eligibility->eligibility_name),
-                'rating'              => $this->text($eligibility->rating),
-                'examination_date'    => $this->date($eligibility->examination_date),
-                'examination_place'   => $this->text($eligibility->examination_place),
-                'license_number'      => $this->text($eligibility->license_number),
+            $this->filled($profile->civilServiceEligibilities, 'eligibility_name')->map(fn ($eligibility) => [
+                'eligibility_name' => $this->text($eligibility->eligibility_name),
+                'rating' => $this->text($eligibility->rating),
+                'examination_date' => $this->date($eligibility->examination_date),
+                'examination_place' => $this->text($eligibility->examination_place),
+                'license_number' => $this->text($eligibility->license_number),
                 'license_valid_until' => $this->date($eligibility->license_valid_until),
             ])->all(),
             self::PRINTED_ROWS['eligibilities'],
@@ -213,21 +212,21 @@ class PdsDataAssembler
 
         return $this->pad(
             $sorted->map(fn ($work) => [
-                'date_from'         => $this->date($work->date_from),
-                'date_to'           => $work->is_present ? 'PRESENT' : $this->date($work->date_to),
-                'position_title'    => $this->text($work->position_title),
+                'date_from' => $this->date($work->date_from),
+                'date_to' => $work->is_present ? 'PRESENT' : $this->date($work->date_to),
+                'position_title' => $this->text($work->position_title),
                 'department_agency' => $this->text($work->department_agency),
                 // The block below prints on the Work Experience Sheet attachment,
                 // not the PDS itself, but is carried here so both render from
                 // one source. Raw values: the WES is prose, and "N/A" reads
                 // badly in a narrative sheet.
-                'duties'               => (string) $work->duties,
-                'office_unit'          => (string) $work->office_unit,
-                'agency_location'      => (string) $work->agency_location,
+                'duties' => (string) $work->duties,
+                'office_unit' => (string) $work->office_unit,
+                'agency_location' => (string) $work->agency_location,
                 'immediate_supervisor' => (string) $work->immediate_supervisor,
-                'accomplishments'      => (string) $work->accomplishments,
-                'monthly_salary'    => $this->money($work->monthly_salary),
-                'salary_grade'      => $this->text($work->salary_grade),
+                'accomplishments' => (string) $work->accomplishments,
+                'monthly_salary' => $this->money($work->monthly_salary),
+                'salary_grade' => $this->text($work->salary_grade),
                 'appointment_status' => $this->text($work->appointment_status),
                 'government_service' => $work->government_service ? 'Y' : 'N',
             ])->all(),
@@ -247,12 +246,12 @@ class PdsDataAssembler
     private function voluntaryWork(ApplicantProfile $profile): array
     {
         return $this->pad(
-            collect($this->filled($profile->voluntaryWorks, 'organization_name_address'))->map(fn ($work) => [
+            $this->filled($profile->voluntaryWorks, 'organization_name_address')->map(fn ($work) => [
                 'organization_name_address' => $this->text($work->organization_name_address),
-                'date_from'                 => $this->date($work->date_from),
-                'date_to'                   => $this->date($work->date_to),
-                'number_of_hours'           => $this->text($work->number_of_hours),
-                'position_nature_of_work'   => $this->text($work->position_nature_of_work),
+                'date_from' => $this->date($work->date_from),
+                'date_to' => $this->date($work->date_to),
+                'number_of_hours' => $this->text($work->number_of_hours),
+                'position_nature_of_work' => $this->text($work->position_nature_of_work),
             ])->all(),
             self::PRINTED_ROWS['voluntary'],
             [
@@ -268,12 +267,12 @@ class PdsDataAssembler
     {
         return $this->pad(
             $profile->trainings->map(fn ($training) => [
-                'title'           => $this->text($training->title),
-                'date_from'       => $this->date($training->date_from),
-                'date_to'         => $this->date($training->date_to),
+                'title' => $this->text($training->title),
+                'date_from' => $this->date($training->date_from),
+                'date_to' => $this->date($training->date_to),
                 'number_of_hours' => $this->text($training->hours),
-                'ld_type'         => $this->text($training->ld_type),
-                'conducted_by'    => $this->text($training->conducted_by),
+                'ld_type' => $this->text($training->ld_type),
+                'conducted_by' => $this->text($training->conducted_by),
             ])->all(),
             self::PRINTED_ROWS['training'],
             [
@@ -287,19 +286,16 @@ class PdsDataAssembler
 
     private function otherInformation(ApplicantProfile $profile): array
     {
-        $grouped = $profile->otherInfos->groupBy('kind');
-
         $column = fn (string $kind) => $this->pad(
-            collect($this->filled($grouped->get($kind) ?? collect(), 'value'))
-                ->pluck('value')->all(),
+            $this->filled($profile->otherInfos->where('kind', $kind), 'value')->pluck('value')->all(),
             self::PRINTED_ROWS['other_info'],
             ''
         );
 
         return [
-            'special_skills_hobbies'   => $column(PdsOtherInfo::KIND_SPECIAL_SKILL_HOBBY),
+            'special_skills_hobbies' => $column(PdsOtherInfo::KIND_SPECIAL_SKILL_HOBBY),
             'non_academic_distinctions' => $column(PdsOtherInfo::KIND_NON_ACADEMIC_DISTINCTION),
-            'memberships'              => $column(PdsOtherInfo::KIND_MEMBERSHIP),
+            'memberships' => $column(PdsOtherInfo::KIND_MEMBERSHIP),
         ];
     }
 
@@ -317,7 +313,7 @@ class PdsDataAssembler
             'q35a' => $this->yesNo($declaration?->q35a_guilty_admin_offense),
             'q35a_details' => $this->text($declaration?->q35a_details),
             'q35b' => $this->yesNo($declaration?->q35b_criminally_charged),
-            'q35b_date_filed'  => $this->date($declaration?->q35b_date_filed),
+            'q35b_date_filed' => $this->date($declaration?->q35b_date_filed),
             'q35b_case_status' => $this->text($declaration?->q35b_case_status),
 
             'q36' => $this->yesNo($declaration?->q36_convicted),
@@ -342,20 +338,20 @@ class PdsDataAssembler
             'q40c_id_no' => $this->text($declaration?->q40c_id_no),
 
             'references' => $this->pad(
-                collect($this->filled($profile->references, 'name'))->map(fn ($reference) => [
-                    'name'                       => $this->text($reference->name),
+                $this->filled($profile->references, 'name')->map(fn ($reference) => [
+                    'name' => $this->text($reference->name),
                     'office_residential_address' => $this->text($reference->office_residential_address),
-                    'contact_no_or_email'        => $this->text($reference->contact_no_or_email),
+                    'contact_no_or_email' => $this->text($reference->contact_no_or_email),
                 ])->all(),
                 self::PRINTED_ROWS['references'],
                 ['name' => '', 'office_residential_address' => '', 'contact_no_or_email' => '']
             ),
 
-            'government_id_type'           => $this->text($declaration?->government_id_type),
-            'government_id_number'         => $this->text($declaration?->government_id_number),
-            'government_id_issuance_date'  => $this->date($declaration?->government_id_issuance_date),
+            'government_id_type' => $this->text($declaration?->government_id_type),
+            'government_id_number' => $this->text($declaration?->government_id_number),
+            'government_id_issuance_date' => $this->date($declaration?->government_id_issuance_date),
             'government_id_issuance_place' => $this->text($declaration?->government_id_issuance_place),
-            'date_accomplished'            => $this->date($declaration?->date_accomplished),
+            'date_accomplished' => $this->date($declaration?->date_accomplished),
         ];
     }
 
@@ -424,13 +420,13 @@ class PdsDataAssembler
      * half-finished list can contain blanks. Without this they would print as
      * "N/A" in the middle of an otherwise real list.
      *
-     * @param  \Illuminate\Support\Collection<int, mixed>  $rows
-     * @return array<int, mixed>
+     * @param  Collection<int, mixed>  $rows
+     * @return Collection<int, mixed>
      */
-    private function filled(mixed $rows, string $keyField): array
+    private function filled(Collection $rows, string $keyField): Collection
     {
         return $rows->filter(
             fn ($row) => trim((string) $row->{$keyField}) !== ''
-        )->values()->all();
+        )->values();
     }
 }

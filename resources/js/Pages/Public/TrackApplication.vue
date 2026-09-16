@@ -112,6 +112,7 @@ import Icon from '@/Components/UI/Icon.vue'
 import BaseInput from '@/Components/UI/BaseInput.vue'
 import BaseButton from '@/Components/UI/BaseButton.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
+import { formatDate } from '@/utils/dates'
 
 const form = reactive({ reference_code: '', email: '' })
 const loading = ref(false)
@@ -141,10 +142,5 @@ function reset() {
   result.value = null
   form.reference_code = ''
   form.email = ''
-}
-
-function formatDate(value) {
-  if (!value) return '—'
-  return new Date(value).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 </script>

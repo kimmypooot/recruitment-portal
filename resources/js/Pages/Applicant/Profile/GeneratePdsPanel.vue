@@ -116,6 +116,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { pdsApi } from '@/services/api'
 import { useToast } from '@/composables/useToast'
+import { orderedSectionEntries, describeMissing as describeMissingSection } from '@/utils/pdsSections'
 
 const props = defineProps({
   generatedAt: { type: String, default: null },
@@ -130,68 +131,15 @@ const downloading = ref(null)
 const sections    = ref({})
 const canGenerate = ref(false)
 
-/** Printed order of the form, so the checklist reads like the PDS itself. */
-const SECTION_LABELS = {
-  personal_information:      'I. Personal Information',
-  family_background:         'II. Family Background',
-  educational_background:    'III. Educational Background',
-  civil_service_eligibility: 'IV. Civil Service Eligibility',
-  work_experience:           'V. Work Experience',
-  voluntary_work:            'VI. Voluntary Work',
-  learning_development:      'VII. Learning and Development',
-  other_information:         'VIII. Other Information',
-  declarations:              'Declarations (items 34–42)',
-  references:                'References (item 41)',
-}
-
-const FIELD_LABELS = {
-  place_of_birth:      'place of birth',
-  citizenship:         'citizenship',
-  residential_address: 'residential address',
-  permanent_address:   'permanent address',
-  sex_at_birth:        'sex at birth',
-  civil_status:        'civil status',
-  date_of_birth:       'date of birth',
-  mobile_no:           'mobile number',
-  father_name:         "father's name",
-  mother_maiden_name:  "mother's maiden name",
-  elementary:          'elementary',
-  secondary:           'secondary',
-}
-
-const orderedSections = computed(() =>
-  Object.keys(SECTION_LABELS)
-    .filter(key => sections.value[key])
-    .map(key => ({
-      key,
-      label: SECTION_LABELS[key],
-      ...sections.value[key],
-    }))
-)
+const orderedSections = computed(() => orderedSectionEntries(sections.value))
 
 function statusClass(section) {
   if (section.complete) return 'bg-green-100 text-green-700'
   return section.optional ? 'bg-gray-100 text-gray-400' : 'bg-amber-100 text-amber-700'
 }
 
-/**
- * The declaration reports one entry per unanswered question, which is far too
- * noisy to list; summarise it instead.
- */
 function describeMissing(section) {
-  if (section.key === 'declarations') {
-    const n = section.missing.length
-    return `${n} question${n === 1 ? '' : 's'} still unanswered`
-  }
-
-  if (section.key === 'references') {
-    const need = section.missing[0]?.match(/need_(\d+)_more/)?.[1]
-    return need ? `${need} more reference${need === '1' ? '' : 's'} required` : 'Incomplete'
-  }
-
-  if (section.optional) return 'Nothing recorded yet'
-
-  return 'Missing: ' + section.missing.map(f => FIELD_LABELS[f] ?? f.replace(/_/g, ' ')).join(', ')
+  return describeMissingSection(section.key, section)
 }
 
 function formatDate(value) {
@@ -225,10 +173,6 @@ async function download(format) {
   }
 }
 
-/**
- * Errors come back as a blob because the request asks for one, so the JSON body
- * has to be read back out before it can be shown.
- */
 async function downloadSheet(format) {
   downloading.value = `wes-${format}`
   try {
@@ -241,6 +185,10 @@ async function downloadSheet(format) {
   }
 }
 
+/**
+ * Errors come back as a blob because the request asks for one, so the JSON body
+ * has to be read back out before it can be shown.
+ */
 async function readError(error, format) {
   const status = error?.response?.status
 

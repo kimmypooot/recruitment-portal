@@ -86,7 +86,8 @@
             {{ progressPct }}%
           </span>
         </div>
-        <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+        <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden"
+          role="progressbar" aria-label="Profile completion" :aria-valuenow="progressPct" aria-valuemin="0" aria-valuemax="100">
           <div class="h-full rounded-full transition-all duration-500"
             :class="progressPct === 100 ? 'bg-green-500' : 'bg-primary'"
             :style="{ width: progressPct + '%' }"></div>
@@ -99,10 +100,18 @@
         </p>
       </div>
 
+      <!-- PDS (CS Form 212) readiness — a separate, stricter checklist than the
+           bar above; kept visible across all tabs since its sections span several. -->
+      <ProfileReadinessPanel
+        :sections="pdsSections" :can-generate="pdsCanGenerate" :loading="pdsLoading"
+        @go-to="goToPdsSection"
+      />
+
       <!-- Step tabs -->
       <div class="bg-white border border-gray-200 rounded-xl p-1.5 mb-7 shadow-sm">
-        <div class="flex gap-1">
+        <div class="flex gap-1" role="tablist" aria-label="Profile sections">
           <button v-for="tab in tabs" :key="tab.key"
+            role="tab" :id="`tab-${tab.key}`" :aria-selected="activeTab === tab.key" :aria-controls="`panel-${tab.key}`"
             @click="switchTab(tab.key)"
             class="flex flex-1 items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors min-w-0"
             :class="activeTab === tab.key
@@ -115,6 +124,7 @@
             <span v-if="tab.complete"
               class="flex-shrink-0 w-2 h-2 rounded-full"
               :class="activeTab === tab.key ? 'bg-green-300' : 'bg-green-500'">
+              <span class="sr-only">— section complete</span>
             </span>
           </button>
         </div>
@@ -122,6 +132,7 @@
 
       <!-- ═══ Tab 1 — Personal Info ═══ -->
       <PersonalInfoTab
+        id="panel-personal" role="tabpanel" aria-labelledby="tab-personal"
         v-show="activeTab === 'personal'"
         :name="nameForm"
         :personal="personal"
@@ -141,6 +152,7 @@
 
       <!-- ═══ Tab 2 — Qualifications ═══ -->
       <QualificationsTab
+        id="panel-qualifications" role="tabpanel" aria-labelledby="tab-qualifications"
         v-show="activeTab === 'qualifications'"
         :personal="personal"
         :experiences="sortedExperiences"
@@ -159,12 +171,15 @@
 
       <!-- ═══ Tab 3 — PDS Details (CS Form No. 212, Revised 2026) ═══ -->
       <PdsDetailsTab
+        id="panel-pds" role="tabpanel" aria-labelledby="tab-pds"
         v-show="activeTab === 'pds'"
         :personal="personal"
+        @changed="loadPdsCompleteness"
       />
 
       <!-- ═══ Tab 4 — Documents ═══ -->
       <DocumentsTab
+        id="panel-documents" role="tabpanel" aria-labelledby="tab-documents"
         v-show="activeTab === 'documents'"
         :doc-fields="docFields"
         :doc-files="docFiles"
@@ -179,10 +194,27 @@
         @pds-generated="refreshPdsDocumentState"
       />
 
+      <!-- ═══ Tab 5 — Review ═══ -->
+      <ReviewTab
+        id="panel-review" role="tabpanel" aria-labelledby="tab-review"
+        v-show="activeTab === 'review'"
+        :name="nameForm"
+        :personal="personal"
+        :experiences="sortedExperiences"
+        :education-records="sortedEducation"
+        :trainings="sortedTrainings"
+        :doc-fields="docFields"
+        :doc-paths="docPaths"
+        :pds-can-generate="pdsCanGenerate"
+        :pds-sections="pdsSections"
+        @go-to="goToPdsSection"
+      />
+
       <!-- Save / navigation bar — sits in the flow at the end of the tab
-           content rather than floating over it. -->
-      <div v-if="activeTab !== 'documents'"
-        class="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm">
+           content rather than floating over it. Only the right-hand action
+           differs per tab: Documents upload via FormData, Review has nothing
+           to save, and every other tab saves the profile form. -->
+      <div class="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm">
         <div class="px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <button v-if="previousTab" @click="goToPreviousTab" type="button"
             class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
@@ -193,7 +225,31 @@
           </button>
           <div v-else></div>
 
-          <div class="flex items-center gap-4">
+          <div v-if="activeTab === 'review'">
+            <Link v-if="canApply" href="/applicant/dashboard?tab=vacancies"
+              class="inline-flex items-center gap-2 px-6 py-2.5 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
+              Browse Vacancies
+            </Link>
+          </div>
+
+          <div v-else-if="activeTab === 'documents'" class="flex items-center gap-4">
+            <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+              Uploaded
+            </div>
+            <button @click="uploadDocuments" :disabled="savingDocs"
+              class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+              <svg v-if="savingDocs" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+              </svg>
+              {{ savingDocs ? 'Uploading…' : 'Upload Documents' }}
+            </button>
+          </div>
+
+          <div v-else class="flex items-center gap-4">
             <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
@@ -219,38 +275,6 @@
         </div>
       </div>
 
-      <!-- Document upload bar (separate because docs use FormData upload) -->
-      <div v-if="activeTab === 'documents'"
-        class="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm">
-        <div class="px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-          <button v-if="previousTab" @click="goToPreviousTab" type="button"
-            class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
-            </svg>
-            <span class="hidden sm:inline">Previous:</span> {{ previousTab.label }}
-          </button>
-          <div v-else></div>
-
-          <div class="flex items-center gap-4">
-            <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-              </svg>
-              Uploaded
-            </div>
-            <button @click="uploadDocuments" :disabled="savingDocs"
-              class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-              <svg v-if="savingDocs" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-              </svg>
-              {{ savingDocs ? 'Uploading…' : 'Upload Documents' }}
-            </button>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <!-- ═══ MODAL — Add Work Experience ═══ -->
@@ -261,7 +285,7 @@
               <h3 class="text-base font-semibold text-gray-900 truncate">{{ expModal.editingId ? 'Edit Work Experience' : 'Add Work Experience' }}</h3>
               <p class="text-xs text-gray-500 mt-0.5">Fields marked <span class="text-red-500">*</span> are required</p>
             </div>
-            <button @click="expModal.open = false"
+            <button @click="expModal.open = false" aria-label="Close"
               class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 self-start">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -388,7 +412,7 @@
               <h3 class="text-base font-semibold text-gray-900 truncate">{{ eduModal.editingId ? 'Edit Education' : 'Add Educational Attainment' }}</h3>
               <p class="text-xs text-gray-500 mt-0.5">Fields marked <span class="text-red-500">*</span> are required</p>
             </div>
-            <button @click="eduModal.open = false"
+            <button @click="eduModal.open = false" aria-label="Close"
               class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 self-start">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -478,7 +502,7 @@
               <h3 class="text-base font-semibold text-gray-900 truncate">{{ trainingModal.editingId ? 'Edit Training' : 'Add Training' }}</h3>
               <p class="text-xs text-gray-500 mt-0.5">Fields marked <span class="text-red-500">*</span> are required</p>
             </div>
-            <button @click="trainingModal.open = false"
+            <button @click="trainingModal.open = false" aria-label="Close"
               class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 self-start">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -551,7 +575,7 @@
                 {{ photoModal.step === 'select' ? 'Choose a clear, professional passport-size photo' : 'Drag to move · Handles to resize' }}
               </p>
             </div>
-            <button @click="closePhotoModal"
+            <button @click="closePhotoModal" aria-label="Close"
               class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -622,7 +646,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
-import { profileApi } from '@/services/api'
+import { profileApi, pdsApi } from '@/services/api'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
@@ -631,6 +655,8 @@ import PersonalInfoTab from './Profile/PersonalInfoTab.vue'
 import QualificationsTab from './Profile/QualificationsTab.vue'
 import PdsDetailsTab from './Profile/PdsDetailsTab.vue'
 import DocumentsTab from './Profile/DocumentsTab.vue'
+import ReviewTab from './Profile/ReviewTab.vue'
+import ProfileReadinessPanel from './Profile/ProfileReadinessPanel.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 const { confirm, alert } = useConfirm()
@@ -756,12 +782,24 @@ const tabs = computed(() => [
   {
     key: 'pds', label: 'PDS Details',
     icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-    complete: !!(personal.place_of_birth && personal.citizenship && personal.perm_city_municipality),
+    // Mirrors the required (non-optional) sections of this tab in the
+    // authoritative PdsCompletenessChecker — see ProfileReadinessPanel for
+    // the full breakdown across every tab.
+    complete: !!(
+      pdsSections.value.family_background?.complete &&
+      pdsSections.value.declarations?.complete &&
+      pdsSections.value.references?.complete
+    ),
   },
   {
     key: 'documents', label: 'Documents',
     icon: 'M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13',
     complete: hasRequiredDocuments.value,
+  },
+  {
+    key: 'review', label: 'Review',
+    icon: 'M9 12h6m-6 4h3m-9 5h12a2 2 0 002-2V7.414a1 1 0 00-.293-.707l-3.414-3.414A1 1 0 0012.586 3H6a2 2 0 00-2 2v14a2 2 0 002 2z',
+    // Purely a read-only summary — nothing here to mark "complete" on its own.
   },
 ])
 
@@ -803,6 +841,43 @@ const hasRequiredDocuments = computed(() =>
 const canApply = computed(() => isComplete.value && hasRequiredDocuments.value)
 
 const docErrors = reactive({})
+
+// ─── PDS (CS Form 212) readiness ──────────────────────────────────────────────
+// Distinct from `canApply`/the progress bar above: this is the fuller,
+// stricter checklist (family background, declarations, references, etc.)
+// that actually gates PDS generation, sourced straight from the backend so it
+// never drifts from what PdsCompletenessChecker enforces.
+
+const pdsSections    = ref({})
+const pdsCanGenerate = ref(false)
+const pdsLoading     = ref(true)
+
+async function loadPdsCompleteness() {
+  try {
+    const { data } = await pdsApi.completeness()
+    pdsSections.value    = data.sections ?? {}
+    pdsCanGenerate.value = !!data.can_generate
+  } catch {
+    // Non-fatal: the readiness panel just stays at its last-known state.
+  } finally {
+    pdsLoading.value = false
+  }
+}
+
+async function goToPdsSection({ tab, anchor }) {
+  const wasAlreadyOnTab = activeTab.value === tab
+  await switchTab(tab, { scroll: !anchor })
+  if (!anchor) return
+
+  // Right after a v-show toggle, the element exists but the browser hasn't
+  // necessarily laid it out/painted yet — wait a frame on top of nextTick so
+  // scrollIntoView measures its real position instead of a stale (often 0,0)
+  // one. Not needed when we were already on the tab.
+  await nextTick()
+  if (!wasAlreadyOnTab) await new Promise(requestAnimationFrame)
+
+  document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
 const regions = [
   'NCR - National Capital Region',
@@ -917,14 +992,17 @@ onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', onBeforeUnload)
 })
 
-async function switchTab(tabKey) {
+async function switchTab(tabKey, { scroll = true } = {}) {
   const hasDocChanges = Object.keys(docFiles).length > 0
   if (hasDocChanges && activeTab.value !== tabKey) {
     const ok = await confirm('You have pending document uploads. Switch tabs anyway?')
     if (!ok) return
   }
   activeTab.value = tabKey
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  // Skippable: a caller that's about to scroll to a specific section (e.g.
+  // goToPdsSection) would otherwise fight this scroll-to-top with its own
+  // scrollIntoView, and the two smooth-scroll animations cancel each other out.
+  if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const currentTabIndex = computed(() => tabs.value.findIndex(t => t.key === activeTab.value))
@@ -962,7 +1040,7 @@ async function refreshPdsDocumentState() {
 
 onMounted(async () => {
   const tabParam = new URLSearchParams(window.location.search).get('tab')
-  if (tabParam && ['personal', 'qualifications', 'pds', 'documents'].includes(tabParam)) {
+  if (tabParam && ['personal', 'qualifications', 'pds', 'documents', 'review'].includes(tabParam)) {
     activeTab.value = tabParam
   }
 
@@ -997,6 +1075,7 @@ onMounted(async () => {
   } catch {}
   takeSnapshot()
   pageLoading.value = false
+  loadPdsCompleteness()
 })
 
 function showSaveIndicator() {
@@ -1044,6 +1123,7 @@ async function savePersonal() {
     }
     takeSnapshot()
     showSaveIndicator()
+    loadPdsCompleteness()
   } catch (e) {
     await alert(e.response?.data?.message ?? 'Failed to save.')
   } finally {
@@ -1117,6 +1197,7 @@ async function saveExperience() {
     }
     expModal.open = false
     toast.success(expModal.editingId ? 'Work experience updated.' : 'Work experience added.')
+    loadPdsCompleteness()
   } catch (e) {
     expModal.error = e.response?.data?.message ?? 'Failed to save.'
   } finally {
@@ -1130,6 +1211,7 @@ async function deleteExperience(id) {
   await profileApi.deleteExperience(id)
   experiences.value = experiences.value.filter(e => e.id !== id)
   toast.error('Work experience removed.')
+  loadPdsCompleteness()
 }
 
 // ─── Education ────────────────────────────────────────────────────────────────
@@ -1171,6 +1253,7 @@ async function saveEducation() {
     }
     eduModal.open = false
     toast.success(eduModal.editingId ? 'Education record updated.' : 'Education record added.')
+    loadPdsCompleteness()
   } catch (e) {
     eduModal.error = e.response?.data?.message ?? 'Failed to save.'
   } finally {
@@ -1184,6 +1267,7 @@ async function deleteEducation(id) {
   await profileApi.deleteEducation(id)
   education.value = education.value.filter(e => e.id !== id)
   toast.error('Education record removed.')
+  loadPdsCompleteness()
 }
 
 // ─── Training ─────────────────────────────────────────────────────────────────
@@ -1216,6 +1300,7 @@ async function saveTraining() {
     }
     trainingModal.open = false
     toast.success(trainingModal.editingId ? 'Training updated.' : 'Training added.')
+    loadPdsCompleteness()
   } catch (e) {
     trainingModal.error = e.response?.data?.message ?? 'Failed to save.'
   } finally {
@@ -1229,6 +1314,7 @@ async function deleteTraining(id) {
   await profileApi.deleteTraining(id)
   trainings.value = trainings.value.filter(t => t.id !== id)
   toast.error('Training removed.')
+  loadPdsCompleteness()
 }
 
 // ─── Photo ────────────────────────────────────────────────────────────────────

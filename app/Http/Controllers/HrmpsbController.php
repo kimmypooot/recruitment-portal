@@ -34,6 +34,31 @@ class HrmpsbController extends Controller
 {
     use FormatsApplicantName;
 
+    /** Applicant document types the board can see, mapped to their profile column. */
+    private const DOCUMENT_COLUMNS = [
+        'pds' => 'pds_path',
+        'tor' => 'tor_path',
+        'app_letter' => 'app_letter_path',
+        'ipcr' => 'ipcr_path',
+        'coe' => 'coe_path',
+    ];
+
+    /** Filenames used for the same documents inside the requirements archive. */
+    private const DOCUMENT_LABELS = [
+        'pds' => 'PDS',
+        'tor' => 'TOR',
+        'app_letter' => 'App_Letter',
+        'ipcr' => 'IPCR',
+        'coe' => 'COE',
+    ];
+
+    private function isActiveBoardMember(int $userId): bool
+    {
+        return HrmpsbComposition::where('user_id', $userId)
+            ->where('is_active', true)
+            ->exists();
+    }
+
     public function compositions(Request $request): JsonResponse
     {
         $vacancyId = $request->query('vacancy_id');
@@ -279,11 +304,8 @@ class HrmpsbController extends Controller
         $user = $request->user();
 
         $isAdmin = $user->canAccessAdminModule();
-        $isMember = HrmpsbComposition::where('user_id', $user->id)
-            ->where('is_active', true)
-            ->exists();
 
-        if (! $isAdmin && ! $isMember) {
+        if (! $isAdmin && ! $this->isActiveBoardMember($user->id)) {
             return response()->json(['message' => 'Access denied.'], 403);
         }
 
@@ -305,13 +327,9 @@ class HrmpsbController extends Controller
             'education' => $profile->educationalAttainments,
             'experience' => $profile->workExperiences,
             'trainings' => $profile->trainings,
-            'documents' => [
-                'pds' => (bool) $profile->pds_path,
-                'tor' => (bool) $profile->tor_path,
-                'app_letter' => (bool) $profile->app_letter_path,
-                'ipcr' => (bool) $profile->ipcr_path,
-                'coe' => (bool) $profile->coe_path,
-            ],
+            'documents' => collect(self::DOCUMENT_COLUMNS)
+                ->map(fn (string $column) => (bool) $profile->{$column})
+                ->all(),
             // The documents themselves (PDS especially — full name, photo,
             // address on its face) are as identifying as `name` above, so
             // they're withheld under the same $isUnmasked gate rather than
@@ -319,15 +337,11 @@ class HrmpsbController extends Controller
             // to be blind. `documents` above (existence only) stays
             // unconditional — that alone doesn't identify anyone, and
             // completeness-checking is a legitimate pre-unmask need.
-            'document_links' => $isUnmasked ? [
-                'pds' => $profile->pds_path ? "/api/hrmpsb/applications/{$application->id}/documents/pds" : null,
-                'tor' => $profile->tor_path ? "/api/hrmpsb/applications/{$application->id}/documents/tor" : null,
-                'app_letter' => $profile->app_letter_path ? "/api/hrmpsb/applications/{$application->id}/documents/app_letter" : null,
-                'ipcr' => $profile->ipcr_path ? "/api/hrmpsb/applications/{$application->id}/documents/ipcr" : null,
-                'coe' => $profile->coe_path ? "/api/hrmpsb/applications/{$application->id}/documents/coe" : null,
-            ] : [
-                'pds' => null, 'tor' => null, 'app_letter' => null, 'ipcr' => null, 'coe' => null,
-            ],
+            'document_links' => collect(self::DOCUMENT_COLUMNS)
+                ->map(fn (string $column, string $type) => $isUnmasked && $profile->{$column}
+                    ? "/api/hrmpsb/applications/{$application->id}/documents/{$type}"
+                    : null)
+                ->all(),
         ]);
     }
 
@@ -340,11 +354,8 @@ class HrmpsbController extends Controller
         $user = $request->user();
 
         $isAdmin = $user->canAccessAdminModule();
-        $isMember = HrmpsbComposition::where('user_id', $user->id)
-            ->where('is_active', true)
-            ->exists();
 
-        if (! $isAdmin && ! $isMember) {
+        if (! $isAdmin && ! $this->isActiveBoardMember($user->id)) {
             abort(403);
         }
 
@@ -360,18 +371,10 @@ class HrmpsbController extends Controller
             abort(403, 'Applicant identity is masked until deliberation unmasking.');
         }
 
-        $pathMap = [
-            'pds' => 'pds_path',
-            'tor' => 'tor_path',
-            'app_letter' => 'app_letter_path',
-            'ipcr' => 'ipcr_path',
-            'coe' => 'coe_path',
-        ];
-
-        abort_if(! isset($pathMap[$type]), 404);
+        abort_if(! isset(self::DOCUMENT_COLUMNS[$type]), 404);
 
         $profile = $application->applicant;
-        $path = $profile?->{$pathMap[$type]};
+        $path = $profile?->{self::DOCUMENT_COLUMNS[$type]};
 
         abort_if(! $path || ! Storage::disk('local')->exists($path), 404);
 
@@ -385,12 +388,7 @@ class HrmpsbController extends Controller
     {
         $user = $request->user();
 
-        $isAdmin = $user->canAccessAdminModule();
-        $isMember = HrmpsbComposition::where('user_id', $user->id)
-            ->where('is_active', true)
-            ->exists();
-
-        if (! $isAdmin && ! $isMember) {
+        if (! $user->canAccessAdminModule() && ! $this->isActiveBoardMember($user->id)) {
             return response()->json(['message' => 'Access denied.'], 403);
         }
 
@@ -402,28 +400,21 @@ class HrmpsbController extends Controller
             ->map(function ($app) {
                 $profile = $app->applicant;
 
-                $docExists = fn ($col) => $profile?->$col && Storage::disk('local')->exists($profile->$col);
-                $docLink = fn ($col, $type) => $docExists($col) ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}" : null;
+                $docExists = fn (string $column) => $profile?->{$column} && Storage::disk('local')->exists($profile->{$column});
 
                 return [
                     'id' => $app->id,
                     'anonymized_name' => $app->anonymizationToken?->token ?? ('APP-'.$app->id),
                     'status' => $app->status,
                     'submitted_at' => $app->submitted_at,
-                    'documents' => [
-                        'pds' => $docExists('pds_path'),
-                        'tor' => $docExists('tor_path'),
-                        'app_letter' => $docExists('app_letter_path'),
-                        'ipcr' => $docExists('ipcr_path'),
-                        'coe' => $docExists('coe_path'),
-                    ],
-                    'document_links' => [
-                        'pds' => $docLink('pds_path', 'pds'),
-                        'tor' => $docLink('tor_path', 'tor'),
-                        'app_letter' => $docLink('app_letter_path', 'app_letter'),
-                        'ipcr' => $docLink('ipcr_path', 'ipcr'),
-                        'coe' => $docLink('coe_path', 'coe'),
-                    ],
+                    'documents' => collect(self::DOCUMENT_COLUMNS)
+                        ->map(fn (string $column) => $docExists($column))
+                        ->all(),
+                    'document_links' => collect(self::DOCUMENT_COLUMNS)
+                        ->map(fn (string $column, string $type) => $docExists($column)
+                            ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}"
+                            : null)
+                        ->all(),
                 ];
             });
 
@@ -483,40 +474,21 @@ class HrmpsbController extends Controller
     {
         $user = $request->user();
 
-        $isAdmin = $user->canAccessAdminModule();
-        $isMember = HrmpsbComposition::where('user_id', $user->id)
-            ->where('is_active', true)
-            ->exists();
-
-        if (! $isAdmin && ! $isMember) {
+        if (! $user->canAccessAdminModule() && ! $this->isActiveBoardMember($user->id)) {
             abort(403);
         }
+
+        $documentTypes = array_keys(self::DOCUMENT_COLUMNS);
 
         $data = $request->validate([
             'application_ids' => 'required|array|min:1',
             'application_ids.*' => 'integer|exists:applications,id',
-            'document_type' => 'required|in:pds,app_letter,ipcr,coe,tor,all',
+            'document_type' => ['required', Rule::in([...$documentTypes, 'all'])],
         ]);
 
         $docTypes = $data['document_type'] === 'all'
-            ? ['pds', 'app_letter', 'ipcr', 'coe', 'tor']
+            ? $documentTypes
             : [$data['document_type']];
-
-        $pathMap = [
-            'pds' => 'pds_path',
-            'app_letter' => 'app_letter_path',
-            'ipcr' => 'ipcr_path',
-            'coe' => 'coe_path',
-            'tor' => 'tor_path',
-        ];
-
-        $labelMap = [
-            'pds' => 'PDS',
-            'app_letter' => 'App_Letter',
-            'ipcr' => 'IPCR',
-            'coe' => 'COE',
-            'tor' => 'TOR',
-        ];
 
         $zip = new ZipArchive;
         $tmpPath = tempnam(sys_get_temp_dir(), 'req_');
@@ -538,15 +510,14 @@ class HrmpsbController extends Controller
             $folderName = 'APP-'.$appId;
 
             foreach ($docTypes as $type) {
-                $col = $pathMap[$type];
-                $path = $profile->{$col};
+                $path = $profile->{self::DOCUMENT_COLUMNS[$type]};
 
                 if (! $path || ! Storage::disk('local')->exists($path)) {
                     continue;
                 }
 
                 $ext = pathinfo($path, PATHINFO_EXTENSION);
-                $fileName = "{$folderName}/{$labelMap[$type]}.{$ext}";
+                $fileName = $folderName.'/'.self::DOCUMENT_LABELS[$type].'.'.$ext;
                 $fullPath = Storage::disk('local')->path($path);
 
                 if ($zip->addFile($fullPath, $fileName)) {

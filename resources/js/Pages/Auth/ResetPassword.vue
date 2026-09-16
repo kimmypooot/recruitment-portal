@@ -1,126 +1,115 @@
 <template>
-  <PublicLayout>
+  <AuthLayout
+    headline="Set a new password"
+    tagline="Choose a new password for your account."
+    :benefits="[
+      'Pick something you have not used here before',
+      'At least 8 characters, mixing upper and lower case with a number',
+      'You stay signed out on other devices until you sign in again',
+    ]">
 
     <Head>
       <title>Reset Password</title>
     </Head>
 
-    <section class="relative text-white overflow-hidden min-h-[240px]"
-      style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
-      <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(30,37,112,0.88) 0%, rgba(42,51,143,0.85) 50%, rgba(26,31,94,0.90) 100%);"></div>
-      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="max-w-2xl">
-          <p class="text-white/60 text-sm font-medium uppercase tracking-wider mb-3">Account Recovery</p>
-          <h1 class="text-3xl sm:text-4xl font-bold leading-tight mb-4">Set New Password</h1>
-          <p class="text-white/80 text-base leading-relaxed">
-            Choose a new password for your account.
+    <div>
+
+      <h2 class="text-2xl font-semibold tracking-tight text-primary sm:text-3xl">Set a new password</h2>
+      <p class="mt-2 text-sm text-gray-500">Choose a strong password you haven't used before.</p>
+
+      <div v-if="page.props.flash?.message" class="mt-6 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700 flex items-center gap-2">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        {{ page.props.flash.message }}
+      </div>
+
+      <div v-if="page.props.errors?.email" class="mt-6 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 flex items-center gap-2">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        {{ page.props.errors.email }}
+      </div>
+
+      <form @submit.prevent="submit" class="mt-8 space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
+          <input
+            v-model="form.email"
+            type="email"
+            readonly
+            class="w-full px-4 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-500 bg-gray-50 cursor-not-allowed" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">New password <span class="text-red-500">*</span></label>
+          <div class="relative">
+            <input
+              v-model="form.password"
+              :type="showPassword ? 'text' : 'password'"
+              autocomplete="new-password"
+              required
+              placeholder="At least 8 characters"
+              class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition pr-10"
+              :class="errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
+            <button type="button" @click="showPassword = !showPassword"
+              :aria-label="showPassword ? 'Hide password' : 'Show password'"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <Icon v-if="!showPassword" name="eye" size="4" aria-hidden="true" />
+              <Icon v-else name="eyeOff" size="4" aria-hidden="true" />
+            </button>
+          </div>
+          <p v-if="errors.password" class="mt-1 text-xs text-red-600">{{ errors.password }}</p>
+
+          <PasswordRequirements :password="form.password" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm new password <span class="text-red-500">*</span></label>
+          <div class="relative">
+            <input
+              v-model="form.password_confirmation"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              autocomplete="new-password"
+              required
+              placeholder="Repeat your password"
+              class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition pr-10"
+              :class="errors.password_confirmation ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
+            <button type="button" @click="showConfirmPassword = !showConfirmPassword"
+              :aria-label="showConfirmPassword ? 'Hide password' : 'Show password'"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <Icon v-if="!showConfirmPassword" name="eye" size="4" aria-hidden="true" />
+              <Icon v-else name="eyeOff" size="4" aria-hidden="true" />
+            </button>
+          </div>
+          <p v-if="errors.password_confirmation" class="mt-1 text-xs text-red-600">{{ errors.password_confirmation }}</p>
+          <p v-if="form.password_confirmation && form.password !== form.password_confirmation" class="mt-1 text-xs text-red-500">
+            Passwords do not match
           </p>
         </div>
-      </div>
-      <div class="relative h-10 overflow-hidden z-10 pointer-events-none">
-        <svg viewBox="0 0 1440 40" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB" aria-hidden="true">
-          <path d="M0 40L60 33.3C120 26.7 240 13.3 360 10C480 6.7 600 13.3 720 20C840 26.7 960 33.3 1080 33.3C1200 33.3 1320 26.7 1380 23.3L1440 20V40H0Z"/>
-        </svg>
-      </div>
-    </section>
 
-    <section class="max-w-md mx-auto px-4 sm:px-6 py-10">
-      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+        <button
+          type="submit"
+          :disabled="loading"
+          class="w-full py-3 bg-primary hover:bg-primary-dark text-white font-semibold text-base rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+          {{ loading ? 'Resetting…' : 'Reset password' }}
+        </button>
+      </form>
 
-        <div v-if="page.props.flash?.message" class="mb-5 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700 flex items-center gap-2">
-          <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          {{ page.props.flash.message }}
-        </div>
+      <p class="mt-8 text-center text-sm text-gray-500">
+        Remember your password?
+        <Link href="/login" class="font-medium text-primary hover:underline">Sign in</Link>
+      </p>
 
-        <div v-if="page.props.errors?.email" class="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 flex items-center gap-2">
-          <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          {{ page.props.errors.email }}
-        </div>
+    </div>
 
-        <form @submit.prevent="submit" class="space-y-5">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
-            <input
-              v-model="form.email"
-              type="email"
-              readonly
-              class="w-full px-4 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-500 bg-gray-50 cursor-not-allowed" />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">New password <span class="text-red-500">*</span></label>
-            <div class="relative">
-              <input
-                v-model="form.password"
-                :type="showPassword ? 'text' : 'password'"
-                autocomplete="new-password"
-                required
-                placeholder="At least 8 characters"
-                class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition pr-10"
-                :class="errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
-              <button type="button" @click="showPassword = !showPassword"
-                :aria-label="showPassword ? 'Hide password' : 'Show password'"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <Icon v-if="!showPassword" name="eye" size="4" aria-hidden="true" />
-                <Icon v-else name="eyeOff" size="4" aria-hidden="true" />
-              </button>
-            </div>
-            <p v-if="errors.password" class="mt-1 text-xs text-red-600">{{ errors.password }}</p>
-
-            <PasswordRequirements :password="form.password" />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm new password <span class="text-red-500">*</span></label>
-            <div class="relative">
-              <input
-                v-model="form.password_confirmation"
-                :type="showConfirmPassword ? 'text' : 'password'"
-                autocomplete="new-password"
-                required
-                placeholder="Repeat your password"
-                class="w-full px-4 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition pr-10"
-                :class="errors.password_confirmation ? 'border-red-400 bg-red-50' : 'border-gray-300'" />
-              <button type="button" @click="showConfirmPassword = !showConfirmPassword"
-                :aria-label="showConfirmPassword ? 'Hide password' : 'Show password'"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <Icon v-if="!showConfirmPassword" name="eye" size="4" aria-hidden="true" />
-                <Icon v-else name="eyeOff" size="4" aria-hidden="true" />
-              </button>
-            </div>
-            <p v-if="errors.password_confirmation" class="mt-1 text-xs text-red-600">{{ errors.password_confirmation }}</p>
-            <p v-if="form.password_confirmation && form.password !== form.password_confirmation" class="mt-1 text-xs text-red-500">
-              Passwords do not match
-            </p>
-          </div>
-
-          <button
-            type="submit"
-            :disabled="loading"
-            class="w-full py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-            {{ loading ? 'Resetting…' : 'Reset Password' }}
-          </button>
-        </form>
-
-        <p class="mt-6 text-center text-sm text-gray-500">
-          Remember your password?
-          <Link href="/login" class="text-primary font-medium hover:underline">Sign in</Link>
-        </p>
-
-      </div>
-    </section>
-
-  </PublicLayout>
+  </AuthLayout>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
-import PublicLayout from '@/Layouts/PublicLayout.vue'
+import AuthLayout from '@/Layouts/AuthLayout.vue'
 import Icon from '@/Components/UI/Icon.vue'
 import PasswordRequirements from '@/Components/UI/PasswordRequirements.vue'
 import { unmetPasswordRequirements } from '@/utils/password'

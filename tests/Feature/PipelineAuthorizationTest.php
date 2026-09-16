@@ -283,11 +283,11 @@ class PipelineAuthorizationTest extends TestCase
 
     public function test_deliberation_decide_requires_chairperson_or_above(): void
     {
-        // director-representative is a real composition role but not one of
+        // pintig-representative-1st is a real composition role but not one of
         // the roles DeliberationController::decide() grants decision power
         // to — a bare "is this user an active board member" check would
         // wrongly allow this.
-        $member = $this->hrmpsbUser('director-representative');
+        $member = $this->hrmpsbUser('pintig-representative-1st');
 
         $this->actingAs($member, 'sanctum')
             ->postJson("/api/deliberation/{$this->vacancy->id}/decide", [

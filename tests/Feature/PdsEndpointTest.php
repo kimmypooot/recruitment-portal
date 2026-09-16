@@ -48,7 +48,7 @@ class PdsEndpointTest extends TestCase
 
         HrmpsbComposition::create([
             'user_id'     => $user->id,
-            'hrmpsb_role' => 'director-representative',
+            'hrmpsb_role' => 'pintig-representative-1st',
             'is_active'   => true,
             'assigned_by' => User::factory()->admin()->create()->id,
         ]);

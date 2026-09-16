@@ -2,7 +2,7 @@
   <div class="space-y-5">
 
     <!-- Section I extras -->
-    <section class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <section id="section-personal-extra" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden scroll-mt-20">
       <header class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
         <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
           <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -86,11 +86,9 @@
 
         <!-- Addresses -->
         <div class="pt-5 border-t border-gray-100">
-          <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
-            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
-              Residential Address <span class="text-red-500 normal-case">*</span>
-            </p>
-          </div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">
+            Residential Address <span class="text-red-500 normal-case">*</span>
+          </p>
           <p v-if="!personal.region" class="mb-3 text-xs text-amber-600">
             Choose your Region on the Personal Info tab first — the province list is narrowed to it.
           </p>
@@ -180,7 +178,7 @@
     </section>
 
     <!-- Section II — Family Background -->
-    <section class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <section id="section-family" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden scroll-mt-20">
       <header class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
         <div class="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
           <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -195,14 +193,24 @@
 
       <div class="px-6 py-6 space-y-6">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">Spouse</p>
-          <p class="text-xs text-gray-400 mb-3">Leave blank if not married.</p>
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-5">
-            <div v-for="field in spouseFields" :key="field.key">
-              <label :class="labelClass">{{ field.label }}</label>
-              <input v-model="family[field.key]" type="text" :class="inputClass" />
-            </div>
+          <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Spouse</p>
+            <!-- Not required by the form, and irrelevant for most applicants — collapsed
+                 by default unless civil status says otherwise or it's already filled in,
+                 so a single applicant isn't shown four empty fields for no reason. -->
+            <button v-if="!showSpouseFields" type="button" @click="showSpouseFields = true"
+              class="text-xs font-semibold text-primary hover:underline">+ Add spouse details</button>
           </div>
+          <template v-if="showSpouseFields">
+            <p class="text-xs text-gray-400 mb-3">Leave blank if not married.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-5">
+              <div v-for="field in spouseFields" :key="field.key">
+                <label :class="labelClass">{{ field.label }}</label>
+                <input v-model="family[field.key]" type="text" :class="inputClass" />
+              </div>
+            </div>
+          </template>
+          <p v-else class="text-sm text-gray-400 italic">Not applicable — not currently married.</p>
         </div>
 
         <div class="pt-5 border-t border-gray-100">
@@ -263,7 +271,7 @@
     </section>
 
     <!-- Sections IV, VI, VIII — repeating lists -->
-    <section class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <section class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden scroll-mt-20">
       <header class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
         <div class="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
           <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -277,19 +285,21 @@
       </header>
 
       <div class="px-6 py-6 space-y-8">
-        <PdsRepeatingSection
-          section="eligibilities"
-          title="Civil Service Eligibility"
-          description="Section IV, item 27 — include board/bar eligibility under RA 1080."
-          add-label="Add eligibility"
-          empty-text="No eligibility recorded yet."
-          :fields="eligibilityFields"
-          :items="eligibilities"
-          :max="7"
-          @changed="$emit('changed')"
-        />
+        <div id="section-eligibility" class="scroll-mt-20">
+          <PdsRepeatingSection
+            section="eligibilities"
+            title="Civil Service Eligibility"
+            description="Section IV, item 27 — include board/bar eligibility under RA 1080."
+            add-label="Add eligibility"
+            empty-text="No eligibility recorded yet."
+            :fields="eligibilityFields"
+            :items="eligibilities"
+            :max="7"
+            @changed="$emit('changed')"
+          />
+        </div>
 
-        <div class="pt-6 border-t border-gray-100">
+        <div id="section-voluntary" class="pt-6 border-t border-gray-100 scroll-mt-20">
           <PdsRepeatingSection
             section="voluntary-works"
             title="Voluntary Work"
@@ -303,7 +313,9 @@
           />
         </div>
 
-        <div v-for="group in otherInfoGroups" :key="group.kind" class="pt-6 border-t border-gray-100">
+        <div v-for="(group, idx) in otherInfoGroups" :key="group.kind"
+          :id="idx === 0 ? 'section-other-info' : undefined"
+          class="pt-6 border-t border-gray-100 scroll-mt-20">
           <PdsRepeatingSection
             section="other-info"
             :title="group.title"
@@ -321,10 +333,12 @@
     </section>
 
     <!-- Page 4 — Declarations -->
-    <PdsDeclarations @changed="$emit('changed')" />
+    <div id="section-declarations" class="scroll-mt-20">
+      <PdsDeclarations @changed="$emit('changed')" />
+    </div>
 
     <!-- Item 41 — References -->
-    <section class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <section id="section-references" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden scroll-mt-20">
       <header class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
         <div class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
           <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -446,7 +460,9 @@ async function loadBarangays() {
   }
 }
 
-const byName = (rows, key, value) => rows.find(row => row[key] === value)
+function byName(rows, key, value) {
+  return rows.find(row => row[key] === value)
+}
 
 const allProvinces = computed(() =>
   [...provincesData].sort((a, b) => collator.compare(a.prov_name, b.prov_name))
@@ -491,27 +507,17 @@ const permanentBarangays = computed(() =>
 
 // Clear dependents when a parent changes, so a stale city cannot survive a
 // province switch. `undefined` means the profile is still loading.
-watch(() => props.personal.res_province, (next, previous) => {
-  if (previous === undefined || next === previous) return
-  props.personal.res_city_municipality = ''
-  props.personal.res_barangay = ''
-})
+function watchCascade(field, ...dependents) {
+  watch(() => props.personal[field], (next, previous) => {
+    if (previous === undefined || next === previous) return
+    dependents.forEach(dependent => { props.personal[dependent] = '' })
+  })
+}
 
-watch(() => props.personal.res_city_municipality, (next, previous) => {
-  if (previous === undefined || next === previous) return
-  props.personal.res_barangay = ''
-})
-
-watch(() => props.personal.perm_province, (next, previous) => {
-  if (previous === undefined || next === previous) return
-  props.personal.perm_city_municipality = ''
-  props.personal.perm_barangay = ''
-})
-
-watch(() => props.personal.perm_city_municipality, (next, previous) => {
-  if (previous === undefined || next === previous) return
-  props.personal.perm_barangay = ''
-})
+for (const prefix of ['res', 'perm']) {
+  watchCascade(`${prefix}_province`, `${prefix}_city_municipality`, `${prefix}_barangay`)
+  watchCascade(`${prefix}_city_municipality`, `${prefix}_barangay`)
+}
 
 const spouseFields = [
   { key: 'spouse_surname', label: 'Surname' },
@@ -577,6 +583,13 @@ const otherInfoGroups = [
   },
 ]
 
+// Collapsed by default for a "Single" applicant so they aren't shown four
+// empty spouse fields; expanded automatically once civil status says
+// otherwise, or if spouse data already exists (edits to an existing profile,
+// or a status of Widowed/Separated/Annulled where the fields are still
+// meaningful). Never forced shut once open — see the `!==` guard below.
+const showSpouseFields = ref(props.personal.civil_status !== 'Single' && !!props.personal.civil_status)
+
 const family        = reactive({})
 const children      = ref([])
 const references    = ref([])
@@ -584,7 +597,9 @@ const eligibilities = ref([])
 const voluntaryWorks = ref([])
 const otherInfo     = ref([])
 
-const otherInfoFor = (kind) => otherInfo.value.filter(row => row.kind === kind)
+function otherInfoFor(kind) {
+  return otherInfo.value.filter(row => row.kind === kind)
+}
 
 /**
  * Family background has no save button of its own, so it autosaves on a debounce.
@@ -606,6 +621,7 @@ async function load() {
     const { data } = await pdsApi.show()
 
     Object.assign(family, data.family_background ?? {})
+    if (spouseFields.some(f => family[f.key])) showSpouseFields.value = true
     children.value       = (data.children ?? []).map(normaliseDates)
     references.value     = data.references ?? []
     eligibilities.value  = data.eligibilities ?? []

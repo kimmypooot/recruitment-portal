@@ -63,7 +63,7 @@ class PreAssessmentController extends Controller
 
             return [
                 'id' => $app->id,
-                'applicant_no' => 'APP-'.date('Y', strtotime($app->created_at)).'-'.str_pad($app->id, 5, '0', STR_PAD_LEFT),
+                'applicant_no' => 'APP-'.$app->created_at->format('Y').'-'.str_pad((string) $app->id, 5, '0', STR_PAD_LEFT),
                 'status' => $app->status,
                 'applicant' => [
                     'full_name' => $this->formatApplicantName($profile),

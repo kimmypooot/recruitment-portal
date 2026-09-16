@@ -39,6 +39,9 @@
       "Bash(mysql *)",
       "Bash(/c/xampp/mysql/bin/mysql.exe *)",
       "Bash(grep -n 'validate\\\\|Rule::\\\\|Request $request' app/Http/Controllers/ExaminationController.php)"
+    ],
+    "additionalDirectories": [
+      "C:\\xampp\\htdocs\\csc-tims"
     ]
   }
 }

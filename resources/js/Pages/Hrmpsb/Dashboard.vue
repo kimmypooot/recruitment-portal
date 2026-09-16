@@ -22,6 +22,19 @@
         </span>
       </div>
 
+      <!-- Administrator viewing without a board composition row -->
+      <div v-else-if="!loading && authUser.role === 'admin'"
+        class="bg-primary/5 border border-primary/20 rounded-xl p-5 flex items-center gap-4 flex-wrap">
+        <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-base flex-shrink-0">
+          {{ initials }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs text-gray-400 font-medium">Viewing as</p>
+          <p class="text-sm font-semibold text-gray-900">Administrator</p>
+          <p class="text-xs text-gray-500 mt-0.5">Full access to all vacancies, independent of board composition.</p>
+        </div>
+      </div>
+
       <!-- No board role notice -->
       <div v-else-if="!loading"
         class="bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-3">

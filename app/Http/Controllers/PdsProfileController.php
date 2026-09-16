@@ -43,45 +43,45 @@ class PdsProfileController extends Controller
         return [
             'children' => [
                 'relation' => 'children',
-                'rules'    => [
-                    'full_name'     => ['nullable', 'string', 'max:255'],
+                'rules' => [
+                    'full_name' => ['nullable', 'string', 'max:255'],
                     'date_of_birth' => ['nullable', 'date'],
                 ],
             ],
             'eligibilities' => [
                 'relation' => 'civilServiceEligibilities',
-                'rules'    => [
-                    'eligibility_name'    => ['nullable', 'string', 'max:255'],
-                    'rating'              => ['nullable', 'string', 'max:255'],
-                    'examination_date'    => ['nullable', 'date'],
-                    'examination_place'   => ['nullable', 'string', 'max:255'],
-                    'license_number'      => ['nullable', 'string', 'max:255'],
+                'rules' => [
+                    'eligibility_name' => ['nullable', 'string', 'max:255'],
+                    'rating' => ['nullable', 'string', 'max:255'],
+                    'examination_date' => ['nullable', 'date'],
+                    'examination_place' => ['nullable', 'string', 'max:255'],
+                    'license_number' => ['nullable', 'string', 'max:255'],
                     'license_valid_until' => ['nullable', 'date'],
                 ],
             ],
             'voluntary-works' => [
                 'relation' => 'voluntaryWorks',
-                'rules'    => [
+                'rules' => [
                     'organization_name_address' => ['nullable', 'string', 'max:500'],
-                    'date_from'                 => ['nullable', 'date'],
-                    'date_to'                   => ['nullable', 'date'],
-                    'number_of_hours'           => ['nullable', 'numeric', 'min:0'],
-                    'position_nature_of_work'   => ['nullable', 'string', 'max:255'],
+                    'date_from' => ['nullable', 'date'],
+                    'date_to' => ['nullable', 'date'],
+                    'number_of_hours' => ['nullable', 'numeric', 'min:0'],
+                    'position_nature_of_work' => ['nullable', 'string', 'max:255'],
                 ],
             ],
             'other-info' => [
                 'relation' => 'otherInfos',
-                'rules'    => [
-                    'kind'  => ['required', Rule::in(PdsOtherInfo::KINDS)],
+                'rules' => [
+                    'kind' => ['required', Rule::in(PdsOtherInfo::KINDS)],
                     'value' => ['nullable', 'string', 'max:500'],
                 ],
             ],
             'references' => [
                 'relation' => 'references',
-                'rules'    => [
-                    'name'                       => ['nullable', 'string', 'max:255'],
+                'rules' => [
+                    'name' => ['nullable', 'string', 'max:255'],
                     'office_residential_address' => ['nullable', 'string', 'max:500'],
-                    'contact_no_or_email'        => ['nullable', 'string', 'max:255'],
+                    'contact_no_or_email' => ['nullable', 'string', 'max:255'],
                 ],
             ],
         ];
@@ -95,12 +95,12 @@ class PdsProfileController extends Controller
 
         return response()->json([
             'family_background' => $profile->familyBackground,
-            'children'          => $profile->children,
-            'eligibilities'     => $profile->civilServiceEligibilities,
-            'voluntary_works'   => $profile->voluntaryWorks,
-            'other_info'        => $profile->otherInfos,
-            'references'        => $profile->references,
-            'declaration'       => $profile->declaration,
+            'children' => $profile->children,
+            'eligibilities' => $profile->civilServiceEligibilities,
+            'voluntary_works' => $profile->voluntaryWorks,
+            'other_info' => $profile->otherInfos,
+            'references' => $profile->references,
+            'declaration' => $profile->declaration,
         ]);
     }
 
@@ -109,7 +109,7 @@ class PdsProfileController extends Controller
     public function store(Request $request, string $section): JsonResponse
     {
         $definition = $this->section($section);
-        $profile    = $this->profile($request);
+        $profile = $this->profile($request);
 
         $data = $request->validate($definition['rules']);
         $data['sort_order'] = (int) $request->input('sort_order', $profile->{$definition['relation']}()->count());
@@ -122,7 +122,7 @@ class PdsProfileController extends Controller
     public function update(Request $request, string $section, int $id): JsonResponse
     {
         $definition = $this->section($section);
-        $profile    = $this->profile($request);
+        $profile = $this->profile($request);
 
         $record = $profile->{$definition['relation']}()->findOrFail($id);
 
@@ -149,19 +149,19 @@ class PdsProfileController extends Controller
         $profile = $this->profile($request);
 
         $data = $request->validate([
-            'spouse_surname'          => ['nullable', 'string', 'max:255'],
-            'spouse_first_name'       => ['nullable', 'string', 'max:255'],
-            'spouse_middle_name'      => ['nullable', 'string', 'max:255'],
-            'spouse_name_extension'   => ['nullable', 'string', 'max:255'],
-            'spouse_occupation'       => ['nullable', 'string', 'max:255'],
-            'spouse_employer'         => ['nullable', 'string', 'max:255'],
+            'spouse_surname' => ['nullable', 'string', 'max:255'],
+            'spouse_first_name' => ['nullable', 'string', 'max:255'],
+            'spouse_middle_name' => ['nullable', 'string', 'max:255'],
+            'spouse_name_extension' => ['nullable', 'string', 'max:255'],
+            'spouse_occupation' => ['nullable', 'string', 'max:255'],
+            'spouse_employer' => ['nullable', 'string', 'max:255'],
             'spouse_business_address' => ['nullable', 'string', 'max:255'],
-            'spouse_telephone'        => ['nullable', 'string', 'max:255'],
-            'father_surname'          => ['nullable', 'string', 'max:255'],
-            'father_first_name'       => ['nullable', 'string', 'max:255'],
-            'father_middle_name'      => ['nullable', 'string', 'max:255'],
-            'father_name_extension'   => ['nullable', 'string', 'max:255'],
-            'mother_maiden_surname'    => ['nullable', 'string', 'max:255'],
+            'spouse_telephone' => ['nullable', 'string', 'max:255'],
+            'father_surname' => ['nullable', 'string', 'max:255'],
+            'father_first_name' => ['nullable', 'string', 'max:255'],
+            'father_middle_name' => ['nullable', 'string', 'max:255'],
+            'father_name_extension' => ['nullable', 'string', 'max:255'],
+            'mother_maiden_surname' => ['nullable', 'string', 'max:255'],
             'mother_maiden_first_name' => ['nullable', 'string', 'max:255'],
             'mother_maiden_middle_name' => ['nullable', 'string', 'max:255'],
         ]);
@@ -176,40 +176,49 @@ class PdsProfileController extends Controller
         $profile = $this->profile($request);
 
         $data = $request->validate([
-            'q34a_related_third_degree'  => ['nullable', 'boolean'],
+            'q34a_related_third_degree' => ['nullable', 'boolean'],
             'q34b_related_fourth_degree' => ['nullable', 'boolean'],
-            'q34_details'                => ['nullable', 'string'],
-            'q35a_guilty_admin_offense'  => ['nullable', 'boolean'],
-            'q35a_details'               => ['nullable', 'string'],
-            'q35b_criminally_charged'    => ['nullable', 'boolean'],
-            'q35b_date_filed'            => ['nullable', 'date'],
-            'q35b_case_status'           => ['nullable', 'string', 'max:255'],
-            'q36_convicted'              => ['nullable', 'boolean'],
-            'q36_details'                => ['nullable', 'string'],
+            'q34_details' => ['nullable', 'string'],
+            'q35a_guilty_admin_offense' => ['nullable', 'boolean'],
+            'q35a_details' => ['nullable', 'string'],
+            'q35b_criminally_charged' => ['nullable', 'boolean'],
+            'q35b_date_filed' => ['nullable', 'date'],
+            'q35b_case_status' => ['nullable', 'string', 'max:255'],
+            'q36_convicted' => ['nullable', 'boolean'],
+            'q36_details' => ['nullable', 'string'],
             'q37_separated_from_service' => ['nullable', 'boolean'],
-            'q37_details'                => ['nullable', 'string'],
-            'q38a_election_candidate'    => ['nullable', 'boolean'],
-            'q38a_details'               => ['nullable', 'string'],
-            'q38b_resigned_to_campaign'  => ['nullable', 'boolean'],
-            'q38b_details'               => ['nullable', 'string'],
-            'q39_immigrant_status'       => ['nullable', 'boolean'],
-            'q39_country'                => ['nullable', 'string', 'max:255'],
-            'q40a_indigenous_group'      => ['nullable', 'boolean'],
-            'q40a_group_name'            => ['nullable', 'string', 'max:255'],
-            'q40b_pwd'                   => ['nullable', 'boolean'],
-            'q40b_id_no'                 => ['nullable', 'string', 'max:255'],
-            'q40c_solo_parent'           => ['nullable', 'boolean'],
-            'q40c_id_no'                 => ['nullable', 'string', 'max:255'],
-            'government_id_type'         => ['nullable', 'string', 'max:255'],
-            'government_id_number'       => ['nullable', 'string', 'max:255'],
-            'government_id_issuance_date'  => ['nullable', 'date'],
+            'q37_details' => ['nullable', 'string'],
+            'q38a_election_candidate' => ['nullable', 'boolean'],
+            'q38a_details' => ['nullable', 'string'],
+            'q38b_resigned_to_campaign' => ['nullable', 'boolean'],
+            'q38b_details' => ['nullable', 'string'],
+            'q39_immigrant_status' => ['nullable', 'boolean'],
+            'q39_country' => ['nullable', 'string', 'max:255'],
+            'q40a_indigenous_group' => ['nullable', 'boolean'],
+            'q40a_group_name' => ['nullable', 'string', 'max:255'],
+            'q40b_pwd' => ['nullable', 'boolean'],
+            'q40b_id_no' => ['nullable', 'string', 'max:255'],
+            'q40c_solo_parent' => ['nullable', 'boolean'],
+            'q40c_id_no' => ['nullable', 'string', 'max:255'],
+            'government_id_type' => ['nullable', 'string', 'max:255'],
+            'government_id_number' => ['nullable', 'string', 'max:255'],
+            'government_id_issuance_date' => ['nullable', 'date'],
             'government_id_issuance_place' => ['nullable', 'string', 'max:255'],
-            'date_accomplished'          => ['nullable', 'date'],
+            'date_accomplished' => ['nullable', 'date'],
         ]);
 
         $record = $profile->declaration()->updateOrCreate([], $data);
 
         return response()->json($record);
+    }
+
+    /** Exposed for the frontend so it can cap the References list. */
+    public function limits(): JsonResponse
+    {
+        return response()->json([
+            'references_required' => PdsReference::REQUIRED_COUNT,
+            'other_info_kinds' => PdsOtherInfo::KINDS,
+        ]);
     }
 
     // --- Helpers ------------------------------------------------------------
@@ -236,14 +245,5 @@ class PdsProfileController extends Controller
         }
 
         return $definition;
-    }
-
-    /** Exposed for the frontend so it can cap the References list. */
-    public function limits(): JsonResponse
-    {
-        return response()->json([
-            'references_required' => PdsReference::REQUIRED_COUNT,
-            'other_info_kinds'    => PdsOtherInfo::KINDS,
-        ]);
     }
 }

@@ -40,8 +40,8 @@
               :existing-url="docPaths[doc.key] ? viewUrl(docPaths[doc.key]) : ''"
               :existing-label="docTimestamps[doc.key] ? `Updated ${formatTimestamp(docTimestamps[doc.key])}` : ''"
               :error="errors[doc.key]"
-              @update:model-value="(file) => emit('file-select', doc.key, file)"
-              @error="onOversize" />
+              @update:model-value="(file) => $emit('file-select', doc.key, file)"
+              @error="alert" />
           </div>
         </div>
 
@@ -103,11 +103,7 @@ const props = defineProps({
   errors:         { type: Object, default: () => ({}) },
 })
 
-const emit = defineEmits(['file-select', 'pds-generated'])
-
-async function onOversize(message) {
-  await alert(message)
-}
+defineEmits(['file-select', 'pds-generated'])
 
 function viewUrl(path) {
   return path ? `/profile/documents/${path}?token=${props.authToken}` : '#'

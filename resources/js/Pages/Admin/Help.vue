@@ -1,6 +1,6 @@
 <template>
   <AdminLayout title="Help & Guide">
-    <div class="space-y-10">
+    <div class="space-y-4">
 
       <!-- Header -->
       <div>
@@ -12,7 +12,7 @@
       </div>
 
       <!-- Section nav -->
-      <nav aria-label="Help topics" class="flex flex-wrap gap-2">
+      <nav aria-label="Help topics" class="flex flex-wrap gap-2 bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
         <a v-for="s in sections" :key="s.id" :href="`#${s.id}`"
           class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-100 hover:bg-primary/10 hover:text-primary transition-colors">
           {{ s.label }}
@@ -20,7 +20,7 @@
       </nav>
 
       <!-- 1. Roles & Access -->
-      <section id="roles" class="scroll-mt-20">
+      <section id="roles" :class="sectionCard">
         <h2 class="text-lg font-bold text-gray-900 mb-1">1. Roles &amp; Access</h2>
         <p class="text-sm text-gray-500 mb-4">Three account roles exist. HRMPSB board seats are a separate layer on top of the <code class="text-xs bg-gray-100 px-1 py-0.5 rounded">hrmpsb</code> role, not additional account roles.</p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -44,7 +44,7 @@
       </section>
 
       <!-- 2. Vacancies -->
-      <section id="vacancies" class="scroll-mt-20">
+      <section id="vacancies" :class="sectionCard">
         <h2 class="text-lg font-bold text-gray-900 mb-1">2. Managing Vacancies</h2>
         <p class="text-sm text-gray-500 mb-4">From <Link href="/admin/vacancies" class="text-primary hover:underline font-medium">Vacancies</Link>:</p>
         <ol class="space-y-2.5">
@@ -57,7 +57,7 @@
       </section>
 
       <!-- 3. Applications -->
-      <section id="applications" class="scroll-mt-20">
+      <section id="applications" :class="sectionCard">
         <h2 class="text-lg font-bold text-gray-900 mb-1">3. Reviewing Applications</h2>
         <p class="text-sm text-gray-600 leading-relaxed mb-3">
           <Link href="/admin/applications" class="text-primary hover:underline font-medium">Applications</Link> lists everyone who has applied, filterable by vacancy and status.
@@ -67,10 +67,10 @@
       </section>
 
       <!-- 4. HRMPSB Composition -->
-      <section id="hrmpsb" class="scroll-mt-20">
+      <section id="hrmpsb" :class="sectionCard">
         <h2 class="text-lg font-bold text-gray-900 mb-1">4. HRMPSB Composition</h2>
         <p class="text-sm text-gray-600 leading-relaxed mb-3">
-          <Link href="/admin/hrmpsb" class="text-primary hover:underline font-medium">HRMPSB</Link> assigns users to board roles — Chairperson, Secretariat, Director/Division Chief Representative,
+          <Link href="/admin/hrmpsb" class="text-primary hover:underline font-medium">HRMPSB</Link> assigns users to board roles — Chairperson, Secretariat,
           HR Chief, PINTIG Representatives, and Appointing Authority. These assignments are currently <b>global</b> (one board composition applies system-wide), not scoped to an individual vacancy or recruitment cycle.
         </p>
         <p class="text-sm text-gray-600 leading-relaxed">
@@ -80,7 +80,7 @@
       </section>
 
       <!-- 5. Evaluation pipeline -->
-      <section id="pipeline" class="scroll-mt-20">
+      <section id="pipeline" :class="sectionCard">
         <h2 class="text-lg font-bold text-gray-900 mb-1">5. The Evaluation Pipeline</h2>
         <p class="text-sm text-gray-500 mb-4">
           Once applications are screened, the HRMPSB board carries out these stages in order, in their own portal (not the Admin module) — each stage unlocks the next:
@@ -98,7 +98,7 @@
       </section>
 
       <!-- 6. Reports -->
-      <section id="reports" class="scroll-mt-20">
+      <section id="reports" :class="sectionCard">
         <h2 class="text-lg font-bold text-gray-900 mb-1">6. Reports &amp; Exports</h2>
         <p class="text-sm text-gray-600 leading-relaxed">
           <Link href="/admin/reports" class="text-primary hover:underline font-medium">Reports</Link> covers qualified-applicant lists, comparative assessment summaries, appointment reports,
@@ -107,7 +107,7 @@
       </section>
 
       <!-- 7. Email templates -->
-      <section id="email-templates" class="scroll-mt-20">
+      <section id="email-templates" :class="sectionCard">
         <h2 class="text-lg font-bold text-gray-900 mb-1">7. Email Templates</h2>
         <p class="text-sm text-gray-600 leading-relaxed">
           <Link href="/admin/email-templates" class="text-primary hover:underline font-medium">Email Templates</Link> lets you edit the wording of automated notifications (application received, exam scheduled, status changes, etc.)
@@ -116,7 +116,7 @@
       </section>
 
       <!-- 8. Audit logs -->
-      <section id="audit-logs" class="scroll-mt-20">
+      <section id="audit-logs" :class="sectionCard">
         <h2 class="text-lg font-bold text-gray-900 mb-1">8. Audit Logs</h2>
         <p class="text-sm text-gray-600 leading-relaxed">
           <Link href="/admin/audit-logs" class="text-primary hover:underline font-medium">Audit Logs</Link> records who did what and when — vacancy publishing, status changes, user management, and more.
@@ -125,7 +125,7 @@
       </section>
 
       <!-- 9. Troubleshooting -->
-      <section id="troubleshooting" class="scroll-mt-20">
+      <section id="troubleshooting" :class="sectionCard">
         <h2 class="text-lg font-bold text-gray-900 mb-1">9. Common Problems</h2>
         <div class="space-y-2 mt-4">
           <details v-for="(item, i) in troubleshooting" :key="i" class="group rounded-xl border border-gray-200 open:border-primary/30 open:bg-primary/5 transition-colors">
@@ -139,7 +139,7 @@
       </section>
 
       <!-- 10. FAQ -->
-      <section id="faq" class="scroll-mt-20">
+      <section id="faq" :class="sectionCard">
         <h2 class="text-lg font-bold text-gray-900 mb-1">10. Frequently Asked Questions</h2>
         <div class="space-y-2 mt-4">
           <details v-for="(item, i) in faqs" :key="i" class="group rounded-xl border border-gray-200 open:border-primary/30 open:bg-primary/5 transition-colors">
@@ -164,6 +164,8 @@ import Icon from '@/Components/UI/Icon.vue'
 // Written as a variable, not inline in the template, so the literal {{ }}
 // characters don't get parsed as a (broken, nested) Vue interpolation.
 const placeholderExample = '{{position_title}}'
+
+const sectionCard = 'scroll-mt-24 bg-white border border-gray-200 rounded-2xl shadow-sm p-6'
 
 const sections = [
   { id: 'roles', label: 'Roles & Access' },

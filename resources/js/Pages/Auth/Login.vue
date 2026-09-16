@@ -1,40 +1,47 @@
 <template>
-  <PublicLayout>
+  <AuthLayout
+    headline="Welcome back"
+    tagline="Sign in to track your application status and manage your profile."
+    :benefits="[
+      'Real-time updates on every stage of your application',
+      'One profile you keep across every vacancy you apply for',
+      'Download your generated CS Forms anytime',
+    ]">
 
     <Head>
       <title>Sign In</title>
       <meta name="description" content="Sign in to your CSC RO VIII - Recruitment Portal account to manage applications, check exam schedules, and track your career progress." />
     </Head>
 
-    <!-- Hero (compact) -->
-    <section class="relative text-white overflow-hidden min-h-[240px]"
-      style="background-image: url('/images/cscbg_facade.jpeg'); background-size: cover; background-position: center;">
-      <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(30,37,112,0.88) 0%, rgba(42,51,143,0.85) 50%, rgba(26,31,94,0.90) 100%);"></div>
-      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="max-w-2xl">
-          <p class="text-white/60 text-sm font-medium uppercase tracking-wider mb-3">Applicant Portal</p>
-          <h1 class="text-3xl sm:text-4xl font-bold leading-tight mb-4">Welcome Back</h1>
-          <p class="text-white/80 text-base leading-relaxed">
-            Sign in to track your application status and manage your profile.
-          </p>
+    <div>
+
+      <h2 class="text-2xl font-semibold tracking-tight text-primary sm:text-3xl">Sign in to your account</h2>
+      <p class="mt-2 text-sm text-gray-500">Welcome back — enter your details to continue.</p>
+
+        <!-- Flash banner (success) -->
+        <div v-if="page.props.flash?.message" role="alert" class="mt-6 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700 flex items-center gap-2">
+          <Icon name="check" size="4" class="flex-shrink-0" />
+          <span>{{ page.props.flash.message }}</span>
         </div>
-      </div>
-      <div class="relative h-10 overflow-hidden z-10 pointer-events-none">
-        <svg viewBox="0 0 1440 40" preserveAspectRatio="none" class="absolute inset-0 w-full h-full" fill="#F9FAFB" aria-hidden="true">
-          <path d="M0 40L60 33.3C120 26.7 240 13.3 360 10C480 6.7 600 13.3 720 20C840 26.7 960 33.3 1080 33.3C1200 33.3 1320 26.7 1380 23.3L1440 20V40H0Z"/>
-        </svg>
-      </div>
-    </section>
 
-    <!-- Form -->
-    <section class="max-w-[32rem] mx-auto px-4 sm:px-6 py-10">
-
-      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+        <!-- Error banner -->
+        <div v-if="error" role="alert" class="mt-6 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 flex items-center gap-2">
+          <Icon name="alert" size="4" class="flex-shrink-0" />
+          <span>
+            {{ error }}
+            <template v-if="showResetHint">
+              Having trouble? <a href="/forgot-password" class="underline font-medium">Reset your password</a>.
+            </template>
+          </span>
+        </div>
 
         <!-- Google OAuth -->
         <a
           href="/auth/google"
-          class="flex items-center justify-center gap-3 w-full py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors mb-6">
+          class="relative mt-8 flex items-center justify-center gap-3 w-full py-3 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 bg-white hover:border-primary/40 hover:bg-primary-light transition-colors">
+          <span class="absolute -top-2.5 right-4 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold tracking-wide text-white uppercase shadow-sm">
+            Recommended
+          </span>
           <svg class="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -45,30 +52,10 @@
         </a>
 
         <!-- Divider -->
-        <div class="relative mb-6">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-200"></div>
-          </div>
-          <div class="relative flex justify-center">
-            <span class="bg-white px-3 text-xs text-gray-400">or sign in with email</span>
-          </div>
-        </div>
-
-        <!-- Flash banner (success) -->
-        <div v-if="page.props.flash?.message" role="alert" class="mb-5 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700 flex items-center gap-2">
-          <Icon name="check" size="4" class="flex-shrink-0" />
-          <span>{{ page.props.flash.message }}</span>
-        </div>
-
-        <!-- Error banner -->
-        <div v-if="error" role="alert" class="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 flex items-center gap-2">
-          <Icon name="alert" size="4" class="flex-shrink-0" />
-          <span>
-            {{ error }}
-            <template v-if="showResetHint">
-              Having trouble? <a href="/forgot-password" class="underline font-medium">Reset your password</a>.
-            </template>
-          </span>
+        <div class="my-6 flex items-center gap-4" aria-hidden="true">
+          <span class="h-px flex-1 bg-gray-200"></span>
+          <span class="text-xs font-medium tracking-wide text-gray-400 uppercase">or</span>
+          <span class="h-px flex-1 bg-gray-200"></span>
         </div>
 
         <form @submit.prevent="submit" class="space-y-5">
@@ -99,7 +86,7 @@
             </template>
           </BaseInput>
 
-          <div class="flex items-center justify-between">
+          <div class="flex flex-wrap items-center justify-between gap-3">
             <label class="flex items-center gap-2 cursor-pointer">
               <input
                 v-model="form.remember"
@@ -110,22 +97,27 @@
             <Link href="/forgot-password" class="text-sm text-primary font-medium hover:underline">Forgot password?</Link>
           </div>
 
-          <BaseButton type="submit" block :loading="loading">
+          <BaseButton type="submit" size="lg" block :loading="loading">
             {{ loading ? 'Signing in…' : 'Sign in' }}
           </BaseButton>
 
         </form>
 
-        <p class="mt-6 text-center text-sm text-gray-500">
+        <p class="mt-8 text-center text-sm text-gray-500">
           Don't have an account?
-          <Link href="/register" class="text-primary font-medium hover:underline">Create one</Link>
+          <Link href="/register" class="font-medium text-primary hover:underline">Create one</Link>
         </p>
 
-      </div>
+        <p class="mt-6 border-t border-gray-200 pt-6 text-center text-xs leading-relaxed text-gray-400">
+          By signing in you agree to the
+          <Link href="/terms-of-service" class="font-medium text-primary hover:underline">Terms of Service</Link>
+          and
+          <Link href="/privacy-policy" class="font-medium text-primary hover:underline">Privacy Policy</Link>.
+        </p>
 
-    </section>
+    </div>
 
-  </PublicLayout>
+  </AuthLayout>
 
   <!-- Post-login preload overlay -->
   <AuthSplashOverlay :visible="showPreload">
@@ -147,7 +139,7 @@
 import { ref, reactive } from 'vue'
 import { Head, Link, usePage } from '@inertiajs/vue3'
 import axios from 'axios'
-import PublicLayout from '@/Layouts/PublicLayout.vue'
+import AuthLayout from '@/Layouts/AuthLayout.vue'
 import Icon from '@/Components/UI/Icon.vue'
 import BaseInput from '@/Components/UI/BaseInput.vue'
 import BaseButton from '@/Components/UI/BaseButton.vue'

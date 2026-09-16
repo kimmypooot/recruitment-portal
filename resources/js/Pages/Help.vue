@@ -30,7 +30,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-10">
 
         <!-- Section nav -->
-        <nav aria-label="Help topics" class="lg:sticky lg:top-20 lg:self-start">
+        <nav aria-label="Help topics" class="lg:sticky lg:top-20 lg:self-start bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
           <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">On this page</p>
           <ul class="space-y-1 text-sm">
             <li v-for="s in sections" :key="s.id">
@@ -39,10 +39,10 @@
           </ul>
         </nav>
 
-        <div class="space-y-14 min-w-0">
+        <div class="space-y-6 min-w-0">
 
           <!-- 1. Getting Started -->
-          <section id="getting-started">
+          <section id="getting-started" :class="sectionCard">
             <h2 class="text-xl font-bold text-gray-900 mb-1">1. Creating Your Account</h2>
             <p class="text-sm text-gray-500 mb-6">You need a free applicant account to apply and track your application.</p>
             <ol class="space-y-3">
@@ -54,7 +54,7 @@
           </section>
 
           <!-- 2. Profile -->
-          <section id="profile">
+          <section id="profile" :class="sectionCard">
             <h2 class="text-xl font-bold text-gray-900 mb-1">2. Completing Your Profile</h2>
             <p class="text-sm text-gray-500 mb-6">
               A complete profile is required before you can apply. From <Link href="/applicant/complete-profile" class="text-primary hover:underline font-medium">Complete Profile</Link>, fill in:
@@ -69,7 +69,7 @@
           </section>
 
           <!-- 3. Finding a vacancy -->
-          <section id="finding">
+          <section id="finding" :class="sectionCard">
             <h2 class="text-xl font-bold text-gray-900 mb-1">3. Finding &amp; Checking Eligibility</h2>
             <p class="text-sm text-gray-500 mb-4">Browse open positions on the <Link href="/" class="text-primary hover:underline font-medium">homepage</Link>. Each vacancy lists its own requirements — compare them against your background before applying:</p>
             <ul class="space-y-2 text-sm text-gray-700">
@@ -82,7 +82,7 @@
           </section>
 
           <!-- 4. Applying -->
-          <section id="applying">
+          <section id="applying" :class="sectionCard">
             <h2 class="text-xl font-bold text-gray-900 mb-1">4. Submitting Your Application</h2>
             <p class="text-sm text-gray-500 mb-4">
               Once your profile is complete and documents are uploaded, open a vacancy and select <b>Apply Now</b>. For the full step-by-step walkthrough, see the
@@ -95,7 +95,7 @@
           </section>
 
           <!-- 5. Documents -->
-          <section id="documents">
+          <section id="documents" :class="sectionCard">
             <h2 class="text-xl font-bold text-gray-900 mb-1">5. Uploading Documents</h2>
             <p class="text-sm text-gray-500 mb-4">Required documents (Profile → Documents):</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -113,7 +113,7 @@
           </section>
 
           <!-- 6. Tracking -->
-          <section id="tracking">
+          <section id="tracking" :class="sectionCard">
             <h2 class="text-xl font-bold text-gray-900 mb-1">6. Tracking Your Application</h2>
             <p class="text-sm text-gray-500 mb-4">Two ways to check your status:</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -131,7 +131,7 @@
           </section>
 
           <!-- 7. Statuses -->
-          <section id="statuses">
+          <section id="statuses" :class="sectionCard">
             <h2 class="text-xl font-bold text-gray-900 mb-1">7. What Your Status Means</h2>
             <p class="text-sm text-gray-500 mb-4">Statuses appear in the order they typically occur — not every application passes through every one.</p>
             <div class="rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
@@ -143,7 +143,7 @@
           </section>
 
           <!-- 8. Notifications -->
-          <section id="notifications">
+          <section id="notifications" :class="sectionCard">
             <h2 class="text-xl font-bold text-gray-900 mb-1">8. Notifications</h2>
             <p class="text-sm text-gray-600 leading-relaxed">
               You'll receive an email whenever your application status changes, an exam or interview is scheduled, or action is needed from you.
@@ -153,7 +153,7 @@
           </section>
 
           <!-- 9. Troubleshooting -->
-          <section id="troubleshooting">
+          <section id="troubleshooting" :class="sectionCard">
             <h2 class="text-xl font-bold text-gray-900 mb-1">9. Common Problems</h2>
             <div class="space-y-2 mt-4">
               <details v-for="(item, i) in troubleshooting" :key="i" class="group rounded-xl border border-gray-200 open:border-primary/30 open:bg-primary/5 transition-colors">
@@ -167,7 +167,7 @@
           </section>
 
           <!-- 10. FAQ -->
-          <section id="faq">
+          <section id="faq" :class="sectionCard">
             <h2 class="text-xl font-bold text-gray-900 mb-1">10. Frequently Asked Questions</h2>
             <div class="space-y-2 mt-4">
               <details v-for="(item, i) in faqs" :key="i" class="group rounded-xl border border-gray-200 open:border-primary/30 open:bg-primary/5 transition-colors">
@@ -207,6 +207,8 @@ import { Head, Link } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import Icon from '@/Components/UI/Icon.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
+
+const sectionCard = 'scroll-mt-24 bg-white border border-gray-200 rounded-2xl shadow-sm p-6'
 
 const sections = [
   { id: 'getting-started', label: '1. Creating an Account' },

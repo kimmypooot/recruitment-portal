@@ -82,7 +82,7 @@ The app is a true SPA using Inertia. Page components live in `resources/js/Pages
 | `app/Services/FormGeneratorService.php` | Renders CS Form 33-A/33-B/Form-1 PDFs (DomPDF, views in `resources/views/forms/`) into `CsForm` records |
 | `app/Services/PnpkiService.php` | Stub for PNPKI digital signatures on CS Forms — `sign()` just sets `signed_at`, no real crypto yet |
 | `app/Services/EmailTemplateMailBuilder.php` | Renders admin-configurable `EmailTemplate` rows into `MailMessage`s, with a generic fallback if none configured |
-| `app/Services/HrmpsbCompositionService.php` | Merges global `HrmbsboardComposition` rows with the per-vacancy dynamic "Head of Unit" role |
+| `app/Services/HrmpsbCompositionService.php` | Merges global `HrmpsbComposition` rows with the per-vacancy dynamic "Head of Unit" role |
 | `app/Http/Resources/VacancyResource.php` | JSON:API-style resource transformer for vacancy responses |
 | `app/Http/Requests/StoreVacancyRequest.php` | Only form-request class; other controllers mostly call `$request->validate([...])` inline |
 
@@ -103,7 +103,7 @@ API auth uses Laravel Sanctum (bearer tokens). The token is stored in `localStor
 
 **Roles** (`users.role` enum) — collapsed by migration `2026_06_27_100000_simplify_users_role_to_three.php` down to exactly three values: `applicant`, `hrmpsb`, `admin`. (Older values like `hr-officer`/`hr-manager`/`hrmpsb-member`/`appointing-authority` existed transiently and were migrated into `admin`/`hrmpsb` — don't expect to see them in current data.) `UserController::ALLOWED_ROLES` enforces this same set on create/update.
 
-**Finer-grained HRMPSB roles live outside `users.role`**, in the `hrmpsb_compositions` table (model `HrmbsboardComposition`), which is now global rather than per-vacancy. `HrmbsboardComposition::ROLES` includes `chairperson`, `secretariat`, `appointing-authority`, `director-representative`, `division-chief-representative`, `hr-chief`, `pintig-representative-1st`, `pintig-representative-2nd`, plus a dynamically-resolved `head-of-unit` role per vacancy's place of assignment (resolved by `HrmpsbCompositionService`, excluding HRD/ORD).
+**Finer-grained HRMPSB roles live outside `users.role`**, in the `hrmpsb_compositions` table (model `HrmpsbComposition`), which is now global rather than per-vacancy. `HrmpsbComposition::ROLES` includes `chairperson`, `secretariat`, `appointing-authority`, `hr-chief`, `pintig-representative-1st`, `pintig-representative-2nd`, plus a dynamically-resolved `head-of-unit` role per vacancy's place of assignment (resolved by `HrmpsbCompositionService`, excluding HRD/ORD). The former `director-representative`/`division-chief-representative` static roles were retired in favor of this dynamic Head of Unit designation.
 
 **`User::canAccessAdminModule()`** (app/Models/User.php) is the crux of the whole authorization scheme — true if `role === 'admin'`, or if `role === 'hrmpsb'` *and* the user holds an active `secretariat`/`hr-chief` designation (`hasAdminDesignation()`). Almost every policy and the `admin-access` middleware defer to it.
 
@@ -137,7 +137,7 @@ pre-assessment → qs → twe (written exam) → cbwe → bei → eopt → backg
 | `ComparativeAssessmentResult` | Generated comparison file/PDF summarizing candidates per vacancy |
 | `AppointingAuthorityDecision` | Appointing Authority's final decision on a deliberated application |
 | `CsForm` | Generated CSC forms (`CsForm::TYPES`: `33A`, `33B`, `form1`); `signed_at` via the `PnpkiService` stub, `submitted_to_csc_at` |
-| `HrmbsboardComposition` | Assigns a `User` to a global HRMPSB role (see roles above) |
+| `HrmpsbComposition` | Assigns a `User` to a global HRMPSB role (see roles above) |
 
 Most stage tables have a `locked_at` column gating downstream progression — `PipelineStageService::resolveFlags()` computes ~15 boolean flags per vacancy by querying these tables (note: `qs_exists`/`qs_locked` intentionally consider *all* application IDs while most other flags exclude withdrawn applications). If an upstream "locked" flag is missing but the stage's own data already exists, `OWN_DATA_FALLBACK` still allows access (defensive fallback for legacy/seeded data).
 

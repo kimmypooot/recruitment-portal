@@ -7,6 +7,7 @@ namespace App\Policies;
 use App\Models\Application;
 use App\Models\HrmpsbComposition;
 use App\Models\User;
+use App\Services\HrmpsbCompositionService;
 
 class EvaluationPolicy
 {
@@ -24,9 +25,7 @@ class EvaluationPolicy
             return true;
         }
 
-        return HrmpsbComposition::where('user_id', $user->id)
-            ->where('is_active', true)
-            ->exists();
+        return app(HrmpsbCompositionService::class)->isActiveMember($user, $application->vacancy);
     }
 
     /**

@@ -11,6 +11,7 @@ use App\Models\HrmpsbComposition;
 use App\Models\Vacancy;
 use App\Services\AnonymizationService;
 use App\Services\AuditLog;
+use App\Services\HrmpsbCompositionService;
 use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,9 +26,7 @@ class DeliberationController extends Controller
         $user = $request->user();
 
         $isMember = $user->canAccessAdminModule()
-            || HrmpsbComposition::where('user_id', $user->id)
-                ->where('is_active', true)
-                ->exists();
+            || app(HrmpsbCompositionService::class)->isActiveMember($user, $vacancy);
 
         if (! $isMember) {
             return response()->json(['message' => 'Access denied.'], 403);

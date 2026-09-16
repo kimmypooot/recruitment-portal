@@ -7,6 +7,7 @@ namespace App\Services\Pds;
 use App\Models\ApplicantProfile;
 use App\Models\PdsDeclaration;
 use App\Models\PdsReference;
+use Illuminate\Support\Collection;
 
 /**
  * Reports which sections of CS Form No. 212 (Revised 2026) an applicant still
@@ -39,16 +40,16 @@ class PdsCompletenessChecker
         $profile->load(ApplicantProfile::PDS_RELATIONS);
 
         $sections = [
-            'personal_information'      => $this->personalInformation($profile),
-            'family_background'         => $this->familyBackground($profile),
-            'educational_background'    => $this->educationalBackground($profile),
-            'civil_service_eligibility' => $this->civilServiceEligibility($profile),
-            'work_experience'           => $this->workExperience($profile),
-            'voluntary_work'            => $this->voluntaryWork($profile),
-            'learning_development'      => $this->learningDevelopment($profile),
-            'other_information'         => $this->otherInformation($profile),
-            'declarations'              => $this->declarations($profile),
-            'references'                => $this->references($profile),
+            'personal_information' => $this->personalInformation($profile),
+            'family_background' => $this->familyBackground($profile),
+            'educational_background' => $this->educationalBackground($profile),
+            'civil_service_eligibility' => $this->optional($profile->civilServiceEligibilities, 'no_eligibility_recorded'),
+            'work_experience' => $this->optional($profile->workExperiences, 'no_work_experience_recorded'),
+            'voluntary_work' => $this->optional($profile->voluntaryWorks, 'no_voluntary_work_recorded'),
+            'learning_development' => $this->optional($profile->trainings, 'no_training_recorded'),
+            'other_information' => $this->optional($profile->otherInfos, 'no_other_information_recorded'),
+            'declarations' => $this->declarations($profile),
+            'references' => $this->references($profile),
         ];
 
         $blocking = array_values(array_filter(
@@ -57,9 +58,9 @@ class PdsCompletenessChecker
         ));
 
         return [
-            'sections'     => $sections,
+            'sections' => $sections,
             'can_generate' => $blocking === [],
-            'blocking'     => $blocking,
+            'blocking' => $blocking,
         ];
     }
 
@@ -77,15 +78,15 @@ class PdsCompletenessChecker
         $missing = [];
 
         $required = [
-            'surname'        => $user?->last_name,
-            'first_name'     => $user?->first_name,
-            'date_of_birth'  => $profile->birthday,
+            'surname' => $user?->last_name,
+            'first_name' => $user?->first_name,
+            'date_of_birth' => $profile->birthday,
             'place_of_birth' => $profile->place_of_birth,
-            'sex_at_birth'   => $profile->gender,
-            'civil_status'   => $profile->civil_status,
-            'citizenship'    => $profile->citizenship,
-            'mobile_no'      => $profile->mobile_number,
-            'email'          => $user?->email,
+            'sex_at_birth' => $profile->gender,
+            'civil_status' => $profile->civil_status,
+            'citizenship' => $profile->citizenship,
+            'mobile_no' => $profile->mobile_number,
+            'email' => $user?->email,
         ];
 
         foreach ($required as $label => $value) {
@@ -110,7 +111,7 @@ class PdsCompletenessChecker
 
     private function familyBackground(ApplicantProfile $profile): array
     {
-        $family  = $profile->familyBackground;
+        $family = $profile->familyBackground;
         $missing = [];
 
         if ($family === null) {
@@ -134,58 +135,19 @@ class PdsCompletenessChecker
      */
     private function educationalBackground(ApplicantProfile $profile): array
     {
-        $levels  = $profile->educationalAttainments->pluck('level')->all();
-        $missing = [];
+        $levels = $profile->educationalAttainments->pluck('level')->all();
 
-        foreach (['elementary', 'secondary'] as $level) {
-            if (! in_array($level, $levels, true)) {
-                $missing[] = $level;
-            }
-        }
-
-        return $this->result($missing);
+        return $this->result(array_values(array_diff(['elementary', 'secondary'], $levels)));
     }
 
-    private function civilServiceEligibility(ApplicantProfile $profile): array
+    /**
+     * Optional sections never block generation, but an empty one is still
+     * reported as incomplete so the UI can nudge — these are the most commonly
+     * omitted parts of the form.
+     */
+    private function optional(Collection $entries, string $missingKey): array
     {
-        // Optional on the form, but flagged as incomplete when empty so the UI
-        // can nudge — it is the single most common omission in screening.
-        return $this->result(
-            $profile->civilServiceEligibilities->isEmpty() ? ['no_eligibility_recorded'] : [],
-            optional: true
-        );
-    }
-
-    private function workExperience(ApplicantProfile $profile): array
-    {
-        return $this->result(
-            $profile->workExperiences->isEmpty() ? ['no_work_experience_recorded'] : [],
-            optional: true
-        );
-    }
-
-    private function voluntaryWork(ApplicantProfile $profile): array
-    {
-        return $this->result(
-            $profile->voluntaryWorks->isEmpty() ? ['no_voluntary_work_recorded'] : [],
-            optional: true
-        );
-    }
-
-    private function learningDevelopment(ApplicantProfile $profile): array
-    {
-        return $this->result(
-            $profile->trainings->isEmpty() ? ['no_training_recorded'] : [],
-            optional: true
-        );
-    }
-
-    private function otherInformation(ApplicantProfile $profile): array
-    {
-        return $this->result(
-            $profile->otherInfos->isEmpty() ? ['no_other_information_recorded'] : [],
-            optional: true
-        );
+        return $this->result($entries->isEmpty() ? [$missingKey] : [], optional: true);
     }
 
     private function declarations(ApplicantProfile $profile): array
@@ -226,7 +188,7 @@ class PdsCompletenessChecker
         return [
             'complete' => $missing === [],
             'optional' => $optional,
-            'missing'  => $missing,
+            'missing' => $missing,
         ];
     }
 

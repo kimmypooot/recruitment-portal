@@ -14,10 +14,10 @@
 
       <!-- Logo -->
       <div class="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-        <img src="/images/csc-logo.png" alt="CSC Logo" class="h-9 w-9 object-contain flex-shrink-0"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-        <div class="w-9 h-9 rounded-lg bg-white/15 items-center justify-center flex-shrink-0 hidden">
-          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="w-9 h-9 rounded-xl bg-white flex items-center justify-center flex-shrink-0 p-1">
+          <img src="/images/csc-logo.png" alt="CSC Logo" class="h-full w-full object-contain"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+          <svg class="w-5 h-5 text-primary hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
           </svg>
         </div>
@@ -96,7 +96,7 @@
               <div v-if="avatarLoading" class="absolute inset-0 flex items-center justify-center">
                 <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               </div>
-              <span v-if="avatarError">{{ userInitial }}</span>
+              <span v-if="avatarError">{{ auth.userInitial }}</span>
               <img v-if="auth.token" :src="`/profile/photo?token=${auth.token}&_=${avatarVersion}`"
                 class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
                 :class="avatarLoaded ? 'opacity-100' : 'opacity-0'"
@@ -105,7 +105,7 @@
                 alt="" />
             </div>
             <div class="hidden sm:block text-left">
-              <p class="text-sm font-semibold text-gray-800 leading-none">{{ userName }}</p>
+              <p class="text-sm font-semibold text-gray-800 leading-none">{{ auth.fullName }}</p>
               <p class="text-xs text-gray-400 mt-0.5">HRMPSB</p>
             </div>
             <Icon name="chevronDown" class="w-4 h-4 text-gray-400 hidden sm:block transition-transform flex-shrink-0"

@@ -10,6 +10,7 @@ use App\Models\EoptResult;
 use App\Models\HrmpsbComposition;
 use App\Models\Vacancy;
 use App\Services\AuditLog;
+use App\Services\HrmpsbCompositionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -23,20 +24,13 @@ class EoptController extends Controller
             ->exists();
     }
 
-    private function isMemberOrAbove(int $userId): bool
-    {
-        return HrmpsbComposition::where('user_id', $userId)
-            ->where('is_active', true)
-            ->exists();
-    }
-
     public function index(Request $request, Vacancy $vacancy): JsonResponse
     {
         $user = $request->user();
 
         $isSecretariat = $this->isSecretariat($user->id) || $user->canAccessAdminModule();
 
-        $isMember = $isSecretariat || $this->isMemberOrAbove($user->id);
+        $isMember = $isSecretariat || app(HrmpsbCompositionService::class)->isActiveMember($user, $vacancy);
 
         if (! $isMember) {
             return response()->json(['message' => 'Access denied.'], 403);

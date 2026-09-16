@@ -12,6 +12,7 @@ use App\Models\HrmpsbComposition;
 use App\Models\Vacancy;
 use App\Models\VacancyCompetency;
 use App\Services\AuditLog;
+use App\Services\HrmpsbCompositionService;
 use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,13 +23,6 @@ class BeiRatingController extends Controller
     use FormatsApplicantName;
 
     private const PASSING_THRESHOLD = 70.0;
-
-    private function getComposition(int $userId): ?HrmpsbComposition
-    {
-        return HrmpsbComposition::where('user_id', $userId)
-            ->where('is_active', true)
-            ->first();
-    }
 
     private function isSecretariat(int $userId): bool
     {
@@ -43,9 +37,9 @@ class BeiRatingController extends Controller
         $user = $request->user();
 
         $isSecretariat = $user->canAccessAdminModule() || $this->isSecretariat($user->id);
-        $composition = $this->getComposition($user->id);
+        $isMember = app(HrmpsbCompositionService::class)->isActiveMember($user, $vacancy);
 
-        if (! $isSecretariat && ! $composition) {
+        if (! $isSecretariat && ! $isMember) {
             return response()->json(['message' => 'You are not an active HRMPSB member or HR-Chief.'], 403);
         }
 
@@ -177,8 +171,7 @@ class BeiRatingController extends Controller
             ], 422);
         }
 
-        $composition = $this->getComposition($user->id);
-        if (! $composition && ! $user->canAccessAdminModule()) {
+        if (! app(HrmpsbCompositionService::class)->isActiveMember($user, $application->vacancy) && ! $user->canAccessAdminModule()) {
             return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
         }
 

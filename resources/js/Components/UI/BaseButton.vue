@@ -40,7 +40,10 @@ const props = defineProps({
 
 // Inertia's <Link> has no native disabled state — a disabled/loading link
 // button renders as a plain <span> instead so it can't still be navigated.
-const tag = computed(() => (props.href && !props.disabled && !props.loading ? Link : props.href ? 'span' : 'button'))
+const tag = computed(() => {
+  if (!props.href) return 'button'
+  return props.disabled || props.loading ? 'span' : Link
+})
 const linkProps = computed(() => (tag.value === Link ? { href: props.href } : {}))
 
 const sizeClasses = {

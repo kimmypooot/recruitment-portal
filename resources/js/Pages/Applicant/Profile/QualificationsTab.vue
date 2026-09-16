@@ -22,45 +22,33 @@
         </button>
       </div>
       <div class="px-6 py-5">
-        <div v-if="experiences.length" class="overflow-x-auto -mx-6 px-6">
-          <table class="w-full text-sm min-w-[540px]">
-            <thead>
-              <tr class="border-b border-gray-100">
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 w-1/3">Position Title</th>
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 w-1/3">Agency</th>
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Period</th>
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Gov't</th>
-                <th class="pb-2.5 w-16"></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-              <tr v-for="exp in experiences" :key="exp.id" class="group">
-                <td class="py-3 pr-4 font-medium text-gray-900">{{ exp.position_title }}</td>
-                <td class="py-3 pr-4 text-gray-600">{{ exp.department_agency }}</td>
-                <td class="py-3 pr-4 text-gray-500 whitespace-nowrap">
-                  {{ formatDateRange(exp.date_from, exp.is_present ? null : exp.date_to, exp.is_present) }}
-                </td>
-                <td class="py-3 pr-4 text-gray-500">{{ exp.government_service ? 'Yes' : 'No' }}</td>
-                <td class="py-3 text-right">
-                  <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button @click="$emit('edit-experience', exp)"
-                      class="p-1 rounded text-gray-400 hover:text-primary transition-colors">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                      </svg>
-                    </button>
-                    <button @click="$emit('delete-experience', exp.id)"
-                      class="p-1 rounded text-gray-400 hover:text-red-500 transition-colors">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <ul v-if="experiences.length" class="space-y-3">
+          <li v-for="exp in experiences" :key="exp.id"
+            class="flex items-start justify-between gap-3 p-4 rounded-lg border border-gray-200 bg-gray-50/60">
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-gray-900 truncate">{{ exp.position_title }}</p>
+              <p class="text-xs text-gray-600 mt-0.5 truncate">{{ exp.department_agency }}</p>
+              <p class="text-xs text-gray-400 mt-1">
+                {{ formatDateRange(exp.date_from, exp.is_present ? null : exp.date_to, exp.is_present) }}
+                <span v-if="exp.government_service" class="ml-1">· Government Service</span>
+              </p>
+            </div>
+            <div class="flex items-center gap-1 flex-shrink-0">
+              <button type="button" @click="$emit('edit-experience', exp)" :aria-label="`Edit ${exp.position_title}`"
+                class="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-white transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <button type="button" @click="$emit('delete-experience', exp.id)" :aria-label="`Delete ${exp.position_title}`"
+                class="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-white transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          </li>
+        </ul>
         <div v-else class="flex flex-col items-center justify-center py-10 text-center">
           <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
             <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -94,45 +82,36 @@
         </button>
       </div>
       <div class="px-6 py-5">
-        <div v-if="educationRecords.length" class="overflow-x-auto -mx-6 px-6">
-          <table class="w-full text-sm min-w-[580px]">
-            <thead>
-              <tr class="border-b border-gray-100">
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Level</th>
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">School</th>
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Degree</th>
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Period</th>
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Graduated</th>
-                <th class="pb-2.5 w-16"></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-              <tr v-for="edu in educationRecords" :key="edu.id" class="group">
-                <td class="py-3 pr-4 text-gray-700 whitespace-nowrap">{{ formatLevel(edu.level) }}</td>
-                <td class="py-3 pr-4 font-medium text-gray-900">{{ edu.school_name }}</td>
-                <td class="py-3 pr-4 text-gray-500">{{ edu.degree_course ?? '—' }}</td>
-                <td class="py-3 pr-4 text-gray-500 whitespace-nowrap">{{ edu.period_from ?? '—' }} – {{ edu.period_to ?? '—' }}</td>
-                <td class="py-3 pr-4 text-gray-500">{{ edu.year_graduated ?? '—' }}</td>
-                <td class="py-3 text-right">
-                  <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button @click="$emit('edit-education', edu)"
-                      class="p-1 rounded text-gray-400 hover:text-primary transition-colors">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                      </svg>
-                    </button>
-                    <button @click="$emit('delete-education', edu.id)"
-                      class="p-1 rounded text-gray-400 hover:text-red-500 transition-colors">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <ul v-if="educationRecords.length" class="space-y-3">
+          <li v-for="edu in educationRecords" :key="edu.id"
+            class="flex items-start justify-between gap-3 p-4 rounded-lg border border-gray-200 bg-gray-50/60">
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-gray-900 truncate">
+                {{ edu.school_name }}
+                <span class="ml-1.5 font-normal text-gray-400">· {{ formatLevel(edu.level) }}</span>
+              </p>
+              <p v-if="edu.degree_course" class="text-xs text-gray-600 mt-0.5 truncate">{{ edu.degree_course }}</p>
+              <p class="text-xs text-gray-400 mt-1">
+                {{ edu.period_from ?? '—' }} – {{ edu.period_to ?? '—' }}
+                <span v-if="edu.year_graduated"> · Graduated {{ edu.year_graduated }}</span>
+              </p>
+            </div>
+            <div class="flex items-center gap-1 flex-shrink-0">
+              <button type="button" @click="$emit('edit-education', edu)" :aria-label="`Edit ${edu.school_name}`"
+                class="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-white transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <button type="button" @click="$emit('delete-education', edu.id)" :aria-label="`Delete ${edu.school_name}`"
+                class="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-white transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          </li>
+        </ul>
         <div v-else class="flex flex-col items-center justify-center py-10 text-center">
           <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
             <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -166,45 +145,34 @@
         </button>
       </div>
       <div class="px-6 py-5">
-        <div v-if="trainings.length" class="overflow-x-auto -mx-6 px-6">
-          <table class="w-full text-sm min-w-[600px]">
-            <thead>
-              <tr class="border-b border-gray-100">
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 w-1/3">Title</th>
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Date</th>
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Hours</th>
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Type</th>
-                <th class="pb-2.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">Conducted by</th>
-                <th class="pb-2.5 w-16"></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-              <tr v-for="t in trainings" :key="t.id" class="group">
-                <td class="py-3 pr-4 font-medium text-gray-900">{{ t.title }}</td>
-                <td class="py-3 pr-4 text-gray-500 whitespace-nowrap">{{ formatDateRange(t.date_from, t.date_to) }}</td>
-                <td class="py-3 pr-4 text-gray-500">{{ t.hours ?? '—' }}</td>
-                <td class="py-3 pr-4 text-gray-500">{{ t.ld_type ?? '—' }}</td>
-                <td class="py-3 pr-4 text-gray-500">{{ t.conducted_by ?? '—' }}</td>
-                <td class="py-3 text-right">
-                  <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button @click="$emit('edit-training', t)"
-                      class="p-1 rounded text-gray-400 hover:text-primary transition-colors">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                      </svg>
-                    </button>
-                    <button @click="$emit('delete-training', t.id)"
-                      class="p-1 rounded text-gray-400 hover:text-red-500 transition-colors">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <ul v-if="trainings.length" class="space-y-3">
+          <li v-for="t in trainings" :key="t.id"
+            class="flex items-start justify-between gap-3 p-4 rounded-lg border border-gray-200 bg-gray-50/60">
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-gray-900 truncate">{{ t.title }}</p>
+              <p class="text-xs text-gray-600 mt-0.5 truncate" v-if="t.conducted_by">{{ t.conducted_by }}</p>
+              <p class="text-xs text-gray-400 mt-1">
+                {{ formatDateRange(t.date_from, t.date_to) }}
+                <span v-if="t.hours"> · {{ t.hours }} hrs</span>
+                <span v-if="t.ld_type"> · {{ t.ld_type }}</span>
+              </p>
+            </div>
+            <div class="flex items-center gap-1 flex-shrink-0">
+              <button type="button" @click="$emit('edit-training', t)" :aria-label="`Edit ${t.title}`"
+                class="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-white transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <button type="button" @click="$emit('delete-training', t.id)" :aria-label="`Delete ${t.title}`"
+                class="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-white transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          </li>
+        </ul>
         <div v-else class="flex flex-col items-center justify-center py-10 text-center">
           <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
             <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -232,10 +200,10 @@
       </div>
       <div class="px-6 py-6 space-y-6">
         <div class="max-w-sm">
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+          <label for="qual-eligibility" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Eligibility <span class="text-red-500 normal-case">*</span>
           </label>
-          <select v-model="personal.eligibility"
+          <select id="qual-eligibility" v-model="personal.eligibility" aria-required="true"
             class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition">
             <option value="">— Select —</option>
             <option value="N/A">N/A</option>
@@ -254,7 +222,8 @@
             <option value="Others">Others</option>
           </select>
           <div v-if="personal.eligibility === 'Others'" class="mt-2">
-            <input v-model="personal.eligibility_other" type="text" placeholder="Specify eligibility"
+            <label for="qual-eligibility-other" class="sr-only">Specify eligibility</label>
+            <input id="qual-eligibility-other" v-model="personal.eligibility_other" type="text" placeholder="Specify eligibility"
               class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition uppercase" />
           </div>
         </div>
@@ -262,33 +231,33 @@
         <div>
           <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">Special Classifications</p>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="rounded-lg border border-gray-200 px-4 py-3.5">
-              <p class="text-xs font-semibold text-gray-700 mb-2.5">Indigenous People / Cultural Community</p>
+            <fieldset class="rounded-lg border border-gray-200 px-4 py-3.5">
+              <legend class="text-xs font-semibold text-gray-700 mb-2.5 px-0">Indigenous People / Cultural Community</legend>
               <div class="flex gap-4">
                 <label v-for="v in ['Yes', 'No']" :key="v" class="flex items-center gap-2 cursor-pointer">
                   <input type="radio" :value="v" v-model="personal.indigenous_group" class="accent-blue-700 w-4 h-4" />
                   <span class="text-sm text-gray-700">{{ v }}</span>
                 </label>
               </div>
-            </div>
-            <div class="rounded-lg border border-gray-200 px-4 py-3.5">
-              <p class="text-xs font-semibold text-gray-700 mb-2.5">Person with Disability (PWD)</p>
+            </fieldset>
+            <fieldset class="rounded-lg border border-gray-200 px-4 py-3.5">
+              <legend class="text-xs font-semibold text-gray-700 mb-2.5 px-0">Person with Disability (PWD)</legend>
               <div class="flex gap-4">
                 <label v-for="v in ['Yes', 'No']" :key="v" class="flex items-center gap-2 cursor-pointer">
                   <input type="radio" :value="v" v-model="personal.pwd" class="accent-blue-700 w-4 h-4" />
                   <span class="text-sm text-gray-700">{{ v }}</span>
                 </label>
               </div>
-            </div>
-            <div class="rounded-lg border border-gray-200 px-4 py-3.5">
-              <p class="text-xs font-semibold text-gray-700 mb-2.5">Solo Parent</p>
+            </fieldset>
+            <fieldset class="rounded-lg border border-gray-200 px-4 py-3.5">
+              <legend class="text-xs font-semibold text-gray-700 mb-2.5 px-0">Solo Parent</legend>
               <div class="flex gap-4">
                 <label v-for="v in ['Yes', 'No']" :key="v" class="flex items-center gap-2 cursor-pointer">
                   <input type="radio" :value="v" v-model="personal.solo_parent" class="accent-blue-700 w-4 h-4" />
                   <span class="text-sm text-gray-700">{{ v }}</span>
                 </label>
               </div>
-            </div>
+            </fieldset>
           </div>
         </div>
       </div>
@@ -298,6 +267,8 @@
 </template>
 
 <script setup>
+import { formatDateRange } from '@/utils/dates'
+
 defineProps({
   personal:         { type: Object, required: true },
   experiences:      { type: Array,  default: () => [] },
@@ -310,24 +281,6 @@ defineEmits([
   'add-education', 'edit-education', 'delete-education',
   'add-training', 'edit-training', 'delete-training',
 ])
-
-function formatDateRange(from, to, isPresent = false) {
-  if (!from) return '—'
-  const MONTHS = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.',
-                  'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.']
-  const parse = (str) => { const [y, m, d] = str.split('-').map(Number); return { y, m: m - 1, d } }
-  const f = parse(from)
-  const fromStr = `${MONTHS[f.m]} ${f.d}`
-  if (isPresent) return `${fromStr}, ${f.y} – Present`
-  if (!to)       return `${fromStr}, ${f.y}`
-  const t = parse(to)
-  if (f.m === t.m && f.y === t.y) {
-    if (f.d === t.d) return `${fromStr}, ${f.y}`
-    return `${MONTHS[f.m]} ${f.d}-${t.d}, ${f.y}`
-  }
-  if (f.y === t.y) return `${fromStr} - ${MONTHS[t.m]} ${t.d}, ${f.y}`
-  return `${fromStr}, ${f.y} - ${MONTHS[t.m]} ${t.d}, ${t.y}`
-}
 
 function formatLevel(level) {
   return level?.replace(/_/g, ' ') ?? level

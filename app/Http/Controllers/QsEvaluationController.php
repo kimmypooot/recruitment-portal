@@ -10,6 +10,7 @@ use App\Models\QsEvaluation;
 use App\Models\Vacancy;
 use App\Services\AnonymizationService;
 use App\Services\AuditLog;
+use App\Services\HrmpsbCompositionService;
 use App\Events\ApplicationStatusUpdated;
 use App\Events\QSEvaluationsLocked;
 use App\Http\Requests\StoreQsEvaluationRequest;
@@ -18,13 +19,6 @@ use Illuminate\Http\Request;
 
 class QsEvaluationController extends Controller
 {
-    private function getComposition(int $userId): ?HrmpsbComposition
-    {
-        return HrmpsbComposition::where('user_id', $userId)
-            ->where('is_active', true)
-            ->first();
-    }
-
     private function isSecretariat(int $userId): bool
     {
         return HrmpsbComposition::where('user_id', $userId)
@@ -38,8 +32,7 @@ class QsEvaluationController extends Controller
         $user = $request->user();
 
         if (! $user->canAccessAdminModule()) {
-            $composition = $this->getComposition($user->id);
-            if (! $composition) {
+            if (! app(HrmpsbCompositionService::class)->isActiveMember($user, $vacancy)) {
                 return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
             }
         }
@@ -60,7 +53,7 @@ class QsEvaluationController extends Controller
         $seq = 1;
 
         $applications->each(function ($app) use ($user, $isSecretariat, &$seq, $secretariatComp) {
-            $app->display_code = 'APP-' . str_pad($seq++, 3, '0', STR_PAD_LEFT);
+            $app->display_code = 'APP-' . str_pad((string) $seq++, 3, '0', STR_PAD_LEFT);
 
             // Secretariat's evaluation — visible to all as the initial reference
             $secretariatEval = $secretariatComp
@@ -125,8 +118,7 @@ class QsEvaluationController extends Controller
             return response()->json(['message' => 'This application has been withdrawn and can no longer be evaluated.'], 422);
         }
 
-        $composition = $this->getComposition($user->id);
-        if (! $composition && ! $user->canAccessAdminModule()) {
+        if (! app(HrmpsbCompositionService::class)->isActiveMember($user, $application->vacancy) && ! $user->canAccessAdminModule()) {
             return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
         }
 

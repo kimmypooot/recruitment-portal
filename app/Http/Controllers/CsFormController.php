@@ -12,6 +12,8 @@ use App\Services\PnpkiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CsFormController extends Controller
@@ -26,66 +28,61 @@ class CsFormController extends Controller
      * all — never assigned, or since deactivated — generate, sign, or mark
      * CS Forms as submitted to CSC.
      */
-    private function isActiveHrmpsbMember(int $userId): bool
+    private function authorizeBoardMember(Request $request): void
     {
-        return HrmpsbComposition::where('user_id', $userId)
+        $user = $request->user();
+
+        $isMember = HrmpsbComposition::where('user_id', $user->id)
             ->where('is_active', true)
             ->exists();
+
+        abort_unless($user->canAccessAdminModule() || $isMember, 403, 'You are not an active HRMPSB member.');
     }
 
     public function index(Request $request, Application $application): JsonResponse
     {
-        $user = $request->user();
-        if (! $user->canAccessAdminModule() && ! $this->isActiveHrmpsbMember($user->id)) {
-            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
-        }
+        $this->authorizeBoardMember($request);
 
         $forms = CsForm::where('application_id', $application->id)
             ->with('generatedBy:id,first_name,last_name,middle_name,suffix')
             ->get()
             ->map(fn ($f) => [
-                'id'                  => $f->id,
-                'form_type'           => $f->form_type,
-                'form_label'          => CsForm::TYPES[$f->form_type] ?? $f->form_type,
-                'generated_by'        => $f->generatedBy?->full_name,
-                'generated_at'        => $f->generated_at,
-                'signed_at'           => $f->signed_at,
+                'id' => $f->id,
+                'form_type' => $f->form_type,
+                'form_label' => CsForm::TYPES[$f->form_type] ?? $f->form_type,
+                'generated_by' => $f->generatedBy?->full_name,
+                'generated_at' => $f->generated_at,
+                'signed_at' => $f->signed_at,
                 'submitted_to_csc_at' => $f->submitted_to_csc_at,
             ]);
 
         return response()->json([
-            'forms'      => $forms,
+            'forms' => $forms,
             'form_types' => CsForm::TYPES,
-            'pnpki_ready'=> (new PnpkiService())->isConfigured(),
+            'pnpki_ready' => (new PnpkiService)->isConfigured(),
         ]);
     }
 
     public function generate(Request $request, Application $application): JsonResponse
     {
-        $user = $request->user();
-        if (! $user->canAccessAdminModule() && ! $this->isActiveHrmpsbMember($user->id)) {
-            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
-        }
+        $this->authorizeBoardMember($request);
 
         $data = $request->validate([
-            'form_type' => ['required', \Illuminate\Validation\Rule::in(array_keys(CsForm::TYPES))],
+            'form_type' => ['required', Rule::in(array_keys(CsForm::TYPES))],
         ]);
 
-        $form = (new FormGeneratorService())->generate($application, $data['form_type'], $request->user());
+        $form = (new FormGeneratorService)->generate($application, $data['form_type'], $request->user());
 
         return response()->json([
-            'message'   => CsForm::TYPES[$data['form_type']] . ' generated successfully.',
+            'message' => CsForm::TYPES[$data['form_type']].' generated successfully.',
             'form_type' => $form->form_type,
-            'id'        => $form->id,
+            'id' => $form->id,
         ], 201);
     }
 
-    public function download(Request $request, CsForm $csForm): StreamedResponse|JsonResponse
+    public function download(Request $request, CsForm $csForm): StreamedResponse
     {
-        $user = $request->user();
-        if (! $user->canAccessAdminModule() && ! $this->isActiveHrmpsbMember($user->id)) {
-            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
-        }
+        $this->authorizeBoardMember($request);
 
         abort_unless(Storage::disk('local')->exists($csForm->file_path), 404, 'Form file not found.');
 
@@ -96,26 +93,20 @@ class CsFormController extends Controller
 
     public function markSubmitted(Request $request, CsForm $csForm): JsonResponse
     {
-        $user = $request->user();
-        if (! $user->canAccessAdminModule() && ! $this->isActiveHrmpsbMember($user->id)) {
-            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
-        }
+        $this->authorizeBoardMember($request);
 
-        (new FormGeneratorService())->markSubmitted($csForm);
+        (new FormGeneratorService)->markSubmitted($csForm);
 
         return response()->json(['message' => 'Form marked as submitted to CSC.']);
     }
 
     public function sign(Request $request, CsForm $csForm): JsonResponse
     {
-        $user = $request->user();
-        if (! $user->canAccessAdminModule() && ! $this->isActiveHrmpsbMember($user->id)) {
-            return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
-        }
+        $this->authorizeBoardMember($request);
 
-        $pnpki = new PnpkiService();
+        $pnpki = new PnpkiService;
 
-        if (!$pnpki->isConfigured()) {
+        if (! $pnpki->isConfigured()) {
             return response()->json([
                 'message' => 'PNPKI is not yet configured. Contact CSC for credentials.',
             ], 422);
@@ -123,7 +114,7 @@ class CsFormController extends Controller
 
         try {
             $pnpki->sign($csForm, $request->user()->full_name);
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             // Signing is deliberately unimplemented; surface why rather than
             // reporting a success the system cannot actually deliver.
             return response()->json(['message' => $e->getMessage()], 501);
