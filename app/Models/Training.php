@@ -14,7 +14,11 @@ class Training extends Model
         'hours', 'ld_type', 'conducted_by',
     ];
 
-    protected $casts = ['hours' => 'decimal:2'];
+    protected $casts = [
+        'hours'     => 'decimal:2',
+        'date_from' => 'date',
+        'date_to'   => 'date',
+    ];
 
     public function profile(): BelongsTo
     {

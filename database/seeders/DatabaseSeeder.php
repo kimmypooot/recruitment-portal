@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
         $admin = User::create([
             'first_name' => 'System',
             'last_name' => 'Administrator',
-            'email' => 'admin@csc8.gov.ph',
+            'email' => 'admin@csc.gov.ph',
             'password' => Hash::make('Password123'),
             'role' => 'admin',
             'email_verified_at' => now(),
@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
             'first_name' => 'Maria',
             'last_name' => 'Santos',
             'middle_name' => 'Buenaventura',
-            'email' => 'maria.santos@csc8.gov.ph',
+            'email' => 'maria.santos@csc.gov.ph',
             'password' => Hash::make('Password123'),
             'role' => 'admin',
             'email_verified_at' => now(),
@@ -51,15 +51,15 @@ class DatabaseSeeder extends Seeder
 
         // ── HRMPSB Members (role = 'hrmpsb') ─────────────────────────────────
         $hrmpsb = collect([
-            ['first_name' => 'Rodrigo',   'last_name' => 'Dela Peña',  'middle_name' => 'Viernes',    'email' => 'rodrigo.delapena@csc8.gov.ph',   'suffix' => null],
-            ['first_name' => 'Carmela',   'last_name' => 'Villanueva', 'middle_name' => 'Ramos',      'email' => 'carmela.villanueva@csc8.gov.ph', 'suffix' => null],
-            ['first_name' => 'Benjamin',  'last_name' => 'Oquendo',    'middle_name' => 'Tan',        'email' => 'benjamin.oquendo@csc8.gov.ph',   'suffix' => 'Jr.'],
-            ['first_name' => 'Luzviminda', 'last_name' => 'Cabrera',    'middle_name' => 'Ferrer',     'email' => 'luzviminda.cabrera@csc8.gov.ph', 'suffix' => null],
-            ['first_name' => 'Arsenio',   'last_name' => 'Macaraig',   'middle_name' => 'Quiambao',   'email' => 'arsenio.macaraig@csc8.gov.ph',   'suffix' => null],
-            ['first_name' => 'Florencia', 'last_name' => 'Espiritu',   'middle_name' => 'Laurel',     'email' => 'florencia.espiritu@csc8.gov.ph', 'suffix' => null],
-            ['first_name' => 'Eduardo',   'last_name' => 'Bautista',   'middle_name' => 'Chua',       'email' => 'eduardo.bautista@csc8.gov.ph',   'suffix' => 'Sr.'],
-            ['first_name' => 'Natividad', 'last_name' => 'Soriano',    'middle_name' => 'Aguilar',    'email' => 'natividad.soriano@csc8.gov.ph',  'suffix' => null],
-            ['first_name' => 'Renato',    'last_name' => 'Perez',      'middle_name' => 'Dizon',      'email' => 'renato.perez@csc8.gov.ph',       'suffix' => null],
+            ['first_name' => 'Rodrigo',   'last_name' => 'Dela Peña',  'middle_name' => 'Viernes',    'email' => 'rodrigo.delapena@csc.gov.ph',   'suffix' => null],
+            ['first_name' => 'Carmela',   'last_name' => 'Villanueva', 'middle_name' => 'Ramos',      'email' => 'carmela.villanueva@csc.gov.ph', 'suffix' => null],
+            ['first_name' => 'Benjamin',  'last_name' => 'Oquendo',    'middle_name' => 'Tan',        'email' => 'benjamin.oquendo@csc.gov.ph',   'suffix' => 'Jr.'],
+            ['first_name' => 'Luzviminda', 'last_name' => 'Cabrera',    'middle_name' => 'Ferrer',     'email' => 'luzviminda.cabrera@csc.gov.ph', 'suffix' => null],
+            ['first_name' => 'Arsenio',   'last_name' => 'Macaraig',   'middle_name' => 'Quiambao',   'email' => 'arsenio.macaraig@csc.gov.ph',   'suffix' => null],
+            ['first_name' => 'Florencia', 'last_name' => 'Espiritu',   'middle_name' => 'Laurel',     'email' => 'florencia.espiritu@csc.gov.ph', 'suffix' => null],
+            ['first_name' => 'Eduardo',   'last_name' => 'Bautista',   'middle_name' => 'Chua',       'email' => 'eduardo.bautista@csc.gov.ph',   'suffix' => 'Sr.'],
+            ['first_name' => 'Natividad', 'last_name' => 'Soriano',    'middle_name' => 'Aguilar',    'email' => 'natividad.soriano@csc.gov.ph',  'suffix' => null],
+            ['first_name' => 'Renato',    'last_name' => 'Perez',      'middle_name' => 'Dizon',      'email' => 'renato.perez@csc.gov.ph',       'suffix' => null],
         ])->map(fn ($d) => User::create([
             'first_name' => $d['first_name'],
             'last_name' => $d['last_name'],
@@ -75,21 +75,21 @@ class DatabaseSeeder extends Seeder
         // $hrmpsb[0] = Chairperson (Dela Peña)
         // $hrmpsb[1] = Secretariat (Villanueva) — can access admin module
         // $hrmpsb[2] = Appointing Authority (Oquendo)
-        // $hrmpsb[3] = Director II Representative (Cabrera)
-        // $hrmpsb[4] = Division Chief Representative (Macaraig)
+        // $hrmpsb[3] = Head of Unit — MSD/PALD (Cabrera) — set via place_of_assignment_heads (dynamic)
+        // $hrmpsb[4] = Head of Unit — PSED/ESD (Macaraig) — set via place_of_assignment_heads (dynamic)
         // $hrmpsb[5] = HR Chief (Espiritu) — can access admin module
-        // $hrmpsb[6] = Head of Unit (Bautista) — now set via place_of_assignment_heads (dynamic)
+        // $hrmpsb[6] = Head of Unit — Field Offices/LSD (Bautista) — set via place_of_assignment_heads (dynamic)
         // $hrmpsb[7] = PINTIG Rep 1st Level (Soriano)
         // $hrmpsb[8] = PINTIG Rep 2nd Level (Perez)
 
-        // NOTE: head-of-unit is no longer seeded as a global composition.
-        // It is now dynamically determined per-vacancy via place_of_assignment_heads.
+        // NOTE: the Director II Representative and Division Chief Representative
+        // roles have been retired — the Head of the Division/Unit where the
+        // vacancy exists now fills that seat, resolved dynamically per-vacancy
+        // via place_of_assignment_heads rather than seeded as a global composition.
         $staticRoles = [
             ['user' => $hrmpsb[0], 'role' => 'chairperson',                   'type' => 'principal'],
             ['user' => $hrmpsb[1], 'role' => 'secretariat',                   'type' => 'principal'],
             ['user' => $hrmpsb[2], 'role' => 'appointing-authority',          'type' => 'principal'],
-            ['user' => $hrmpsb[3], 'role' => 'director-representative',       'type' => 'principal'],
-            ['user' => $hrmpsb[4], 'role' => 'division-chief-representative', 'type' => 'principal'],
             ['user' => $hrmpsb[5], 'role' => 'hr-chief',                      'type' => 'principal'],
             ['user' => $hrmpsb[7], 'role' => 'pintig-representative-1st',     'type' => 'principal'],
             ['user' => $hrmpsb[8], 'role' => 'pintig-representative-2nd',     'type' => 'principal'],
@@ -122,11 +122,11 @@ class DatabaseSeeder extends Seeder
         // mandatory HRMPSB member — and ORD, whose head is the Appointing
         // Authority, for whom a Head of Unit designation does not apply).
         $rsuHeads = [
-            'Management Resource Division (MSD)' => $hrmpsb[6]->id, // Bautista
-            'Public Assistance and Liaison Division (PALD)' => $hrmpsb[6]->id,
-            'Policies and Systems Evaluation Division (PSED)' => $hrmpsb[6]->id,
-            'Examination Services Division (ESD)' => $hrmpsb[6]->id,
-            'Legal Services Division (LSD)' => $hrmpsb[6]->id,
+            'Management Resource Division (MSD)' => $hrmpsb[3]->id, // Cabrera
+            'Public Assistance and Liaison Division (PALD)' => $hrmpsb[3]->id, // Cabrera
+            'Policies and Systems Evaluation Division (PSED)' => $hrmpsb[4]->id, // Macaraig
+            'Examination Services Division (ESD)' => $hrmpsb[4]->id, // Macaraig
+            'Legal Services Division (LSD)' => $hrmpsb[6]->id, // Bautista
         ];
 
         foreach ($rsuHeads as $rsu => $userId) {
@@ -139,8 +139,8 @@ class DatabaseSeeder extends Seeder
 
         $secretariat = $hrmpsb[1]; // Villanueva — encodes most assessments
         $chairperson = $hrmpsb[0]; // Dela Peña
-        $dirRep = $hrmpsb[3]; // Cabrera
-        $divChief = $hrmpsb[4]; // Macaraig
+        $pintig1 = $hrmpsb[7]; // Soriano
+        $pintig2 = $hrmpsb[8]; // Perez
         $hrChief = $hrmpsb[5]; // Espiritu
         $headOfUnit = $hrmpsb[6]; // Bautista
 
@@ -359,7 +359,7 @@ class DatabaseSeeder extends Seeder
             [$v1Apps[3]->id, $chairperson->id,  true,  true,  false, true,  false, 'Concurs. Training hours insufficient.'],
             // Patricia Lim — all meets
             [$v1Apps[4]->id, $secretariat->id,  true,  true,  true,  true,  true,  'Meets all minimum qualifications.'],
-            [$v1Apps[4]->id, $dirRep->id,       true,  true,  true,  true,  true,  null],
+            [$v1Apps[4]->id, $pintig1->id,       true,  true,  true,  true,  true,  null],
         ];
 
         foreach ($qsData as [$appId, $evalId, $edu, $exp, $trn, $elig, $overall, $remarks]) {
@@ -427,27 +427,28 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // BEI Ratings (3 evaluators: chairperson, dirRep, divChief)
-        // Competencies: professionalism_ethics, results_focus, teamwork_cooperation,
-        //               creative_problem_solving, public_service_orientation
+        // BEI Ratings (3 evaluators: chairperson, pintig1, pintig2)
+        // Competencies scored must be a subset of the vacancy's own assigned
+        // competencies (see $v1Competencies above) — BeiRatingController
+        // validates against VacancyCompetency, not a fixed competency set.
         // Scale: 1-5 (5 = Outstanding)
         $beiData = [
             // Ana Dela Cruz — excellent scores across all evaluators
-            [$v1Apps[0]->id, $chairperson->id, ['professionalism_ethics' => 5, 'results_focus' => 5, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 4, 'public_service_orientation' => 5], 4.60, 'Consistently demonstrates exemplary values and strong results orientation.'],
-            [$v1Apps[0]->id, $dirRep->id,      ['professionalism_ethics' => 5, 'results_focus' => 4, 'teamwork_cooperation' => 5, 'creative_problem_solving' => 4, 'public_service_orientation' => 5], 4.60, 'Excellent interpersonal skills and commitment to public service.'],
-            [$v1Apps[0]->id, $divChief->id,    ['professionalism_ethics' => 4, 'results_focus' => 5, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 5, 'public_service_orientation' => 4], 4.40, 'Strong problem-solving ability. Highly recommended.'],
+            [$v1Apps[0]->id, $chairperson->id, ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 5, 'secretariat_liaison_services' => 4, 'solving_problems_making_decisions' => 4, 'planning_and_delivering' => 5], 4.60, 'Consistently demonstrates exemplary values and strong results orientation.'],
+            [$v1Apps[0]->id, $pintig1->id,      ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 4, 'secretariat_liaison_services' => 5, 'solving_problems_making_decisions' => 4, 'planning_and_delivering' => 5], 4.60, 'Excellent interpersonal skills and commitment to public service.'],
+            [$v1Apps[0]->id, $pintig2->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 5, 'secretariat_liaison_services' => 4, 'solving_problems_making_decisions' => 5, 'planning_and_delivering' => 4], 4.40, 'Strong problem-solving ability. Highly recommended.'],
             // Carlo Mendoza
-            [$v1Apps[1]->id, $chairperson->id, ['professionalism_ethics' => 4, 'results_focus' => 4, 'teamwork_cooperation' => 3, 'creative_problem_solving' => 3, 'public_service_orientation' => 4], 3.60, 'Adequate performance. Needs improvement in teamwork.'],
-            [$v1Apps[1]->id, $dirRep->id,      ['professionalism_ethics' => 4, 'results_focus' => 3, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 3, 'public_service_orientation' => 4], 3.60, 'Satisfactory. Modest problem-solving skills.'],
-            [$v1Apps[1]->id, $divChief->id,    ['professionalism_ethics' => 3, 'results_focus' => 4, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 4, 'public_service_orientation' => 3], 3.60, 'Acceptable. Communication skills need strengthening.'],
+            [$v1Apps[1]->id, $chairperson->id, ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 4, 'secretariat_liaison_services' => 3, 'solving_problems_making_decisions' => 3, 'planning_and_delivering' => 4], 3.60, 'Adequate performance. Needs improvement in teamwork.'],
+            [$v1Apps[1]->id, $pintig1->id,      ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'secretariat_liaison_services' => 4, 'solving_problems_making_decisions' => 3, 'planning_and_delivering' => 4], 3.60, 'Satisfactory. Modest problem-solving skills.'],
+            [$v1Apps[1]->id, $pintig2->id,    ['exemplifying_integrity' => 3, 'delivering_service_excellence' => 4, 'secretariat_liaison_services' => 4, 'solving_problems_making_decisions' => 4, 'planning_and_delivering' => 3], 3.60, 'Acceptable. Communication skills need strengthening.'],
             // Liza Reyes
-            [$v1Apps[2]->id, $chairperson->id, ['professionalism_ethics' => 5, 'results_focus' => 4, 'teamwork_cooperation' => 5, 'creative_problem_solving' => 4, 'public_service_orientation' => 5], 4.60, 'Outstanding integrity and team player. Highly recommended.'],
-            [$v1Apps[2]->id, $dirRep->id,      ['professionalism_ethics' => 4, 'results_focus' => 5, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 5, 'public_service_orientation' => 4], 4.40, 'Strong analytical skills. Very good candidate.'],
-            [$v1Apps[2]->id, $divChief->id,    ['professionalism_ethics' => 5, 'results_focus' => 4, 'teamwork_cooperation' => 5, 'creative_problem_solving' => 3, 'public_service_orientation' => 5], 4.40, 'Excellent public service orientation.'],
+            [$v1Apps[2]->id, $chairperson->id, ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 4, 'secretariat_liaison_services' => 5, 'solving_problems_making_decisions' => 4, 'planning_and_delivering' => 5], 4.60, 'Outstanding integrity and team player. Highly recommended.'],
+            [$v1Apps[2]->id, $pintig1->id,      ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 5, 'secretariat_liaison_services' => 4, 'solving_problems_making_decisions' => 5, 'planning_and_delivering' => 4], 4.40, 'Strong analytical skills. Very good candidate.'],
+            [$v1Apps[2]->id, $pintig2->id,    ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 4, 'secretariat_liaison_services' => 5, 'solving_problems_making_decisions' => 3, 'planning_and_delivering' => 5], 4.40, 'Excellent public service orientation.'],
             // Patricia Lim
-            [$v1Apps[4]->id, $chairperson->id, ['professionalism_ethics' => 4, 'results_focus' => 3, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 3, 'public_service_orientation' => 4], 3.60, 'Satisfactory overall. Moderate results focus.'],
-            [$v1Apps[4]->id, $dirRep->id,      ['professionalism_ethics' => 3, 'results_focus' => 4, 'teamwork_cooperation' => 3, 'creative_problem_solving' => 4, 'public_service_orientation' => 3], 3.40, 'Average performance. Further development needed.'],
-            [$v1Apps[4]->id, $divChief->id,    ['professionalism_ethics' => 4, 'results_focus' => 3, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 3, 'public_service_orientation' => 4], 3.60, 'Satisfactory. Good interpersonal skills.'],
+            [$v1Apps[4]->id, $chairperson->id, ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'secretariat_liaison_services' => 4, 'solving_problems_making_decisions' => 3, 'planning_and_delivering' => 4], 3.60, 'Satisfactory overall. Moderate results focus.'],
+            [$v1Apps[4]->id, $pintig1->id,      ['exemplifying_integrity' => 3, 'delivering_service_excellence' => 4, 'secretariat_liaison_services' => 3, 'solving_problems_making_decisions' => 4, 'planning_and_delivering' => 3], 3.40, 'Average performance. Further development needed.'],
+            [$v1Apps[4]->id, $pintig2->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'secretariat_liaison_services' => 4, 'solving_problems_making_decisions' => 3, 'planning_and_delivering' => 4], 3.60, 'Satisfactory. Good interpersonal skills.'],
         ];
 
         foreach ($beiData as [$appId, $evalId, $scores, $total, $remarks]) {
@@ -468,20 +469,20 @@ class DatabaseSeeder extends Seeder
         $cbweData = [
             // Ana
             [$v1Apps[0]->id, $chairperson->id, ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.67, 'Exceptional integrity and client focus.'],
-            [$v1Apps[0]->id, $dirRep->id,      ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 5], 4.67, 'Very strong problem-solving in simulated scenarios.'],
-            [$v1Apps[0]->id, $divChief->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.33, 'Excellent service orientation.'],
+            [$v1Apps[0]->id, $pintig1->id,      ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 5], 4.67, 'Very strong problem-solving in simulated scenarios.'],
+            [$v1Apps[0]->id, $pintig2->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.33, 'Excellent service orientation.'],
             // Carlo
             [$v1Apps[1]->id, $chairperson->id, ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'solving_problems_making_decisions' => 3], 3.33, 'Acceptable. Needs growth in service delivery.'],
-            [$v1Apps[1]->id, $dirRep->id,      ['exemplifying_integrity' => 3, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 3], 3.33, 'Average performance.'],
-            [$v1Apps[1]->id, $divChief->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'solving_problems_making_decisions' => 4], 3.67, 'Satisfactory.'],
+            [$v1Apps[1]->id, $pintig1->id,      ['exemplifying_integrity' => 3, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 3], 3.33, 'Average performance.'],
+            [$v1Apps[1]->id, $pintig2->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'solving_problems_making_decisions' => 4], 3.67, 'Satisfactory.'],
             // Liza
             [$v1Apps[2]->id, $chairperson->id, ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 5], 4.67, 'Demonstrates high integrity and sharp analytical skills.'],
-            [$v1Apps[2]->id, $dirRep->id,      ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.33, 'Highly service-oriented.'],
-            [$v1Apps[2]->id, $divChief->id,    ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.67, 'Outstanding.'],
+            [$v1Apps[2]->id, $pintig1->id,      ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.33, 'Highly service-oriented.'],
+            [$v1Apps[2]->id, $pintig2->id,    ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.67, 'Outstanding.'],
             // Patricia
             [$v1Apps[4]->id, $chairperson->id, ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'solving_problems_making_decisions' => 3], 3.33, 'Satisfactory with areas for improvement.'],
-            [$v1Apps[4]->id, $dirRep->id,      ['exemplifying_integrity' => 3, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 3], 3.33, 'Average overall.'],
-            [$v1Apps[4]->id, $divChief->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'solving_problems_making_decisions' => 4], 3.67, 'Acceptable performance.'],
+            [$v1Apps[4]->id, $pintig1->id,      ['exemplifying_integrity' => 3, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 3], 3.33, 'Average overall.'],
+            [$v1Apps[4]->id, $pintig2->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 3, 'solving_problems_making_decisions' => 4], 3.67, 'Acceptable performance.'],
         ];
 
         foreach ($cbweData as [$appId, $evalId, $scores, $total, $remarks]) {
@@ -563,12 +564,18 @@ class DatabaseSeeder extends Seeder
             $v3Apps->push($app);
         }
         $v3Josephine = $v3Apps->firstWhere('applicant_id', $profiles[6]->id);
+        $v3Liza      = $v3Apps->firstWhere('applicant_id', $profiles[2]->id);
 
         AnonymizationToken::create([
             'application_id' => $v3Josephine->id,
             'token' => 'HRMO3-0601-001',
             'unmasked_at' => Carbon::now()->subDays(3),
             'unmasked_by' => $admin->id,
+        ]);
+
+        AnonymizationToken::create([
+            'application_id' => $v3Liza->id,
+            'token' => 'HRMO3-0601-002',
         ]);
 
         QsEvaluation::create([
@@ -613,10 +620,12 @@ class DatabaseSeeder extends Seeder
             'encoded_at' => Carbon::now()->subDays(7),
         ]);
 
+        // Competencies scored must be a subset of the vacancy's own assigned
+        // competencies (see $v3Competencies above).
         $v3BeiData = [
-            [$chairperson->id, ['professionalism_ethics' => 5, 'results_focus' => 5, 'teamwork_cooperation' => 5, 'creative_problem_solving' => 4, 'public_service_orientation' => 5], 4.80, 'Exceptional candidate across all leadership competencies.'],
-            [$dirRep->id,      ['professionalism_ethics' => 5, 'results_focus' => 4, 'teamwork_cooperation' => 5, 'creative_problem_solving' => 5, 'public_service_orientation' => 4], 4.60, 'Strong strategic thinking and stakeholder management.'],
-            [$divChief->id,    ['professionalism_ethics' => 4, 'results_focus' => 5, 'teamwork_cooperation' => 4, 'creative_problem_solving' => 5, 'public_service_orientation' => 5], 4.60, 'Highly recommended for the supervisory role.'],
+            [$chairperson->id, ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 5, 'building_collaborative_inclusive' => 5, 'solving_problems_making_decisions' => 4, 'managing_performance_coaching' => 5], 4.80, 'Exceptional candidate across all leadership competencies.'],
+            [$pintig1->id,      ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 4, 'building_collaborative_inclusive' => 5, 'solving_problems_making_decisions' => 5, 'managing_performance_coaching' => 4], 4.60, 'Strong strategic thinking and stakeholder management.'],
+            [$pintig2->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 5, 'building_collaborative_inclusive' => 4, 'solving_problems_making_decisions' => 5, 'managing_performance_coaching' => 5], 4.60, 'Highly recommended for the supervisory role.'],
         ];
         foreach ($v3BeiData as [$evalId, $scores, $total, $remarks]) {
             BeiRating::create([
@@ -632,8 +641,8 @@ class DatabaseSeeder extends Seeder
 
         $v3CbweData = [
             [$chairperson->id, ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 4], 4.67, 'Excellent integrity and client focus.'],
-            [$dirRep->id,      ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 5], 4.67, 'Sharp analytical and policy interpretation skills.'],
-            [$divChief->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 5], 4.67, 'Outstanding overall performance.'],
+            [$pintig1->id,      ['exemplifying_integrity' => 5, 'delivering_service_excellence' => 4, 'solving_problems_making_decisions' => 5], 4.67, 'Sharp analytical and policy interpretation skills.'],
+            [$pintig2->id,    ['exemplifying_integrity' => 4, 'delivering_service_excellence' => 5, 'solving_problems_making_decisions' => 5], 4.67, 'Outstanding overall performance.'],
         ];
         foreach ($v3CbweData as [$evalId, $scores, $total, $remarks]) {
             CbweRating::create([

@@ -12,7 +12,7 @@
         <!-- Skeleton tab bar -->
         <div class="bg-white border border-gray-200 rounded-xl p-1.5 shadow-sm">
           <div class="flex gap-1">
-            <div v-for="n in 3" :key="n" class="flex-1 h-9 bg-gray-100 rounded-lg"></div>
+            <div v-for="n in 4" :key="n" class="flex-1 h-9 bg-gray-100 rounded-lg"></div>
           </div>
         </div>
         <!-- Skeleton form rows -->
@@ -86,7 +86,8 @@
             {{ progressPct }}%
           </span>
         </div>
-        <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+        <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden"
+          role="progressbar" aria-label="Profile completion" :aria-valuenow="progressPct" aria-valuemin="0" aria-valuemax="100">
           <div class="h-full rounded-full transition-all duration-500"
             :class="progressPct === 100 ? 'bg-green-500' : 'bg-primary'"
             :style="{ width: progressPct + '%' }"></div>
@@ -101,8 +102,9 @@
 
       <!-- Step tabs -->
       <div class="bg-white border border-gray-200 rounded-xl p-1.5 mb-7 shadow-sm">
-        <div class="flex gap-1">
+        <div class="flex gap-1" role="tablist" aria-label="Profile sections">
           <button v-for="tab in tabs" :key="tab.key"
+            role="tab" :id="`tab-${tab.key}`" :aria-selected="activeTab === tab.key" :aria-controls="`panel-${tab.key}`"
             @click="switchTab(tab.key)"
             class="flex flex-1 items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors min-w-0"
             :class="activeTab === tab.key
@@ -115,6 +117,7 @@
             <span v-if="tab.complete"
               class="flex-shrink-0 w-2 h-2 rounded-full"
               :class="activeTab === tab.key ? 'bg-green-300' : 'bg-green-500'">
+              <span class="sr-only">— section complete</span>
             </span>
           </button>
         </div>
@@ -122,6 +125,7 @@
 
       <!-- ═══ Tab 1 — Personal Info ═══ -->
       <PersonalInfoTab
+        id="panel-personal" role="tabpanel" aria-labelledby="tab-personal"
         v-show="activeTab === 'personal'"
         :name="nameForm"
         :personal="personal"
@@ -141,6 +145,7 @@
 
       <!-- ═══ Tab 2 — Qualifications ═══ -->
       <QualificationsTab
+        id="panel-qualifications" role="tabpanel" aria-labelledby="tab-qualifications"
         v-show="activeTab === 'qualifications'"
         :personal="personal"
         :experiences="sortedExperiences"
@@ -159,6 +164,7 @@
 
       <!-- ═══ Tab 3 — Documents ═══ -->
       <DocumentsTab
+        id="panel-documents" role="tabpanel" aria-labelledby="tab-documents"
         v-show="activeTab === 'documents'"
         :doc-fields="docFields"
         :doc-files="docFiles"
@@ -171,11 +177,12 @@
         @file-select="onDocFileSelect"
       />
 
-      <!-- Sticky save bar -->
-      <div v-if="activeTab !== 'documents'"
-        class="fixed bottom-14 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-md transition-all duration-500"
-        :class="sidebarCollapsed ? 'left-0' : 'left-0 lg:left-64'">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+      <!-- Save / navigation bar — sits in the flow at the end of the tab
+           content rather than floating over it. Only the right-hand action
+           differs per tab: Documents upload via FormData, every other tab
+           saves the profile form. -->
+      <div class="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm">
+        <div class="px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <button v-if="previousTab" @click="goToPreviousTab" type="button"
             class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -185,7 +192,24 @@
           </button>
           <div v-else></div>
 
-          <div class="flex items-center gap-4">
+          <div v-if="activeTab === 'documents'" class="flex items-center gap-4">
+            <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+              Uploaded
+            </div>
+            <button @click="uploadDocuments" :disabled="savingDocs"
+              class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+              <svg v-if="savingDocs" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+              </svg>
+              {{ savingDocs ? 'Uploading…' : 'Upload Documents' }}
+            </button>
+          </div>
+
+          <div v-else class="flex items-center gap-4">
             <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
@@ -211,39 +235,6 @@
         </div>
       </div>
 
-      <!-- Document upload bar (separate because docs use FormData upload) -->
-      <div v-if="activeTab === 'documents'"
-        class="fixed bottom-14 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-md transition-all duration-500"
-        :class="sidebarCollapsed ? 'left-0' : 'left-0 lg:left-64'">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
-          <button v-if="previousTab" @click="goToPreviousTab" type="button"
-            class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
-            </svg>
-            <span class="hidden sm:inline">Previous:</span> {{ previousTab.label }}
-          </button>
-          <div v-else></div>
-
-          <div class="flex items-center gap-4">
-            <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-              </svg>
-              Uploaded
-            </div>
-            <button @click="uploadDocuments" :disabled="savingDocs"
-              class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-              <svg v-if="savingDocs" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-              </svg>
-              {{ savingDocs ? 'Uploading…' : 'Upload Documents' }}
-            </button>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <!-- ═══ MODAL — Add Work Experience ═══ -->
@@ -254,7 +245,7 @@
               <h3 class="text-base font-semibold text-gray-900 truncate">{{ expModal.editingId ? 'Edit Work Experience' : 'Add Work Experience' }}</h3>
               <p class="text-xs text-gray-500 mt-0.5">Fields marked <span class="text-red-500">*</span> are required</p>
             </div>
-            <button @click="expModal.open = false"
+            <button @click="expModal.open = false" aria-label="Close"
               class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 self-start">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -333,7 +324,7 @@
               <h3 class="text-base font-semibold text-gray-900 truncate">{{ eduModal.editingId ? 'Edit Education' : 'Add Educational Attainment' }}</h3>
               <p class="text-xs text-gray-500 mt-0.5">Fields marked <span class="text-red-500">*</span> are required</p>
             </div>
-            <button @click="eduModal.open = false"
+            <button @click="eduModal.open = false" aria-label="Close"
               class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 self-start">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -423,7 +414,7 @@
               <h3 class="text-base font-semibold text-gray-900 truncate">{{ trainingModal.editingId ? 'Edit Training' : 'Add Training' }}</h3>
               <p class="text-xs text-gray-500 mt-0.5">Fields marked <span class="text-red-500">*</span> are required</p>
             </div>
-            <button @click="trainingModal.open = false"
+            <button @click="trainingModal.open = false" aria-label="Close"
               class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 self-start">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -496,7 +487,7 @@
                 {{ photoModal.step === 'select' ? 'Choose a clear, professional passport-size photo' : 'Drag to move · Handles to resize' }}
               </p>
             </div>
-            <button @click="closePhotoModal"
+            <button @click="closePhotoModal" aria-label="Close"
               class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -565,7 +556,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, inject, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { profileApi } from '@/services/api'
 import Cropper from 'cropperjs'
@@ -644,7 +635,6 @@ const docTimestamps = reactive({})
 const authUser  = ref(JSON.parse(localStorage.getItem('auth_user') ?? '{}'))
 const authToken = localStorage.getItem('auth_token') ?? ''
 
-const sidebarCollapsed = inject('sidebarCollapsed', false)
 
 function refreshAuthUser() {
   const updated = JSON.parse(localStorage.getItem('auth_user') ?? '{}')
@@ -682,7 +672,7 @@ const tabs = computed(() => [
   {
     key: 'documents', label: 'Documents',
     icon: 'M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13',
-    complete: !!(docPaths.pds && docPaths.app_letter && docPaths.coe && docPaths.tor),
+    complete: hasRequiredDocuments.value,
   },
 ])
 
@@ -693,7 +683,7 @@ const profileStepsDone = computed(() => [
   !!(experiences.value.length || education.value.length),
   !!(trainings.value.length),
   !!(personal.eligibility),
-  !!(docPaths.pds && docPaths.app_letter && docPaths.coe && docPaths.tor),
+  hasRequiredDocuments.value,
 ])
 const completedChecks = computed(() => profileStepsDone.value.filter(Boolean).length)
 const totalChecks = computed(() => profileStepsDone.value.length)
@@ -703,7 +693,7 @@ const progressPct = computed(() =>
 
 const docFields = [
   { key: 'pds',        label: 'Personal Data Sheet (PDS) with Work Experience Sheet', required: true, full: true,
-    note: 'CS Form No. 212 (Revised 2025)', templateUrl: '' },
+    note: 'CS Form No. 212 (Revised 2026)', templateUrl: '' },
   { key: 'app_letter', label: 'Application Letter', required: true },
   { key: 'ipcr',       label: 'IPCR', required: false },
   { key: 'coe',        label: 'Certificate of Eligibility', required: true },
@@ -747,7 +737,8 @@ const eduModal      = reactive({ open: false, saving: false, error: '', editingI
 const trainingModal = reactive({ open: false, saving: false, error: '', editingId: null })
 
 const expForm = reactive({
-  position_title: '', department_agency: '',
+  position_title: '', department_agency: '', duties: '',
+  office_unit: '', agency_location: '', immediate_supervisor: '', accomplishments: '',
   salary_grade: '', appointment_status: '', government_service: false,
   date_from: '', date_to: '', is_present: false,
 })
@@ -832,14 +823,14 @@ onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', onBeforeUnload)
 })
 
-async function switchTab(tabKey) {
+async function switchTab(tabKey, { scroll = true } = {}) {
   const hasDocChanges = Object.keys(docFiles).length > 0
   if (hasDocChanges && activeTab.value !== tabKey) {
     const ok = await confirm('You have pending document uploads. Switch tabs anyway?')
     if (!ok) return
   }
   activeTab.value = tabKey
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const currentTabIndex = computed(() => tabs.value.findIndex(t => t.key === activeTab.value))
@@ -980,6 +971,9 @@ async function uploadDocuments() {
 function openExpModal(exp = null) {
   Object.assign(expForm, {
     position_title: exp?.position_title ?? '', department_agency: exp?.department_agency ?? '',
+    duties: exp?.duties ?? '', office_unit: exp?.office_unit ?? '',
+    agency_location: exp?.agency_location ?? '', immediate_supervisor: exp?.immediate_supervisor ?? '',
+    accomplishments: exp?.accomplishments ?? '',
     salary_grade: exp?.salary_grade ?? '', appointment_status: exp?.appointment_status ?? '',
     government_service: exp?.government_service ?? false,
     date_from: exp?.date_from ?? '', date_to: exp?.date_to ?? '', is_present: exp?.is_present ?? false,
@@ -1019,7 +1013,7 @@ async function deleteExperience(id) {
   if (!ok) return
   await profileApi.deleteExperience(id)
   experiences.value = experiences.value.filter(e => e.id !== id)
-  toast.error('Work experience removed.')
+  toast.success('Work experience removed.')
 }
 
 // ─── Education ────────────────────────────────────────────────────────────────
@@ -1073,7 +1067,7 @@ async function deleteEducation(id) {
   if (!ok2) return
   await profileApi.deleteEducation(id)
   education.value = education.value.filter(e => e.id !== id)
-  toast.error('Education record removed.')
+  toast.success('Education record removed.')
 }
 
 // ─── Training ─────────────────────────────────────────────────────────────────
@@ -1118,7 +1112,7 @@ async function deleteTraining(id) {
   if (!ok3) return
   await profileApi.deleteTraining(id)
   trainings.value = trainings.value.filter(t => t.id !== id)
-  toast.error('Training removed.')
+  toast.success('Training removed.')
 }
 
 // ─── Photo ────────────────────────────────────────────────────────────────────

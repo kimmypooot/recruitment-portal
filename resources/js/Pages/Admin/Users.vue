@@ -633,7 +633,7 @@ async function doDelete() {
   try {
     await axios.delete(`/api/admin/users/${deleteTarget.value.id}`, { headers: authHeaders() })
     deleteTarget.value = null
-    toast.error('User deleted.')
+    toast.success('User deleted.')
     fetchUsers()
   } catch (e) {
     const msg = e.response?.data?.message ?? 'Failed to delete user.'

@@ -23,7 +23,32 @@ class Application extends Model
         'submitted_at',
         'reviewed_at',
         'remarks',
+        'reference_code',
     ];
+
+    // Characters chosen to avoid 0/O and 1/I — both easy to mis-type or
+    // mis-read when an applicant copies the code from an email or reads it
+    // aloud over the phone.
+    private const REFERENCE_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+    /**
+     * A short, unguessable, human-friendly tracking code for the public
+     * "Track My Application" lookup — distinct from the numeric primary key
+     * so it can't be enumerated, and never reused even across soft-deleted
+     * applications.
+     */
+    public static function generateReferenceCode(): string
+    {
+        do {
+            $chars = self::REFERENCE_CODE_ALPHABET;
+            $code = 'CSC-';
+            for ($i = 0; $i < 8; $i++) {
+                $code .= $chars[random_int(0, strlen($chars) - 1)];
+            }
+        } while (self::withTrashed()->where('reference_code', $code)->exists());
+
+        return $code;
+    }
 
     // Tell Laravel which columns to auto-cast to PHP types
     protected $casts = [

@@ -68,11 +68,15 @@ class AnonymizationService
     }
 
     /**
-     * Generate a blind code in the format: {POSITION_CODE}-{MMDD}-{NNN}
+     * Generate a blind code in the format: {POSITION_CODE}-{RANDOM}
      *
-     * POSITION_CODE: first segment of plantilla_no (e.g. "AO2-001-2026" → "AO2")
-     * MMDD:          4-digit month + day of publication (e.g. "0326" for March 26)
-     * NNN:           sequential 3-digit increment based on applicant count (001, 002…)
+     * POSITION_CODE: first segment of plantilla_no (e.g. "AO2-001-2026" → "AO2") —
+     *                purely for the board's own grouping/readability; it's already
+     *                public on the vacancy posting so it carries no identity signal.
+     * RANDOM:        cryptographically random 6-character suffix. Deliberately NOT
+     *                derived from publication date or submission order — both are
+     *                either public or inferable, which would let a board member
+     *                reconstruct the identity mapping the blind code exists to hide.
      */
     private function uniqueToken(Vacancy $vacancy): string
     {
@@ -80,27 +84,9 @@ class AnonymizationService
         $itemNum = $vacancy->plantilla_no ?? 'POS';
         $posCode = Str::before($itemNum, '-') ?: $itemNum;
 
-        // Use publication date; fall back to creation date if not yet published
-        $pubDate = $vacancy->published_at ?? $vacancy->created_at;
-        $prefix  = $posCode . '-' . $pubDate->format('md');
-
-        // Determine the next sequential number based on existing tokens for this vacancy
-        $existingCount = AnonymizationToken::whereIn(
-            'application_id',
-            $vacancy->applications()->pluck('id')
-        )
-            ->where('token', 'like', "{$prefix}-%")
-            ->count();
-
-        $seq = str_pad($existingCount + 1, 3, '0', STR_PAD_LEFT);
-        $token = "{$prefix}-{$seq}";
-
-        // Ensure global uniqueness (safety net)
-        while (AnonymizationToken::where('token', $token)->exists()) {
-            $existingCount++;
-            $seq = str_pad($existingCount + 1, 3, '0', STR_PAD_LEFT);
-            $token = "{$prefix}-{$seq}";
-        }
+        do {
+            $token = $posCode . '-' . Str::upper(Str::random(6));
+        } while (AnonymizationToken::where('token', $token)->exists());
 
         return $token;
     }

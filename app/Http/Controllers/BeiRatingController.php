@@ -12,6 +12,7 @@ use App\Models\HrmpsbComposition;
 use App\Models\Vacancy;
 use App\Models\VacancyCompetency;
 use App\Services\AuditLog;
+use App\Services\HrmpsbCompositionService;
 use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,13 +23,6 @@ class BeiRatingController extends Controller
     use FormatsApplicantName;
 
     private const PASSING_THRESHOLD = 70.0;
-
-    private function getComposition(int $userId): ?HrmpsbComposition
-    {
-        return HrmpsbComposition::where('user_id', $userId)
-            ->where('is_active', true)
-            ->first();
-    }
 
     private function isSecretariat(int $userId): bool
     {
@@ -43,9 +37,9 @@ class BeiRatingController extends Controller
         $user = $request->user();
 
         $isSecretariat = $user->canAccessAdminModule() || $this->isSecretariat($user->id);
-        $composition = $this->getComposition($user->id);
+        $isMember = app(HrmpsbCompositionService::class)->isActiveMember($user, $vacancy);
 
-        if (! $isSecretariat && ! $composition) {
+        if (! $isSecretariat && ! $isMember) {
             return response()->json(['message' => 'You are not an active HRMPSB member or HR-Chief.'], 403);
         }
 
@@ -74,12 +68,18 @@ class BeiRatingController extends Controller
                         'has_ipcr' => $docExists('ipcr_path'),
                         'has_coe' => $docExists('coe_path'),
                     ],
-                    'document_links' => [
+                    // Withheld while masked, same as `name` above — the PDS
+                    // especially carries the same identity (name, photo,
+                    // address) that masking is supposed to hide. `documents`
+                    // above (existence only) stays unconditional.
+                    'document_links' => $isUnmasked ? [
                         'pds' => $docLink('pds_path', 'pds'),
                         'tor' => $docLink('tor_path', 'tor'),
                         'app_letter' => $docLink('app_letter_path', 'app_letter'),
                         'ipcr' => $docLink('ipcr_path', 'ipcr'),
                         'coe' => $docLink('coe_path', 'coe'),
+                    ] : [
+                        'pds' => null, 'tor' => null, 'app_letter' => null, 'ipcr' => null, 'coe' => null,
                     ],
                 ];
 
@@ -138,6 +138,10 @@ class BeiRatingController extends Controller
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
 
+        if ($application->status === 'withdrawn') {
+            return response()->json(['message' => 'This application has been withdrawn and can no longer be evaluated.'], 422);
+        }
+
         // TWE and CBWE may have been conducted concurrently, but BEI requires both to be
         // done: the applicant must have passed TWE and CBWE ratings must be locked.
         $tweResults = ExamResult::where('application_id', $data['application_id'])
@@ -167,8 +171,7 @@ class BeiRatingController extends Controller
             ], 422);
         }
 
-        $composition = $this->getComposition($user->id);
-        if (! $composition && ! $user->canAccessAdminModule()) {
+        if (! app(HrmpsbCompositionService::class)->isActiveMember($user, $application->vacancy) && ! $user->canAccessAdminModule()) {
             return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
         }
 
@@ -177,6 +180,15 @@ class BeiRatingController extends Controller
             ->first();
 
         if ($existing?->isLocked()) {
+            return response()->json(['message' => 'BEI ratings are locked and cannot be modified.'], 422);
+        }
+
+        $stageLocked = BeiRating::whereIn(
+            'application_id',
+            Application::where('vacancy_id', $application->vacancy_id)->pluck('id')
+        )->whereNotNull('locked_at')->exists();
+
+        if ($stageLocked) {
             return response()->json(['message' => 'BEI ratings are locked and cannot be modified.'], 422);
         }
 

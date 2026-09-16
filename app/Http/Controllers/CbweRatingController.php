@@ -11,6 +11,7 @@ use App\Models\QsEvaluation;
 use App\Models\Vacancy;
 use App\Models\VacancyCompetency;
 use App\Services\AuditLog;
+use App\Services\HrmpsbCompositionService;
 use App\Traits\FormatsApplicantName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,13 +19,6 @@ use Illuminate\Http\Request;
 class CbweRatingController extends Controller
 {
     use FormatsApplicantName;
-
-    private function getComposition(int $userId): ?HrmpsbComposition
-    {
-        return HrmpsbComposition::where('user_id', $userId)
-            ->where('is_active', true)
-            ->first();
-    }
 
     private function isSecretariat(int $userId): bool
     {
@@ -39,9 +33,9 @@ class CbweRatingController extends Controller
         $user = $request->user();
 
         $isSecretariat = $user->canAccessAdminModule() || $this->isSecretariat($user->id);
-        $composition = $this->getComposition($user->id);
+        $isMember = app(HrmpsbCompositionService::class)->isActiveMember($user, $vacancy);
 
-        if (! $isSecretariat && ! $composition) {
+        if (! $isSecretariat && ! $isMember) {
             return response()->json(['message' => 'You are not an active HRMPSB member or HR-Chief.'], 403);
         }
 
@@ -127,6 +121,10 @@ class CbweRatingController extends Controller
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
 
+        if ($application->status === 'withdrawn') {
+            return response()->json(['message' => 'This application has been withdrawn and can no longer be evaluated.'], 422);
+        }
+
         // CBWE may be conducted concurrently with the TWE exam (board's discretion), so we
         // only require that QS screening — the actual prerequisite for both — is done.
         $qsEvaluations = QsEvaluation::where('application_id', $data['application_id'])->get();
@@ -153,8 +151,7 @@ class CbweRatingController extends Controller
             ], 422);
         }
 
-        $composition = $this->getComposition($user->id);
-        if (! $composition && ! $user->canAccessAdminModule()) {
+        if (! app(HrmpsbCompositionService::class)->isActiveMember($user, $application->vacancy) && ! $user->canAccessAdminModule()) {
             return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
         }
 
@@ -163,6 +160,15 @@ class CbweRatingController extends Controller
             ->first();
 
         if ($existing?->isLocked()) {
+            return response()->json(['message' => 'CBWE ratings are locked and cannot be modified.'], 422);
+        }
+
+        $stageLocked = CbweRating::whereIn(
+            'application_id',
+            Application::where('vacancy_id', $application->vacancy_id)->pluck('id')
+        )->whereNotNull('locked_at')->exists();
+
+        if ($stageLocked) {
             return response()->json(['message' => 'CBWE ratings are locked and cannot be modified.'], 422);
         }
 

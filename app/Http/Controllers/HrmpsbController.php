@@ -34,6 +34,31 @@ class HrmpsbController extends Controller
 {
     use FormatsApplicantName;
 
+    /** Applicant document types the board can see, mapped to their profile column. */
+    private const DOCUMENT_COLUMNS = [
+        'pds' => 'pds_path',
+        'tor' => 'tor_path',
+        'app_letter' => 'app_letter_path',
+        'ipcr' => 'ipcr_path',
+        'coe' => 'coe_path',
+    ];
+
+    /** Filenames used for the same documents inside the requirements archive. */
+    private const DOCUMENT_LABELS = [
+        'pds' => 'PDS',
+        'tor' => 'TOR',
+        'app_letter' => 'App_Letter',
+        'ipcr' => 'IPCR',
+        'coe' => 'COE',
+    ];
+
+    private function isActiveBoardMember(int $userId): bool
+    {
+        return HrmpsbComposition::where('user_id', $userId)
+            ->where('is_active', true)
+            ->exists();
+    }
+
     public function compositions(Request $request): JsonResponse
     {
         $vacancyId = $request->query('vacancy_id');
@@ -172,81 +197,98 @@ class HrmpsbController extends Controller
             return response()->json([]);
         }
 
+        $emptyStageFlags = [
+            'pre_assessment_exists' => false,
+            'qs_exists' => false,
+            'qs_locked' => false,
+            'twe_scheduled' => false,
+            'twe_exists' => false,
+            'cbwe_scheduled' => false,
+            'cbwe_exists' => false,
+            'cbwe_locked' => false,
+            'bei_scheduled' => false,
+            'bei_exists' => false,
+            'bei_locked' => false,
+            'eopt_exists' => false,
+            'background_check_exists' => false,
+            'background_check_locked' => false,
+            'deliberation_exists' => false,
+            'comparative_assessment_exists' => false,
+            'appointing_authority_exists' => false,
+            'appointing_authority_appointed' => false,
+        ];
+
+        // Previously this issued ~17 queries per vacancy (a 30-vacancy
+        // dashboard load meant 500+ queries). One query per application-
+        // keyed table across every requested vacancy, then grouped in PHP,
+        // replaces that with a small constant number of queries regardless
+        // of how many vacancies are asked for. qs_exists/qs_locked
+        // intentionally consider every application id including withdrawn
+        // ones (matching PipelineStageService's convention); every other
+        // flag excludes withdrawn applications.
+        $applications = Application::whereIn('vacancy_id', $vacancyIds)->get(['id', 'vacancy_id', 'status']);
+        $vacancyIdOf = $applications->pluck('vacancy_id', 'id');
+        $allAppIds = $applications->pluck('id');
+        $appIds = $applications->where('status', '!=', 'withdrawn')->pluck('id');
+        // Grouped from ALL applications (withdrawn included) so the "does this
+        // vacancy have any applications at all" check below matches the
+        // original $allAppIds->isEmpty() early-return exactly.
+        $allAppIdsByVacancy = $applications->groupBy('vacancy_id');
+
+        $groupByVacancy = fn ($rows) => $rows->groupBy(fn ($row) => $vacancyIdOf[$row->application_id] ?? null);
+
+        $preAssessments = $groupByVacancy(PreAssessment::whereIn('application_id', $appIds)->get(['application_id']));
+        $qsEvaluations = $groupByVacancy(QsEvaluation::whereIn('application_id', $allAppIds)->get(['application_id', 'locked_at']));
+        $tweSchedules = $groupByVacancy(ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->get(['application_id']));
+        $tweResults = $groupByVacancy(ExamResult::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->get(['application_id']));
+        $cbweSchedules = $groupByVacancy(ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'CBWE')->get(['application_id']));
+        $cbweRatings = $groupByVacancy(CbweRating::whereIn('application_id', $appIds)->get(['application_id', 'locked_at']));
+        $beiSchedules = $groupByVacancy(InterviewSchedule::whereIn('application_id', $appIds)->get(['application_id']));
+        $beiRatings = $groupByVacancy(BeiRating::whereIn('application_id', $appIds)->get(['application_id', 'locked_at']));
+        $backgroundChecks = $groupByVacancy(BackgroundCheck::whereIn('application_id', $appIds)->get(['application_id', 'locked_at']));
+        $bgReports = $groupByVacancy(BackgroundInvestigationReport::whereIn('application_id', $appIds)->get(['application_id', 'locked_at']));
+        $eoptResults = $groupByVacancy(EoptResult::whereIn('application_id', $appIds)->get(['application_id']));
+
+        $deliberations = DeliberationResult::whereIn('vacancy_id', $vacancyIds)->whereNotNull('locked_at')->get(['vacancy_id'])->groupBy('vacancy_id');
+        $comparativeAssessments = ComparativeAssessmentResult::whereIn('vacancy_id', $vacancyIds)->get(['vacancy_id'])->groupBy('vacancy_id');
+        $aaDecisions = AppointingAuthorityDecision::whereIn('vacancy_id', $vacancyIds)->get(['vacancy_id', 'action'])->groupBy('vacancy_id');
+
+        $empty = collect();
         $stages = [];
 
         foreach ($vacancyIds as $vacancyId) {
-            $allAppIds = Application::where('vacancy_id', $vacancyId)->pluck('id');
-            $appIds = Application::where('vacancy_id', $vacancyId)
-                ->whereNotIn('status', ['withdrawn'])
-                ->pluck('id');
-
-            if ($allAppIds->isEmpty()) {
-                $stages[$vacancyId] = [
-                    'pre_assessment_exists' => false,
-                    'qs_exists' => false,
-                    'qs_locked' => false,
-                    'twe_scheduled' => false,
-                    'twe_exists' => false,
-                    'cbwe_scheduled' => false,
-                    'cbwe_exists' => false,
-                    'cbwe_locked' => false,
-                    'bei_scheduled' => false,
-                    'bei_exists' => false,
-                    'bei_locked' => false,
-                    'eopt_exists' => false,
-                    'background_check_exists' => false,
-                    'background_check_locked' => false,
-                    'deliberation_exists' => false,
-                    'comparative_assessment_exists' => false,
-                    'appointing_authority_exists' => false,
-                    'appointing_authority_appointed' => false,
-                ];
+            if (($allAppIdsByVacancy->get($vacancyId) ?? $empty)->isEmpty()) {
+                $stages[$vacancyId] = $emptyStageFlags;
 
                 continue;
             }
 
-            $preAssessmentExists = PreAssessment::whereIn('application_id', $appIds)->exists();
-            $qsExists = QsEvaluation::whereIn('application_id', $allAppIds)->exists();
-            $qsLocked = QsEvaluation::whereIn('application_id', $allAppIds)->whereNotNull('locked_at')->exists();
-            $tweScheduled = ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->exists();
-            $tweExists = ExamResult::whereIn('application_id', $appIds)->where('exam_type', 'TWE')->exists();
-            $cbweScheduled = ExamSchedule::whereIn('application_id', $appIds)->where('exam_type', 'CBWE')->exists();
-            $cbweExists = CbweRating::whereIn('application_id', $appIds)->exists();
-            $cbweLocked = CbweRating::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
-            $beiScheduled = InterviewSchedule::whereIn('application_id', $appIds)->exists();
-            $beiExists = BeiRating::whereIn('application_id', $appIds)->exists();
-            $beiLocked = BeiRating::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
-            $bgCheckExists = BackgroundCheck::whereIn('application_id', $appIds)->exists()
-                || BackgroundInvestigationReport::whereIn('application_id', $appIds)->exists();
-            $bgCheckLocked = BackgroundCheck::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists()
-                || BackgroundInvestigationReport::whereIn('application_id', $appIds)->whereNotNull('locked_at')->exists();
-            $eoptExists = EoptResult::whereIn('application_id', $appIds)->exists();
-            $deliExists = DeliberationResult::where('vacancy_id', $vacancyId)->whereNotNull('locked_at')->exists();
-            $carExists = ComparativeAssessmentResult::where('vacancy_id', $vacancyId)->exists();
-            $aaExists = AppointingAuthorityDecision::where('vacancy_id', $vacancyId)->exists();
-            $aaAppointed = AppointingAuthorityDecision::where('vacancy_id', $vacancyId)
-                ->where('action', 'appointed')
-                ->exists();
+            $qsRows = $qsEvaluations->get($vacancyId, $empty);
+            $cbweRows = $cbweRatings->get($vacancyId, $empty);
+            $beiRows = $beiRatings->get($vacancyId, $empty);
+            $bgCheckRows = $backgroundChecks->get($vacancyId, $empty);
+            $bgReportRows = $bgReports->get($vacancyId, $empty);
+            $aaRows = $aaDecisions->get($vacancyId, $empty);
 
             $stages[$vacancyId] = [
-                'pre_assessment_exists' => $preAssessmentExists,
-                'qs_exists' => $qsExists,
-                'qs_locked' => $qsLocked,
-                'twe_scheduled' => $tweScheduled,
-                'twe_exists' => $tweExists,
-                'cbwe_scheduled' => $cbweScheduled,
-                'cbwe_exists' => $cbweExists,
-                'cbwe_locked' => $cbweLocked,
-                'bei_scheduled' => $beiScheduled,
-                'bei_exists' => $beiExists,
-                'bei_locked' => $beiLocked,
-                'eopt_exists' => $eoptExists,
-                'background_check_exists' => $bgCheckExists,
-                'background_check_locked' => $bgCheckLocked,
-                'deliberation_exists' => $deliExists,
-                'comparative_assessment_exists' => $carExists,
-                'appointing_authority_exists' => $aaExists,
-                'appointing_authority_appointed' => $aaAppointed,
+                'pre_assessment_exists' => $preAssessments->get($vacancyId, $empty)->isNotEmpty(),
+                'qs_exists' => $qsRows->isNotEmpty(),
+                'qs_locked' => $qsRows->whereNotNull('locked_at')->isNotEmpty(),
+                'twe_scheduled' => $tweSchedules->get($vacancyId, $empty)->isNotEmpty(),
+                'twe_exists' => $tweResults->get($vacancyId, $empty)->isNotEmpty(),
+                'cbwe_scheduled' => $cbweSchedules->get($vacancyId, $empty)->isNotEmpty(),
+                'cbwe_exists' => $cbweRows->isNotEmpty(),
+                'cbwe_locked' => $cbweRows->whereNotNull('locked_at')->isNotEmpty(),
+                'bei_scheduled' => $beiSchedules->get($vacancyId, $empty)->isNotEmpty(),
+                'bei_exists' => $beiRows->isNotEmpty(),
+                'bei_locked' => $beiRows->whereNotNull('locked_at')->isNotEmpty(),
+                'eopt_exists' => $eoptResults->get($vacancyId, $empty)->isNotEmpty(),
+                'background_check_exists' => $bgCheckRows->isNotEmpty() || $bgReportRows->isNotEmpty(),
+                'background_check_locked' => $bgCheckRows->whereNotNull('locked_at')->isNotEmpty() || $bgReportRows->whereNotNull('locked_at')->isNotEmpty(),
+                'deliberation_exists' => $deliberations->has($vacancyId),
+                'comparative_assessment_exists' => $comparativeAssessments->has($vacancyId),
+                'appointing_authority_exists' => $aaRows->isNotEmpty(),
+                'appointing_authority_appointed' => $aaRows->where('action', 'appointed')->isNotEmpty(),
             ];
         }
 
@@ -262,11 +304,8 @@ class HrmpsbController extends Controller
         $user = $request->user();
 
         $isAdmin = $user->canAccessAdminModule();
-        $isMember = HrmpsbComposition::where('user_id', $user->id)
-            ->where('is_active', true)
-            ->exists();
 
-        if (! $isAdmin && ! $isMember) {
+        if (! $isAdmin && ! $this->isActiveBoardMember($user->id)) {
             return response()->json(['message' => 'Access denied.'], 403);
         }
 
@@ -288,20 +327,21 @@ class HrmpsbController extends Controller
             'education' => $profile->educationalAttainments,
             'experience' => $profile->workExperiences,
             'trainings' => $profile->trainings,
-            'documents' => [
-                'pds' => (bool) $profile->pds_path,
-                'tor' => (bool) $profile->tor_path,
-                'app_letter' => (bool) $profile->app_letter_path,
-                'ipcr' => (bool) $profile->ipcr_path,
-                'coe' => (bool) $profile->coe_path,
-            ],
-            'document_links' => [
-                'pds' => $profile->pds_path ? "/api/hrmpsb/applications/{$application->id}/documents/pds" : null,
-                'tor' => $profile->tor_path ? "/api/hrmpsb/applications/{$application->id}/documents/tor" : null,
-                'app_letter' => $profile->app_letter_path ? "/api/hrmpsb/applications/{$application->id}/documents/app_letter" : null,
-                'ipcr' => $profile->ipcr_path ? "/api/hrmpsb/applications/{$application->id}/documents/ipcr" : null,
-                'coe' => $profile->coe_path ? "/api/hrmpsb/applications/{$application->id}/documents/coe" : null,
-            ],
+            'documents' => collect(self::DOCUMENT_COLUMNS)
+                ->map(fn (string $column) => (bool) $profile->{$column})
+                ->all(),
+            // The documents themselves (PDS especially — full name, photo,
+            // address on its face) are as identifying as `name` above, so
+            // they're withheld under the same $isUnmasked gate rather than
+            // being handed out unconditionally while identity is supposed
+            // to be blind. `documents` above (existence only) stays
+            // unconditional — that alone doesn't identify anyone, and
+            // completeness-checking is a legitimate pre-unmask need.
+            'document_links' => collect(self::DOCUMENT_COLUMNS)
+                ->map(fn (string $column, string $type) => $isUnmasked && $profile->{$column}
+                    ? "/api/hrmpsb/applications/{$application->id}/documents/{$type}"
+                    : null)
+                ->all(),
         ]);
     }
 
@@ -314,26 +354,27 @@ class HrmpsbController extends Controller
         $user = $request->user();
 
         $isAdmin = $user->canAccessAdminModule();
-        $isMember = HrmpsbComposition::where('user_id', $user->id)
-            ->where('is_active', true)
-            ->exists();
 
-        if (! $isAdmin && ! $isMember) {
+        if (! $isAdmin && ! $this->isActiveBoardMember($user->id)) {
             abort(403);
         }
 
-        $pathMap = [
-            'pds' => 'pds_path',
-            'tor' => 'tor_path',
-            'app_letter' => 'app_letter_path',
-            'ipcr' => 'ipcr_path',
-            'coe' => 'coe_path',
-        ];
+        // Defense in depth for the same rule applicantProfile() enforces on
+        // document_links: while identity is masked, the underlying files
+        // (PDS especially — full name, photo, address on its face) must not
+        // be reachable either, even by a board member hitting this route
+        // directly with a known application id rather than the link the
+        // frontend would have withheld.
+        $token = $application->anonymizationToken;
+        $isUnmasked = $isAdmin || $token?->isUnmasked();
+        if (! $isUnmasked) {
+            abort(403, 'Applicant identity is masked until deliberation unmasking.');
+        }
 
-        abort_if(! isset($pathMap[$type]), 404);
+        abort_if(! isset(self::DOCUMENT_COLUMNS[$type]), 404);
 
         $profile = $application->applicant;
-        $path = $profile?->{$pathMap[$type]};
+        $path = $profile?->{self::DOCUMENT_COLUMNS[$type]};
 
         abort_if(! $path || ! Storage::disk('local')->exists($path), 404);
 
@@ -347,12 +388,7 @@ class HrmpsbController extends Controller
     {
         $user = $request->user();
 
-        $isAdmin = $user->canAccessAdminModule();
-        $isMember = HrmpsbComposition::where('user_id', $user->id)
-            ->where('is_active', true)
-            ->exists();
-
-        if (! $isAdmin && ! $isMember) {
+        if (! $user->canAccessAdminModule() && ! $this->isActiveBoardMember($user->id)) {
             return response()->json(['message' => 'Access denied.'], 403);
         }
 
@@ -364,28 +400,21 @@ class HrmpsbController extends Controller
             ->map(function ($app) {
                 $profile = $app->applicant;
 
-                $docExists = fn ($col) => $profile?->$col && Storage::disk('local')->exists($profile->$col);
-                $docLink = fn ($col, $type) => $docExists($col) ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}" : null;
+                $docExists = fn (string $column) => $profile?->{$column} && Storage::disk('local')->exists($profile->{$column});
 
                 return [
                     'id' => $app->id,
                     'anonymized_name' => $app->anonymizationToken?->token ?? ('APP-'.$app->id),
                     'status' => $app->status,
                     'submitted_at' => $app->submitted_at,
-                    'documents' => [
-                        'pds' => $docExists('pds_path'),
-                        'tor' => $docExists('tor_path'),
-                        'app_letter' => $docExists('app_letter_path'),
-                        'ipcr' => $docExists('ipcr_path'),
-                        'coe' => $docExists('coe_path'),
-                    ],
-                    'document_links' => [
-                        'pds' => $docLink('pds_path', 'pds'),
-                        'tor' => $docLink('tor_path', 'tor'),
-                        'app_letter' => $docLink('app_letter_path', 'app_letter'),
-                        'ipcr' => $docLink('ipcr_path', 'ipcr'),
-                        'coe' => $docLink('coe_path', 'coe'),
-                    ],
+                    'documents' => collect(self::DOCUMENT_COLUMNS)
+                        ->map(fn (string $column) => $docExists($column))
+                        ->all(),
+                    'document_links' => collect(self::DOCUMENT_COLUMNS)
+                        ->map(fn (string $column, string $type) => $docExists($column)
+                            ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}"
+                            : null)
+                        ->all(),
                 ];
             });
 
@@ -445,40 +474,21 @@ class HrmpsbController extends Controller
     {
         $user = $request->user();
 
-        $isAdmin = $user->canAccessAdminModule();
-        $isMember = HrmpsbComposition::where('user_id', $user->id)
-            ->where('is_active', true)
-            ->exists();
-
-        if (! $isAdmin && ! $isMember) {
+        if (! $user->canAccessAdminModule() && ! $this->isActiveBoardMember($user->id)) {
             abort(403);
         }
+
+        $documentTypes = array_keys(self::DOCUMENT_COLUMNS);
 
         $data = $request->validate([
             'application_ids' => 'required|array|min:1',
             'application_ids.*' => 'integer|exists:applications,id',
-            'document_type' => 'required|in:pds,app_letter,ipcr,coe,tor,all',
+            'document_type' => ['required', Rule::in([...$documentTypes, 'all'])],
         ]);
 
         $docTypes = $data['document_type'] === 'all'
-            ? ['pds', 'app_letter', 'ipcr', 'coe', 'tor']
+            ? $documentTypes
             : [$data['document_type']];
-
-        $pathMap = [
-            'pds' => 'pds_path',
-            'app_letter' => 'app_letter_path',
-            'ipcr' => 'ipcr_path',
-            'coe' => 'coe_path',
-            'tor' => 'tor_path',
-        ];
-
-        $labelMap = [
-            'pds' => 'PDS',
-            'app_letter' => 'App_Letter',
-            'ipcr' => 'IPCR',
-            'coe' => 'COE',
-            'tor' => 'TOR',
-        ];
 
         $zip = new ZipArchive;
         $tmpPath = tempnam(sys_get_temp_dir(), 'req_');
@@ -500,15 +510,14 @@ class HrmpsbController extends Controller
             $folderName = 'APP-'.$appId;
 
             foreach ($docTypes as $type) {
-                $col = $pathMap[$type];
-                $path = $profile->{$col};
+                $path = $profile->{self::DOCUMENT_COLUMNS[$type]};
 
                 if (! $path || ! Storage::disk('local')->exists($path)) {
                     continue;
                 }
 
                 $ext = pathinfo($path, PATHINFO_EXTENSION);
-                $fileName = "{$folderName}/{$labelMap[$type]}.{$ext}";
+                $fileName = $folderName.'/'.self::DOCUMENT_LABELS[$type].'.'.$ext;
                 $fullPath = Storage::disk('local')->path($path);
 
                 if ($zip->addFile($fullPath, $fileName)) {

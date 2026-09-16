@@ -129,31 +129,33 @@
       </div>
       <div class="px-6 py-6 grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-5">
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+          <label for="pi-first-name" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             First Name <span class="text-red-500 normal-case">*</span>
           </label>
-          <input v-model="name.first_name" type="text" @blur="validateName('first_name')" @input="validateName('first_name')"
+          <input id="pi-first-name" v-model="name.first_name" type="text" @blur="validateName('first_name')" @input="validateName('first_name')"
+            aria-required="true" :aria-invalid="!!errors.first_name" :aria-describedby="errors.first_name ? 'pi-first-name-error' : null"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.first_name ? 'border-red-400' : 'border-gray-300'" />
-          <p v-if="errors.first_name" class="mt-1 text-xs text-red-500">{{ errors.first_name }}</p>
+          <p v-if="errors.first_name" id="pi-first-name-error" class="mt-1 text-xs text-red-500">{{ errors.first_name }}</p>
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Middle Name</label>
-          <input v-model="name.middle_name" type="text"
+          <label for="pi-middle-name" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Middle Name</label>
+          <input id="pi-middle-name" v-model="name.middle_name" type="text"
             class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+          <label for="pi-last-name" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Last Name <span class="text-red-500 normal-case">*</span>
           </label>
-          <input v-model="name.last_name" type="text" @blur="validateName('last_name')" @input="validateName('last_name')"
+          <input id="pi-last-name" v-model="name.last_name" type="text" @blur="validateName('last_name')" @input="validateName('last_name')"
+            aria-required="true" :aria-invalid="!!errors.last_name" :aria-describedby="errors.last_name ? 'pi-last-name-error' : null"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.last_name ? 'border-red-400' : 'border-gray-300'" />
-          <p v-if="errors.last_name" class="mt-1 text-xs text-red-500">{{ errors.last_name }}</p>
+          <p v-if="errors.last_name" id="pi-last-name-error" class="mt-1 text-xs text-red-500">{{ errors.last_name }}</p>
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Suffix</label>
-          <select v-model="name.suffix"
+          <label for="pi-suffix" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Suffix</label>
+          <select id="pi-suffix" v-model="name.suffix"
             class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition">
             <option value="">None</option>
             <option>Jr.</option>
@@ -181,10 +183,11 @@
       </div>
       <div class="px-6 py-6 grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-5">
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+          <label for="pi-gender" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Gender <span class="text-red-500 normal-case">*</span>
           </label>
-          <select v-model="personal.gender" @blur="validate('gender')" @change="validate('gender')"
+          <select id="pi-gender" v-model="personal.gender" @blur="validate('gender')" @change="validate('gender')"
+            aria-required="true" :aria-invalid="!!errors.gender" :aria-describedby="errors.gender ? 'pi-gender-error' : null"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.gender ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select —</option>
@@ -192,14 +195,15 @@
             <option value="Female">Female</option>
             <option value="LGBTQIA+">LGBTQIA+</option>
           </select>
-          <p v-if="errors.gender" class="mt-1 text-xs text-red-500">{{ errors.gender }}</p>
+          <p v-if="errors.gender" id="pi-gender-error" class="mt-1 text-xs text-red-500">{{ errors.gender }}</p>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+          <label for="pi-civil-status" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Civil Status <span class="text-red-500 normal-case">*</span>
           </label>
-          <select v-model="personal.civil_status" @blur="validate('civil_status')" @change="validate('civil_status')"
+          <select id="pi-civil-status" v-model="personal.civil_status" @blur="validate('civil_status')" @change="validate('civil_status')"
+            aria-required="true" :aria-invalid="!!errors.civil_status" :aria-describedby="errors.civil_status ? 'pi-civil-status-error' : null"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.civil_status ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select —</option>
@@ -209,22 +213,23 @@
             <option value="Separated">Separated</option>
             <option value="Annulled">Annulled</option>
           </select>
-          <p v-if="errors.civil_status" class="mt-1 text-xs text-red-500">{{ errors.civil_status }}</p>
+          <p v-if="errors.civil_status" id="pi-civil-status-error" class="mt-1 text-xs text-red-500">{{ errors.civil_status }}</p>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+          <label for="pi-birthday" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Date of Birth <span class="text-red-500 normal-case">*</span>
           </label>
-          <input v-model="personal.birthday" type="date" @blur="validate('birthday')" @input="validate('birthday')"
+          <input id="pi-birthday" v-model="personal.birthday" type="date" @blur="validate('birthday')" @input="validate('birthday')"
+            aria-required="true" :aria-invalid="!!errors.birthday" :aria-describedby="errors.birthday ? 'pi-birthday-error' : null"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.birthday ? 'border-red-400' : 'border-gray-300'" />
-          <p v-if="errors.birthday" class="mt-1 text-xs text-red-500">{{ errors.birthday }}</p>
+          <p v-if="errors.birthday" id="pi-birthday-error" class="mt-1 text-xs text-red-500">{{ errors.birthday }}</p>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Religion</label>
-          <input v-model="personal.religion" type="text" placeholder="e.g. Roman Catholic"
+          <label for="pi-religion" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Religion</label>
+          <input id="pi-religion" v-model="personal.religion" type="text" placeholder="e.g. Roman Catholic"
             class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
         </div>
       </div>
@@ -246,52 +251,56 @@
       </div>
       <div class="px-6 py-6 grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-5">
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+          <label for="pi-region" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Region <span class="text-red-500 normal-case">*</span>
           </label>
-          <select v-model="personal.region" @blur="validate('region')"
+          <select id="pi-region" v-model="personal.region" @blur="validate('region')"
+            aria-required="true" :aria-invalid="!!errors.region" :aria-describedby="errors.region ? 'pi-region-error' : null"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.region ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select Region —</option>
             <option v-for="r in regionsData" :key="r.reg_code" :value="r.reg_code">{{ r.reg_name }}</option>
           </select>
-          <p v-if="errors.region" class="mt-1 text-xs text-red-500">{{ errors.region }}</p>
+          <p v-if="errors.region" id="pi-region-error" class="mt-1 text-xs text-red-500">{{ errors.region }}</p>
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+          <label for="pi-province" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Province <span class="text-red-500 normal-case">*</span>
           </label>
-          <select v-model="personal.province" @blur="validate('province')"
+          <select id="pi-province" v-model="personal.province" @blur="validate('province')"
+            aria-required="true" :aria-invalid="!!errors.province" :aria-describedby="errors.province ? 'pi-province-error' : null"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.province ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select Province —</option>
             <option v-for="p in availableProvinces" :key="p.prov_code" :value="p.prov_code">{{ p.prov_name }}</option>
           </select>
-          <p v-if="errors.province" class="mt-1 text-xs text-red-500">{{ errors.province }}</p>
+          <p v-if="errors.province" id="pi-province-error" class="mt-1 text-xs text-red-500">{{ errors.province }}</p>
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+          <label for="pi-city" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             City / Municipality <span class="text-red-500 normal-case">*</span>
           </label>
-          <select v-model="personal.city_municipality" @blur="validate('city_municipality')"
+          <select id="pi-city" v-model="personal.city_municipality" @blur="validate('city_municipality')"
+            aria-required="true" :aria-invalid="!!errors.city_municipality" :aria-describedby="errors.city_municipality ? 'pi-city-error' : null"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.city_municipality ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select City/Municipality —</option>
             <option v-for="c in availableCities" :key="c.city_code" :value="c.city_code">{{ c.city_name }}</option>
           </select>
-          <p v-if="errors.city_municipality" class="mt-1 text-xs text-red-500">{{ errors.city_municipality }}</p>
+          <p v-if="errors.city_municipality" id="pi-city-error" class="mt-1 text-xs text-red-500">{{ errors.city_municipality }}</p>
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+          <label for="pi-barangay" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Barangay <span class="text-red-500 normal-case">*</span>
           </label>
-          <select v-model="personal.barangay" @blur="validate('barangay')"
+          <select id="pi-barangay" v-model="personal.barangay" @blur="validate('barangay')"
+            aria-required="true" :aria-invalid="!!errors.barangay" :aria-describedby="errors.barangay ? 'pi-barangay-error' : null"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 bg-white focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.barangay ? 'border-red-400' : 'border-gray-300'">
             <option value="">— Select Barangay —</option>
             <option v-for="b in availableBarangays" :key="b.brgy_code" :value="b.brgy_code">{{ b.brgy_name }}</option>
           </select>
-          <p v-if="errors.barangay" class="mt-1 text-xs text-red-500">{{ errors.barangay }}</p>
+          <p v-if="errors.barangay" id="pi-barangay-error" class="mt-1 text-xs text-red-500">{{ errors.barangay }}</p>
         </div>
       </div>
     </div>
@@ -311,18 +320,19 @@
       </div>
       <div class="px-6 py-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+          <label for="pi-mobile" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
             Mobile Number <span class="text-red-500 normal-case">*</span>
           </label>
-          <input v-model="personal.mobile_number" type="tel" placeholder="09XX XXX XXXX" @blur="validate('mobile_number')" @input="validate('mobile_number')"
+          <input id="pi-mobile" v-model="personal.mobile_number" type="tel" placeholder="09XX XXX XXXX" @blur="validate('mobile_number')" @input="validate('mobile_number')"
+            aria-required="true" :aria-invalid="!!errors.mobile_number" :aria-describedby="errors.mobile_number ? 'pi-mobile-error' : null"
             class="w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"
             :class="errors.mobile_number ? 'border-red-400' : 'border-gray-300'" />
-          <p v-if="errors.mobile_number" class="mt-1 text-xs text-red-500">{{ errors.mobile_number }}</p>
+          <p v-if="errors.mobile_number" id="pi-mobile-error" class="mt-1 text-xs text-red-500">{{ errors.mobile_number }}</p>
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Email Address</label>
+          <label for="pi-email" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Email Address</label>
           <div class="flex items-center gap-2">
-            <input :value="authEmail" type="email" disabled
+            <input id="pi-email" :value="authEmail" type="email" disabled
               class="flex-1 px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-400 cursor-not-allowed" />
             <span v-if="emailVerified"
               class="inline-flex items-center gap-1 text-xs font-medium text-[#1877F2] flex-shrink-0">

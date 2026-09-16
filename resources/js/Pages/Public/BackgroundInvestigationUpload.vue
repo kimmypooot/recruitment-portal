@@ -98,6 +98,12 @@
           </div>
 
           <form @submit.prevent="submitReport" class="p-6 sm:p-8 space-y-8">
+            <!-- Honeypot: hidden from real users, catches basic bots. -->
+            <div class="absolute -left-[9999px] w-px h-px overflow-hidden" aria-hidden="true">
+              <label for="website">Website</label>
+              <input id="website" v-model="form.website" type="text" tabindex="-1" autocomplete="off" />
+            </div>
+
             <!-- Step 1: Competencies -->
             <div v-if="currentStep === 1">
               <div class="flex items-center justify-between gap-3 flex-wrap mb-1">
@@ -297,6 +303,7 @@ const currentStep = ref(1)
 const form = reactive({
   on_competencies: '',
   on_performance: '',
+  website: '', // honeypot — must stay empty
 })
 const selectedFile = ref(null)
 const submitting = ref(false)
@@ -387,6 +394,7 @@ async function submitReport() {
     const fd = new FormData()
     fd.append('on_competencies', form.on_competencies)
     fd.append('on_performance', form.on_performance)
+    fd.append('website', form.website)
     fd.append('file', selectedFile.value)
 
     await axios.post(`/background-investigation/upload/${props.token}`, fd)

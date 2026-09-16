@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\ApplicationTrackingController;
 use App\Http\Controllers\AppointingAuthorityController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
@@ -46,6 +47,9 @@ Route::post('/visitor-count/increment', [VisitorCountController::class, 'increme
 // Authentication — throttled to prevent brute-force and registration spam
 Route::middleware('throttle:login')->post('/login', [AuthController::class, 'login']);
 Route::middleware('throttle:3,60')->post('/register', [AuthController::class, 'register']);
+
+// Passwordless application-status lookup — public, throttled (see ApplicationTrackingController)
+Route::middleware('throttle:track')->post('/track', [ApplicationTrackingController::class, 'track']);
 
 // Privacy consent re-acknowledgment (for existing users when policy updates)
 Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/email/verification-notification', [AuthController::class, 'resendVerificationApi']);
@@ -181,6 +185,7 @@ Route::middleware(['auth:sanctum', 'role:hrmpsb,admin'])->group(function () {
     Route::get('/hrmpsb/pipeline-stages', [HrmpsbController::class, 'pipelineStages']);
     Route::get('/hrmpsb/applications/{application}/profile', [HrmpsbController::class, 'applicantProfile']);
     Route::get('/hrmpsb/applications/{application}/documents/{type}', [HrmpsbController::class, 'serveDocument']);
+
     Route::get('/hrmpsb/vacancies/{vacancy}/applicants', [HrmpsbController::class, 'vacancyApplicants']);
     Route::post('/hrmpsb/vacancies/{vacancy}/download-requirements', [HrmpsbController::class, 'downloadRequirements']);
     // QS Evaluation

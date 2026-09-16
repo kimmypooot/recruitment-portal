@@ -92,4 +92,30 @@ class HrmpsbCompositionService
 
         return $mapping?->user;
     }
+
+    /**
+     * Is this user an active HRMPSB board member for this vacancy — either
+     * via a static hrmpsb_compositions seat, or as the dynamically-resolved
+     * Head of Unit for the vacancy's place of assignment?
+     *
+     * Controllers previously only checked the static table, which silently
+     * excluded Head of Unit members (they have no hrmpsb_compositions row —
+     * see forVacancy()) from evaluation stages they're meant to take part in.
+     */
+    public function isActiveMember(User $user, Vacancy $vacancy): bool
+    {
+        $hasStaticSeat = HrmpsbComposition::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->exists();
+
+        if ($hasStaticSeat) {
+            return true;
+        }
+
+        if ($this->isHeadOfUnitExcluded($vacancy)) {
+            return false;
+        }
+
+        return $this->resolveHeadOfUnit($vacancy->place_of_assignment)?->id === $user->id;
+    }
 }

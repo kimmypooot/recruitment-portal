@@ -171,7 +171,7 @@
             <select v-model="assignForm.user_id" required
               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
               <option value="">Select user…</option>
-              <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ u.full_name }}</option>
+              <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ userLnameFirst(u) }}</option>
             </select>
             <p class="mt-1 text-xs text-gray-400">Only users with the HRMPSB system role are shown. Assign their system role first in Admin → Users.</p>
           </div>
@@ -238,7 +238,7 @@
             <select v-model="poaHeadForm.user_id" required
               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
               <option value="">Select user…</option>
-              <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ u.full_name }}</option>
+              <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ userLnameFirst(u) }}</option>
             </select>
             <p class="mt-1 text-xs text-gray-400">Only users with the HRMPSB system role can be designated as Head of Unit.</p>
           </div>
@@ -289,7 +289,17 @@ const assignError  = ref('')
 
 const assignForm = reactive({ user_id: '', hrmpsb_role: '', member_type: 'principal' })
 
-const eligibleUsers = computed(() => users.value.filter(u => u.role !== 'applicant'))
+const eligibleUsers = computed(() =>
+  users.value
+    .filter(u => u.role !== 'applicant')
+    .slice()
+    .sort((a, b) => (a.last_name ?? '').localeCompare(b.last_name ?? ''))
+)
+
+function userLnameFirst(u) {
+  const mi = u.middle_name ? ` ${u.middle_name.charAt(0).toUpperCase()}.` : ''
+  return `${u.last_name}, ${u.first_name}${mi}`
+}
 
 const coveredRoles = computed(() => {
   const active = compositions.value.filter(c => c.is_active)

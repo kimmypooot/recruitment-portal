@@ -19,6 +19,8 @@ class WorkExperience extends Model
         'government_service' => 'boolean',
         'is_present'         => 'boolean',
         'monthly_salary'     => 'decimal:2',
+        'date_from'          => 'date',
+        'date_to'            => 'date',
     ];
 
     public function profile(): BelongsTo

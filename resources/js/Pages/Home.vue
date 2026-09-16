@@ -7,6 +7,7 @@
       <meta name="description" content="Browse open positions at the Civil Service Commission Regional Office VIII. Sign in or register to apply for a career in government service." />
       <meta property="og:title" content="Open Vacancies — CSC RO VIII - Recruitment Portal" />
       <meta property="og:description" content="Browse open government positions and submit your application online." />
+      <link rel="preload" href="/images/cscbg_facade.jpeg" as="image" fetchpriority="high" />
     </Head>
 
     <!-- Redirect guard: show minimal loader while checking auth -->
@@ -25,62 +26,74 @@
       <!-- Brand gradient overlay -->
       <div class="absolute inset-0" style="background: linear-gradient(160deg, rgba(26,31,94,0.93) 0%, rgba(42,51,143,0.87) 55%, rgba(30,37,112,0.95) 100%);"></div>
 
-      <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center">
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+        <div class="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,36rem)] lg:gap-14">
 
-        <!-- Logos -->
-        <div class="flex items-center justify-center gap-4 sm:gap-6 mb-8">
-          <img src="/images/csc-logo.png"        alt="CSC Logo"        class="h-16 sm:h-20 w-auto drop-shadow-md" />
-          <img src="/images/bagong_pilipinas.png" alt="Bagong Pilipinas" class="h-16 sm:h-20 w-auto drop-shadow-md" />
-          <img src="/images/lingkod_bayani.png"   alt="Lingkod Bayani"  class="h-16 sm:h-20 w-auto drop-shadow-md" />
-        </div>
+          <div class="text-center lg:text-left">
+            <!-- Logo -->
+            <div class="flex items-center justify-center mb-8 lg:justify-start">
+              <img src="/images/hero-logos.png" alt="CSC Logo, Bagong Pilipinas, Lingkod Bayani" class="h-16 sm:h-20 w-auto drop-shadow-md" />
+            </div>
 
-        <!-- Eyebrow badge -->
-        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase mb-6 border border-white/20 bg-white/10 text-white/85 backdrop-blur-sm">
-          <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
-          {{ stats.published }} open position{{ stats.published !== 1 ? 's' : '' }} available
-        </div>
+            <!-- Headline -->
+            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight mb-4">
+              CSC RO VIII
+              <span class="block text-white/60 font-semibold text-[1.9rem] sm:text-[2.4rem] lg:text-[3.1rem] mt-1 tracking-normal">
+                Recruitment Portal
+              </span>
+            </h1>
 
-        <!-- Headline -->
-        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mb-4">
-          CSC RO VIII
-          <span class="block text-white/60 font-semibold text-[1.6rem] sm:text-[2rem] lg:text-[2.65rem] mt-1 tracking-normal">
-            Recruitment Portal
-          </span>
-        </h1>
+            <!-- Subheadline -->
+            <p class="text-white/75 text-lg sm:text-xl leading-relaxed mb-10 max-w-xl mx-auto lg:mx-0">
+              Explore career opportunities at the
+              <span class="hidden sm:inline"><br></span>
+              <span class="font-semibold text-white">Civil Service Commission Regional Office VIII</span>.
+              <span class="hidden sm:inline"><br></span>
+              Sign in or create a free account to submit your application.
+            </p>
 
-        <!-- Subheadline -->
-        <p class="text-white/75 text-base sm:text-lg leading-relaxed mb-10 max-w-xl mx-auto">
-          Explore career opportunities at the
-          <span class="hidden sm:inline"><br></span>
-          <span class="font-semibold text-white">Civil Service Commission Regional Office VIII</span>.
-          <span class="hidden sm:inline"><br></span>
-          Sign in or create a free account to submit your application.
-        </p>
+            <!-- Search bar -->
+            <div class="flex gap-2 max-w-lg mx-auto lg:mx-0">
+              <div class="flex-1 relative">
+                <Icon name="search" size="5" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  v-model="filters.search"
+                  @input="onSearchInput"
+                  type="text"
+                  aria-label="Search position title"
+                  placeholder="Search position title..."
+                  class="w-full pl-11 pr-10 py-3.5 rounded-xl text-base text-gray-900 bg-white placeholder-gray-400 border-0 shadow-lg focus:ring-2 focus:ring-white/60 focus:outline-none" />
+                <button v-if="filters.search" @click="clearSearch"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-gray-400 hover:text-gray-700 transition-colors"
+                  aria-label="Clear search">
+                  <Icon name="close" size="5" />
+                </button>
+              </div>
+              <button
+                @click="fetchVacancies"
+                class="px-6 py-3.5 min-w-[5.5rem] bg-accent hover:bg-accent-dark active:bg-[#b00f1b] text-white font-semibold text-base rounded-xl shadow-lg transition-colors">
+                Search
+              </button>
+            </div>
 
-        <!-- Search bar -->
-        <div class="flex gap-2 max-w-lg mx-auto">
-          <div class="flex-1 relative">
-            <Icon name="search" size="4" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              v-model="filters.search"
-              @input="onSearchInput"
-              type="text"
-              aria-label="Search position title"
-              placeholder="Search position title..."
-              class="w-full pl-9 pr-9 py-3 rounded-xl text-sm text-gray-900 bg-white placeholder-gray-400 border-0 shadow-lg focus:ring-2 focus:ring-white/60 focus:outline-none" />
-            <button v-if="filters.search" @click="clearSearch"
-              class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-gray-400 hover:text-gray-700 transition-colors"
-              aria-label="Clear search">
-              <Icon name="close" size="4" />
-            </button>
+            <a href="#vacancy-results"
+              class="inline-flex items-center gap-1 mt-4 text-sm text-white/70 hover:text-white transition-colors">
+              or browse all open positions
+              <Icon name="chevronDown" size="3.5" />
+            </a>
           </div>
-          <button
-            @click="fetchVacancies"
-            class="px-5 py-3 min-w-[5rem] bg-accent hover:bg-accent-dark active:bg-[#b00f1b] text-white font-semibold text-sm rounded-xl shadow-lg transition-colors">
-            Search
-          </button>
-        </div>
 
+          <!-- Featured photo: the facade, framed as a single print sitting above the backdrop -->
+          <figure class="hidden lg:block aspect-[4/3] w-full overflow-hidden rounded-2xl bg-white/10 p-1.5 shadow-2xl ring-1 ring-white/25 backdrop-blur-sm">
+            <img
+              src="/images/csc-background.jpg"
+              alt="The CSC RO VIII building"
+              loading="lazy"
+              decoding="async"
+              class="size-full rounded-xl object-cover" />
+          </figure>
+
+        </div>
       </div>
 
       <!-- Wave divider -->
@@ -145,7 +158,7 @@
           </button>
 
           <!-- Result count -->
-          <span class="ml-auto text-sm text-gray-500">
+          <span class="ml-auto text-sm text-gray-500" aria-live="polite">
             <template v-if="!isLoading">
               {{ pagination.total }} result{{ pagination.total !== 1 ? 's' : '' }}
             </template>
@@ -158,7 +171,7 @@
     </section>
 
     <!-- ── Vacancy Grid ───────────────────────────────────────────────── -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <section id="vacancy-results" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
       <!-- Error banner -->
           <div v-if="fetchError" role="alert" class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center justify-between">
@@ -217,52 +230,6 @@
 
     </section>
 
-    <!-- ── Testimonials marquee ─────────────────────────────────────── -->
-    <section v-if="testimonials.length >= 3 && vacancies.length > 0" class="py-14 bg-gray-50 border-t border-gray-100" style="overflow: hidden; max-width: 100vw;">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center">
-        <p class="text-xs font-semibold uppercase tracking-widest text-accent mb-2">What Applicants Say</p>
-        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Real experiences, real people</h2>
-        <p class="text-sm text-gray-500 mt-2">Feedback submitted by applicants after applying through this portal.</p>
-      </div>
-
-      <!-- Single scrolling row -->
-      <div class="relative w-full" style="overflow: hidden;">
-        <div ref="marqueeTrack"
-          class="flex"
-          style="width: max-content; will-change: transform;"
-          @mouseenter="pauseMarquee"
-          @mouseleave="resumeMarquee">
-          <div v-for="(t, i) in [...testimonials, ...testimonials]" :key="'t-' + i"
-            class="flex-shrink-0 w-72 sm:w-80 mx-3 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-3">
-            <!-- Stars -->
-            <div class="flex items-center gap-0.5">
-              <svg v-for="s in 5" :key="s" class="w-4 h-4"
-                :class="s <= t.rating ? 'text-yellow-400' : 'text-gray-200'"
-                fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-            </div>
-            <!-- Comment -->
-            <p class="text-sm text-gray-700 leading-relaxed line-clamp-3 flex-1">"{{ t.comment }}"</p>
-            <!-- Author -->
-            <div class="flex items-center gap-2.5 pt-2 border-t border-gray-100">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                :style="{ backgroundColor: avatarColor(i) }">
-                {{ t.display_name[0]?.toUpperCase() ?? '?' }}
-              </div>
-              <div>
-                <p class="text-xs font-semibold text-gray-800">{{ t.display_name }}</p>
-                <p class="text-xs text-gray-400 truncate max-w-[180px]">Applied for {{ t.position_title }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Fade edges -->
-        <div class="pointer-events-none absolute inset-y-0 left-0 w-24 z-10" style="background: linear-gradient(to right, #f9fafb, transparent);"></div>
-        <div class="pointer-events-none absolute inset-y-0 right-0 w-24 z-10" style="background: linear-gradient(to left, #f9fafb, transparent);"></div>
-      </div>
-    </section>
-
     <!-- ── Stats strip ──────────────────────────────────────────────── -->
     <section class="text-white bg-primary">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -289,7 +256,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { Head, router } from '@inertiajs/vue3'
 import { debounce } from 'lodash-es'
@@ -300,40 +267,6 @@ import Icon from '@/Components/UI/Icon.vue'
 import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
 import Pagination from '@/Components/UI/Pagination.vue'
 import { formatDateLong, formatDate, daysRemaining } from '@/utils/dates'
-
-const AVATAR_COLORS = ['var(--color-primary)','#7c3aed','#0891b2','#059669','#d97706','#dc2626','#db2777','#0284c7','#65a30d']
-function avatarColor(i) { return AVATAR_COLORS[i % AVATAR_COLORS.length] }
-
-// ── Testimonials state (must be declared before watch) ────────────────────
-const testimonials = ref([])
-
-// ── Marquee (rAF-based) ───────────────────────────────────────────────────
-const marqueeTrack = ref(null)
-let marqueeOffset  = 0
-let marqueeRaf     = null
-let marqueePaused  = false
-
-function tickMarquee() {
-  const el = marqueeTrack.value
-  if (el && !marqueePaused) {
-    const halfWidth = el.scrollWidth / 2
-    marqueeOffset += 0.5
-    if (marqueeOffset >= halfWidth) marqueeOffset = 0
-    el.style.transform = `translateX(-${marqueeOffset}px)`
-  }
-  marqueeRaf = requestAnimationFrame(tickMarquee)
-}
-
-function pauseMarquee()  { marqueePaused = true  }
-function resumeMarquee() { marqueePaused = false }
-
-// Start the loop once testimonials are loaded and rendered
-watch(testimonials, async (val) => {
-  if (val.length >= 3) {
-    await nextTick()
-    if (!marqueeRaf) marqueeRaf = requestAnimationFrame(tickMarquee)
-  }
-})
 
 // ── Props from Laravel (Inertia) ──────────────────────────────────────────
 // These are passed by HomeController::index() via Inertia::render()
@@ -428,14 +361,7 @@ function clearFilters() {
   fetchVacancies()
 }
 
-onUnmounted(() => {
-  if (marqueeRaf) cancelAnimationFrame(marqueeRaf)
-})
-
 onMounted(async () => {
-  // Fetch public testimonials (fire-and-forget; section hides itself if empty)
-  axios.get('/api/testimonials').then(({ data }) => { testimonials.value = data }).catch(() => {})
-
   const token = localStorage.getItem('auth_token')
   if (token) {
     try {

@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="/images/favicon.png">
-    <link rel="preload" href="/images/cscbg_facade.jpeg" as="image" fetchpriority="high">
     <meta name="app-url" content="{{ config('app.url') }}">
     <meta property="og:site_name" content="CSC RO VIII - Recruitment Portal">
     <meta property="og:type" content="website">
@@ -42,28 +41,7 @@
     <script type="application/ld+json">{{ json_encode($ldJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @inertiaHead
-    <script>
-      (function () {
-        if (!sessionStorage.getItem('csc_page_transition')) return
-        sessionStorage.removeItem('csc_page_transition')
-
-        var veil = document.createElement('div')
-        veil.id  = 'csc-page-veil'
-        veil.style.cssText = [
-          'position:fixed', 'inset:0', 'z-index:999999', 'pointer-events:all',
-          'background:linear-gradient(135deg,#f0eef9 0%,#e8eafa 50%,#fdeef0 100%)',
-          'opacity:1', 'transition:opacity 0.4s ease',
-        ].join(';')
-        document.documentElement.appendChild(veil)
-
-        window.addEventListener('load', function () {
-          requestAnimationFrame(function () {
-            veil.style.opacity = '0'
-            setTimeout(function () { veil.remove() }, 420)
-          })
-        })
-      })()
-    </script>
+    <script src="/js/page-transition.js"></script>
 </head>
 <body class="antialiased bg-gray-50">
     @inertia

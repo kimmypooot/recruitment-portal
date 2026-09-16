@@ -1,8 +1,10 @@
 <template>
+  <!-- `class` from the call site arrives via $attrs and is merged by Vue, so
+       there is no separate customClass prop to apply. -->
   <svg
     :width="size"
     :height="size"
-    :class="[color, `w-${sizeClass} h-${sizeClass}`, customClass]"
+    :class="[color, `w-${sizeClass} h-${sizeClass}`]"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"

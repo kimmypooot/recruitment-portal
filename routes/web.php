@@ -5,12 +5,18 @@ use App\Http\Controllers\BackgroundInvestigationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SeoController;
+use App\Models\EoptResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+Route::get('/robots.txt', [SeoController::class, 'robots']);
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap']);
+
 Route::get('/', [HomeController::class, 'index']);
 Route::get('/how-to-apply', fn () => Inertia::render('HowToApply'));
+Route::get('/help', fn () => Inertia::render('Help'));
 Route::get('/about', fn () => Inertia::render('About'));
 Route::get('/privacy-policy', fn () => Inertia::render('PrivacyPolicy'));
 Route::get('/terms-of-service', fn () => Inertia::render('TermsOfService'));
@@ -36,6 +42,8 @@ Route::post('/email/verification-notification', [AuthController::class, 'resendV
     ->middleware('throttle:6,1')->name('verification.send');
 
 Route::get('/vacancies/{id}/apply', fn ($id) => Inertia::render('Vacancies/Apply', ['vacancyId' => (int) $id]));
+
+Route::get('/track-application', fn () => Inertia::render('Public/TrackApplication'));
 
 Route::get('/background-investigation/upload/{token}', [BackgroundInvestigationController::class, 'showUploadForm']);
 Route::post('/background-investigation/upload/{token}', [BackgroundInvestigationController::class, 'upload']);
@@ -70,6 +78,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/competencies', fn () => Inertia::render('Admin/Competencies'));
     Route::get('/feedbacks', fn () => Inertia::render('Admin/Feedbacks'));
     Route::get('/email-templates', fn () => Inertia::render('Admin/EmailTemplates'));
+    Route::get('/help', fn () => Inertia::render('Admin/Help'));
 });
 
 // HRMPSB evaluation pages — auth enforced by API routes and client-side guards
@@ -107,7 +116,7 @@ Route::prefix('appointing-authority')->group(function () {
     Route::get('/dashboard', fn () => Inertia::render('AppointingAuthority/Dashboard'));
     Route::get('/{vacancy}', fn ($vacancy) => Inertia::render('Hrmpsb/AppointingAuthority', [
         'vacancyId' => (int) $vacancy,
-        'eoptDefinitions' => \App\Models\EoptResult::getAllDefinitions(),
+        'eoptDefinitions' => EoptResult::getAllDefinitions(),
     ]));
 });
 

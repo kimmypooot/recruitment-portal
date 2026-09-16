@@ -4,19 +4,23 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ApplicationResource;
-use App\Http\Resources\ApplicantProfileResource;
-use App\Http\Resources\VacancyResource;
-use App\Models\Application;
-use App\Models\Vacancy;
 use App\Events\ApplicationStatusUpdated;
 use App\Events\ApplicationSubmitted;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\UpdateApplicationStatusRequest;
+use App\Http\Resources\ApplicantProfileResource;
+use App\Http\Resources\ApplicationResource;
+use App\Http\Resources\VacancyResource;
+use App\Models\ApplicantProfile;
+use App\Models\Application;
+use App\Models\Vacancy;
+use App\Services\AuditLog;
+use App\Support\SpreadsheetSanitizer;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ApplicationController extends Controller
@@ -25,7 +29,7 @@ class ApplicationController extends Controller
     {
         $profile = $request->user()->applicantProfile;
 
-        if (!$profile) {
+        if (! $profile) {
             return response()->json([]);
         }
 
@@ -49,15 +53,15 @@ class ApplicationController extends Controller
 
         $profile = $request->user()->applicantProfile;
 
-        if (!$profile) {
+        if (! $profile) {
             return response()->json(['message' => 'Please complete your profile before applying.'], 422);
         }
 
-        if (!$profile->isComplete()) {
+        if (! $profile->isComplete()) {
             return response()->json(['message' => 'Your profile is incomplete. Please fill in all required fields before applying.'], 422);
         }
 
-        if (!$profile->hasRequiredDocuments()) {
+        if (! $profile->hasRequiredDocuments()) {
             return response()->json(['message' => 'Please upload all required documents (PDS, Application Letter, Certificate of Eligibility, and Transcript of Records) before applying.'], 422);
         }
 
@@ -67,25 +71,59 @@ class ApplicationController extends Controller
             return response()->json(['message' => 'This vacancy is no longer accepting applications.'], 422);
         }
 
-        $existing = Application::where('applicant_id', $profile->id)
-            ->where('vacancy_id', $data['vacancy_id'])
-            ->whereNull('deleted_at')
-            ->first();
+        try {
+            $application = DB::transaction(function () use ($profile, $data) {
+                // Lock the applicant's own profile row so two concurrent submit
+                // requests from the same applicant serialize instead of both
+                // passing the existence check below before either INSERT commits.
+                // The DB-level unique constraint on (vacancy_id, applicant_id,
+                // active_duplicate_guard) backs this up even across processes/
+                // connections that never contend for this lock at all.
+                ApplicantProfile::where('id', $profile->id)->lockForUpdate()->first();
 
-        if ($existing) {
-            return response()->json(['message' => 'You have already applied for this vacancy.'], 422);
+                $existing = Application::where('applicant_id', $profile->id)
+                    ->where('vacancy_id', $data['vacancy_id'])
+                    ->whereNull('deleted_at')
+                    ->first();
+
+                if ($existing) {
+                    return null;
+                }
+
+                return Application::create([
+                    'vacancy_id' => $data['vacancy_id'],
+                    'applicant_id' => $profile->id,
+                    'status' => 'submitted',
+                    'submitted_at' => now(),
+                    'reference_code' => Application::generateReferenceCode(),
+                ]);
+            });
+        } catch (QueryException $e) {
+            if ($this->isDuplicateApplicationViolation($e)) {
+                return response()->json(['message' => 'You have already applied for this vacancy.'], 422);
+            }
+            throw $e;
         }
 
-        $application = Application::create([
-            'vacancy_id'   => $data['vacancy_id'],
-            'applicant_id' => $profile->id,
-            'status'       => 'submitted',
-            'submitted_at' => now(),
-        ]);
+        if ($application === null) {
+            return response()->json(['message' => 'You have already applied for this vacancy.'], 422);
+        }
 
         ApplicationSubmitted::dispatch($application);
 
         return response()->json(ApplicationResource::make($application->load('vacancy')), 201);
+    }
+
+    /**
+     * Whether a QueryException came from the applications_active_vacancy_applicant_unique
+     * constraint (MySQL error 1062, SQLite's "UNIQUE constraint failed") rather than
+     * some other integrity failure that should keep propagating.
+     */
+    private function isDuplicateApplicationViolation(QueryException $e): bool
+    {
+        return (int) ($e->errorInfo[1] ?? 0) === 1062
+            || str_contains($e->getMessage(), 'UNIQUE constraint failed')
+            || str_contains($e->getMessage(), 'applications_active_vacancy_applicant_unique');
     }
 
     public function show(Application $application): JsonResponse
@@ -137,7 +175,7 @@ class ApplicationController extends Controller
             $query->chunk(200, function ($chunk) use ($out) {
                 foreach ($chunk as $app) {
                     $user = $app->applicant?->user;
-                    fputcsv($out, \App\Support\SpreadsheetSanitizer::row([
+                    fputcsv($out, SpreadsheetSanitizer::row([
                         $user?->last_name,
                         $user?->first_name,
                         $user?->middle_name,
@@ -280,11 +318,11 @@ class ApplicationController extends Controller
             'data' => $paginator->items(),
             'meta' => [
                 'current_page' => $paginator->currentPage(),
-                'last_page'    => $paginator->lastPage(),
-                'from'         => $paginator->firstItem(),
-                'to'           => $paginator->lastItem(),
-                'total'        => $paginator->total(),
-                'per_page'     => $paginator->perPage(),
+                'last_page' => $paginator->lastPage(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+                'total' => $paginator->total(),
+                'per_page' => $paginator->perPage(),
             ],
         ];
     }
@@ -305,19 +343,19 @@ class ApplicationController extends Controller
         $this->authorize('view', $application);
 
         $map = [
-            'pds'        => 'pds_path',
+            'pds' => 'pds_path',
             'app_letter' => 'app_letter_path',
-            'ipcr'       => 'ipcr_path',
-            'coe'        => 'coe_path',
-            'tor'        => 'tor_path',
+            'ipcr' => 'ipcr_path',
+            'coe' => 'coe_path',
+            'tor' => 'tor_path',
         ];
 
-        abort_if(!isset($map[$type]), 404);
+        abort_if(! isset($map[$type]), 404);
 
         $profile = $application->applicant;
-        $path    = $profile?->{$map[$type]};
+        $path = $profile?->{$map[$type]};
 
-        abort_if(!$path || !Storage::disk('local')->exists($path), 404);
+        abort_if(! $path || ! Storage::disk('local')->exists($path), 404);
 
         if ($request->boolean('download')) {
             return Storage::disk('local')->download($path);
@@ -328,14 +366,18 @@ class ApplicationController extends Controller
 
     public function withdraw(Request $request, Application $application): JsonResponse
     {
-        $user    = $request->user();
+        $user = $request->user();
         $profile = $user->applicantProfile;
 
-        if (!$profile || $application->applicant_id !== $profile->id) {
+        if (! $profile || $application->applicant_id !== $profile->id) {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
-        $nonWithdrawable = ['withdrawn', 'passed', 'failed', 'appointed', 'completed'];
+        // 'passed'/'failed' were the pre-standardization names for these two
+        // statuses (see 2026_06_21_070001_standardize_application_status_enum) —
+        // this list went stale when that migration remapped them, silently
+        // reopening withdrawal for 'recommended'/'disqualified' applications.
+        $nonWithdrawable = ['withdrawn', 'recommended', 'disqualified', 'appointed', 'completed'];
         if (in_array($application->status, $nonWithdrawable)) {
             return response()->json(['message' => 'This application can no longer be withdrawn.'], 422);
         }
@@ -352,18 +394,25 @@ class ApplicationController extends Controller
         $oldStatus = $application->status;
 
         $updateData = [
-            'status'      => $request->status,
-            'remarks'     => $request->remarks ?? $request->reason,
+            'status' => $request->status,
+            'remarks' => $request->remarks ?? $request->reason,
             'reviewed_at' => now(),
         ];
 
         $application->update($updateData);
 
+        // Every other status-changing endpoint in the pipeline (QS/CBWE/BEI/
+        // background-check lock, deliberation decide, appointing-authority
+        // decide) calls AuditLog::record() — this one, the generic HR-side
+        // status override, previously didn't, leaving no audit trail for
+        // what is otherwise the least-constrained way to change a status.
+        AuditLog::record('application_status_updated', $application);
+
         ApplicationStatusUpdated::dispatch($application, $oldStatus, $request->status);
 
         return response()->json([
             'message' => 'Application status updated successfully.',
-            'data'    => ApplicationResource::make($application->fresh()),
+            'data' => ApplicationResource::make($application->fresh()),
         ]);
     }
 }

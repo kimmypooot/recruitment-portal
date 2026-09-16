@@ -14,10 +14,10 @@
 
       <!-- Logo -->
       <div class="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-        <img src="/images/csc-logo.png" alt="CSC Logo" class="h-9 w-9 object-contain flex-shrink-0"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-        <div class="w-9 h-9 rounded-lg bg-white/15 items-center justify-center flex-shrink-0 hidden">
-          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="w-9 h-9 rounded-xl bg-white flex items-center justify-center flex-shrink-0 p-1">
+          <img src="/images/csc-logo.png" alt="CSC Logo" class="h-full w-full object-contain"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+          <svg class="w-5 h-5 text-primary hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
           </svg>
         </div>
@@ -213,7 +213,7 @@ const avatarLoaded   = ref(false)
 const avatarLoading  = ref(true)
 const avatarError    = ref(false)
 const avatarVersion  = ref(Date.now())
-watch(auth.token, (token) => {
+watch(() => auth.token, (token) => {
   if (token) { avatarLoading.value = true; avatarLoaded.value = false; avatarError.value = false }
 })
 
@@ -336,6 +336,12 @@ const navGroups = computed(() => {
       label: 'Records',
       items: [
         { label: 'Audit Logs', href: '/admin/audit-logs', icon: 'clock' },
+      ],
+    },
+    {
+      label: 'Support',
+      items: [
+        { label: 'Help & Guide', href: '/admin/help', icon: 'info' },
       ],
     },
   ]

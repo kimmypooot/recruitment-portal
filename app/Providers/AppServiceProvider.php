@@ -8,6 +8,7 @@ use App\Models\Application;
 use App\Models\Document;
 use App\Models\Vacancy;
 use App\Observers\ApplicationObserver;
+use App\Observers\VacancyObserver;
 use App\Policies\ApplicationPolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\EvaluationPolicy;
@@ -36,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('unmask-identities', [EvaluationPolicy::class, 'unmask']);
 
         Application::observe(ApplicationObserver::class);
+        Vacancy::observe(VacancyObserver::class);
 
         RateLimiter::for('login', function (Request $request) {
             $key = Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());
@@ -45,6 +47,15 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('register', function (Request $request) {
             return Limit::perMinutes(60, 3)->by($request->ip());
+        });
+
+        // Keyed by email+IP like 'login' — a reference code is short enough
+        // that IP-only throttling would still allow a lot of guesses across
+        // different codes, so tie the limit to the email being probed too.
+        RateLimiter::for('track', function (Request $request) {
+            $key = Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());
+
+            return Limit::perMinute(5)->by($key);
         });
     }
 }

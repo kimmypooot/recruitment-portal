@@ -30,10 +30,8 @@ The HRMPSB must be fully configurable via Role-Based Access Control (RBAC) manag
 
 Members include:
 Chairperson
-Director II Representative
-Division Chief Representative
 Chief of HR Division (added member)
-Head of Unit where the vacancy exists
+Head of the Division/Unit where the vacancy exists (based on Place of Assignment)
 PINTIG Representative (1st Level / 2nd Level)
 Principal
 Alternate

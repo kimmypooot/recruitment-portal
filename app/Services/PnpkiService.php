@@ -19,24 +19,43 @@ use App\Models\CsForm;
  */
 class PnpkiService
 {
+    /**
+     * Refuses rather than pretending.
+     *
+     * This previously stamped `signed_at` and returned true without performing
+     * any cryptography, so setting PNPKI_API_KEY to any value would have made
+     * the system report CSC forms as digitally signed when nothing had been
+     * signed. On a document submitted to CSC that is a false attestation, so
+     * the unimplemented path now fails closed.
+     *
+     * Replace the body once CSC provides the PNPKI SDK/endpoint and
+     * certificate credentials; `isConfigured()` already gates the caller.
+     */
     public function sign(CsForm $form, string $signerName): bool
     {
-        // TODO: integrate PNPKI SDK here
-        // Example SDK call (replace with real implementation):
-        // $sdk = new PnpkiSdk(config('services.pnpki.endpoint'), config('services.pnpki.api_key'));
-        // $result = $sdk->sign($form->file_path, $signerName);
-        // if (!$result->success) return false;
+        if ($form->application !== null) {
+            AuditLog::record('cs_form_sign_attempted_without_pnpki', $form->application);
+        }
 
-        $form->update(['signed_at' => now()]);
-        AuditLog::record('cs_form_signed', $form->application);
-
-        return true;
+        throw new \RuntimeException(
+            'PNPKI digital signing is not implemented. CSC has not supplied the SDK '
+            .'or certificate credentials, and marking a form as signed without a real '
+            .'signature would misrepresent it. Print and wet-sign the form instead — '
+            .'CS Form No. 212 (Revised 2026) accepts a wet signature, e-signature, or '
+            .'digital certificate.'
+        );
     }
 
+    /**
+     * Whether the form carries a verified PNPKI signature.
+     *
+     * Always false until real verification exists: `signed_at` alone proves
+     * nothing cryptographically, and treating it as proof would let an
+     * unverified form pass as verified.
+     */
     public function verify(CsForm $form): bool
     {
-        // TODO: verify signature via PNPKI SDK
-        return $form->isSigned();
+        return false;
     }
 
     public function isConfigured(): bool

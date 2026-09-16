@@ -9,21 +9,17 @@ use App\Models\HrmpsbComposition;
 use App\Models\QsEvaluation;
 use App\Models\Vacancy;
 use App\Services\AnonymizationService;
+use App\Services\AuditLog;
+use App\Services\HrmpsbCompositionService;
 use App\Events\ApplicationStatusUpdated;
 use App\Events\QSEvaluationsLocked;
 use App\Http\Requests\StoreQsEvaluationRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class QsEvaluationController extends Controller
 {
-    private function getComposition(int $userId): ?HrmpsbComposition
-    {
-        return HrmpsbComposition::where('user_id', $userId)
-            ->where('is_active', true)
-            ->first();
-    }
-
     private function isSecretariat(int $userId): bool
     {
         return HrmpsbComposition::where('user_id', $userId)
@@ -37,8 +33,7 @@ class QsEvaluationController extends Controller
         $user = $request->user();
 
         if (! $user->canAccessAdminModule()) {
-            $composition = $this->getComposition($user->id);
-            if (! $composition) {
+            if (! app(HrmpsbCompositionService::class)->isActiveMember($user, $vacancy)) {
                 return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
             }
         }
@@ -59,7 +54,7 @@ class QsEvaluationController extends Controller
         $seq = 1;
 
         $applications->each(function ($app) use ($user, $isSecretariat, &$seq, $secretariatComp) {
-            $app->display_code = 'APP-' . str_pad($seq++, 3, '0', STR_PAD_LEFT);
+            $app->display_code = 'APP-' . str_pad((string) $seq++, 3, '0', STR_PAD_LEFT);
 
             // Secretariat's evaluation — visible to all as the initial reference
             $secretariatEval = $secretariatComp
@@ -120,8 +115,11 @@ class QsEvaluationController extends Controller
         $application = Application::with('vacancy')->findOrFail($data['application_id']);
         $user = $request->user();
 
-        $composition = $this->getComposition($user->id);
-        if (! $composition && ! $user->canAccessAdminModule()) {
+        if ($application->status === 'withdrawn') {
+            return response()->json(['message' => 'This application has been withdrawn and can no longer be evaluated.'], 422);
+        }
+
+        if (! app(HrmpsbCompositionService::class)->isActiveMember($user, $application->vacancy) && ! $user->canAccessAdminModule()) {
             return response()->json(['message' => 'You are not an active HRMPSB member.'], 403);
         }
 
@@ -145,12 +143,26 @@ class QsEvaluationController extends Controller
             }
         }
 
-        // Prevent re-evaluation if already locked
+        // Prevent re-evaluation if this evaluator's own row is already locked...
         $existing = QsEvaluation::where('application_id', $data['application_id'])
             ->where('evaluator_id', $user->id)
             ->first();
 
         if ($existing?->isLocked()) {
+            return response()->json(['message' => 'QS evaluations are locked and cannot be modified.'], 422);
+        }
+
+        // ...and also if the QS stage for this vacancy has already been locked
+        // overall (lock() sets locked_at on every evaluation that existed at
+        // lock time — a late-arriving evaluator who never submitted before
+        // that would otherwise have no $existing row to check above, and
+        // could silently reopen an already-locked stage).
+        $stageLocked = QsEvaluation::whereIn(
+            'application_id',
+            Application::where('vacancy_id', $application->vacancy_id)->pluck('id')
+        )->whereNotNull('locked_at')->exists();
+
+        if ($stageLocked) {
             return response()->json(['message' => 'QS evaluations are locked and cannot be modified.'], 422);
         }
 
@@ -215,36 +227,58 @@ class QsEvaluationController extends Controller
             return response()->json(['message' => 'Only the HRMPSB Secretariat or an admin-level user can lock QS evaluations.'], 403);
         }
 
-        $applicationIds = Application::where('vacancy_id', $vacancy->id)->pluck('id');
+        [$count, $statusChanges] = DB::transaction(function () use ($vacancy) {
+            // Same Vacancy row lock as Deliberation's lock()/decide() use, so
+            // concurrent lock requests for this vacancy fully serialize instead
+            // of racing on the bulk update below.
+            Vacancy::where('id', $vacancy->id)->lockForUpdate()->first();
 
-        $count = QsEvaluation::whereIn('application_id', $applicationIds)
-            ->whereNull('locked_at')
-            ->update(['locked_at' => now()]);
+            $applications = Application::where('vacancy_id', $vacancy->id)->get(['id', 'status']);
+            $applicationIds = $applications->pluck('id');
 
-        // Update application statuses based on aggregated QS results
-        foreach ($applicationIds as $appId) {
-            $evaluations = QsEvaluation::where('application_id', $appId)->get();
+            $lockedCount = QsEvaluation::whereIn('application_id', $applicationIds)
+                ->whereNull('locked_at')
+                ->update(['locked_at' => now()]);
 
-            if ($evaluations->isEmpty()) {
-                continue;
+            // Batch-load every evaluation for this vacancy in one query and
+            // group by application, instead of one query per application.
+            $evaluationsByApp = QsEvaluation::whereIn('application_id', $applicationIds)
+                ->get()
+                ->groupBy('application_id');
+
+            $statusChanges = [];
+
+            foreach ($applications as $application) {
+                $evaluations = $evaluationsByApp->get($application->id);
+
+                if (! $evaluations || $evaluations->isEmpty()) {
+                    continue;
+                }
+
+                // Majority rule: more qualified votes = qualified
+                $qualifiedCount = $evaluations->where('overall_qualified', true)->count();
+                $totalCount     = $evaluations->count();
+                $isQualified    = $qualifiedCount > ($totalCount / 2);
+                $newStatus      = $isQualified ? 'qualified' : 'disqualified';
+
+                if ($application->status !== $newStatus) {
+                    $oldStatus = $application->status;
+                    $application->update(['status' => $newStatus]);
+                    $statusChanges[] = [$application, $oldStatus, $newStatus];
+                }
             }
 
-            // Majority rule: more qualified votes = qualified
-            $qualifiedCount = $evaluations->where('overall_qualified', true)->count();
-            $totalCount     = $evaluations->count();
-            $isQualified    = $qualifiedCount > ($totalCount / 2);
+            return [$lockedCount, $statusChanges];
+        });
 
-            $application = Application::find($appId);
-            if ($application) {
-                $oldStatus = $application->status;
-                $application->update([
-                    'status' => $isQualified ? 'qualified' : 'disqualified',
-                ]);
-                ApplicationStatusUpdated::dispatch($application, $oldStatus, $application->status, true);
-            }
+        // Dispatch events and generate anonymization tokens outside the
+        // transaction, once the lock is committed.
+        foreach ($statusChanges as [$application, $oldStatus, $newStatus]) {
+            ApplicationStatusUpdated::dispatch($application, $oldStatus, $newStatus, true);
         }
 
         // Generate anonymization tokens for all qualifying applications
+        // (idempotent: firstOrCreate keyed on application_id).
         (new AnonymizationService())->generateForVacancy($vacancy);
 
         QSEvaluationsLocked::dispatch($vacancy);

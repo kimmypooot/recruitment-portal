@@ -255,6 +255,8 @@ public function revokeLink(Request $request, BackgroundInvestigationReport $repo
             'on_competencies' => 'required|string|min:1000',
             'on_performance'  => 'required|string|min:1000',
             'file'            => 'required|file|mimes:pdf|max:10240',
+            // Honeypot — see resources/js/Pages/Public/BackgroundInvestigationUpload.vue
+            'website'         => 'prohibited',
         ]);
 
         $path = $request->file('file')->store('background-investigations', 'local');
@@ -281,7 +283,9 @@ public function revokeLink(Request $request, BackgroundInvestigationReport $repo
 
         if ($token) {
             $accessToken = PersonalAccessToken::findToken($token);
-            if ($accessToken) {
+            // Expired tokens must not authenticate here even though the row
+            // still exists — findToken() alone does not check expires_at.
+            if ($accessToken && (!$accessToken->expires_at || !$accessToken->expires_at->isPast())) {
                 $user = $accessToken->tokenable;
             }
         }

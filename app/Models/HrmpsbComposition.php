@@ -26,8 +26,6 @@ class HrmpsbComposition extends Model
         'chairperson' => 'Chairperson',
         'secretariat' => 'HRMPSB Secretariat',
         'appointing-authority' => 'Appointing Authority',
-        'director-representative' => 'Director II Representative',
-        'division-chief-representative' => 'Division Chief Representative',
         'hr-chief' => 'Chief of HR Division',
         'pintig-representative-1st' => 'PINTIG Representative (1st Level)',
         'pintig-representative-2nd' => 'PINTIG Representative (2nd Level)',

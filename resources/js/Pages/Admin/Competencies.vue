@@ -339,7 +339,7 @@ async function deleteCompetency() {
   try {
     await axios.delete(`/api/admin/competencies/${deleteTarget.value.id}`, { headers: authHeaders() })
     deleteTarget.value = null
-    toast.error('Competency deleted.')
+    toast.success('Competency deleted.')
     await load()
   } catch (e) {
     deleteError.value = e?.response?.data?.message ?? 'Delete failed.'

@@ -24,8 +24,11 @@ export function formatDateRange(start, end, isPresent = false) {
   if (!start) return '—'
   const MONTHS = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.',
                   'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.']
+  // The API returns full timestamps ("2021-02-11 00:00:00") for some records
+  // and bare dates for others — trim to yyyy-mm-dd before splitting, or the
+  // day segment picks up a trailing time string and parses as NaN.
   const parse = (str) => {
-    const [y, m, d] = str.split('-').map(Number)
+    const [y, m, d] = str.slice(0, 10).split('-').map(Number)
     return { y, m: m - 1, d }
   }
   const f = parse(start)
