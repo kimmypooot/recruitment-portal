@@ -49,6 +49,15 @@
 
         <form @submit.prevent="submit" class="space-y-5">
 
+          <!-- Honeypot: hidden from real users, catches basic bots that
+               auto-fill every input. Left unlabeled/off-screen rather than
+               display:none so it still reads as a form field to naive
+               scripted fillers. -->
+          <div class="absolute -left-[9999px] w-px h-px overflow-hidden" aria-hidden="true">
+            <label for="website">Website</label>
+            <input id="website" v-model="form.website" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+
           <!-- Last Name + First Name -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -233,6 +242,7 @@ const form = reactive({
   password:              '',
   password_confirmation: '',
   privacy_consent:       false,
+  website:               '', // honeypot — must stay empty
 })
 
 const loading = ref(false)

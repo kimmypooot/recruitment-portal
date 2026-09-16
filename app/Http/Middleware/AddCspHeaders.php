@@ -21,7 +21,7 @@ class AddCspHeaders
         }
 
         $csp = "default-src 'self'; "
-            . "script-src 'self' 'unsafe-inline'{$viteDevOrigins}; "
+            . "script-src 'self'{$viteDevOrigins}; "
             . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$viteDevOrigins}; "
             . "font-src 'self' data: https://fonts.gstatic.com; "
             . "img-src 'self' data: https://*.googleusercontent.com; "

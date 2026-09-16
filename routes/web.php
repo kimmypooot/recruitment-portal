@@ -5,10 +5,14 @@ use App\Http\Controllers\BackgroundInvestigationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SeoController;
 use App\Models\EoptResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+Route::get('/robots.txt', [SeoController::class, 'robots']);
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap']);
 
 Route::get('/', [HomeController::class, 'index']);
 Route::get('/how-to-apply', fn () => Inertia::render('HowToApply'));

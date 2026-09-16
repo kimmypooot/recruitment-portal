@@ -7,6 +7,7 @@
       <meta name="description" content="Browse open positions at the Civil Service Commission Regional Office VIII. Sign in or register to apply for a career in government service." />
       <meta property="og:title" content="Open Vacancies — CSC RO VIII - Recruitment Portal" />
       <meta property="og:description" content="Browse open government positions and submit your application online." />
+      <link rel="preload" href="/images/cscbg_facade.jpeg" as="image" fetchpriority="high" />
     </Head>
 
     <!-- Redirect guard: show minimal loader while checking auth -->

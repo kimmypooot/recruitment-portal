@@ -255,6 +255,8 @@ public function revokeLink(Request $request, BackgroundInvestigationReport $repo
             'on_competencies' => 'required|string|min:1000',
             'on_performance'  => 'required|string|min:1000',
             'file'            => 'required|file|mimes:pdf|max:10240',
+            // Honeypot — see resources/js/Pages/Public/BackgroundInvestigationUpload.vue
+            'website'         => 'prohibited',
         ]);
 
         $path = $request->file('file')->store('background-investigations', 'local');

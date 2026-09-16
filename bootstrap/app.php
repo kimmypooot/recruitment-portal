@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(\App\Http\Middleware\ForceHttps::class);
         $middleware->append(\App\Http\Middleware\AddCspHeaders::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\HandleInertiaRequests::class);
 
@@ -44,8 +45,17 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Always JSON for api/*, and preserve Laravel's default
+        // Accept-header-based detection for everything else — a couple of
+        // public web.php routes (e.g. the background-investigation upload
+        // form) are submitted via axios expecting JSON even though they
+        // aren't under /api/*. Without the `|| $request->expectsJson()`
+        // fallback, a validation failure there would render as an HTML
+        // redirect instead of a JSON 422, which axios follows silently
+        // (redirects are transparent to XHR) and the caller never sees
+        // the error.
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*'),
+            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
 
         // Serve the CSC-branded Error.vue page for standard HTTP error

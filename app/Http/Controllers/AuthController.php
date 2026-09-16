@@ -138,6 +138,10 @@ class AuthController extends Controller
                 'regex:/[0-9]/',
             ],
             'privacy_policy_version' => 'required|string|max:20',
+            // Honeypot: a real user never sees or fills this field (hidden
+            // off-screen in the form); a filled value means a bot submitted
+            // it, so we reject early with the same validation-error shape.
+            'website' => 'prohibited',
         ], [
             'password.regex' => 'The password must contain at least one uppercase letter, one lowercase letter, and one number.',
         ]);
