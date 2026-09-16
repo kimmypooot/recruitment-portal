@@ -100,13 +100,6 @@
         </p>
       </div>
 
-      <!-- PDS (CS Form 212) readiness — a separate, stricter checklist than the
-           bar above; kept visible across all tabs since its sections span several. -->
-      <ProfileReadinessPanel
-        :sections="pdsSections" :can-generate="pdsCanGenerate" :loading="pdsLoading"
-        @go-to="goToPdsSection"
-      />
-
       <!-- Step tabs -->
       <div class="bg-white border border-gray-200 rounded-xl p-1.5 mb-7 shadow-sm">
         <div class="flex gap-1" role="tablist" aria-label="Profile sections">
@@ -169,15 +162,7 @@
         @delete-training="deleteTraining($event)"
       />
 
-      <!-- ═══ Tab 3 — PDS Details (CS Form No. 212, Revised 2026) ═══ -->
-      <PdsDetailsTab
-        id="panel-pds" role="tabpanel" aria-labelledby="tab-pds"
-        v-show="activeTab === 'pds'"
-        :personal="personal"
-        @changed="loadPdsCompleteness"
-      />
-
-      <!-- ═══ Tab 4 — Documents ═══ -->
+      <!-- ═══ Tab 3 — Documents ═══ -->
       <DocumentsTab
         id="panel-documents" role="tabpanel" aria-labelledby="tab-documents"
         v-show="activeTab === 'documents'"
@@ -186,34 +171,16 @@
         :doc-paths="docPaths"
         :doc-timestamps="docTimestamps"
         :auth-token="authToken"
-        :pds-generated-at="personal.pds_generated_at"
         :is-complete="canApply"
         :saving="savingDocs"
         :errors="docErrors"
         @file-select="onDocFileSelect"
-        @pds-generated="refreshPdsDocumentState"
-      />
-
-      <!-- ═══ Tab 5 — Review ═══ -->
-      <ReviewTab
-        id="panel-review" role="tabpanel" aria-labelledby="tab-review"
-        v-show="activeTab === 'review'"
-        :name="nameForm"
-        :personal="personal"
-        :experiences="sortedExperiences"
-        :education-records="sortedEducation"
-        :trainings="sortedTrainings"
-        :doc-fields="docFields"
-        :doc-paths="docPaths"
-        :pds-can-generate="pdsCanGenerate"
-        :pds-sections="pdsSections"
-        @go-to="goToPdsSection"
       />
 
       <!-- Save / navigation bar — sits in the flow at the end of the tab
            content rather than floating over it. Only the right-hand action
-           differs per tab: Documents upload via FormData, Review has nothing
-           to save, and every other tab saves the profile form. -->
+           differs per tab: Documents upload via FormData, every other tab
+           saves the profile form. -->
       <div class="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm">
         <div class="px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <button v-if="previousTab" @click="goToPreviousTab" type="button"
@@ -225,14 +192,7 @@
           </button>
           <div v-else></div>
 
-          <div v-if="activeTab === 'review'">
-            <Link v-if="canApply" href="/applicant/dashboard?tab=vacancies"
-              class="inline-flex items-center gap-2 px-6 py-2.5 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors">
-              Browse Vacancies
-            </Link>
-          </div>
-
-          <div v-else-if="activeTab === 'documents'" class="flex items-center gap-4">
+          <div v-if="activeTab === 'documents'" class="flex items-center gap-4">
             <div v-if="saveIndicator" class="flex items-center gap-2 text-green-600 text-sm font-medium">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
@@ -302,54 +262,6 @@
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Department / Agency <span class="text-red-500 normal-case">*</span></label>
               <input v-model="expForm.department_agency" type="text" placeholder="e.g. Civil Service Commission"
                 class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
-            </div>
-            <!-- Everything below prints on the Work Experience Sheet attachment
-                 rather than on the PDS itself. -->
-            <div class="pt-4 mt-1 border-t border-gray-100">
-              <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Work Experience Sheet</p>
-              <p class="text-xs text-gray-400 mt-0.5 mb-4">
-                Attachment to CS Form No. 212. Fill this in for experience relevant to the position you are applying for.
-              </p>
-
-              <div class="space-y-5">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-5">
-                  <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Name of Office / Unit</label>
-                    <input v-model="expForm.office_unit" type="text" placeholder="e.g. Finance and Administrative Service"
-                      class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
-                  </div>
-                  <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Immediate Supervisor</label>
-                    <input v-model="expForm.immediate_supervisor" type="text" placeholder="e.g. Maria Estrada"
-                      class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Agency Location</label>
-                  <input v-model="expForm.agency_location" type="text" placeholder="e.g. Palo, Leyte"
-                    class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition" />
-                </div>
-
-                <div>
-                  <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                    Summary of Actual Duties
-                  </label>
-                  <textarea v-model="expForm.duties" rows="3"
-                    placeholder="Summarise your actual duties and responsibilities in this position."
-                    class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"></textarea>
-                </div>
-
-                <div>
-                  <label class="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                    Accomplishments and Contributions
-                  </label>
-                  <textarea v-model="expForm.accomplishments" rows="3"
-                    placeholder="One per line, e.g. Developed recruitment plan"
-                    class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none transition"></textarea>
-                  <p class="mt-1 text-xs text-gray-400">Optional. Each line prints as a separate bullet.</p>
-                </div>
-              </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-5">
               <div>
@@ -646,17 +558,14 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
-import { profileApi, pdsApi } from '@/services/api'
+import { profileApi } from '@/services/api'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 import BaseModal from '@/Components/UI/BaseModal.vue'
 import PersonalInfoTab from './Profile/PersonalInfoTab.vue'
 import QualificationsTab from './Profile/QualificationsTab.vue'
-import PdsDetailsTab from './Profile/PdsDetailsTab.vue'
 import DocumentsTab from './Profile/DocumentsTab.vue'
-import ReviewTab from './Profile/ReviewTab.vue'
-import ProfileReadinessPanel from './Profile/ProfileReadinessPanel.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 const { confirm, alert } = useConfirm()
@@ -738,25 +647,6 @@ const personal = reactive({
   mobile_number: '',
   eligibility: '', eligibility_other: '',
   indigenous_group: '', pwd: '', solo_parent: '',
-
-  // CS Form No. 212 (Revised 2026), Section I — edited on the PDS Details tab.
-  // Listed here because the loader copies by key and savePersonal() spreads the
-  // whole object into the update request.
-  place_of_birth: '', civil_status_other: '',
-  height_m: '', weight_kg: '', blood_type: '',
-  citizenship: '', citizenship_basis: '', dual_citizenship_country: '',
-  gsis_id_no: '', pagibig_id_no: '', philhealth_no: '', sss_no: '',
-  tin_no: '', umid_id_no: '', philsys_number: '', agency_employee_no: '',
-  telephone_no: '',
-  res_house_block_lot: '', res_street: '', res_subdivision: '', res_barangay: '',
-  res_city_municipality: '', res_province: '', res_zip_code: '',
-  perm_house_block_lot: '', perm_street: '', perm_subdivision: '', perm_barangay: '',
-  perm_city_municipality: '', perm_province: '', perm_zip_code: '',
-
-  // Read-only; surfaced on the Documents tab by GeneratePdsPanel. A generated
-  // PDS satisfies the document requirement in place of an upload.
-  pds_generated_at: null,
-  pds_generated_path: null,
 })
 
 const nameForm = reactive({
@@ -780,32 +670,15 @@ const tabs = computed(() => [
     complete: !!(personal.eligibility),
   },
   {
-    key: 'pds', label: 'PDS Details',
-    icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-    // Mirrors the required (non-optional) sections of this tab in the
-    // authoritative PdsCompletenessChecker — see ProfileReadinessPanel for
-    // the full breakdown across every tab.
-    complete: !!(
-      pdsSections.value.family_background?.complete &&
-      pdsSections.value.declarations?.complete &&
-      pdsSections.value.references?.complete
-    ),
-  },
-  {
     key: 'documents', label: 'Documents',
     icon: 'M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13',
     complete: hasRequiredDocuments.value,
-  },
-  {
-    key: 'review', label: 'Review',
-    icon: 'M9 12h6m-6 4h3m-9 5h12a2 2 0 002-2V7.414a1 1 0 00-.293-.707l-3.414-3.414A1 1 0 0012.586 3H6a2 2 0 00-2 2v14a2 2 0 002 2z',
-    // Purely a read-only summary — nothing here to mark "complete" on its own.
   },
 ])
 
 const profileStepsDone = computed(() => [
   !!(personal.gender && personal.civil_status && personal.birthday),
-  !!(personal.region && personal.res_province),
+  !!(personal.region && personal.province),
   !!(personal.mobile_number),
   !!(experiences.value.length || education.value.length),
   !!(trainings.value.length),
@@ -820,20 +693,15 @@ const progressPct = computed(() =>
 
 const docFields = [
   { key: 'pds',        label: 'Personal Data Sheet (PDS) with Work Experience Sheet', required: true, full: true,
-    note: 'CS Form No. 212 (Revised 2026) — or generate it below instead of uploading', templateUrl: '' },
+    note: 'CS Form No. 212 (Revised 2026)', templateUrl: '' },
   { key: 'app_letter', label: 'Application Letter', required: true },
   { key: 'ipcr',       label: 'IPCR', required: false },
   { key: 'coe',        label: 'Certificate of Eligibility', required: true },
   { key: 'tor',        label: 'Authenticated Transcript of Records', required: true },
 ]
 
-// A PDS generated from the profile counts the same as an uploaded one; mirrors
-// ApplicantProfile::hasPds() on the server.
-const hasPds = computed(() => !!docPaths.pds || !!personal.pds_generated_path)
-
 const hasRequiredDocuments = computed(() =>
-  docFields.filter(d => d.required)
-    .every(d => d.key === 'pds' ? hasPds.value : !!docPaths[d.key])
+  docFields.filter(d => d.required).every(d => !!docPaths[d.key])
 )
 
 // "Complete" here means actually eligible to apply — basic profile info
@@ -841,43 +709,6 @@ const hasRequiredDocuments = computed(() =>
 const canApply = computed(() => isComplete.value && hasRequiredDocuments.value)
 
 const docErrors = reactive({})
-
-// ─── PDS (CS Form 212) readiness ──────────────────────────────────────────────
-// Distinct from `canApply`/the progress bar above: this is the fuller,
-// stricter checklist (family background, declarations, references, etc.)
-// that actually gates PDS generation, sourced straight from the backend so it
-// never drifts from what PdsCompletenessChecker enforces.
-
-const pdsSections    = ref({})
-const pdsCanGenerate = ref(false)
-const pdsLoading     = ref(true)
-
-async function loadPdsCompleteness() {
-  try {
-    const { data } = await pdsApi.completeness()
-    pdsSections.value    = data.sections ?? {}
-    pdsCanGenerate.value = !!data.can_generate
-  } catch {
-    // Non-fatal: the readiness panel just stays at its last-known state.
-  } finally {
-    pdsLoading.value = false
-  }
-}
-
-async function goToPdsSection({ tab, anchor }) {
-  const wasAlreadyOnTab = activeTab.value === tab
-  await switchTab(tab, { scroll: !anchor })
-  if (!anchor) return
-
-  // Right after a v-show toggle, the element exists but the browser hasn't
-  // necessarily laid it out/painted yet — wait a frame on top of nextTick so
-  // scrollIntoView measures its real position instead of a stale (often 0,0)
-  // one. Not needed when we were already on the tab.
-  await nextTick()
-  if (!wasAlreadyOnTab) await new Promise(requestAnimationFrame)
-
-  document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
 
 const regions = [
   'NCR - National Capital Region',
@@ -999,9 +830,6 @@ async function switchTab(tabKey, { scroll = true } = {}) {
     if (!ok) return
   }
   activeTab.value = tabKey
-  // Skippable: a caller that's about to scroll to a specific section (e.g.
-  // goToPdsSection) would otherwise fight this scroll-to-top with its own
-  // scrollIntoView, and the two smooth-scroll animations cancel each other out.
   if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -1017,30 +845,11 @@ function goToNextTab() {
   if (nextTab.value) switchTab(nextTab.value.key)
 }
 
-/**
- * Generating a PDS stores it as the applicant's PDS of record, which can satisfy
- * the document requirement on its own — so pull the profile again to pick up the
- * new path and let the Browse Vacancies prompt appear without a page reload.
- */
-async function refreshPdsDocumentState() {
-  try {
-    const { data } = await profileApi.show()
-    if (!data.profile) return
-
-    personal.pds_generated_path = data.profile.pds_generated_path ?? null
-    personal.pds_generated_at   = data.profile.pds_generated_at ?? null
-
-    isComplete.value = data.is_complete ?? isComplete.value
-  } catch {
-    // Non-fatal: the download already succeeded, only the badge lags behind.
-  }
-}
-
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 onMounted(async () => {
   const tabParam = new URLSearchParams(window.location.search).get('tab')
-  if (tabParam && ['personal', 'qualifications', 'pds', 'documents', 'review'].includes(tabParam)) {
+  if (tabParam && ['personal', 'qualifications', 'documents'].includes(tabParam)) {
     activeTab.value = tabParam
   }
 
@@ -1075,7 +884,6 @@ onMounted(async () => {
   } catch {}
   takeSnapshot()
   pageLoading.value = false
-  loadPdsCompleteness()
 })
 
 function showSaveIndicator() {
@@ -1086,11 +894,8 @@ function showSaveIndicator() {
 // ─── Personal info ────────────────────────────────────────────────────────────
 
 function validateRequired() {
-  // Province, city and barangay moved to the PDS Details tab as part of the
-  // full residential address; they are checked by PdsCompletenessChecker there
-  // rather than blocking the Personal Info save.
-  const required = ['gender', 'civil_status', 'birthday', 'region', 'mobile_number']
-  const labels = { gender: 'Gender', civil_status: 'Civil Status', birthday: 'Date of Birth', region: 'Region', mobile_number: 'Mobile Number' }
+  const required = ['gender', 'civil_status', 'birthday', 'region', 'province', 'city_municipality', 'barangay', 'mobile_number']
+  const labels = { gender: 'Gender', civil_status: 'Civil Status', birthday: 'Date of Birth', region: 'Region', province: 'Province', city_municipality: 'City/Municipality', barangay: 'Barangay', mobile_number: 'Mobile Number' }
   let valid = true
   required.forEach(f => {
     if (!personal[f]) { errors[f] = `${labels[f]} is required.`; valid = false }
@@ -1123,7 +928,6 @@ async function savePersonal() {
     }
     takeSnapshot()
     showSaveIndicator()
-    loadPdsCompleteness()
   } catch (e) {
     await alert(e.response?.data?.message ?? 'Failed to save.')
   } finally {
@@ -1197,7 +1001,6 @@ async function saveExperience() {
     }
     expModal.open = false
     toast.success(expModal.editingId ? 'Work experience updated.' : 'Work experience added.')
-    loadPdsCompleteness()
   } catch (e) {
     expModal.error = e.response?.data?.message ?? 'Failed to save.'
   } finally {
@@ -1211,7 +1014,6 @@ async function deleteExperience(id) {
   await profileApi.deleteExperience(id)
   experiences.value = experiences.value.filter(e => e.id !== id)
   toast.error('Work experience removed.')
-  loadPdsCompleteness()
 }
 
 // ─── Education ────────────────────────────────────────────────────────────────
@@ -1253,7 +1055,6 @@ async function saveEducation() {
     }
     eduModal.open = false
     toast.success(eduModal.editingId ? 'Education record updated.' : 'Education record added.')
-    loadPdsCompleteness()
   } catch (e) {
     eduModal.error = e.response?.data?.message ?? 'Failed to save.'
   } finally {
@@ -1267,7 +1068,6 @@ async function deleteEducation(id) {
   await profileApi.deleteEducation(id)
   education.value = education.value.filter(e => e.id !== id)
   toast.error('Education record removed.')
-  loadPdsCompleteness()
 }
 
 // ─── Training ─────────────────────────────────────────────────────────────────
@@ -1300,7 +1100,6 @@ async function saveTraining() {
     }
     trainingModal.open = false
     toast.success(trainingModal.editingId ? 'Training updated.' : 'Training added.')
-    loadPdsCompleteness()
   } catch (e) {
     trainingModal.error = e.response?.data?.message ?? 'Failed to save.'
   } finally {
@@ -1314,7 +1113,6 @@ async function deleteTraining(id) {
   await profileApi.deleteTraining(id)
   trainings.value = trainings.value.filter(t => t.id !== id)
   toast.error('Training removed.')
-  loadPdsCompleteness()
 }
 
 // ─── Photo ────────────────────────────────────────────────────────────────────

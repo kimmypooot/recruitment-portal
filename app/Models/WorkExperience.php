@@ -10,9 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class WorkExperience extends Model
 {
     protected $fillable = [
-        'applicant_profile_id', 'position_title', 'department_agency', 'duties',
-        // Work Experience Sheet attachment only.
-        'office_unit', 'agency_location', 'immediate_supervisor', 'accomplishments',
+        'applicant_profile_id', 'position_title', 'department_agency',
         'monthly_salary', 'salary_grade', 'appointment_status',
         'government_service', 'date_from', 'date_to', 'is_present',
     ];

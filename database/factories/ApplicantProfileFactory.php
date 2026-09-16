@@ -31,29 +31,6 @@ class ApplicantProfileFactory extends Factory
     }
 
     /**
-     * Section I of CS Form No. 212 (Revised 2026), filled to the point where
-     * PdsCompletenessChecker considers personal information complete.
-     */
-    public function pdsPersonalInfo(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'place_of_birth'        => 'Tacloban City',
-            'citizenship'           => 'filipino',
-            'citizenship_basis'     => 'by_birth',
-            'res_house_block_lot'   => '12',
-            'res_street'            => 'Real Street',
-            'res_barangay'          => 'Barangay 20',
-            'res_city_municipality' => 'Tacloban City',
-            'res_province'          => 'Leyte',
-            'res_zip_code'          => '6500',
-            'perm_barangay'         => 'Barangay 20',
-            'perm_city_municipality' => 'Tacloban City',
-            'perm_province'         => 'Leyte',
-            'perm_zip_code'         => '6500',
-        ]);
-    }
-
-    /**
      * Satisfies ApplicantProfile::hasRequiredDocuments() (PDS, application
      * letter, COE, TOR) so the profile can pass application submission.
      */

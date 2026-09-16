@@ -108,7 +108,6 @@
               <li>• Documents must be <b>PDF</b> format, up to <b>5 MB</b> each.</li>
               <li>• Your profile photo must be <b>JPG or PNG</b>, up to <b>3 MB</b>.</li>
               <li>• Re-uploading a document replaces the previous file.</li>
-              <li>• Don't have a filled-out PDS on hand? You can generate one from the details you've already entered in your profile — see the Documents tab.</li>
             </ul>
           </section>
 

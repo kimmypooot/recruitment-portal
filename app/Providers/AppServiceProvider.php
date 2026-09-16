@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Models\ApplicantProfile;
 use App\Models\Application;
 use App\Models\Document;
 use App\Models\Vacancy;
 use App\Observers\ApplicationObserver;
 use App\Observers\VacancyObserver;
-use App\Policies\ApplicantProfilePolicy;
 use App\Policies\ApplicationPolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\EvaluationPolicy;
@@ -31,7 +29,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Vacancy::class, VacancyPolicy::class);
         Gate::policy(Application::class, ApplicationPolicy::class);
         Gate::policy(Document::class, DocumentPolicy::class);
-        Gate::policy(ApplicantProfile::class, ApplicantProfilePolicy::class);
 
         // EvaluationPolicy gates are keyed by ability name, not model class,
         // because evaluation access depends on HRMPSB board composition.

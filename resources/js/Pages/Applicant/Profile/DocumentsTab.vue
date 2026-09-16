@@ -76,10 +76,6 @@
       </Link>
     </div>
 
-    <!-- Generate the PDS from the details already captured, instead of
-         uploading a separately hand-filled copy. -->
-    <GeneratePdsPanel :generated-at="pdsGeneratedAt" @generated="$emit('pds-generated')" />
-
   </div>
 </template>
 
@@ -88,7 +84,6 @@ import { Link } from '@inertiajs/vue3'
 import { useConfirm } from '@/composables/useConfirm'
 import Icon from '@/Components/UI/Icon.vue'
 import BaseFileUploader from '@/Components/UI/BaseFileUploader.vue'
-import GeneratePdsPanel from './GeneratePdsPanel.vue'
 const { alert } = useConfirm()
 
 const props = defineProps({
@@ -97,13 +92,12 @@ const props = defineProps({
   docPaths:       { type: Object, required: true },
   docTimestamps:  { type: Object, default: () => ({}) },
   authToken:      { type: String, default: '' },
-  pdsGeneratedAt: { type: String, default: null },
   isComplete:     { type: Boolean, default: false },
   saving:         { type: Boolean, default: false },
   errors:         { type: Object, default: () => ({}) },
 })
 
-defineEmits(['file-select', 'pds-generated'])
+defineEmits(['file-select'])
 
 function viewUrl(path) {
   return path ? `/profile/documents/${path}?token=${props.authToken}` : '#'
