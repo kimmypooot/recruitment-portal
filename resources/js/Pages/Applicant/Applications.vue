@@ -361,7 +361,7 @@ async function doWithdraw() {
       `/api/applications/${withdrawTarget.value.id}/withdraw`,
       { remarks: withdrawReason.value || null },
     )
-    toast.error('Application withdrawn.')
+    toast.success('Application withdrawn.')
     const idx = applications.value.findIndex(a => a.id === withdrawTarget.value.id)
     if (idx >= 0) applications.value[idx].status = 'withdrawn'
     withdrawTarget.value = null

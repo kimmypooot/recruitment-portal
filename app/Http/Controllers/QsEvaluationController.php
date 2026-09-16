@@ -16,6 +16,7 @@ use App\Events\QSEvaluationsLocked;
 use App\Http\Requests\StoreQsEvaluationRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class QsEvaluationController extends Controller
 {
@@ -226,36 +227,58 @@ class QsEvaluationController extends Controller
             return response()->json(['message' => 'Only the HRMPSB Secretariat or an admin-level user can lock QS evaluations.'], 403);
         }
 
-        $applicationIds = Application::where('vacancy_id', $vacancy->id)->pluck('id');
+        [$count, $statusChanges] = DB::transaction(function () use ($vacancy) {
+            // Same Vacancy row lock as Deliberation's lock()/decide() use, so
+            // concurrent lock requests for this vacancy fully serialize instead
+            // of racing on the bulk update below.
+            Vacancy::where('id', $vacancy->id)->lockForUpdate()->first();
 
-        $count = QsEvaluation::whereIn('application_id', $applicationIds)
-            ->whereNull('locked_at')
-            ->update(['locked_at' => now()]);
+            $applications = Application::where('vacancy_id', $vacancy->id)->get(['id', 'status']);
+            $applicationIds = $applications->pluck('id');
 
-        // Update application statuses based on aggregated QS results
-        foreach ($applicationIds as $appId) {
-            $evaluations = QsEvaluation::where('application_id', $appId)->get();
+            $lockedCount = QsEvaluation::whereIn('application_id', $applicationIds)
+                ->whereNull('locked_at')
+                ->update(['locked_at' => now()]);
 
-            if ($evaluations->isEmpty()) {
-                continue;
+            // Batch-load every evaluation for this vacancy in one query and
+            // group by application, instead of one query per application.
+            $evaluationsByApp = QsEvaluation::whereIn('application_id', $applicationIds)
+                ->get()
+                ->groupBy('application_id');
+
+            $statusChanges = [];
+
+            foreach ($applications as $application) {
+                $evaluations = $evaluationsByApp->get($application->id);
+
+                if (! $evaluations || $evaluations->isEmpty()) {
+                    continue;
+                }
+
+                // Majority rule: more qualified votes = qualified
+                $qualifiedCount = $evaluations->where('overall_qualified', true)->count();
+                $totalCount     = $evaluations->count();
+                $isQualified    = $qualifiedCount > ($totalCount / 2);
+                $newStatus      = $isQualified ? 'qualified' : 'disqualified';
+
+                if ($application->status !== $newStatus) {
+                    $oldStatus = $application->status;
+                    $application->update(['status' => $newStatus]);
+                    $statusChanges[] = [$application, $oldStatus, $newStatus];
+                }
             }
 
-            // Majority rule: more qualified votes = qualified
-            $qualifiedCount = $evaluations->where('overall_qualified', true)->count();
-            $totalCount     = $evaluations->count();
-            $isQualified    = $qualifiedCount > ($totalCount / 2);
+            return [$lockedCount, $statusChanges];
+        });
 
-            $application = Application::find($appId);
-            if ($application) {
-                $oldStatus = $application->status;
-                $application->update([
-                    'status' => $isQualified ? 'qualified' : 'disqualified',
-                ]);
-                ApplicationStatusUpdated::dispatch($application, $oldStatus, $application->status, true);
-            }
+        // Dispatch events and generate anonymization tokens outside the
+        // transaction, once the lock is committed.
+        foreach ($statusChanges as [$application, $oldStatus, $newStatus]) {
+            ApplicationStatusUpdated::dispatch($application, $oldStatus, $newStatus, true);
         }
 
         // Generate anonymization tokens for all qualifying applications
+        // (idempotent: firstOrCreate keyed on application_id).
         (new AnonymizationService())->generateForVacancy($vacancy);
 
         QSEvaluationsLocked::dispatch($vacancy);

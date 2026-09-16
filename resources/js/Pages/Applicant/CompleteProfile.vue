@@ -1013,7 +1013,7 @@ async function deleteExperience(id) {
   if (!ok) return
   await profileApi.deleteExperience(id)
   experiences.value = experiences.value.filter(e => e.id !== id)
-  toast.error('Work experience removed.')
+  toast.success('Work experience removed.')
 }
 
 // ─── Education ────────────────────────────────────────────────────────────────
@@ -1067,7 +1067,7 @@ async function deleteEducation(id) {
   if (!ok2) return
   await profileApi.deleteEducation(id)
   education.value = education.value.filter(e => e.id !== id)
-  toast.error('Education record removed.')
+  toast.success('Education record removed.')
 }
 
 // ─── Training ─────────────────────────────────────────────────────────────────
@@ -1112,7 +1112,7 @@ async function deleteTraining(id) {
   if (!ok3) return
   await profileApi.deleteTraining(id)
   trainings.value = trainings.value.filter(t => t.id !== id)
-  toast.error('Training removed.')
+  toast.success('Training removed.')
 }
 
 // ─── Photo ────────────────────────────────────────────────────────────────────

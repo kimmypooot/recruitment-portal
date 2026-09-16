@@ -31,6 +31,7 @@ export function useIdleTimer(timeout = IDLE_TIMEOUT) {
 
   function resetTimer() {
     clearAll()
+    if (!useAuthStore().isLoggedIn) return
     if (isRememberedSession()) return
     warningTimer = setTimeout(() => {
       warning('Your session will expire due to inactivity. Move your mouse or press a key to stay signed in.')

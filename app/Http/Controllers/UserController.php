@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\AuditLog;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -141,9 +142,19 @@ class UserController extends Controller
             return response()->json(['message' => 'Only an administrator can delete an admin account.'], 403);
         }
 
-        AuditLog::record('user_deleted', $user);
+        try {
+            $user->delete();
+        } catch (QueryException $e) {
+            if ((int) $e->getCode() === 23000) {
+                return response()->json([
+                    'message' => 'This user cannot be deleted because they have produced evaluation, decision, or form records in the recruitment pipeline. Deactivate the account instead.',
+                ], 422);
+            }
 
-        $user->delete();
+            throw $e;
+        }
+
+        AuditLog::record('user_deleted', $user);
 
         return response()->json(['message' => 'User deleted.']);
     }
