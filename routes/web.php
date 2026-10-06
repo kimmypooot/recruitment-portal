@@ -21,6 +21,8 @@ Route::get('/about', fn () => Inertia::render('About'));
 Route::get('/privacy-policy', fn () => Inertia::render('PrivacyPolicy'));
 Route::get('/terms-of-service', fn () => Inertia::render('TermsOfService'));
 Route::get('/login', fn () => Inertia::render('Auth/Login'))->name('login');
+// Where the IMIS portal sends HR staff and board members (see ImisSsoController)
+Route::get('/sso', fn () => Inertia::render('Auth/ImisSso'));
 Route::get('/register', fn () => Inertia::render('Auth/Register'));
 
 // Password reset

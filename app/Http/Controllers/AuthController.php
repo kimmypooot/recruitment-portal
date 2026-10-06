@@ -38,6 +38,12 @@ class AuthController extends Controller
 
         $user = $request->user();
 
+        if ($user->isImisManaged()) {
+            Auth::guard('web')->logout();
+
+            return response()->json(['message' => 'Staff sign in through the IMIS portal.'], 403);
+        }
+
         if ($user->deactivated_at) {
             $user->update(['deactivated_at' => null]);
         }
@@ -314,6 +320,9 @@ class AuthController extends Controller
 
             // 3. Check if google_id already exists
             $existing = User::where('google_id', $googleUser->getId())->first();
+            if ($existing && $existing->isImisManaged()) {
+                return redirect()->route('auth.google.callback-handler', ['error' => 'imis_managed']);
+            }
             if ($existing) {
                 $existing->update([
                     'email_verified_at' => $existing->email_verified_at ?? now(),

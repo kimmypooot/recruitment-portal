@@ -89,6 +89,7 @@ const errorMap = {
   email_exists:        'This email is already registered. Please sign in with your password, then link Google in your Profile settings.',
   name_exists:         'An account with this name already exists. Please sign in or contact support if you need help recovering your account.',
   auth_failed:         'Google authentication failed. Please try again.',
+  imis_managed:        'Staff sign in through the IMIS portal.',
   link_user_not_found: 'User not found. Please sign in and try again.',
   link_already_taken:  'This Google account is already linked to another user.',
   link_failed:         'Failed to link your Google account. Please try again.',

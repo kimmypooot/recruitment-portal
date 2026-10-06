@@ -74,7 +74,7 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new ResetPasswordNotification($token));
     }
 
-    protected $fillable = ['first_name', 'last_name', 'middle_name', 'suffix', 'email', 'password', 'has_password', 'role', 'google_id', 'google_avatar', 'photo_path', 'email_verified_at'];
+    protected $fillable = ['imis_user_id', 'first_name', 'last_name', 'middle_name', 'suffix', 'email', 'password', 'has_password', 'role', 'google_id', 'google_avatar', 'photo_path', 'email_verified_at'];
 
     protected $hidden = ['password', 'remember_token', 'email_verification_code', 'email_verification_code_expires_at'];
 
@@ -125,6 +125,18 @@ class User extends Authenticatable implements MustVerifyEmail
     public function hasAdminDesignation(): bool
     {
         return in_array($this->hrmbsDesignation(), ['secretariat', 'hr-chief']);
+    }
+
+    /**
+     * HR staff and board members linked to their IMIS account. They have no
+     * password or Google sign-in here: IMIS is where they are managed. An
+     * unlinked admin/board account (never signed in from IMIS) keeps its
+     * password, which is also the break-glass way in. Off while IMIS sign-in
+     * is not configured. Applicants are never linked.
+     */
+    public function isImisManaged(): bool
+    {
+        return config('services.imis.sso_url') !== null && $this->imis_user_id !== null;
     }
 
     public function canAccessAdminModule(): bool

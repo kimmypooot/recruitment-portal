@@ -22,6 +22,7 @@ use App\Http\Controllers\ExamResultController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\HrmpsbController;
+use App\Http\Controllers\ImisSsoController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PreAssessmentController;
@@ -46,6 +47,8 @@ Route::post('/visitor-count/increment', [VisitorCountController::class, 'increme
 
 // Authentication — throttled to prevent brute-force and registration spam
 Route::middleware('throttle:login')->post('/login', [AuthController::class, 'login']);
+// Sign-in from the IMIS portal (one-time token; see ImisSsoController)
+Route::middleware('throttle:30,1')->post('/sso', ImisSsoController::class);
 Route::middleware('throttle:3,60')->post('/register', [AuthController::class, 'register']);
 
 // Passwordless application-status lookup — public, throttled (see ApplicationTrackingController)
