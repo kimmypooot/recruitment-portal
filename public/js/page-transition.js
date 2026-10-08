@@ -6,7 +6,7 @@
   veil.id = 'csc-page-veil'
   veil.style.cssText = [
     'position:fixed', 'inset:0', 'z-index:999999', 'pointer-events:all',
-    'background:linear-gradient(135deg,#f0eef9 0%,#e8eafa 50%,#fdeef0 100%)',
+    'background:#f5f6fa', // the IMIS page colour, as in every system under IMIS
     'opacity:1', 'transition:opacity 0.4s ease',
   ].join(';')
   document.documentElement.appendChild(veil)

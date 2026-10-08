@@ -44,6 +44,7 @@
     <script src="/js/page-transition.js"></script>
 </head>
 <body class="antialiased bg-gray-50">
+    @include('partials.imis-boot', ['system' => 'Recruitment Portal', 'office' => 'Regional Office VIII', 'opening' => ($page['component'] ?? null) === 'Auth/ImisSso'])
     @inertia
 </body>
 </html>

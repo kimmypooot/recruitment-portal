@@ -120,19 +120,12 @@
   </AuthLayout>
 
   <!-- Post-login preload overlay -->
-  <AuthSplashOverlay :visible="showPreload">
-    <Transition name="pfade" mode="out-in">
-      <div v-if="preloadWelcome" key="welcome" class="space-y-2">
-        <p class="text-sm font-medium tracking-wide uppercase text-accent">Welcome back</p>
-        <p class="text-2xl font-bold text-gray-900">{{ preloadName }}</p>
-        <p class="text-gray-500 text-sm">{{ preloadSubtitle }}</p>
-      </div>
-      <div v-else key="loading" class="space-y-2">
-        <p class="text-xl font-semibold text-primary">Signing you in</p>
-        <p class="text-gray-500 text-sm">{{ preloadSubtitle }}</p>
-      </div>
-    </Transition>
-  </AuthSplashOverlay>
+  <AuthSplashOverlay
+    :visible="showPreload"
+    :title="preloadWelcome ? 'Login Successful' : 'Signing you in'"
+    :subtitle="preloadWelcome ? (preloadName ? `Welcome back, ${preloadName}` : 'Welcome back') : preloadSubtitle"
+    :note="preloadWelcome ? preloadSubtitle : ''"
+  />
 </template>
 
 <script setup>
@@ -187,7 +180,7 @@ async function submit() {
     useAuthStore().setAuth(data.token, data.user, form.remember)
     const role = data.user?.role
 
-    preloadName.value    = data.user?.first_name ? `${data.user.first_name}!` : ''
+    preloadName.value    = data.user?.first_name ?? ''
     preloadWelcome.value = true
 
     // Welcome display and destination resolution run in parallel

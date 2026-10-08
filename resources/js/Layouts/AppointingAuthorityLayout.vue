@@ -72,10 +72,7 @@
     </BaseModal>
 
     <!-- Sign-out preload overlay -->
-    <AuthSplashOverlay :visible="showSignOutPreload">
-      <p class="text-xl font-semibold text-primary">Signing you out</p>
-      <p class="text-gray-500 text-sm">Please wait a moment…</p>
-    </AuthSplashOverlay>
+    <AuthSplashOverlay :visible="showSignOutPreload" title="Signing Out" subtitle="Please wait a moment…" />
   </div>
   </div>
 </template>

@@ -9,6 +9,7 @@ import ProgressBar from './Components/UI/ProgressBar.vue'
 import { useToast } from '@/composables/useToast'
 import { useSessionExpiry } from '@/composables/useSessionExpiry'
 import { useIdleTimer } from '@/composables/useIdleTimer'
+import { dismissBootPreloader } from './imisBoot'
 
 const origin = window.location.origin
 axios.interceptors.request.use((config) => {
@@ -66,6 +67,9 @@ createInertiaApp({
     })
 
     app.mount(el)
+
+    // The IMIS loading screen from app.blade.php.
+    dismissBootPreloader()
 
     return app
   },

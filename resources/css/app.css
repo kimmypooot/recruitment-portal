@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+/* The IMIS loading screens, shared by every system under IMIS. */
+@import './imis-loading.css';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 

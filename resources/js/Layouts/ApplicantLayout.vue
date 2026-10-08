@@ -279,10 +279,7 @@
     </BaseModal>
 
     <!-- Sign-out preload overlay -->
-    <AuthSplashOverlay :visible="showSignOutPreload">
-      <p class="text-xl font-semibold mb-1 text-primary">Signing you out</p>
-      <p class="text-gray-500 text-sm">See you next time!</p>
-    </AuthSplashOverlay>
+    <AuthSplashOverlay :visible="showSignOutPreload" title="Signing Out" subtitle="See you next time!" />
 
   </div>
   </div>

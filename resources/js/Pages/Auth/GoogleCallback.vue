@@ -1,31 +1,18 @@
 <template>
-  <div class="relative flex items-center justify-center min-h-screen overflow-hidden"
-    style="background: linear-gradient(135deg, #f0eef9 0%, #e8eafa 50%, #fdeef0 100%);">
-    <AmbientBlobs />
+  <!-- The IMIS splash: "Signing you in", then "Login Successful". -->
+  <ImisSplash
+    :visible="status === 'processing'"
+    instant
+    :title="showWelcome ? 'Login Successful' : 'Signing you in'"
+    :subtitle="showWelcome ? (userName ? `Welcome back, ${userName}` : 'Welcome back') : 'Please wait a moment…'"
+    :note="showWelcome ? statusText : ''"
+  />
 
+  <div v-if="status !== 'processing'" class="imis-tr">
     <!-- Card -->
-    <div class="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/40 p-10 text-center max-w-sm w-full mx-4">
-      <!-- Processing state -->
-        <div v-if="status === 'processing'" key="processing">
-          <BrandRings />
-
-          <transition name="fade" mode="out-in">
-            <div v-if="showWelcome" key="welcome" class="space-y-2">
-              <p class="text-sm font-medium tracking-wide uppercase text-accent">Welcome back</p>
-              <p class="text-2xl font-bold text-gray-900">{{ userName }}</p>
-              <p class="text-gray-500 text-sm">{{ statusText }}</p>
-            </div>
-            <div v-else key="loading" class="space-y-2">
-              <p class="text-xl font-semibold text-primary">Signing you in</p>
-              <p class="text-gray-500 text-sm">Please wait a moment…</p>
-            </div>
-          </transition>
-
-          <PulsingDots />
-        </div>
-
+    <div class="imis-tr__card">
         <!-- Error state -->
-        <div v-else-if="status === 'error'" key="error" class="space-y-5">
+        <div v-if="status === 'error'" key="error" class="space-y-5">
           <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-50 ring-4 ring-red-100">
             <svg class="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -73,9 +60,7 @@ import { ref, onMounted } from 'vue'
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 import { navigateTo } from '@/utils/navigate'
-import AmbientBlobs from '@/Components/UI/AmbientBlobs.vue'
-import BrandRings from '@/Components/UI/BrandRings.vue'
-import PulsingDots from '@/Components/UI/PulsingDots.vue'
+import ImisSplash from '@/Components/UI/ImisSplash.vue'
 
 const appUrl = window.location.origin
 
@@ -133,7 +118,7 @@ onMounted(async () => {
     useAuthStore().setAuth(token, userData ? JSON.parse(atob(userData)) : {}, true)
     const user = useAuthStore().user
     const firstName = user.first_name ?? ''
-    userName.value = firstName ? `${firstName}!` : '!'
+    userName.value = firstName
     statusText.value = 'Signing you in…'
     showWelcome.value = true
 
