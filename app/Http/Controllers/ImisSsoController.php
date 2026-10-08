@@ -82,6 +82,8 @@ class ImisSsoController extends Controller
             'middle_name' => trim((string) ($imis['mname'] ?? '')) ?: null,
             'email' => $imis['email'],
             'role' => $role,
+            // Keeps the current photo when IMIS has none to give.
+            'google_avatar' => $this->photoUrl($imis) ?? $user->google_avatar,
             'deactivated_at' => null,
             'last_login_at' => now(),
             'email_verified_at' => $user->email_verified_at ?? now(),
@@ -122,6 +124,19 @@ class ImisSsoController extends Controller
         }
 
         return $match->imis_user_id === null && $match->role !== 'applicant' ? $match : false;
+    }
+
+    /**
+     * The person's IMIS photo (a public URL on the IMIS host), kept in
+     * `google_avatar`, which both the header and the profile already show.
+     * Only an http(s) URL that fits the column; IMIS is the only writer for
+     * linked accounts, so there is no Google avatar to clobber.
+     */
+    private function photoUrl(array $imis): ?string
+    {
+        $url = $imis['photo_url'] ?? null;
+
+        return is_string($url) && strlen($url) <= 255 && preg_match('#^https?://#i', $url) ? $url : null;
     }
 
     private function refuse(string $message, int $status): JsonResponse

@@ -176,6 +176,13 @@
               </svg>
               Already Applied
             </span>
+            <button v-else-if="!authenticated" @click="$emit('require-auth')"
+              class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors shadow-sm">
+              Proceed to Apply
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+              </svg>
+            </button>
             <button v-else-if="confirmBeforeApply" @click="showConfirmModal = true"
               class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors shadow-sm">
               Proceed to Apply
@@ -241,9 +248,13 @@ const props = defineProps({
   appliedIds:         { type: Array,  default: () => [] },
   preview:            { type: Boolean, default: false },
   confirmBeforeApply: { type: Boolean, default: false },
+  // Whether the viewer is signed in. Defaults to true so existing callers
+  // (the applicant dashboard, which is always authenticated) keep linking
+  // straight to the apply page without needing to pass this explicitly.
+  authenticated:      { type: Boolean, default: true },
 })
 
-defineEmits(['close'])
+defineEmits(['close', 'require-auth'])
 
 const modalRef = ref(null)
 // This component is only ever mounted while the modal should be open (the

@@ -38,6 +38,8 @@ return [
     // The IMIS portal that signs HR staff and board members in (ImisSsoController). Unset = off.
     'imis' => [
         'sso_url' => env('IMIS_SSO_URL'),
+        // Origin that serves IMIS photos, allowed in img-src (e.g. https://imis.cscro8.com).
+        'asset_origin' => env('IMIS_ASSET_ORIGIN'),
         // This app's own host[:port], as registered in IMIS (SSO_HUB_HOSTS).
         'audience' => env('IMIS_SSO_AUDIENCE', parse_url((string) env('APP_URL'), PHP_URL_HOST).(parse_url((string) env('APP_URL'), PHP_URL_PORT) ? ':'.parse_url((string) env('APP_URL'), PHP_URL_PORT) : '')),
     ],

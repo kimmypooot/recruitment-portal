@@ -11,8 +11,9 @@
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-14">
           <div class="flex items-center gap-3">
-            <img src="/images/csc-logo.png" alt="CSC Logo" class="h-8 w-8 object-contain"
-              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white p-1 shadow-sm ring-1 ring-white/20">
+              <img src="/images/csc-logo.png" alt="CSC Logo" class="h-full w-full object-contain" />
+            </span>
             <div class="leading-tight">
               <p class="text-sm font-bold">CSC RO VIII</p>
               <p class="text-[10px] text-amber-300/80 uppercase tracking-wider font-medium">Appointing Authority</p>

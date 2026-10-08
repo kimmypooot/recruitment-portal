@@ -66,6 +66,7 @@ Route::prefix('applicant')->group(function () {
     Route::get('/dashboard', fn () => Inertia::render('Applicant/Dashboard'));
     Route::get('/applications', fn () => Inertia::render('Applicant/Applications'));
     Route::get('/complete-profile', fn () => Inertia::render('Applicant/CompleteProfile'));
+    Route::get('/help', fn () => Inertia::render('Applicant/Help'));
 });
 
 // Admin pages — auth enforced by API routes and client-side guards

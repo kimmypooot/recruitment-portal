@@ -91,8 +91,9 @@
         </div>
       </div>
 
-      <!-- Logged in + showDetailFirst: fetch detail then show modal -->
-      <button v-if="isLoggedIn && showDetailFirst"
+      <!-- showDetailFirst: fetch detail then show modal (works signed in or not —
+           the modal itself gates the actual "Proceed to Apply" step on auth) -->
+      <button v-if="showDetailFirst"
         @click="openDetail"
         :disabled="loadingDetail"
         class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark disabled:opacity-60 rounded-lg transition-colors shadow-sm">
@@ -134,7 +135,9 @@
       :vacancy="detailVacancy"
       :applied-ids="appliedIds"
       :confirm-before-apply="confirmBeforeApply"
+      :authenticated="isLoggedIn"
       @close="showDetailModal = false"
+      @require-auth="onRequireAuth"
     />
 
     <!-- Auth gate modal -->
@@ -191,6 +194,11 @@ const loadingDetail    = ref(false)
 const isLoggedIn = props.authenticated || !!localStorage.getItem('auth_token')
 
 function promptLogin() {
+  showAuthModal.value = true
+}
+
+function onRequireAuth() {
+  showDetailModal.value = false
   showAuthModal.value = true
 }
 

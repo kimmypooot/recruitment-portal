@@ -136,7 +136,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isImisManaged(): bool
     {
-        return config('services.imis.sso_url') !== null && $this->imis_user_id !== null;
+        return filled(config('services.imis.sso_url')) && $this->imis_user_id !== null;
     }
 
     public function canAccessAdminModule(): bool

@@ -18,15 +18,15 @@
           <!-- LOGO: Replace /images/csc-logo.png with your actual logo file.
                Place the file at: public/images/csc-logo.png -->
           <Link href="/" class="flex items-center gap-3 group">
-            <img src="/images/csc-logo.png" alt="CSC Logo"
-              class="h-10 w-10 object-contain flex-shrink-0"
-              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-            <div class="w-10 h-10 rounded-lg bg-white/20 items-center justify-center flex-shrink-0 hidden">
-              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-white/20">
+              <img src="/images/csc-logo.png" alt="CSC Logo"
+                class="h-full w-full object-contain"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+              <svg class="w-5 h-5 text-primary hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
               </svg>
-            </div>
+            </span>
             <div class="leading-tight">
               <p class="text-sm font-bold text-white group-hover:text-white/80 transition-colors">CSC RO VIII</p>
               <p class="text-xs text-white/60">Recruitment Portal</p>
@@ -141,13 +141,13 @@
           <div>
             <div class="flex items-center gap-2 mb-3">
               <!-- LOGO (footer): same file as navbar — public/images/csc-logo.png -->
-              <img src="/images/csc-logo.png" alt="CSC Logo" class="h-7 w-7 object-contain"
-                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-              <div class="w-7 h-7 rounded bg-white/20 items-center justify-center hidden">
-                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white p-1 shadow-sm ring-1 ring-white/20">
+                <img src="/images/csc-logo.png" alt="CSC Logo" class="h-full w-full object-contain"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <svg class="w-4 h-4 text-primary hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
                 </svg>
-              </div>
+              </span>
               <span class="text-sm font-bold text-white">CSC RO VIII</span>
             </div>
             <p class="text-xs text-white/60 leading-relaxed">

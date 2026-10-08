@@ -443,7 +443,7 @@ const navGroups = [
     items: [
       {
         label: 'Help & FAQ',
-        href:  '/help',
+        href:  '/applicant/help',
         icon:  'info',
         disabled: false,
       },

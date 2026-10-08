@@ -63,6 +63,25 @@ class ImisSsoTest extends TestCase
         $this->withHeader('Authorization', 'Bearer '.$response->json('token'))->getJson('/api/me')->assertOk();
     }
 
+    public function test_the_imis_photo_is_kept_as_the_avatar_and_not_replaced_by_junk(): void
+    {
+        $this->imis(['photo_url' => 'https://imis.test/storage/profile-photos/a.jpg']);
+        $this->signIn()->assertOk();
+        $user = User::where('imis_user_id', 7)->firstOrFail();
+        $this->assertSame('https://imis.test/storage/profile-photos/a.jpg', $user->google_avatar);
+
+        $this->imis(['photo_url' => null]);
+        $this->signIn('def')->assertOk();
+        $this->imis(['photo_url' => 'javascript:alert(1)']);
+        $this->signIn('ghi')->assertOk();
+        $this->assertSame('https://imis.test/storage/profile-photos/a.jpg', $user->fresh()->google_avatar);
+
+        // The browser may load it: the IMIS origin is allowed by the policy.
+        config(['services.imis.asset_origin' => 'https://imis.test']);
+        $this->get('/login')->assertHeader('Content-Security-Policy');
+        $this->assertStringContainsString('https://imis.test', $this->get('/login')->headers->get('Content-Security-Policy'));
+    }
+
     public function test_board_members_get_the_hrmpsb_role(): void
     {
         $this->imis(['role_code' => 'hrmpsb']);
@@ -138,7 +157,7 @@ class ImisSsoTest extends TestCase
 
     public function test_password_sign_in_is_unchanged_while_imis_sign_in_is_off(): void
     {
-        config(['services.imis.sso_url' => null]);
+        config(['services.imis.sso_url' => '']);
         $linked = User::factory()->admin()->create(['imis_user_id' => 9]);
 
         $this->postJson('/api/login', ['email' => $linked->email, 'password' => 'password'])->assertOk();

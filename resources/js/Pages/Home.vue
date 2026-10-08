@@ -195,7 +195,8 @@
         <VacancyCard
           v-for="vacancy in vacancies"
           :key="vacancy.id"
-          :vacancy="vacancy" />
+          :vacancy="vacancy"
+          :show-detail-first="true" />
       </div>
 
       <!-- Empty state -->

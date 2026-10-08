@@ -20,11 +20,14 @@ class AddCspHeaders
             $viteDevOrigins = ' http://127.0.0.1:5183 ws://127.0.0.1:5183';
         }
 
+        // IMIS photos (users.google_avatar) of staff signed in from IMIS.
+        $imisImages = config('services.imis.asset_origin') ? ' '.config('services.imis.asset_origin') : '';
+
         $csp = "default-src 'self'; "
             . "script-src 'self'{$viteDevOrigins}; "
             . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$viteDevOrigins}; "
             . "font-src 'self' data: https://fonts.gstatic.com; "
-            . "img-src 'self' data: https://*.googleusercontent.com; "
+            . "img-src 'self' data: https://*.googleusercontent.com{$imisImages}; "
             . "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com{$viteDevOrigins}; "
             . "form-action 'self'; "
             . "base-uri 'self'; "

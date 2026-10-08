@@ -57,6 +57,10 @@ class ExaminationController extends Controller
 
     public function update(Request $request, ExamSchedule $examination): JsonResponse
     {
+        if (! $this->isSecretary($request)) {
+            return response()->json(['message' => 'Only the HRMPSB Secretariat can schedule examinations.'], 403);
+        }
+
         $data = $request->validate([
             'scheduled_at' => 'sometimes|required|date',
             'venue' => 'sometimes|required|string|max:255',
@@ -68,8 +72,12 @@ class ExaminationController extends Controller
         return response()->json($examination);
     }
 
-    public function destroy(ExamSchedule $examination): JsonResponse
+    public function destroy(Request $request, ExamSchedule $examination): JsonResponse
     {
+        if (! $this->isSecretary($request)) {
+            return response()->json(['message' => 'Only the HRMPSB Secretariat can schedule examinations.'], 403);
+        }
+
         $examination->delete();
 
         return response()->json(['message' => 'Deleted.']);
