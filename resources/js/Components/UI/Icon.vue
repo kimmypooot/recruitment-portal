@@ -38,6 +38,7 @@ const icons = {
   chevronRight: 'M8.25 4.5l7.5 7.5-7.5 7.5',
   chevronUp: 'M4.5 15.75l7.5-7.5 7.5 7.5',
   arrowRight: 'M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3',
+  arrowLeft: 'M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18',
   plus: 'M12 4v16m8-8H4',
   minus: 'M20 12H4',
   menu: 'M4 6h16M4 12h16M4 18h16',

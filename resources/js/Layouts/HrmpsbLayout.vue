@@ -120,7 +120,14 @@
             leave-from-class="opacity-100 scale-100"
             leave-to-class="opacity-0 scale-95">
             <div v-if="dropdownOpen"
-              class="absolute right-0 mt-1 w-40 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
+              class="absolute right-0 mt-1 w-48 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
+              <div v-if="auth.imisUrl" class="py-1 border-b border-gray-100">
+                <a :href="auth.imisUrl"
+                  class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                  <Icon name="arrowLeft" size="4" class="flex-shrink-0" />
+                  Back to IMIS
+                </a>
+              </div>
               <div class="py-1">
                 <button @click="logout"
                   class="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
@@ -318,6 +325,7 @@ function handleKeydown(e) {
 // else — including applicants — is redirected before any content renders.
 onMounted(async () => {
   auth.refreshFromStorage()
+  auth.syncImisUrl()
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeydown)
   window.addEventListener('auth-avatar-updated', refreshAvatar)

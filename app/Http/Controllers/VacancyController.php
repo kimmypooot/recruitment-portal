@@ -9,8 +9,12 @@ use App\Http\Resources\VacancyResource;
 use App\Models\Vacancy;
 use App\Events\VacancyStateChanged;
 use Illuminate\Http\JsonResponse;
+use App\Services\ImisPlantilla;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class VacancyController extends Controller
 {
@@ -133,10 +137,13 @@ class VacancyController extends Controller
     {
         $this->authorize('update', $vacancy);
 
+        // A Contract of Service position has no item number or salary grade.
+        $plantilla = $vacancy->employment_type !== 'contract_of_service';
+
         $data = $request->validate([
             'position_title' => 'sometimes|required|string|max:255',
-            'plantilla_no' => 'sometimes|required|string|max:100',
-            'salary_grade' => 'sometimes|required|integer|between:1,33',
+            'plantilla_no' => [$plantilla ? 'sometimes' : 'nullable', $plantilla ? 'required' : 'nullable', 'string', 'max:100'],
+            'salary_grade' => [$plantilla ? 'sometimes' : 'nullable', $plantilla ? 'required' : 'nullable', 'integer', 'between:1,33'],
             'monthly_salary' => 'nullable|numeric|min:0',
             'position_level' => 'nullable|string|max:100',
             'is_anticipated_vacancy' => 'boolean',
@@ -147,6 +154,11 @@ class VacancyController extends Controller
             'eligibility_req' => 'sometimes|required|string',
             'deadline_at' => 'nullable|date',
         ]);
+
+        // IMIS owns these on a vacancy opened from its plantilla item.
+        if ($vacancy->isLinkedToImis()) {
+            $data = Arr::except($data, Vacancy::IMIS_OWNED);
+        }
 
         $vacancy->update($data);
 
@@ -159,12 +171,40 @@ class VacancyController extends Controller
     /**
      * Create vacancy
      */
-    public function store(StoreVacancyRequest $request): JsonResponse
+    public function store(StoreVacancyRequest $request, ImisPlantilla $imis): JsonResponse
     {
         $this->authorize('create', Vacancy::class);
 
+        $data = $request->validated();
+
+        if (! empty($data['imis_plantilla_item_id'])) {
+            // The client's copy of the IMIS fields is never trusted: they are re-read
+            // from IMIS, which also confirms the item is still vacant.
+            try {
+                $item = collect($imis->vacantPositions())->firstWhere('id', (int) $data['imis_plantilla_item_id']);
+            } catch (Throwable $e) {
+                Log::warning('IMIS vacant positions failed', ['message' => $e->getMessage()]);
+
+                return response()->json(['message' => 'IMIS could not be reached. Try again, or enter the vacancy by hand.'], 502);
+            }
+
+            if ($item === null || $item['place_of_assignment'] === null) {
+                return response()->json(['message' => 'That position is no longer vacant in IMIS, or its office is not one of the recruiting offices.'], 422);
+            }
+
+            $data = [
+                ...$data,
+                'employment_type' => 'plantilla',
+                'position_title' => $item['position_title'],
+                'plantilla_no' => $item['item_number'],
+                'salary_grade' => $item['salary_grade'],
+                'monthly_salary' => $item['monthly_salary'],
+                'place_of_assignment' => $item['place_of_assignment'],
+            ];
+        }
+
         $vacancy = Vacancy::create([
-            ...$request->validated(),
+            ...$data,
             'posted_by' => auth()->id(),
             'status' => 'draft',
         ]);
@@ -174,6 +214,34 @@ class VacancyController extends Controller
         return (new VacancyResource($vacancy))
             ->response()
             ->setStatusCode(201);
+    }
+
+    /**
+     * Vacant IMIS plantilla items a vacancy can be opened on, minus those that
+     * already have a live vacancy here.
+     */
+    public function imisPositions(ImisPlantilla $imis): JsonResponse
+    {
+        $this->authorize('create', Vacancy::class);
+
+        if (! $imis->enabled()) {
+            return response()->json(['enabled' => false, 'data' => []]);
+        }
+
+        try {
+            $positions = $imis->vacantPositions();
+        } catch (Throwable $e) {
+            Log::warning('IMIS vacant positions failed', ['message' => $e->getMessage()]);
+
+            return response()->json(['message' => 'IMIS could not be reached. You can still enter the vacancy by hand.'], 502);
+        }
+
+        $taken = Vacancy::whereNotNull('imis_plantilla_item_id')->pluck('imis_plantilla_item_id')->all();
+
+        return response()->json([
+            'enabled' => true,
+            'data' => array_values(array_filter($positions, fn ($p) => $p['place_of_assignment'] !== null && ! in_array($p['id'], $taken, true))),
+        ]);
     }
 
     /**

@@ -1,4 +1,10 @@
 @import 'tailwindcss';
+/* Poppins is bundled (not fetched from Google), so it shows offline and under the CSP. */
+@import '@fontsource/poppins/latin-300.css';
+@import '@fontsource/poppins/latin-400.css';
+@import '@fontsource/poppins/latin-500.css';
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-700.css';
 /* The IMIS loading screens, shared by every system under IMIS. */
 @import './imis-loading.css';
 @plugin '@tailwindcss/forms';

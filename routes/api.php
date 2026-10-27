@@ -122,8 +122,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum', 'admin-access'])->group(function () {
     // Registered before the apiResource below so "bulk-status" isn't swallowed
     // by the PATCH /vacancies/{vacancy} wildcard route as a vacancy ID.
-    Route::patch('/vacancies/bulk-status', [VacancyController::class, 'bulkUpdateStatus']);
-    Route::apiResource('vacancies', VacancyController::class)->except(['index', 'show']);
+    Route::patch('/vacancies/bulk-status', [VacancyController::class, 'bulkUpdateStatus']);    Route::apiResource('vacancies', VacancyController::class)->except(['index', 'show']);
     Route::patch('/vacancies/{vacancy}/publish', [VacancyController::class, 'publish']);
     Route::patch('/vacancies/{vacancy}/archive', [VacancyController::class, 'archive']);
     Route::get('/applications', [ApplicationController::class, 'hrIndex']);
@@ -143,6 +142,7 @@ Route::middleware(['auth:sanctum', 'admin-access'])->group(function () {
 Route::middleware(['auth:sanctum', 'admin-access'])->prefix('admin')->group(function () {
     Route::apiResource('users', UserController::class);
     Route::post('/users/{user}/photo', [UserController::class, 'uploadPhoto']);
+    Route::get('/imis-vacant-positions', [VacancyController::class, 'imisPositions']);
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
     Route::get('/dashboard-stats', [DashboardController::class, 'adminStats']);
     Route::get('/feedbacks', [FeedbackController::class, 'index']);

@@ -43,28 +43,58 @@
           <!-- Tab 1: Position Info -->
           <div v-if="modalTab === 'position'" class="p-6">
             <div class="grid grid-cols-2 gap-4">
+              <!-- Where the position comes from (new vacancies only) -->
+              <div v-if="!isEditing && imisEnabled" class="col-span-2 rounded-lg border border-gray-200 bg-gray-50/60 p-3 space-y-3">
+                <div class="flex gap-4 text-sm">
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" value="imis" :checked="source === 'imis'" @change="setSource('imis')" class="text-primary focus:ring-primary" />
+                    Vacant position from IMIS
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" value="manual" :checked="source === 'manual'" @change="setSource('manual')" class="text-primary focus:ring-primary" />
+                    Enter by hand (e.g. Contract of Service)
+                  </label>
+                </div>
+                <p v-if="imisError" class="text-xs text-red-600">{{ imisError }}</p>
+              </div>
+              <p v-if="linked" class="col-span-2 text-xs text-gray-500 -mt-2">
+                Position, item number, salary grade and office come from IMIS and can only be changed there.
+              </p>
+
               <div class="col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Position Title <span class="text-red-500">*</span></label>
-                <input v-model="form.position_title" required type="text"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
+                <!-- A new vacancy on IMIS: the title is chosen from IMIS's vacant positions -->
+                <select v-if="pickFromImis" :value="form.imis_plantilla_item_id ?? ''" required :disabled="imisLoading"
+                  @change="selectImis($event.target.value)"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
+                  <option value="" disabled>{{ imisLoading ? 'Loading IMIS positions…' : 'Select a vacant position' }}</option>
+                  <option v-for="p in imisPositions" :key="p.id" :value="p.id">
+                    {{ p.position_title }} · {{ p.item_number ?? 'no item no.' }} · {{ p.place_of_assignment }}
+                  </option>
+                </select>
+                <p v-if="pickFromImis && !imisLoading && !imisPositions.length" class="mt-1 text-xs text-gray-500">
+                  No vacant positions in IMIS without a vacancy here. Choose "Enter by hand" to add one.
+                </p>
+                <input v-else-if="!pickFromImis" v-model="form.position_title" required type="text" :disabled="linked"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none disabled:bg-gray-100 disabled:text-gray-500" />
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Plantilla Item No. <span class="text-red-500">*</span></label>
-                <input v-model="form.plantilla_no" required type="text"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
+              <div v-if="!isCos">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Plantilla Item No. <span v-if="!linked" class="text-red-500">*</span></label>
+                <input v-model="form.plantilla_no" :required="!linked" type="text" :disabled="linked"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none disabled:bg-gray-100 disabled:text-gray-500" />
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Salary Grade <span class="text-red-500">*</span></label>
-                <select v-model="form.salary_grade" required
-                  class="w-full px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
+              <div v-if="!isCos">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Salary Grade <span v-if="!linked" class="text-red-500">*</span></label>
+                <select v-model="form.salary_grade" :required="!linked" :disabled="linked"
+                  class="w-full px-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white disabled:bg-gray-100 disabled:text-gray-500">
                   <option value="">Select SG</option>
                   <option v-for="n in 33" :key="n" :value="n">SG-{{ n }}</option>
                 </select>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Salary (₱)</label>
-                <input v-model="form.monthly_salary" type="number" min="0" step="0.01"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" />
+                <input v-model="form.monthly_salary" type="number" min="0" step="0.01" :disabled="linked"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none disabled:bg-gray-100 disabled:text-gray-500" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Position Level <span class="text-red-500">*</span></label>
@@ -79,8 +109,8 @@
               </div>
               <div class="col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Place of Assignment <span class="text-red-500">*</span></label>
-                <select v-model="form.place_of_assignment" required
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
+                <select v-model="form.place_of_assignment" required :disabled="linked"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white disabled:bg-gray-100 disabled:text-gray-500">
                   <option value="" disabled>Select place of assignment</option>
                   <optgroup label="CSC Field Offices">
                     <option v-for="office in CSC_FIELD_OFFICES" :key="office" :value="office">{{ office }}</option>
@@ -269,12 +299,63 @@ const saving    = ref(false)
 const modalTab  = ref('position')
 
 const blankForm = {
+  imis_plantilla_item_id: null, employment_type: 'plantilla',
   position_title: '', plantilla_no: '', salary_grade: '',
   monthly_salary: '', position_level: '', is_anticipated_vacancy: false,
   place_of_assignment: '', deadline_at: '',
   education_req: '', experience_req: '', training_req: '', eligibility_req: '',
 }
 const form = reactive({ ...blankForm })
+
+// ── Position source: a vacant IMIS plantilla item, or entered by hand ───────
+const source       = ref('manual')
+const imisEnabled  = ref(false)
+const imisLoading  = ref(false)
+const imisError    = ref('')
+const imisPositions = ref([])
+
+const linked = computed(() => !!form.imis_plantilla_item_id)
+const isCos  = computed(() => form.employment_type === 'contract_of_service')
+const pickFromImis = computed(() => !props.vacancy && imisEnabled.value && source.value === 'imis')
+
+async function loadImisPositions() {
+  imisLoading.value = true
+  imisError.value = ''
+  try {
+    const { data } = await axios.get('/api/admin/imis-vacant-positions', { headers: authHeaders() })
+    imisEnabled.value = !!data.enabled
+    imisPositions.value = data.data ?? []
+    setSource(imisEnabled.value ? 'imis' : 'manual')
+  } catch (e) {
+    // IMIS is down: fall back to entering by hand rather than blocking HR.
+    imisEnabled.value = true
+    imisPositions.value = []
+    imisError.value = e.response?.data?.message ?? 'IMIS could not be reached.'
+    setSource('manual')
+  } finally {
+    imisLoading.value = false
+  }
+}
+
+// With IMIS connected, regular plantilla positions come from IMIS, so a vacancy entered by
+// hand is a non-plantilla (Contract of Service) one. Without IMIS, hand entry is plantilla.
+function setSource(next) {
+  source.value = next
+  Object.assign(form, {
+    imis_plantilla_item_id: null,
+    employment_type: next === 'manual' && imisEnabled.value ? 'contract_of_service' : 'plantilla',
+    position_title: '', plantilla_no: '', salary_grade: '', monthly_salary: '', place_of_assignment: '',
+  })
+}
+
+function selectImis(id) {
+  const p = imisPositions.value.find(x => String(x.id) === String(id))
+  Object.assign(form, p ? {
+    imis_plantilla_item_id: p.id, employment_type: 'plantilla',
+    position_title: p.position_title, plantilla_no: p.item_number ?? '', salary_grade: p.salary_grade ?? '',
+    monthly_salary: p.monthly_salary ?? '', place_of_assignment: p.place_of_assignment,
+  } : { imis_plantilla_item_id: null, position_title: '', plantilla_no: '', salary_grade: '', monthly_salary: '', place_of_assignment: '' })
+}
 
 const requirementFields = [
   { key: 'education_req',   label: 'Education',   placeholder: 'e.g. Bachelor\'s Degree in any field' },
@@ -378,6 +459,8 @@ watch(() => props.open, async (isOpen) => {
   // Populate form synchronously first so the modal never flashes blank fields
   if (props.vacancy) {
     Object.assign(form, {
+      imis_plantilla_item_id: props.vacancy.imis_plantilla_item_id ?? null,
+      employment_type:        props.vacancy.employment_type ?? 'plantilla',
       position_title:         props.vacancy.position_title ?? '',
       plantilla_no:           props.vacancy.plantilla_no ?? '',
       salary_grade:           props.vacancy.salary_grade ?? '',
@@ -393,6 +476,7 @@ watch(() => props.open, async (isOpen) => {
     })
   } else {
     Object.assign(form, { ...blankForm })
+    loadImisPositions()
   }
 
   await loadAllCompetencies()

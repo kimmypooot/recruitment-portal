@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ReportSelectionToImis;
 use App\Models\Application;
 use App\Models\AppointingAuthorityDecision;
 use App\Models\EoptResult;
@@ -193,6 +194,12 @@ class AppointingAuthorityController extends Controller
 
             return $secretariat;
         });
+
+        // Tell IMIS who was picked for its plantilla item. Queued: the decision stands
+        // even when IMIS is unreachable, and the job retries.
+        if ($data['action'] === 'appointed' && $vacancy->isLinkedToImis()) {
+            ReportSelectionToImis::dispatch($vacancy->id, $application->id);
+        }
 
         if ($data['action'] === 'appointed' && $secretariatToNotify->isNotEmpty()) {
             $applicantName = $this->formatApplicantName($application->applicant) ?: 'An applicant';

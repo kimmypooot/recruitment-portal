@@ -16,7 +16,7 @@ const props = defineProps({
     note: { type: String, default: '' },
     // Skip the fade-in, when the card must cover a page from its first frame.
     instant: { type: Boolean, default: false },
-    logo: { type: String, default: '/images/imis/csc-logo.png' },
+    logo: { type: String, default: '/images/imis/imis-logo.png' },
 });
 
 const rings = [

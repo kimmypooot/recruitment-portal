@@ -25,10 +25,11 @@ class AddCspHeaders
 
         $csp = "default-src 'self'; "
             . "script-src 'self'{$viteDevOrigins}; "
-            . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$viteDevOrigins}; "
-            . "font-src 'self' data: https://fonts.gstatic.com; "
+            . "style-src 'self' 'unsafe-inline'{$viteDevOrigins}; "
+            // Poppins is bundled; in dev Vite serves it, so its origin must be allowed here too.
+            . "font-src 'self' data:{$viteDevOrigins}; "
             . "img-src 'self' data: https://*.googleusercontent.com{$imisImages}; "
-            . "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com{$viteDevOrigins}; "
+            . "connect-src 'self'{$viteDevOrigins}; "
             . "form-action 'self'; "
             . "base-uri 'self'; "
             . "frame-ancestors 'none'; "

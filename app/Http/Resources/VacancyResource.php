@@ -15,6 +15,8 @@ class VacancyResource extends JsonResource
             'id'                     => $this->id,
             'position_title'         => $this->position_title,
             'plantilla_no'           => $this->plantilla_no,
+            'imis_plantilla_item_id' => $this->imis_plantilla_item_id,
+            'employment_type'        => $this->employment_type,
             'salary_grade'           => $this->salary_grade,
             'monthly_salary'         => $this->monthly_salary,
             'position_level'         => $this->position_level,

@@ -36,6 +36,35 @@ class Vacancy extends Model
         'Legal Services Division (LSD)',
     ];
 
+    public const EMPLOYMENT_TYPES = ['plantilla', 'contract_of_service'];
+
+    /** IMIS organizational unit code => the place of assignment used here. */
+    public const IMIS_OFFICES = [
+        'ORD' => 'Office of the Regional Director (ORD)',
+        'HRD' => 'Human Resource Division (HRD)',
+        'MSD' => 'Management Resource Division (MSD)',
+        'PALD' => 'Public Assistance and Liaison Division (PALD)',
+        'PSED' => 'Policies and Systems Evaluation Division (PSED)',
+        'ESD' => 'Examination Services Division (ESD)',
+        'LSD' => 'Legal Services Division (LSD)',
+        'LFO-I' => 'CSC Field Office - Leyte I',
+        'LFO-II' => 'CSC Field Office - Leyte II',
+        'SLFO' => 'CSC Field Office - Southern Leyte',
+        'BFO' => 'CSC Field Office - Biliran',
+        'WLSO' => 'CSC Satellite Office - Western Leyte',
+        'SFO' => 'CSC Field Office - Samar',
+        'ESFO' => 'CSC Field Office - Eastern Samar',
+        'NSFO' => 'CSC Field Office - Northern Samar',
+    ];
+
+    /** Fields IMIS owns on a vacancy opened from one of its plantilla items. */
+    public const IMIS_OWNED = ['position_title', 'plantilla_no', 'salary_grade', 'monthly_salary', 'place_of_assignment'];
+
+    public function isLinkedToImis(): bool
+    {
+        return $this->imis_plantilla_item_id !== null;
+    }
+
     public static function placesOfAssignment(): array
     {
         return [...self::CSC_FIELD_OFFICES, ...self::REGIONAL_SUPPORT_UNITS];
@@ -44,6 +73,8 @@ class Vacancy extends Model
     protected $fillable = [
         'position_title',
         'plantilla_no',
+        'imis_plantilla_item_id',
+        'employment_type',
         'salary_grade',
         'monthly_salary',
         'position_level',

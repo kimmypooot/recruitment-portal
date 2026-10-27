@@ -40,6 +40,10 @@ return [
         'sso_url' => env('IMIS_SSO_URL'),
         // Origin that serves IMIS photos, allowed in img-src (e.g. https://imis.cscro8.com).
         'asset_origin' => env('IMIS_ASSET_ORIGIN'),
+        // IMIS origin and bearer token for the vacant plantilla items and selection write-back
+        // (IMIS RECRUITMENT_API_TOKEN). The origin defaults to the one serving sso_url. Token unset = off.
+        'api_url' => env('IMIS_API_URL'),
+        'api_token' => env('IMIS_API_TOKEN'),
         // This app's own host[:port], as registered in IMIS (SSO_HUB_HOSTS).
         'audience' => env('IMIS_SSO_AUDIENCE', parse_url((string) env('APP_URL'), PHP_URL_HOST).(parse_url((string) env('APP_URL'), PHP_URL_PORT) ? ':'.parse_url((string) env('APP_URL'), PHP_URL_PORT) : '')),
     ],

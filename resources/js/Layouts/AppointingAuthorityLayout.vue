@@ -19,11 +19,18 @@
               <p class="text-[10px] text-amber-300/80 uppercase tracking-wider font-medium">Appointing Authority</p>
             </div>
           </div>
-          <button @click="showLogoutModal = true"
-            class="text-xs text-white/60 hover:text-white flex items-center gap-1.5 bg-white/8 hover:bg-white/15 px-3 py-1.5 rounded-lg transition-all duration-200">
-            <Icon name="logout" class="w-3.5 h-3.5" />
-            Sign Out
-          </button>
+          <div class="flex items-center gap-2">
+            <a v-if="auth.imisUrl" :href="auth.imisUrl"
+              class="text-xs text-white/60 hover:text-white flex items-center gap-1.5 bg-white/8 hover:bg-white/15 px-3 py-1.5 rounded-lg transition-all duration-200">
+              <Icon name="arrowLeft" class="w-3.5 h-3.5" />
+              Back to IMIS
+            </a>
+            <button @click="showLogoutModal = true"
+              class="text-xs text-white/60 hover:text-white flex items-center gap-1.5 bg-white/8 hover:bg-white/15 px-3 py-1.5 rounded-lg transition-all duration-200">
+              <Icon name="logout" class="w-3.5 h-3.5" />
+              Sign Out
+            </button>
+          </div>
         </div>
         <nav class="flex gap-4 -mb-px">
           <Link href="/appointing-authority/dashboard"
@@ -125,5 +132,9 @@ async function loadVacancies() {
   } catch { /* silently fail */ }
 }
 
-onMounted(loadVacancies)
+onMounted(() => {
+  auth.refreshFromStorage()
+  auth.syncImisUrl()
+  loadVacancies()
+})
 </script>

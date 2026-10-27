@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import axios from 'axios'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('auth_token') ?? '')
@@ -15,6 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
   const fullName = computed(() => user.value?.full_name ?? '')
   const email = computed(() => user.value?.email ?? '')
   const userInitial = computed(() => (fullName.value || 'U')[0].toUpperCase())
+  const imisUrl = computed(() => user.value?.imis_url ?? null)
 
   function hasRole(...roles) {
     return roles.includes(role.value)
@@ -37,6 +39,16 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = { ...user.value, ...partial }
     localStorage.setItem('auth_user', JSON.stringify(user.value))
     window.dispatchEvent(new CustomEvent('auth-user-updated'))
+  }
+
+  // The IMIS link is only known to a session that began after it was added, so staff layouts
+  // ask the server for it. Silent: a failure (offline, expired) just leaves the link out.
+  async function syncImisUrl() {
+    if (!token.value || user.value?.imis_url !== undefined) return
+    try {
+      const { data } = await axios.get('/api/me', { headers: { Authorization: `Bearer ${token.value}` } })
+      updateUser({ imis_url: data.user?.imis_url ?? null })
+    } catch { /* ignore */ }
   }
 
   function setProfileComplete(val) {
@@ -68,7 +80,7 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     token, user, profileComplete, remember,
     isLoggedIn, role, isApplicant, isAdmin, isHrmpsb,
-    fullName, email, userInitial,
-    hasRole, setAuth, updateUser, setProfileComplete, refreshFromStorage, clear,
+    fullName, email, userInitial, imisUrl,
+    hasRole, setAuth, updateUser, syncImisUrl, setProfileComplete, refreshFromStorage, clear,
   }
 })

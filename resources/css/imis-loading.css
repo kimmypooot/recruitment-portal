@@ -1,6 +1,6 @@
 /*
  * The IMIS loading screens, shared by every system under the IMIS hub so
- * they look the same: the boot preloader (.imis-preloader, the navy CSC
+ * they look the same: the boot preloader (.imis-preloader, the navy IMIS
  * loading screen on a full page load) and the transition splash (.imis-tr,
  * the white card with the CSC seal in two counter-rotating rings, used for
  * "Opening <system>", signing in and signing out).

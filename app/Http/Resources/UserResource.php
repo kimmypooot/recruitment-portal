@@ -24,6 +24,8 @@ class UserResource extends JsonResource
             'google_avatar'    => $this->google_avatar,
             'photo_path'       => $this->photo_path,
             'has_password'     => $this->has_password,
+            // Where IMIS is for the browser; only for staff who signed in from IMIS.
+            'imis_url'         => $this->imis_user_id ? (config('services.imis.asset_origin') ?: null) : null,
             'last_login_at'    => $this->last_login_at?->toISOString(),
             'created_at'       => $this->created_at?->toISOString(),
             'applicant_profile' => $this->whenLoaded('applicantProfile', fn () =>

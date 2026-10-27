@@ -45,6 +45,17 @@ class ImisSsoTest extends TestCase
         $this->get('/sso?sso_token=abc')->assertOk();
     }
 
+    public function test_an_imis_account_is_told_where_imis_is_so_it_can_link_back_and_other_accounts_are_not(): void
+    {
+        config(['services.imis.asset_origin' => 'https://imis.test']);
+        $this->imis();
+
+        $this->signIn()->assertOk()->assertJsonPath('user.imis_url', 'https://imis.test');
+
+        $local = User::factory()->admin()->create();
+        $this->assertNull((new \App\Http\Resources\UserResource($local))->toArray(request())['imis_url']);
+    }
+
     public function test_an_account_is_created_on_first_sign_in_with_the_imis_role(): void
     {
         $this->imis();
