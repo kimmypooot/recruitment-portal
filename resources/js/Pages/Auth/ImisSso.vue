@@ -1,6 +1,6 @@
 <template>
   <!-- The IMIS splash, continuing the card the server drew at first paint. -->
-  <ImisSplash :visible="status === 'processing'" instant title="Opening Recruitment Portal" subtitle="Signing you in from IMIS" />
+  <ImisSplash :visible="status === 'processing'" instant lead="Opening" title="Recruitment Portal" subtitle="Signing you in from IMIS" />
 
   <div v-if="status !== 'processing'" class="imis-tr">
     <div class="imis-tr__card">
