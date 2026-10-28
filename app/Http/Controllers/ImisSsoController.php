@@ -104,7 +104,12 @@ class ImisSsoController extends Controller
 
         // So signing out of IMIS can revoke this token (ImisSsoLogoutController).
         if (is_string($imis['sid'] ?? null) && strlen($imis['sid']) === 64) {
-            $newToken->accessToken->forceFill(['imis_sid_hash' => hash('sha256', $imis['sid'])])->save();
+            try {
+                $newToken->accessToken->forceFill(['imis_sid_hash' => hash('sha256', $imis['sid'])])->save();
+            } catch (Throwable $e) {
+                // Only the sign-out link is lost; the person still signs in.
+                Log::warning('IMIS session could not be recorded', ['message' => $e->getMessage()]);
+            }
         }
 
         return response()->json(['token' => $newToken->plainTextToken, 'user' => UserResource::make($user)]);

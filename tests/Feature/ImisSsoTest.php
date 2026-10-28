@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\PersonalAccessToken;
 use Tests\TestCase;
 
@@ -209,5 +210,16 @@ class ImisSsoTest extends TestCase
         $this->signIn()->assertOk();
 
         $this->assertNull(PersonalAccessToken::sole()->imis_sid_hash);
+    }
+
+    public function test_a_failure_recording_the_imis_session_does_not_block_sign_in(): void
+    {
+        Schema::table('personal_access_tokens', function ($table) {
+            $table->dropIndex(['imis_sid_hash']);
+            $table->dropColumn('imis_sid_hash');
+        });
+        $this->imis(['sid' => str_repeat('s', 64)]);
+
+        $this->signIn()->assertOk()->assertJsonStructure(['token', 'user']);
     }
 }
