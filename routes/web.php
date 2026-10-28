@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BackgroundInvestigationController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ImisSsoLogoutController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SeoController;
@@ -23,6 +24,8 @@ Route::get('/terms-of-service', fn () => Inertia::render('TermsOfService'));
 Route::get('/login', fn () => Inertia::render('Auth/Login'))->name('login');
 // Where the IMIS portal sends HR staff and board members (see ImisSsoController)
 Route::get('/sso', fn () => Inertia::render('Auth/ImisSso'));
+// IMIS signs the person out of the portal when they sign out of IMIS.
+Route::middleware('throttle:60,1')->post('/sso/logout', ImisSsoLogoutController::class);
 Route::get('/register', fn () => Inertia::render('Auth/Register'));
 
 // Password reset

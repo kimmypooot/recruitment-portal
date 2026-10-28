@@ -100,9 +100,14 @@ class ImisSsoController extends Controller
         AuditLog::record('login_imis', $user);
 
         // The same lifetime as a password sign-in without "remember me".
-        $apiToken = $user->createToken('api-token', ['*'], now()->addHours(2))->plainTextToken;
+        $newToken = $user->createToken('api-token', ['*'], now()->addHours(2));
 
-        return response()->json(['token' => $apiToken, 'user' => UserResource::make($user)]);
+        // So signing out of IMIS can revoke this token (ImisSsoLogoutController).
+        if (is_string($imis['sid'] ?? null) && strlen($imis['sid']) === 64) {
+            $newToken->accessToken->forceFill(['imis_sid_hash' => hash('sha256', $imis['sid'])])->save();
+        }
+
+        return response()->json(['token' => $newToken->plainTextToken, 'user' => UserResource::make($user)]);
     }
 
     /**

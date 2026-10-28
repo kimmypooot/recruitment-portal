@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Laravel\Sanctum\PersonalAccessToken;
 use Tests\TestCase;
 
 class ImisSsoTest extends TestCase
@@ -172,5 +173,41 @@ class ImisSsoTest extends TestCase
         $linked = User::factory()->admin()->create(['imis_user_id' => 9]);
 
         $this->postJson('/api/login', ['email' => $linked->email, 'password' => 'password'])->assertOk();
+    }
+
+    public function test_imis_signing_out_revokes_the_api_token_it_started(): void
+    {
+        $sid = str_repeat('s', 64);
+        $this->imis(['sid' => $sid]);
+        $token = $this->signIn()->assertOk()->json('token');
+
+        $this->assertSame(hash('sha256', $sid), PersonalAccessToken::sole()->imis_sid_hash);
+        $this->assertNotNull(PersonalAccessToken::findToken($token));
+
+        $this->postJson('/sso/logout', ['sid' => $sid])->assertOk()->assertJson(['success' => true]);
+
+        $this->assertNull(PersonalAccessToken::findToken($token));
+    }
+
+    public function test_an_unknown_sid_revokes_nothing_and_is_not_an_error(): void
+    {
+        $this->imis(['sid' => str_repeat('s', 64)]);
+        $this->signIn()->assertOk();
+        $other = User::factory()->admin()->create();
+        $other->createToken('api-token');
+
+        $this->postJson('/sso/logout', ['sid' => str_repeat('x', 64)])->assertOk();
+        $this->postJson('/sso/logout', ['sid' => 'short'])->assertOk();
+        $this->postJson('/sso/logout')->assertOk();
+
+        $this->assertSame(2, PersonalAccessToken::count());
+    }
+
+    public function test_no_sid_from_imis_leaves_the_token_unlinked(): void
+    {
+        $this->imis();
+        $this->signIn()->assertOk();
+
+        $this->assertNull(PersonalAccessToken::sole()->imis_sid_hash);
     }
 }

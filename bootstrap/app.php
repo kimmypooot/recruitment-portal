@@ -19,8 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\AddCspHeaders::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\HandleInertiaRequests::class);
 
+        // Called by IMIS server-to-server; the `sid` is its credential.
+        $middleware->validateCsrfTokens(except: ['sso/logout']);
+
         $middleware->alias([
-            'role'           => \App\Http\Middleware\EnsureRole::class,
+            'role'         => \App\Http\Middleware\EnsureRole::class,
             'admin-access'   => \App\Http\Middleware\EnsureAdminAccess::class,
             'pipeline-stage' => \App\Http\Middleware\EnsurePipelineStageAccessible::class,
         ]);
