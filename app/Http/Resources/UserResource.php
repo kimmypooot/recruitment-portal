@@ -25,6 +25,8 @@ class UserResource extends JsonResource
             'photo_path'       => $this->photo_path,
             'has_password'     => $this->has_password,
             // Where IMIS is for the browser; only for staff who signed in from IMIS.
+            // Linked to an IMIS employee record, so their profile can be filled from it.
+            'imis_linked'      => $this->imis_user_id !== null,
             'imis_url'         => $this->imis_user_id ? (config('services.imis.asset_origin') ?: null) : null,
             'last_login_at'    => $this->last_login_at?->toISOString(),
             'created_at'       => $this->created_at?->toISOString(),

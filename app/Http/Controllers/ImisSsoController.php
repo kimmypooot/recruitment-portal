@@ -33,9 +33,10 @@ use Throwable;
 class ImisSsoController extends Controller
 {
     /**
-     * IMIS role code => role held here. `employee` is an internal applicant: an
-     * IMIS user with no staff role who applies like anyone else. The plain
-     * `applicant` code is still not accepted; external applicants are not in IMIS.
+     * IMIS role code => role held here. `employee` (also what a missing code means)
+     * is an internal applicant: an IMIS user with no staff role who applies like
+     * anyone else. The plain `applicant` code is still not accepted; external
+     * applicants are not in IMIS.
      */
     private const ROLES = ['admin' => 'admin', 'hrmpsb' => 'hrmpsb', 'employee' => 'applicant'];
 
@@ -66,7 +67,9 @@ class ImisSsoController extends Controller
             return $this->refuse('Your IMIS sign-in could not be used here. Please sign in below.', 422);
         }
 
-        $code = $imis['role_code'] ?? null;
+        // No role code means IMIS let them launch the app as a guest (it is open to all
+        // employees): an internal applicant, same as the explicit `employee` code.
+        $code = $imis['role_code'] ?? 'employee';
 
         if (! is_string($code) || ! array_key_exists($code, self::ROLES)) {
             return $this->refuse('You have not been given a role in the Recruitment Portal in IMIS. Please contact your administrator.', 403);

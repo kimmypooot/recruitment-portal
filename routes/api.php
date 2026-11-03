@@ -92,6 +92,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'show']);
+    Route::post('/profile/import-imis', [ProfileController::class, 'importFromImis'])->middleware('throttle:10,1');
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::post('/profile/photo', [ProfileController::class, 'uploadPhoto']);
     Route::post('/profile/documents', [ProfileController::class, 'uploadDocuments']);

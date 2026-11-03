@@ -76,6 +76,16 @@
         <p class="mt-1.5 text-sm text-gray-500 max-w-2xl">
           Fill out all sections below before submitting an application.
         </p>
+        <div v-if="imisLinked" class="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+          <p class="text-sm text-blue-900 flex-1 min-w-[16rem]">
+            You are a CSC employee. Fill in your profile from your verified PDS and 201 file in IMIS. This only adds
+            what is missing and never overwrites what you have entered. Please review everything afterwards.
+          </p>
+          <button type="button" @click="importFromImis" :disabled="imisImporting"
+            class="px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-white hover:opacity-90 disabled:opacity-60">
+            {{ imisImporting ? 'Importing…' : 'Import from IMIS' }}
+          </button>
+        </div>
       </div>
 
       <!-- Progress bar -->
@@ -558,6 +568,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
+import axios from 'axios'
 import { profileApi } from '@/services/api'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
@@ -574,6 +585,8 @@ const toast = useToast()
 const DRAFT_KEY = () => `csc_profile_draft_${authUser.value.id ?? 'anonymous'}`
 
 const pageLoading    = ref(true)
+const imisLinked     = ref(!!JSON.parse(localStorage.getItem('auth_user') ?? '{}').imis_linked)
+const imisImporting  = ref(false)
 const activeTab      = ref('personal')
 const isComplete     = ref(false)
 const savingPersonal = ref(false)
@@ -847,6 +860,34 @@ function goToNextTab() {
 
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
+// Puts a profile response into the form. Used on load and after an IMIS import.
+function applyProfile(data) {
+  if (data.user?.imis_user_id != null) imisLinked.value = true
+  if (data.user) {
+    nameForm.first_name = data.user.first_name ?? ''
+    nameForm.middle_name = data.user.middle_name ?? ''
+    nameForm.last_name = data.user.last_name ?? ''
+    nameForm.suffix = data.user.suffix ?? ''
+  }
+  if (data.profile) {
+    const p = data.profile
+    Object.keys(personal).forEach(k => { if (p[k] !== null && p[k] !== undefined) personal[k] = p[k] })
+    if (personal.birthday) personal.birthday = String(personal.birthday).substring(0, 10)
+    if (p.photo_path) photoPath.value = p.photo_path
+    experiences.value = p.work_experiences ?? []
+    education.value   = p.educational_attainments ?? []
+    trainings.value   = p.trainings ?? []
+    ;['pds', 'app_letter', 'ipcr', 'coe', 'tor'].forEach(k => {
+      if (p[k + '_path']) docPaths[k] = p[k + '_path']
+      if (p[k + '_uploaded_at']) docTimestamps[k] = p[k + '_uploaded_at']
+    })
+  }
+  isComplete.value = data.is_complete
+  localStorage.setItem('profile_complete', data.is_complete)
+  window.dispatchEvent(new CustomEvent('profile-complete-changed'))
+}
+
+
 onMounted(async () => {
   const tabParam = new URLSearchParams(window.location.search).get('tab')
   if (tabParam && ['personal', 'qualifications', 'documents'].includes(tabParam)) {
@@ -858,33 +899,35 @@ onMounted(async () => {
 
   try {
     const { data } = await profileApi.show()
-    if (data.user) {
-      nameForm.first_name = data.user.first_name ?? ''
-      nameForm.middle_name = data.user.middle_name ?? ''
-      nameForm.last_name = data.user.last_name ?? ''
-      nameForm.suffix = data.user.suffix ?? ''
-    }
-    if (data.profile) {
-      const p = data.profile
-      Object.keys(personal).forEach(k => { if (p[k] !== null && p[k] !== undefined) personal[k] = p[k] })
-      if (personal.birthday) personal.birthday = String(personal.birthday).substring(0, 10)
-      if (p.photo_path) photoPath.value = p.photo_path
-      experiences.value = p.work_experiences ?? []
-      education.value   = p.educational_attainments ?? []
-      trainings.value   = p.trainings ?? []
-      ;['pds', 'app_letter', 'ipcr', 'coe', 'tor'].forEach(k => {
-        if (p[k + '_path']) docPaths[k] = p[k + '_path']
-        if (p[k + '_uploaded_at']) docTimestamps[k] = p[k + '_uploaded_at']
-      })
-    }
-    isComplete.value = data.is_complete
-    localStorage.setItem('profile_complete', data.is_complete)
-    window.dispatchEvent(new CustomEvent('profile-complete-changed'))
+    applyProfile(data)
     localStorage.removeItem(DRAFT_KEY())
   } catch {}
   takeSnapshot()
   pageLoading.value = false
 })
+
+async function importFromImis() {
+  imisImporting.value = true
+  try {
+    const { data } = await axios.post('/api/profile/import-imis', {}, { headers: { Authorization: `Bearer ${authToken}` } })
+    applyProfile(data)
+    takeSnapshot()
+    const s = data.summary
+    const parts = [
+      s.fields && `${s.fields} field${s.fields === 1 ? '' : 's'}`,
+      s.education && `${s.education} education`,
+      s.work_experience && `${s.work_experience} work experience`,
+      s.trainings && `${s.trainings} training${s.trainings === 1 ? '' : 's'}`,
+      s.documents.length && s.documents.join(', '),
+    ].filter(Boolean)
+    toast.success(parts.length ? `Imported from IMIS: ${parts.join(', ')}. Please review before applying.` : 'Nothing new to import from IMIS.')
+    s.notes.forEach(n => toast.warning(n, 8000))
+  } catch (e) {
+    toast.error(e.response?.data?.message ?? 'Could not import from IMIS.')
+  } finally {
+    imisImporting.value = false
+  }
+}
 
 function showSaveIndicator() {
   saveIndicator.value = true

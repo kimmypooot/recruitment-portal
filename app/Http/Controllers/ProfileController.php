@@ -33,6 +33,30 @@ class ProfileController extends Controller
         ]);
     }
 
+    /**
+     * Fills the signed-in IMIS employee's profile from their verified PDS and
+     * 201 file (see ImisProfileImporter). Adds only; never overwrites.
+     */
+    public function importFromImis(Request $request, \App\Services\ImisProfileImporter $importer): JsonResponse
+    {
+        try {
+            $summary = $importer->import($request->user());
+        } catch (\DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 502);
+        }
+
+        $profile = ApplicantProfile::with(['workExperiences', 'educationalAttainments', 'trainings'])
+            ->where('user_id', $request->user()->id)->first();
+
+        return response()->json([
+            'summary' => $summary,
+            'profile' => $profile,
+            'is_complete' => $profile?->isComplete() ?? false,
+        ]);
+    }
+
     public function update(UpdateProfileRequest $request): JsonResponse
     {
         $data = $request->validated();

@@ -178,9 +178,18 @@ class ImisSsoTest extends TestCase
         $this->assertSame('admin', $staff->fresh()->role);
     }
 
-    public function test_no_role_applicant_role_or_unknown_role_is_refused(): void
+    public function test_a_guest_with_no_role_code_signs_in_as_an_internal_applicant(): void
     {
-        foreach ([null, 'applicant', 'made_up'] as $code) {
+        $this->imis(['role' => null, 'role_code' => null]);
+
+        $this->signIn()->assertOk()->assertJsonPath('user.role', 'applicant');
+
+        $this->assertSame('applicant', User::where('imis_user_id', 7)->value('role'));
+    }
+
+    public function test_the_applicant_code_or_an_unknown_role_is_refused(): void
+    {
+        foreach (['applicant', 'made_up'] as $code) {
             $this->imis(['role_code' => $code]);
             $this->signIn()->assertForbidden();
         }

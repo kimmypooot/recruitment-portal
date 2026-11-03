@@ -69,7 +69,7 @@ class ImisPlantilla
         }
     }
 
-    private function request(): PendingRequest
+    public function request(): PendingRequest
     {
         return Http::baseUrl((string) $this->baseUrl())
             ->withToken((string) config('services.imis.api_token'))
