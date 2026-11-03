@@ -171,7 +171,7 @@
             <select v-model="assignForm.user_id" required
               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
               <option value="">Select user…</option>
-              <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ userLnameFirst(u) }}</option>
+              <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ userLnameFirst(u) }}{{ u.imis_user_id ? ' · IMIS' : '' }}</option>
             </select>
             <p class="mt-1 text-xs text-gray-400">Only users with the HRMPSB system role are shown. Assign their system role first in Admin → Users.</p>
           </div>
@@ -238,7 +238,7 @@
             <select v-model="poaHeadForm.user_id" required
               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white">
               <option value="">Select user…</option>
-              <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ userLnameFirst(u) }}</option>
+              <option v-for="u in eligibleUsers" :key="u.id" :value="u.id">{{ userLnameFirst(u) }}{{ u.imis_user_id ? ' · IMIS' : '' }}</option>
             </select>
             <p class="mt-1 text-xs text-gray-400">Only users with the HRMPSB system role can be designated as Head of Unit.</p>
           </div>
@@ -323,7 +323,7 @@ async function loadCompositions() {
 }
 
 async function loadUsers() {
-  const { data } = await axios.get('/api/admin/users?role=hrmpsb', { headers: authHeaders() })
+  const { data } = await axios.get('/api/admin/users?role=hrmpsb&per_page=100', { headers: authHeaders() })
   users.value = data.data ?? data
 }
 

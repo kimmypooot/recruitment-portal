@@ -17,14 +17,15 @@ class UserController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = User::select('id', 'first_name', 'last_name', 'middle_name', 'suffix', 'email', 'role', 'photo_path', 'google_avatar', 'created_at')
+        $query = User::select('id', 'first_name', 'last_name', 'middle_name', 'suffix', 'email', 'role', 'imis_user_id', 'photo_path', 'google_avatar', 'created_at')
             ->with('applicantProfile:user_id,photo_path');
 
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
-        $users = $query->latest()->paginate(20);
+        // The board pickers need the whole list of one role, not a page of it.
+        $users = $query->latest()->paginate(min(100, max(1, (int) $request->query('per_page', 20))));
 
         $users->getCollection()->transform(function ($user) {
             $path = $user->photo_path ?? $user->applicantProfile?->photo_path;
