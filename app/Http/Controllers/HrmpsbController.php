@@ -329,6 +329,7 @@ class HrmpsbController extends Controller
             'trainings' => $profile->trainings,
             'documents' => collect(self::DOCUMENT_COLUMNS)
                 ->map(fn (string $column) => (bool) $profile->{$column})
+                ->when($application->is_internal, fn ($docs) => $docs->put('interest_reply', $this->interestReplyPath($application) !== null))
                 ->all(),
             // The documents themselves (PDS especially — full name, photo,
             // address on its face) are as identifying as `name` above, so
@@ -341,8 +342,17 @@ class HrmpsbController extends Controller
                 ->map(fn (string $column, string $type) => $isUnmasked && $profile->{$column}
                     ? "/api/hrmpsb/applications/{$application->id}/documents/{$type}"
                     : null)
+                ->when($application->is_internal, fn ($links) => $links->put('interest_reply', $isUnmasked && $this->interestReplyPath($application) !== null
+                    ? "/api/hrmpsb/applications/{$application->id}/documents/interest_reply"
+                    : null))
                 ->all(),
         ]);
+    }
+
+    /** Where the application's signed reply to the notice of vacancy is stored, if it has one. */
+    private function interestReplyPath(Application $application): ?string
+    {
+        return $application->documents()->where('document_type', 'interest_reply')->latest('id')->value('file_path');
     }
 
     /**
@@ -371,6 +381,14 @@ class HrmpsbController extends Controller
             abort(403, 'Applicant identity is masked until deliberation unmasking.');
         }
 
+        // An internal applicant's signed reply to the notice of vacancy belongs to the application, not the profile.
+        if ($type === 'interest_reply') {
+            $replyPath = $this->interestReplyPath($application);
+            abort_if($replyPath === null || ! Storage::disk('local')->exists($replyPath), 404);
+
+            return Storage::disk('local')->response($replyPath);
+        }
+
         abort_if(! isset(self::DOCUMENT_COLUMNS[$type]), 404);
 
         $profile = $application->applicant;
@@ -393,7 +411,7 @@ class HrmpsbController extends Controller
         }
 
         $applications = $vacancy->applications()
-            ->with(['applicant:id,user_id,pds_path,app_letter_path,ipcr_path,coe_path,tor_path', 'applicant.user:id,first_name,last_name,middle_name,suffix'])
+            ->with(['applicant:id,user_id,pds_path,app_letter_path,ipcr_path,coe_path,tor_path', 'applicant.user:id,first_name,last_name,middle_name,suffix', 'documents' => fn ($q) => $q->where('document_type', 'interest_reply')])
             ->whereNotIn('status', ['withdrawn', 'disqualified'])
             ->orderBy('created_at')
             ->get()
@@ -401,19 +419,25 @@ class HrmpsbController extends Controller
                 $profile = $app->applicant;
 
                 $docExists = fn (string $column) => $profile?->{$column} && Storage::disk('local')->exists($profile->{$column});
+                $hasReply = fn ($app) => ($path = $app->documents->first()?->file_path) && Storage::disk('local')->exists($path);
 
                 return [
                     'id' => $app->id,
                     'anonymized_name' => $app->anonymizationToken?->token ?? ('APP-'.$app->id),
                     'status' => $app->status,
                     'submitted_at' => $app->submitted_at,
+                    'is_internal' => (bool) $app->is_internal,
                     'documents' => collect(self::DOCUMENT_COLUMNS)
                         ->map(fn (string $column) => $docExists($column))
+                        ->when($app->is_internal, fn ($docs) => $docs->put('interest_reply', $hasReply($app)))
                         ->all(),
                     'document_links' => collect(self::DOCUMENT_COLUMNS)
                         ->map(fn (string $column, string $type) => $docExists($column)
                             ? "/api/hrmpsb/applications/{$app->id}/documents/{$type}"
                             : null)
+                        ->when($app->is_internal, fn ($links) => $links->put('interest_reply', $hasReply($app)
+                            ? "/api/hrmpsb/applications/{$app->id}/documents/interest_reply"
+                            : null))
                         ->all(),
                 ];
             });

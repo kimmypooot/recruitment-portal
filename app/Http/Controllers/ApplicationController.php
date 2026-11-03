@@ -52,6 +52,8 @@ class ApplicationController extends Controller
 
         $data = $request->validate([
             'vacancy_id' => 'required|exists:vacancies,id',
+            // An IMIS employee's signed reply to the notice of vacancy, per vacancy (see below).
+            'interest_reply' => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png|mimetypes:application/pdf,image/jpeg,image/png',
         ]);
 
         $profile = $request->user()->applicantProfile;
@@ -74,10 +76,19 @@ class ApplicationController extends Controller
             return response()->json(['message' => 'This vacancy is no longer accepting applications.'], 422);
         }
 
-        try {
-            $isInternal = $request->user()->imis_user_id !== null;
+        $isInternal = $request->user()->imis_user_id !== null;
+        $reply = $request->file('interest_reply');
 
-            $application = DB::transaction(function () use ($profile, $data, $isInternal) {
+        // An internal applicant (an IMIS employee) also submits a signed reply to the notice of
+        // vacancy to show interest in this position. It is per vacancy, so it comes with the application.
+        if ($isInternal && $reply === null) {
+            return response()->json(['message' => 'As an employee, please attach your signed reply to the notice of vacancy to show your interest in this position.'], 422);
+        }
+
+        $storedReply = null;
+
+        try {
+            $application = DB::transaction(function () use ($profile, $data, $isInternal, $vacancy, $reply, &$storedReply) {
                 // Lock the applicant's own profile row so two concurrent submit
                 // requests from the same applicant serialize instead of both
                 // passing the existence check below before either INSERT commits.
@@ -95,19 +106,41 @@ class ApplicationController extends Controller
                     return null;
                 }
 
-                return Application::create([
+                $created = Application::create([
                     'vacancy_id' => $data['vacancy_id'],
                     'applicant_id' => $profile->id,
                     'status' => 'submitted',
                     'is_internal' => $isInternal,
                     'submitted_at' => now(),
-                    'reference_code' => Application::generateReferenceCode(),
+                    'reference_code' => app(\App\Services\ApplicationNumber::class)->next($vacancy),
                 ]);
+
+                if ($reply !== null && $isInternal) {
+                    $storedName = (string) \Illuminate\Support\Str::uuid().'.'.$reply->extension();
+                    $storedReply = $reply->storeAs('documents/'.$created->id, $storedName, 'local');
+
+                    $created->documents()->create([
+                        'document_type' => 'interest_reply',
+                        'original_filename' => $reply->getClientOriginalName(),
+                        'stored_filename' => $storedName,
+                        'file_path' => $storedReply,
+                        'file_size' => $reply->getSize(),
+                        'mime_type' => $reply->getMimeType(),
+                    ]);
+                }
+
+                return $created;
             });
-        } catch (QueryException $e) {
-            if ($this->isDuplicateApplicationViolation($e)) {
+        } catch (\Throwable $e) {
+            // The application was rolled back, so the reply file has no home.
+            if ($storedReply !== null) {
+                Storage::disk('local')->delete($storedReply);
+            }
+
+            if ($e instanceof QueryException && $this->isDuplicateApplicationViolation($e)) {
                 return response()->json(['message' => 'You have already applied for this vacancy.'], 422);
             }
+
             throw $e;
         }
 
@@ -359,10 +392,15 @@ class ApplicationController extends Controller
             'tor' => 'tor_path',
         ];
 
-        abort_if(! isset($map[$type]), 404);
+        // An internal applicant's signed reply to the notice of vacancy belongs to the application.
+        if ($type === 'interest_reply') {
+            $path = $application->documents()->where('document_type', 'interest_reply')->latest('id')->value('file_path');
+        } else {
+            abort_if(! isset($map[$type]), 404);
 
-        $profile = $application->applicant;
-        $path = $profile?->{$map[$type]};
+            $profile = $application->applicant;
+            $path = $profile?->{$map[$type]};
+        }
 
         abort_if(! $path || ! Storage::disk('local')->exists($path), 404);
 

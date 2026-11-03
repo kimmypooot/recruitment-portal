@@ -307,6 +307,19 @@
             {{ submitError }}
           </div>
 
+          <!-- Internal applicants: signed reply to the notice of vacancy -->
+          <div v-if="isInternal" class="mb-5 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <p class="text-sm font-semibold text-gray-900">Reply to the notice of vacancy <span class="text-red-600">*</span></p>
+            <p class="text-xs text-gray-500 mt-1 mb-3 leading-relaxed">
+              As a CSC employee, attach your signed reply to the notice of vacancy to show your interest in this position.
+              Your profile details are already filled in from IMIS. PDF, JPG or PNG, up to 10 MB.
+            </p>
+            <input id="interest-reply" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" @change="onReplyPicked"
+              class="block w-full text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:opacity-90" />
+            <p v-if="replyFile" class="mt-2 text-xs text-green-700">Attached: {{ replyFile.name }}</p>
+            <p v-if="replyError" role="alert" class="mt-2 text-xs text-red-600">{{ replyError }}</p>
+          </div>
+
           <!-- Declaration + Submit -->
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
             <p class="text-xs text-gray-500 leading-relaxed mb-5">
@@ -319,7 +332,7 @@
               </Link>
               <button
                 @click="submitApplication"
-                :disabled="isSubmitting || missingRequiredDocs.length > 0 || deadlinePassed"
+                :disabled="isSubmitting || missingRequiredDocs.length > 0 || deadlinePassed || (isInternal && !replyFile)"
                 class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 <Icon v-if="isSubmitting" name="refresh" size="4" class="animate-spin" />
                 {{ isSubmitting ? 'Submitting…' : 'Submit Application' }}
@@ -351,6 +364,10 @@
           <p class="text-sm text-gray-500 mb-6">
             Your application for <span class="font-semibold text-gray-700">{{ vacancy?.position_title }}</span> has been received. We'll notify you of any updates.
           </p>
+          <div v-if="submittedNumber" class="mb-6 rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Application number</p>
+            <p class="font-mono text-sm font-semibold text-gray-800 break-all">{{ submittedNumber }}</p>
+          </div>
           <button @click="feedbackStep = 'form'"
             class="block w-full py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors mb-3">
             Share Your Experience
@@ -438,6 +455,25 @@ const isSubmitting     = ref(false)
 const submitError      = ref('')
 const showSuccess      = ref(false)
 const submittedApplicationId = ref(null)
+const submittedNumber  = ref('')
+
+// An IMIS employee is an internal applicant and also attaches a signed reply to the notice of vacancy.
+const isInternal  = ref(!!JSON.parse(localStorage.getItem('auth_user') ?? '{}').imis_linked)
+const replyFile   = ref(null)
+const replyError  = ref('')
+const REPLY_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
+
+function onReplyPicked(event) {
+  const file = event.target.files?.[0] ?? null
+  replyError.value = ''
+  replyFile.value = null
+
+  if (!file) return
+  if (!REPLY_TYPES.includes(file.type)) { replyError.value = 'Please attach a PDF, JPG or PNG file.'; return }
+  if (file.size > 10 * 1024 * 1024) { replyError.value = 'The file must be 10 MB or smaller.'; return }
+
+  replyFile.value = file
+}
 
 // Feedback state
 const feedbackStep    = ref('success')
@@ -506,6 +542,7 @@ onMounted(async () => {
 
     vacancy.value = vacancyRes.data?.data ?? vacancyRes.data
     profile.value = profileRes.data.profile
+    if (profileRes.data.user?.imis_user_id != null) isInternal.value = true
 
     // Profile completion gate
     if (!profileRes.data.is_complete) {
@@ -536,8 +573,19 @@ async function submitApplication() {
   isSubmitting.value = true
   submitError.value  = ''
   try {
-    const { data } = await applicationApi.submit({ vacancy_id: props.vacancyId })
+    let payload = { vacancy_id: props.vacancyId }
+    if (isInternal.value) {
+      if (!replyFile.value) {
+        submitError.value = 'Please attach your signed reply to the notice of vacancy.'
+        return
+      }
+      payload = new FormData()
+      payload.append('vacancy_id', props.vacancyId)
+      payload.append('interest_reply', replyFile.value)
+    }
+    const { data } = await applicationApi.submit(payload)
     submittedApplicationId.value = data.id
+    submittedNumber.value = data.reference_code ?? ''
     showSuccess.value = true
   } catch (e) {
     submitError.value = e.response?.data?.message ?? 'Submission failed. Please try again.'

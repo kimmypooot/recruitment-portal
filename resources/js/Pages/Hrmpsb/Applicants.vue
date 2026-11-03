@@ -93,6 +93,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                   </svg>
                 </button>
+                <span v-else-if="doc.key === 'interest_reply' && !app.is_internal" class="text-gray-300" title="Not required: external applicant">—</span>
                 <span v-else class="inline-flex items-center justify-center w-7 h-7 rounded-full text-gray-300 bg-gray-50">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -223,6 +224,8 @@ const docTypes = [
   { key: 'tor',        label: 'TOR',        color: 'bg-orange-500' },
   { key: 'ipcr',       label: 'IPCR',       color: 'bg-teal-500' },
   { key: 'coe',        label: 'COE',        color: 'bg-green-500' },
+  // Internal applicants only: their signed reply to the notice of vacancy.
+  { key: 'interest_reply', label: 'Reply',  color: 'bg-rose-500' },
 ]
 
 const downloadOptions = [
@@ -240,6 +243,7 @@ const btnClasses = {
   tor:        'text-orange-600 bg-orange-50 hover:bg-orange-100',
   ipcr:       'text-teal-600 bg-teal-50 hover:bg-teal-100',
   coe:        'text-green-600 bg-green-50 hover:bg-green-100',
+  interest_reply: 'text-rose-600 bg-rose-50 hover:bg-rose-100',
 }
 
 function docBtnClass(key) {

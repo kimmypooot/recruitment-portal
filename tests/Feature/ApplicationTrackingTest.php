@@ -35,7 +35,7 @@ class ApplicationTrackingTest extends TestCase
         ['application' => $application] = $this->submitApplication();
 
         $this->assertNotNull($application->reference_code);
-        $this->assertStringStartsWith('CSC-', $application->reference_code);
+        $this->assertMatchesRegularExpression('/^[A-Z0-9]+-[A-Z0-9]+-\d{2}-\d{4}-\d{4}$/', $application->reference_code);
     }
 
     public function test_correct_reference_code_and_email_returns_status(): void

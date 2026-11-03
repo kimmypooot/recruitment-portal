@@ -20,7 +20,7 @@ class ApplicationTrackingController extends Controller
     public function track(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'reference_code' => 'required|string|max:20',
+            'reference_code' => 'required|string|max:60',
             'email' => 'required|email|max:255',
         ]);
 

@@ -71,7 +71,8 @@ export const vacancyApi = {
 
 export const applicationApi = {
   myApplications: () => api.get('/my-applications'),
-  submit: (data) => api.post('/applications', data),
+  // A FormData body (an employee's signed reply attached) is sent as multipart.
+  submit: (data) => api.post('/applications', data, data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined),
   uploadDocument: (appId, formData) =>
     api.post(`/applications/${appId}/documents`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }

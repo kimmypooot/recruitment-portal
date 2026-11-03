@@ -173,7 +173,11 @@ class ConflictOfInterestTest extends TestCase
         }
         $vacancy = Vacancy::factory()->published()->create();
 
-        $this->actingAs($employee, 'sanctum')->postJson('/api/applications', ['vacancy_id' => $vacancy->id])->assertCreated();
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $this->actingAs($employee, 'sanctum')->post('/api/applications', [
+            'vacancy_id' => $vacancy->id,
+            'interest_reply' => \Illuminate\Http\UploadedFile::fake()->create('reply.pdf', 50, 'application/pdf'),
+        ], ['Accept' => 'application/json'])->assertCreated();
         $this->actingAs($outsider, 'sanctum')->postJson('/api/applications', ['vacancy_id' => $vacancy->id])->assertCreated();
 
         $this->assertSame(1, (int) Application::where('applicant_id', $employee->applicantProfile->id)->value('is_internal'));
