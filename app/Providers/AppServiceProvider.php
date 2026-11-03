@@ -15,6 +15,8 @@ use App\Policies\EvaluationPolicy;
 use App\Policies\VacancyPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -26,6 +28,14 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Tag every outgoing email subject with [CSC RO VIII] (once).
+        Event::listen(MessageSending::class, function (MessageSending $event) {
+            $subject = (string) $event->message->getSubject();
+            if (! str_starts_with($subject, '[CSC RO VIII]')) {
+                $event->message->subject('[CSC RO VIII] '.$subject);
+            }
+        });
+
         Gate::policy(Vacancy::class, VacancyPolicy::class);
         Gate::policy(Application::class, ApplicationPolicy::class);
         Gate::policy(Document::class, DocumentPolicy::class);

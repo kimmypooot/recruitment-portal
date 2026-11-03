@@ -79,7 +79,7 @@ class EmailTemplateSeeder extends Seeder
             $templates["application_status_{$status}"] = [
                 'name' => 'Status Update — '.ucwords(str_replace('_', ' ', $status)),
                 'category' => 'Application Status',
-                'subject' => 'Application Update — {{position_title}}',
+                'subject' => '[CSC RO VIII] Application Update — {{position_title}}',
                 'greeting' => 'Dear {{applicant_name}},',
                 'body' => "There has been an update on your application for **{{position_title}}**.\n"
                     ."**Status:** {$copy['headline']}\n"
@@ -96,7 +96,7 @@ class EmailTemplateSeeder extends Seeder
         $templates['application_status_default'] = [
             'name' => 'Status Update — Generic Fallback',
             'category' => 'Application Status',
-            'subject' => 'Application Update — {{position_title}}',
+            'subject' => '[CSC RO VIII] Application Update — {{position_title}}',
             'greeting' => 'Dear {{applicant_name}},',
             'body' => "There has been an update on your application for **{{position_title}}**.\n"
                 ."**Status:** Your application status has been updated to: {{status_label}}.\n"
@@ -111,7 +111,7 @@ class EmailTemplateSeeder extends Seeder
         $templates['application_submitted'] = [
             'name' => 'Application Received',
             'category' => 'Application Lifecycle',
-            'subject' => 'Application Received — {{position_title}}',
+            'subject' => '[CSC RO VIII] Application Received — {{position_title}}',
             'greeting' => 'Dear Applicant,',
             'body' => "Thank you for applying for the position of **{{position_title}}**.\n"
                 ."Your application has been received and is now being reviewed. We will notify you once there is an update on your status.\n"
@@ -131,7 +131,7 @@ class EmailTemplateSeeder extends Seeder
         $templates['exam_scheduled'] = [
             'name' => 'Exam Scheduled',
             'category' => 'Examination',
-            'subject' => 'Exam Scheduled — {{position_title}}',
+            'subject' => '[CSC RO VIII] Exam Scheduled — {{position_title}}',
             'greeting' => 'Dear {{first_name}},',
             'body' => "Congratulations! You have qualified for the written examination for the position of **{{position_title}}**.\n"
                 ."Here are the details of your exam:\n"
@@ -160,7 +160,7 @@ class EmailTemplateSeeder extends Seeder
         $templates['interview_scheduled'] = [
             'name' => 'Interview Scheduled',
             'category' => 'Interview',
-            'subject' => 'Interview Scheduled — {{position_title}}',
+            'subject' => '[CSC RO VIII] Interview Scheduled — {{position_title}}',
             'greeting' => 'Dear {{first_name}},',
             'body' => "Congratulations on passing the written exam! You are invited to a **Behavioral Event Interview (BEI)** for the position of **{{position_title}}**.\n"
                 ."Here are the details of your interview:\n"
@@ -187,7 +187,7 @@ class EmailTemplateSeeder extends Seeder
         $templates['shortlist_result_shortlisted'] = [
             'name' => 'Shortlist Result — Shortlisted',
             'category' => 'Shortlisting',
-            'subject' => 'Good News — You Have Been Shortlisted!',
+            'subject' => '[CSC RO VIII] Good News — You Have Been Shortlisted!',
             'greeting' => 'Dear {{name}},',
             'body' => "Congratulations! We are pleased to inform you that you have been shortlisted for the position of **{{position_title}}**.\n"
                 ."You will receive further instructions regarding the next steps of the selection process. Please keep an eye on your notifications and email.\n"
@@ -202,7 +202,7 @@ class EmailTemplateSeeder extends Seeder
         $templates['shortlist_result_not_shortlisted'] = [
             'name' => 'Shortlist Result — Not Shortlisted',
             'category' => 'Shortlisting',
-            'subject' => 'Update on Your Application — {{position_title}}',
+            'subject' => '[CSC RO VIII] Update on Your Application — {{position_title}}',
             'greeting' => 'Dear {{name}},',
             'body' => "Thank you for your interest in the position of **{{position_title}}**.\n"
                 ."After careful evaluation, we regret to inform you that you were not selected for the shortlist at this time.\n"
@@ -217,7 +217,7 @@ class EmailTemplateSeeder extends Seeder
         $templates['background_investigation_request'] = [
             'name' => 'Background Investigation Request',
             'category' => 'Background Investigation',
-            'subject' => 'Background Investigation Request — {{position_title}}',
+            'subject' => '[CSC RO VIII] Background Investigation Request — {{position_title}}',
             'greeting' => 'Dear {{investigator_name}},',
             'body' => "You have been requested to conduct a background investigation for the following applicant:\n"
                 ."**Applicant:** {{applicant_name}}\n"
@@ -242,7 +242,7 @@ class EmailTemplateSeeder extends Seeder
         $templates['email_verification'] = [
             'name' => 'Email Verification',
             'category' => 'Account',
-            'subject' => 'Verify Your Email — CSC RO VIII',
+            'subject' => '[CSC RO VIII] Verify Your Email',
             'greeting' => 'Welcome to CSC RO VIII!',
             'body' => "Thank you for creating an account with the Civil Service Commission Regional Office VIII - Recruitment Portal.\n"
                 ."Enter this verification code in the portal to activate your account: **{{code}}**\n"
@@ -259,7 +259,7 @@ class EmailTemplateSeeder extends Seeder
         $templates['password_reset'] = [
             'name' => 'Password Reset',
             'category' => 'Account',
-            'subject' => 'Reset Your Password — CSC RO VIII',
+            'subject' => '[CSC RO VIII] Reset Your Password',
             'greeting' => 'Hello,',
             'body' => "You are receiving this email because we received a password reset request for your account.\n"
                 ."Click the button below to choose a new password.\n"
