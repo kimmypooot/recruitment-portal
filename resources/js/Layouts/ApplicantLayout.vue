@@ -65,6 +65,10 @@
 
       <!-- Footer -->
       <div class="px-3 py-4 border-t border-white/10">
+        <button v-if="staffTarget" @click="sidebarOpen = false; showStaffSwitch = true" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors mb-1">
+          <Icon name="shield" size="4" class="flex-shrink-0" />
+          Back to {{ staffTarget === 'admin' ? 'Admin' : 'HRMPSB' }} Workspace
+        </button>
         <button @click="sidebarOpen = false; showLogoutModal = true" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors">
           <Icon name="logout" size="4" class="flex-shrink-0" />
           Sign out
@@ -279,6 +283,7 @@
     </BaseModal>
 
     <!-- Sign-out preload overlay -->
+    <WorkspaceSwitcher :show="showStaffSwitch" :target="staffTarget ?? 'admin'" />
     <AuthSplashOverlay :visible="showSignOutPreload" title="Signing Out" subtitle="See you next time!" />
 
   </div>
@@ -295,6 +300,7 @@ import NotificationBell from '@/Components/UI/NotificationBell.vue'
 import AppFooter from '@/Components/UI/AppFooter.vue'
 import PasswordRequirements from '@/Components/UI/PasswordRequirements.vue'
 import AuthSplashOverlay from '@/Components/UI/AuthSplashOverlay.vue'
+import WorkspaceSwitcher from '@/Components/UI/WorkspaceSwitcher.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useIdleTimer } from '@/composables/useIdleTimer'
 import { navigateTo } from '@/utils/navigate'
@@ -313,6 +319,10 @@ const showBackToTop     = ref(false)
 const showLogoutModal         = ref(false)
 const showChangePasswordModal = ref(false)
 const showSignOutPreload  = ref(false)
+
+// Staff and board members can apply for vacancies too; this takes them back to their workspace.
+const showStaffSwitch = ref(false)
+const staffTarget = computed(() => (['admin', 'hrmpsb'].includes(auth.user?.role) ? auth.user.role : null))
 
 const cpForm = ref({ current_password: '', password: '', password_confirmation: '' })
 const cpErrors = ref({})

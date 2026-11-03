@@ -27,12 +27,12 @@
           <!-- Message -->
           <p class="text-base font-semibold text-gray-900 mb-2">{{ message }}</p>
           <p class="text-sm text-gray-500 mb-2">
-            {{ target === 'hrmpsb' ? 'HRMPSB Workspace' : 'Administrator Workspace' }}
+            {{ info.title }}
           </p>
           <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
             :class="target === 'hrmpsb' ? 'bg-[#1a5276]/10 text-[#1a5276]' : 'bg-primary/10 text-primary'">
             <span class="w-1.5 h-1.5 rounded-full" :class="target === 'hrmpsb' ? 'bg-[#1a5276]' : 'bg-primary'"></span>
-            {{ target === 'hrmpsb' ? 'HRMPSB Module' : 'Admin Module' }}
+            {{ info.badge }}
           </div>
         </div>
       </div>
@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
 
 const props = defineProps({
@@ -51,15 +51,19 @@ const props = defineProps({
 
 const message = ref('')
 
+// Where each workspace lives. 'applicant' is the person's own applications:
+// staff and board members can apply for vacancies like anyone else.
+const TARGETS = {
+  hrmpsb:    { path: '/hrmpsb/dashboard',    message: 'Switching to HRMPSB Workspace...',         title: 'HRMPSB Workspace',        badge: 'HRMPSB Module' },
+  admin:     { path: '/admin/dashboard',     message: 'Switching to Administrator Workspace...',  title: 'Administrator Workspace', badge: 'Admin Module' },
+  applicant: { path: '/applicant/dashboard', message: 'Opening My Applications...',               title: 'Applicant Workspace',     badge: 'My Applications' },
+}
+const info = computed(() => TARGETS[props.target] ?? TARGETS.admin)
+
 watch(() => props.show, (val) => {
   if (!val) return
-  message.value = props.target === 'hrmpsb'
-    ? 'Switching to HRMPSB Workspace...'
-    : 'Switching to Administrator Workspace...'
+  message.value = info.value.message
 
-  setTimeout(() => {
-    const path = props.target === 'hrmpsb' ? '/hrmpsb/dashboard' : '/admin/dashboard'
-    router.visit(path)
-  }, 1200)
+  setTimeout(() => router.visit(info.value.path), 1200)
 })
 </script>

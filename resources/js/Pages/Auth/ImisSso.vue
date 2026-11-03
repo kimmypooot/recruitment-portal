@@ -73,6 +73,12 @@ onMounted(async () => {
     return
   }
 
+  // An IMIS employee with no staff role is an (internal) applicant.
+  if (data.user.role === 'applicant') {
+    navigateTo(`${appUrl}/applicant/dashboard`)
+    return
+  }
+
   // Board members: the Appointing Authority has their own dashboard.
   try {
     const { data: roleData } = await api.get('/hrmpsb/my-role', {

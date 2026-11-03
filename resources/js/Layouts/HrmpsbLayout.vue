@@ -60,6 +60,10 @@
 
       <!-- Footer -->
       <div class="px-3 py-4 border-t border-white/10">
+        <button @click="showApplicantSwitch = true" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors mb-1">
+          <Icon name="document" size="4" class="flex-shrink-0" />
+          My Applications
+        </button>
         <button v-if="canSwitchToAdmin" @click="showWorkspaceSwitch = true" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors mb-1">
           <Icon name="shield" size="4" class="flex-shrink-0" />
           Switch to Admin
@@ -172,6 +176,7 @@
     </BaseModal>
 
     <WorkspaceSwitcher :show="showWorkspaceSwitch" target="admin" />
+    <WorkspaceSwitcher :show="showApplicantSwitch" target="applicant" />
 
     <!-- Sign-out preload overlay -->
     <AuthSplashOverlay :visible="showSignOutPreload" title="Signing Out" subtitle="See you next time!" />
@@ -221,6 +226,7 @@ const dropdownOpen      = ref(false)
 const dropdownRef       = ref(null)
 const showLogoutModal     = ref(false)
 const showWorkspaceSwitch = ref(false)
+const showApplicantSwitch = ref(false)
 const showSignOutPreload  = ref(false)
 const stages           = ref(null)
 const myRole           = ref(null)
