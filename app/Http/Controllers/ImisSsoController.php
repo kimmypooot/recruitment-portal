@@ -24,15 +24,20 @@ use Throwable;
  * IMIS is where these people are managed. The account here is linked by
  * `imis_user_id` (else once by email), created on first sign-in, and has its
  * name, email and role rewritten from IMIS on every sign-in. It has no password
- * to use. Applicants are external, are not in IMIS, and never sign in this way.
+ * to use. External applicants are not in IMIS and never sign in this way; an IMIS
+ * employee with the `employee` code signs in as an applicant (an internal one).
  *
  * Board designations (chairperson, secretariat, …) stay in this system's own
  * HRMPSB composition; IMIS only decides who may sign in and as which role.
  */
 class ImisSsoController extends Controller
 {
-    /** Roles IMIS may grant. Applicants are deliberately not one of them. */
-    private const ROLES = ['admin', 'hrmpsb'];
+    /**
+     * IMIS role code => role held here. `employee` is an internal applicant: an
+     * IMIS user with no staff role who applies like anyone else. The plain
+     * `applicant` code is still not accepted; external applicants are not in IMIS.
+     */
+    private const ROLES = ['admin' => 'admin', 'hrmpsb' => 'hrmpsb', 'employee' => 'applicant'];
 
     public function __invoke(Request $request): JsonResponse
     {
@@ -61,13 +66,14 @@ class ImisSsoController extends Controller
             return $this->refuse('Your IMIS sign-in could not be used here. Please sign in below.', 422);
         }
 
-        $role = $imis['role_code'] ?? null;
+        $code = $imis['role_code'] ?? null;
 
-        if (! in_array($role, self::ROLES, true)) {
+        if (! is_string($code) || ! array_key_exists($code, self::ROLES)) {
             return $this->refuse('You have not been given a role in the Recruitment Portal in IMIS. Please contact your administrator.', 403);
         }
 
-        $user = $this->account($imis);
+        $role = self::ROLES[$code];
+        $user = $this->account($imis, $role);
 
         if ($user === false) {
             return $this->refuse('Your account clashes with an existing Recruitment Portal account. Please contact your administrator.', 409);
@@ -118,10 +124,10 @@ class ImisSsoController extends Controller
     /**
      * The account for this IMIS user: by its IMIS id, else an unlinked
      * non-applicant account with the same email. Null when there is none (one is
-     * created); false when the email belongs to an applicant, who must never be
-     * promoted by a matching address, or to an account linked to someone else.
+     * created); false when the email belongs to an applicant who must not be
+     * promoted to staff by a matching address, or to an account linked to someone else.
      */
-    private function account(array $imis): User|false|null
+    private function account(array $imis, string $role): User|false|null
     {
         if ($linked = User::where('imis_user_id', $imis['id'])->first()) {
             return $linked;
@@ -133,7 +139,18 @@ class ImisSsoController extends Controller
             return null;
         }
 
-        return $match->imis_user_id === null && $match->role !== 'applicant' ? $match : false;
+        if ($match->imis_user_id !== null) {
+            return false;
+        }
+
+        // Staff: only an existing staff account. Employee: also an applicant account
+        // the person registered themselves, but only once its email was verified, so
+        // an address nobody proved they own can't be claimed through IMIS.
+        if ($role === 'applicant') {
+            return $match->role === 'applicant' && $match->email_verified_at !== null ? $match : false;
+        }
+
+        return $match->role !== 'applicant' ? $match : false;
     }
 
     /**

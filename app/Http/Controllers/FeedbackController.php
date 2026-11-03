@@ -45,10 +45,6 @@ class FeedbackController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role !== 'applicant') {
-            return response()->json(['message' => 'Only applicants may submit feedback.'], 403);
-        }
-
         $profile = $user->applicantProfile;
 
         if (!$profile || $application->applicant_id !== $profile->id) {

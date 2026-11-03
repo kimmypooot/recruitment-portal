@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role'         => \App\Http\Middleware\EnsureRole::class,
             'admin-access'   => \App\Http\Middleware\EnsureAdminAccess::class,
             'pipeline-stage' => \App\Http\Middleware\EnsurePipelineStageAccessible::class,
+            'no-conflict'    => \App\Http\Middleware\EnsureNoConflictOfInterest::class,
         ]);
 
         // Without this, $request->secure() can resolve false behind a

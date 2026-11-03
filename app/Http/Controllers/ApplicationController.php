@@ -43,7 +43,10 @@ class ApplicationController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        if ($request->user()->role !== 'applicant') {
+        // Staff and board members may apply too (they are then recused from that
+        // vacancy, see ConflictOfInterestService), so any signed-in account can.
+        // Accounts with no role at all are refused.
+        if (! in_array($request->user()->role, ['applicant', 'hrmpsb', 'admin'], true)) {
             return response()->json(['message' => 'Only applicants may submit applications.'], 403);
         }
 
@@ -72,7 +75,9 @@ class ApplicationController extends Controller
         }
 
         try {
-            $application = DB::transaction(function () use ($profile, $data) {
+            $isInternal = $request->user()->imis_user_id !== null;
+
+            $application = DB::transaction(function () use ($profile, $data, $isInternal) {
                 // Lock the applicant's own profile row so two concurrent submit
                 // requests from the same applicant serialize instead of both
                 // passing the existence check below before either INSERT commits.
@@ -94,6 +99,7 @@ class ApplicationController extends Controller
                     'vacancy_id' => $data['vacancy_id'],
                     'applicant_id' => $profile->id,
                     'status' => 'submitted',
+                    'is_internal' => $isInternal,
                     'submitted_at' => now(),
                     'reference_code' => Application::generateReferenceCode(),
                 ]);
@@ -108,6 +114,9 @@ class ApplicationController extends Controller
         if ($application === null) {
             return response()->json(['message' => 'You have already applied for this vacancy.'], 422);
         }
+
+        // A board member / HR staff who applies is recused from this vacancy.
+        app(\App\Services\ConflictOfInterestService::class)->recuseApplicantIfStaff($vacancy, $request->user());
 
         ApplicationSubmitted::dispatch($application);
 

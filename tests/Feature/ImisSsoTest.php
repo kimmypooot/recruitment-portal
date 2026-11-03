@@ -136,6 +136,48 @@ class ImisSsoTest extends TestCase
         $this->assertNull($applicant->fresh()->imis_user_id);
     }
 
+    public function test_an_imis_employee_signs_in_as_an_applicant(): void
+    {
+        $this->imis(['role_code' => 'employee']);
+
+        $this->signIn()->assertOk()->assertJsonPath('user.role', 'applicant');
+
+        $user = User::where('imis_user_id', 7)->first();
+        $this->assertSame('applicant', $user->role);
+        $this->assertTrue($user->isImisManaged());
+    }
+
+    public function test_an_employee_is_linked_to_their_own_verified_applicant_account(): void
+    {
+        $applicant = User::factory()->applicant()->create(['email' => 'juan@csc.test', 'email_verified_at' => now()]);
+        $this->imis(['role_code' => 'employee']);
+
+        $this->signIn()->assertOk();
+
+        $this->assertSame(7, $applicant->fresh()->imis_user_id);
+        $this->assertSame('applicant', $applicant->fresh()->role);
+    }
+
+    public function test_an_unverified_applicant_account_is_not_claimed_through_imis(): void
+    {
+        $applicant = User::factory()->applicant()->unverified()->create(['email' => 'juan@csc.test']);
+        $this->imis(['role_code' => 'employee']);
+
+        $this->signIn()->assertStatus(409);
+
+        $this->assertNull($applicant->fresh()->imis_user_id);
+    }
+
+    public function test_an_employee_code_never_takes_over_a_staff_account_as_an_applicant_link(): void
+    {
+        $staff = User::factory()->admin()->create(['email' => 'juan@csc.test']);
+        $this->imis(['role_code' => 'employee']);
+
+        // An employee code may only claim an applicant account, never demote a staff one by email.
+        $this->signIn()->assertStatus(409);
+        $this->assertSame('admin', $staff->fresh()->role);
+    }
+
     public function test_no_role_applicant_role_or_unknown_role_is_refused(): void
     {
         foreach ([null, 'applicant', 'made_up'] as $code) {

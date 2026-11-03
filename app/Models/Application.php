@@ -20,6 +20,7 @@ class Application extends Model
         'vacancy_id',
         'applicant_id',
         'status',
+        'is_internal',
         'submitted_at',
         'reviewed_at',
         'remarks',

@@ -47,13 +47,17 @@ class HrmpsbCompositionService
             ->orderBy('hrmpsb_role')
             ->get();
 
+        // Members recused from this vacancy (applied, or declared a relative) sit it out.
+        $recused = app(ConflictOfInterestService::class)->recusedUserIds($vacancy->id);
+        $static = $static->reject(fn ($seat) => in_array($seat->user_id, $recused, true))->values();
+
         if ($this->isHeadOfUnitExcluded($vacancy)) {
             return $static;
         }
 
         $head = $this->resolveHeadOfUnit($vacancy->place_of_assignment);
 
-        if ($head === null) {
+        if ($head === null || in_array($head->id, $recused, true)) {
             return $static;
         }
 
@@ -104,6 +108,10 @@ class HrmpsbCompositionService
      */
     public function isActiveMember(User $user, Vacancy $vacancy): bool
     {
+        if (app(ConflictOfInterestService::class)->isRecused($user->id, $vacancy->id)) {
+            return false;
+        }
+
         $hasStaticSeat = HrmpsbComposition::where('user_id', $user->id)
             ->where('is_active', true)
             ->exists();

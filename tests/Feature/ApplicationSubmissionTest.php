@@ -31,14 +31,16 @@ class ApplicationSubmissionTest extends TestCase
         ]);
     }
 
-    public function test_hr_officer_cannot_submit_application(): void
+    public function test_staff_may_apply_but_only_with_a_complete_profile(): void
     {
+        // Staff can be applicants too (they are recused from that vacancy; see
+        // ConflictOfInterestTest), but they need a profile like anyone else.
         $hrOfficer = User::factory()->hrOfficer()->create();
         $vacancy   = Vacancy::factory()->published()->create();
 
         $this->actingAs($hrOfficer, 'sanctum')
             ->postJson('/api/applications', ['vacancy_id' => $vacancy->id])
-            ->assertForbidden();
+            ->assertUnprocessable();
     }
 
     public function test_applicant_cannot_apply_with_incomplete_profile(): void

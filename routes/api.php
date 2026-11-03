@@ -32,6 +32,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VacancyCompetencyController;
 use App\Http\Controllers\VacancyController;
+use App\Http\Controllers\VacancyRecusalController;
 use App\Http\Controllers\VisitorCountController;
 use Illuminate\Support\Facades\Route;
 
@@ -127,15 +128,15 @@ Route::middleware(['auth:sanctum', 'admin-access'])->group(function () {
     Route::patch('/vacancies/{vacancy}/archive', [VacancyController::class, 'archive']);
     Route::get('/applications', [ApplicationController::class, 'hrIndex']);
     Route::get('/vacancy-application-summary', [ApplicationController::class, 'vacancySummary']);
-    Route::patch('/applications/{application}/status', [ApplicationController::class, 'updateStatus']);
+    Route::patch('/applications/{application}/status', [ApplicationController::class, 'updateStatus'])->middleware('no-conflict');
     Route::apiResource('examinations', ExaminationController::class);
     Route::apiResource('interviews', InterviewController::class);
     Route::post('/documents/{document}/verify', [DocumentController::class, 'verify']);
     Route::get('/reports/{type}', [ReportController::class, 'generate']);
 
     // CS Forms
-    Route::get('/applications/{application}/applicant-profile', [ApplicationController::class, 'applicantProfile']);
-    Route::get('/applications/{application}/applicant-documents/{type}', [ApplicationController::class, 'serveApplicantDocument']);
+    Route::get('/applications/{application}/applicant-profile', [ApplicationController::class, 'applicantProfile'])->middleware('no-conflict');
+    Route::get('/applications/{application}/applicant-documents/{type}', [ApplicationController::class, 'serveApplicantDocument'])->middleware('no-conflict');
 });
 
 // Admin module routes (user management, audit logs, HRMPSB compositions)
@@ -165,6 +166,11 @@ Route::middleware(['auth:sanctum', 'admin-access'])->prefix('admin')->group(func
     Route::patch('/hrmpsb/compositions/{composition}/toggle-type', [HrmpsbController::class, 'toggleType']);
     Route::patch('/hrmpsb/compositions/{composition}/toggle-active', [HrmpsbController::class, 'toggleActive']);
 
+    // Per-vacancy recusal (applied / declared relative)
+    Route::get('/vacancies/{vacancy}/recusals', [VacancyRecusalController::class, 'index']);
+    Route::post('/vacancies/{vacancy}/recusals', [VacancyRecusalController::class, 'store']);
+    Route::delete('/vacancies/{vacancy}/recusals/{recusal}', [VacancyRecusalController::class, 'destroy']);
+
     // Place of Assignment Heads (dynamic Head of Unit mapping)
     Route::get('/place-of-assignment-heads', [HrmpsbController::class, 'poaHeads']);
     Route::post('/place-of-assignment-heads', [HrmpsbController::class, 'assignPoaHead']);
@@ -183,7 +189,8 @@ Route::middleware(['auth:sanctum', 'admin-access'])->prefix('exports')->group(fu
 });
 
 // HRMPSB evaluation routes (all hrmpsb users + admin)
-Route::middleware(['auth:sanctum', 'role:hrmpsb,admin'])->group(function () {
+// `no-conflict`: anyone with their own application on a vacancy is locked out of evaluating it.
+Route::middleware(['auth:sanctum', 'role:hrmpsb,admin', 'no-conflict'])->group(function () {
     Route::get('/hrmpsb/my-role', [HrmpsbController::class, 'myRole']);
     Route::get('/hrmpsb/pipeline-stages', [HrmpsbController::class, 'pipelineStages']);
     Route::get('/hrmpsb/applications/{application}/profile', [HrmpsbController::class, 'applicantProfile']);
