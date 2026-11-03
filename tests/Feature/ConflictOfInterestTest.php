@@ -180,6 +180,55 @@ class ConflictOfInterestTest extends TestCase
         $this->assertSame(0, (int) Application::where('applicant_id', $outsider->applicantProfile->id)->value('is_internal'));
     }
 
+    public function test_the_quorum_warning_trips_when_recusals_leave_too_few_principals(): void
+    {
+        config(['hrmpsb.min_members' => 3]);
+        $admin = User::factory()->admin()->create();
+        $vacancy = Vacancy::factory()->published()->create(['place_of_assignment' => \App\Services\HrmpsbCompositionService::HRD_PLACE]);
+        $members = User::factory()->hrmpsb()->count(3)->create();
+        foreach ($members as $i => $m) {
+            \App\Models\HrmpsbComposition::create([
+                'user_id' => $m->id, 'hrmpsb_role' => ['chairperson', 'secretariat', 'hr-chief'][$i],
+                'member_type' => 'principal', 'is_active' => true, 'assigned_by' => $admin->id,
+            ]);
+        }
+        $service = app(\App\Services\HrmpsbCompositionService::class);
+
+        $this->assertTrue($service->quorumStatus($vacancy)['met']);
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson("/api/admin/vacancies/{$vacancy->id}/recusals", ['user_id' => $members[0]->id, 'reason' => 'relative'])
+            ->assertCreated()
+            ->assertJsonPath('quorum.met', false)
+            ->assertJsonPath('quorum.members', 2)
+            ->assertJsonPath('quorum.minimum', 3)
+            ->assertJsonPath('quorum.recused', 1);
+
+        $this->actingAs($admin, 'sanctum')
+            ->getJson("/api/admin/vacancies/{$vacancy->id}/recusals")
+            ->assertJsonPath('quorum.met', false);
+    }
+
+    public function test_alternates_are_not_counted_and_a_zero_minimum_turns_the_warning_off(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $vacancy = Vacancy::factory()->published()->create(['place_of_assignment' => \App\Services\HrmpsbCompositionService::HRD_PLACE]);
+        $alt = User::factory()->hrmpsb()->create();
+        \App\Models\HrmpsbComposition::create([
+            'user_id' => $alt->id, 'hrmpsb_role' => 'chairperson', 'member_type' => 'alternate', 'is_active' => true, 'assigned_by' => $admin->id,
+        ]);
+        $service = app(\App\Services\HrmpsbCompositionService::class);
+
+        config(['hrmpsb.min_members' => 1]);
+        $status = $service->quorumStatus($vacancy);
+        $this->assertSame(0, $status['members']);
+        $this->assertSame(1, $status['alternates']);
+        $this->assertFalse($status['met']);
+
+        config(['hrmpsb.min_members' => 0]);
+        $this->assertTrue($service->quorumStatus($vacancy)['met']);
+    }
+
     public function test_someone_elses_application_does_not_block_the_evaluator(): void
     {
         $member = User::factory()->admin()->create();

@@ -9,6 +9,7 @@ use App\Models\Vacancy;
 use App\Models\VacancyRecusal;
 use App\Services\AuditLog;
 use App\Services\ConflictOfInterestService;
+use App\Services\HrmpsbCompositionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -36,7 +37,7 @@ class VacancyRecusalController extends Controller
                 'created_at' => $r->created_at,
             ]);
 
-        return response()->json(['data' => $rows]);
+        return response()->json(['data' => $rows, 'quorum' => app(HrmpsbCompositionService::class)->quorumStatus($vacancy)]);
     }
 
     public function store(Request $request, Vacancy $vacancy, ConflictOfInterestService $service): JsonResponse
@@ -49,7 +50,10 @@ class VacancyRecusalController extends Controller
 
         $recusal = $service->recuse($vacancy, User::findOrFail($data['user_id']), $data['reason'], $data['notes'] ?? null, $request->user());
 
-        return response()->json(['data' => $recusal], $recusal->wasRecentlyCreated ? 201 : 200);
+        return response()->json([
+            'data' => $recusal,
+            'quorum' => app(HrmpsbCompositionService::class)->quorumStatus($vacancy),
+        ], $recusal->wasRecentlyCreated ? 201 : 200);
     }
 
     public function destroy(Vacancy $vacancy, VacancyRecusal $recusal): JsonResponse

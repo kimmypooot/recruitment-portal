@@ -7,6 +7,15 @@
         dropped from its board. Members who apply for it are recused automatically.
       </p>
 
+      <div v-if="quorum && !quorum.met" role="alert"
+        class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+        <strong>The board may no longer have a quorum.</strong>
+        {{ quorum.members }} principal member{{ quorum.members === 1 ? '' : 's' }} left, against a minimum of {{ quorum.minimum }}
+        <span v-if="quorum.recused">({{ quorum.recused }} recused)</span>.
+        <span v-if="quorum.alternates">{{ quorum.alternates }} alternate{{ quorum.alternates === 1 ? '' : 's' }} can sit in. </span>
+        Assign members or alternates before evaluation continues.
+      </div>
+
       <div v-if="loading" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
 
       <ul v-else-if="recusals.length" class="divide-y divide-gray-100 border border-gray-100 rounded-lg mb-4">
@@ -66,6 +75,7 @@ const loading = ref(false)
 const busy = ref(false)
 const recusals = ref([])
 const members = ref([])
+const quorum = ref(null)
 const form = ref({ user_id: '', reason: 'relative', notes: '' })
 
 const REASONS = { applicant: 'Applied for this vacancy', relative: 'Related to a candidate', other: 'Other conflict' }
@@ -83,7 +93,8 @@ async function load() {
       axios.get('/api/admin/hrmpsb/compositions', { params: { vacancy_id: props.vacancy.id }, headers: headers() }),
     ])
     recusals.value = rec.data.data ?? []
-    const rows = comp.data.data ?? comp.data ?? []
+    quorum.value = rec.data.quorum ?? null
+    const rows = comp.data.compositions ?? []
     const seen = new Set()
     members.value = rows
       .filter(c => c.user && !seen.has(c.user_id) && seen.add(c.user_id))

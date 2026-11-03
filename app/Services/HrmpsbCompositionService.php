@@ -73,6 +73,31 @@ class HrmpsbCompositionService
         return $static->push($dynamic)->sortBy('hrmpsb_role')->values();
     }
 
+    /**
+     * Is the board for this vacancy still big enough? Counts the principal
+     * members left once anyone recused from it is out (forVacancy() already
+     * leaves them out). Alternates are reported but not counted, since they
+     * only sit in for a principal.
+     *
+     * @return array{members: int, alternates: int, minimum: int, recused: int, met: bool}
+     */
+    public function quorumStatus(Vacancy $vacancy): array
+    {
+        $board = $this->forVacancy($vacancy);
+        $minimum = max(0, (int) config('hrmpsb.min_members'));
+
+        $principals = $board->filter(fn ($c) => ($c->member_type ?? 'principal') === 'principal')->pluck('user_id')->unique()->count();
+        $alternates = $board->filter(fn ($c) => ($c->member_type ?? 'principal') === 'alternate')->pluck('user_id')->unique()->count();
+
+        return [
+            'members' => $principals,
+            'alternates' => $alternates,
+            'minimum' => $minimum,
+            'recused' => count(app(ConflictOfInterestService::class)->recusedUserIds($vacancy->id)),
+            'met' => $minimum === 0 || $principals >= $minimum,
+        ];
+    }
+
     public function isHrdVacancy(Vacancy $vacancy): bool
     {
         return $vacancy->place_of_assignment === self::HRD_PLACE;
