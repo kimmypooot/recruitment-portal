@@ -20,6 +20,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// A recused / conflicted evaluator is refused by the server; say why instead of a bare 403.
+// Shared with the global axios in app.js, and shown once at a time.
+let conflictShownAt = 0
+export function notifyConflict(error) {
+  if (error?.response?.status !== 403 || error.response.data?.code !== 'conflict_of_interest') return
+  if (Date.now() - conflictShownAt < 5000) return
+  conflictShownAt = Date.now()
+  useToast().warning(error.response.data.message, 8000)
+}
+
 // Global error interceptor
 api.interceptors.response.use(
   (response) => response,
@@ -45,6 +55,7 @@ api.interceptors.response.use(
     if (error.response?.status === 403) {
       console.error('Forbidden — insufficient permissions');
     }
+    notifyConflict(error);
     return Promise.reject(error);
   }
 );

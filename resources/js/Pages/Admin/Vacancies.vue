@@ -160,6 +160,10 @@
                     </div>
                   </Transition>
                 </Teleport>
+                <button @click="recusalTarget = v"
+                  class="px-2.5 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                  Recusals
+                </button>
                 <button @click="deleteTarget = v"
                   class="px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors">
                   Delete
@@ -221,6 +225,8 @@
       @deleted="onDeleted"
     />
 
+    <RecusalsModal :vacancy="recusalTarget" @close="recusalTarget = null" />
+
     <VacancyDetailModal
       v-if="showPreview && previewVacancyData"
       :vacancy="previewVacancyData"
@@ -240,6 +246,7 @@ import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import VacancyDetailModal from '@/Components/Vacancy/VacancyDetailModal.vue'
 import VacancyFormModal from './Vacancies/VacancyFormModal.vue'
 import DeleteVacancyModal from './Vacancies/DeleteVacancyModal.vue'
+import RecusalsModal from './Vacancies/RecusalsModal.vue'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 import Icon from '@/Components/UI/Icon.vue'
@@ -258,6 +265,7 @@ const meta                = ref({})
 const showModal           = ref(false)
 const editingVacancy      = ref(null)
 const deleteTarget        = ref(null)
+const recusalTarget       = ref(null)
 const selectedIds         = ref([])
 const bulkStatus          = ref('')
 const bulkLoading         = ref(false)

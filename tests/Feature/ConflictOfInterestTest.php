@@ -43,7 +43,8 @@ class ConflictOfInterestTest extends TestCase
 
         $this->actingAs($member, 'sanctum')
             ->postJson('/api/bei-ratings', ['application_id' => $application->id])
-            ->assertForbidden();
+            ->assertForbidden()
+            ->assertJsonPath('code', 'conflict_of_interest');
     }
 
     public function test_admin_with_own_application_cannot_change_its_status(): void

@@ -33,6 +33,7 @@ class EnsureNoConflictOfInterest
                     AuditLog::record('conflict_of_interest_blocked', $user);
 
                     return response()->json([
+                        'code' => 'conflict_of_interest',
                         'message' => 'You have applied for this vacancy, so you cannot take part in evaluating it.',
                     ], 403);
                 }

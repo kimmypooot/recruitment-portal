@@ -10,6 +10,7 @@ import { useToast } from '@/composables/useToast'
 import { useSessionExpiry } from '@/composables/useSessionExpiry'
 import { useIdleTimer } from '@/composables/useIdleTimer'
 import { dismissBootPreloader } from './imisBoot'
+import { notifyConflict } from '@/services/api'
 
 const origin = window.location.origin
 axios.interceptors.request.use((config) => {
@@ -17,6 +18,12 @@ axios.interceptors.request.use((config) => {
     config.url = `${origin}${config.url}`
   }
   return config
+})
+
+// Pages mostly call axios directly: explain a conflict-of-interest refusal instead of a bare 403.
+axios.interceptors.response.use((response) => response, (error) => {
+  notifyConflict(error)
+  return Promise.reject(error)
 })
 
 const pinia = createPinia()
