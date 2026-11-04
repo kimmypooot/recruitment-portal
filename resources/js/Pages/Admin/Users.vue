@@ -22,6 +22,65 @@
       </div>
     </div>
 
+    <!-- Staff in IMIS: Admin and HRMPSB access is granted there -->
+    <div v-if="imis.enabled" class="bg-white rounded-xl border border-gray-200 shadow-sm mb-6 overflow-hidden">
+      <button type="button" @click="showImis = !showImis"
+        class="w-full flex items-center justify-between gap-3 px-5 py-4 text-left">
+        <div>
+          <p class="text-sm font-semibold text-gray-900">Staff in IMIS <span class="text-gray-400 font-normal">({{ imis.rows.length }})</span></p>
+          <p class="text-xs text-gray-500 mt-0.5">
+            Admin and HRMPSB access is granted in IMIS. These people sign in from IMIS and their name, email and role update here each time.
+          </p>
+        </div>
+        <span class="text-xs text-primary font-medium flex-shrink-0">{{ showImis ? 'Hide' : 'Show' }}</span>
+      </button>
+
+      <div v-if="showImis" class="border-t border-gray-100">
+        <p v-if="imis.error" role="alert" class="px-5 py-3 text-sm text-red-600">{{ imis.error }}</p>
+        <p v-else-if="!imis.rows.length" class="px-5 py-6 text-sm text-gray-400 text-center">IMIS lists nobody with an Admin or HRMPSB role here yet.</p>
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left text-xs text-gray-500 font-semibold uppercase tracking-wider">
+              <tr>
+                <th class="px-5 py-2.5">Employee</th>
+                <th class="px-5 py-2.5 hidden md:table-cell">Position / Office</th>
+                <th class="px-5 py-2.5">IMIS role</th>
+                <th class="px-5 py-2.5">In this portal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr v-for="p in imis.rows" :key="p.imis_id">
+                <td class="px-5 py-3">
+                  <p class="font-medium text-gray-900">{{ p.name }}</p>
+                  <p class="text-xs text-gray-400">{{ p.email }}</p>
+                </td>
+                <td class="px-5 py-3 hidden md:table-cell">
+                  <p class="text-gray-700">{{ p.position || '—' }}</p>
+                  <p class="text-xs text-gray-400">{{ p.office || '—' }}</p>
+                </td>
+                <td class="px-5 py-3">
+                  <span :class="roleClass(p.role_code)" class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold">{{ roleLabel(p.role_code) }}</span>
+                </td>
+                <td class="px-5 py-3">
+                  <span v-if="p.status === 'linked'" class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">Signed in</span>
+                  <span v-else-if="p.status === 'unlinked_account'" class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700"
+                    title="A portal account with this email exists but is not linked to IMIS. It links when they sign in from IMIS.">Account not linked</span>
+                  <span v-else class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">Not signed in yet</span>
+                  <span v-if="p.role_in_sync === false" class="ml-1 inline-flex px-2 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700"
+                    title="The portal role differs from IMIS. It is corrected the next time they sign in.">Role differs</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p v-if="imis.localOnly.length" class="px-5 py-3 border-t border-gray-100 bg-amber-50/60 text-xs text-amber-800">
+        {{ imis.localOnly.length }} admin / HRMPSB account{{ imis.localOnly.length === 1 ? '' : 's' }} below exist only in this portal and are not in IMIS
+        (marked <strong>Local</strong>). Review them: remove any that are test or seeded data.
+      </p>
+    </div>
+
     <!-- Toolbar -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
       <div class="flex flex-wrap items-center gap-2">
@@ -99,12 +158,16 @@
                 class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold">
                 {{ roleLabel(user.role) }}
               </span>
+              <span v-if="user.imis_user_id" class="ml-1.5 inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700">IMIS</span>
+              <span v-else-if="imis.localOnly.includes(user.id)" class="ml-1.5 inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700"
+                title="Not in IMIS">Local</span>
             </td>
             <td class="px-5 py-3.5 text-xs text-gray-400 hidden md:table-cell whitespace-nowrap">
               {{ formatDate(user.created_at) }}
             </td>
             <td class="px-5 py-3.5">
-              <div class="flex items-center justify-end gap-1.5">
+              <div v-if="user.imis_user_id" class="text-right text-xs text-gray-400" title="Change this in IMIS">Managed in IMIS</div>
+              <div v-else class="flex items-center justify-end gap-1.5">
                 <button @click="openEdit(user)"
                   class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-primary bg-primary/8 hover:bg-primary/15 rounded-md transition-colors">
                   <Icon name="document" size="3" />
@@ -404,6 +467,8 @@ const saving       = ref(false)
 const users        = ref([])
 const search       = ref('')
 const roleFilter   = ref('')
+const showImis     = ref(true)
+const imis         = reactive({ enabled: false, rows: [], localOnly: [], error: '' })
 const showModal    = ref(false)
 const editTarget   = ref(null)
 const deleteTarget = ref(null)
@@ -491,12 +556,26 @@ async function fetchUsers() {
   loading.value = true
   try {
     const { data } = await axios.get('/api/admin/users', {
-      params: { role: roleFilter.value || undefined },
+      params: { role: roleFilter.value || undefined, per_page: 100 },
       headers: authHeaders(),
     })
     users.value = data.data ?? data
   } finally {
     loading.value = false
+  }
+}
+
+// The staff IMIS gives an Admin / HRMPSB role here, matched to portal accounts.
+async function fetchImisStaff() {
+  try {
+    const { data } = await axios.get('/api/admin/users/imis-staff', { headers: authHeaders() })
+    imis.enabled = !!data.enabled
+    imis.rows = data.data ?? []
+    imis.localOnly = data.local_only ?? []
+    imis.error = ''
+  } catch (e) {
+    imis.enabled = true
+    imis.error = e.response?.data?.message ?? 'Could not load the staff list from IMIS.'
   }
 }
 
@@ -683,5 +762,5 @@ function roleDescription(role) {
   }[role] ?? ''
 }
 
-onMounted(fetchUsers)
+onMounted(() => { fetchUsers(); fetchImisStaff() })
 </script>

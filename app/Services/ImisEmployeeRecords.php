@@ -49,6 +49,22 @@ class ImisEmployeeRecords
     }
 
     /**
+     * The staff who hold an Admin or HRMPSB role in this portal in IMIS.
+     *
+     * @return array<int, array<string, mixed>>
+     *
+     * @throws RuntimeException
+     */
+    public function staff(): array
+    {
+        $response = $this->imis->request()->get('/api/v1/recruitment/users');
+
+        $this->ensure($response->status(), $response->successful() && is_array($response->json('data')));
+
+        return $response->json('data');
+    }
+
+    /**
      * The file's bytes.
      *
      * @throws RuntimeException

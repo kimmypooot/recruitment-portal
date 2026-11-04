@@ -142,6 +142,7 @@ Route::middleware(['auth:sanctum', 'admin-access'])->group(function () {
 
 // Admin module routes (user management, audit logs, HRMPSB compositions)
 Route::middleware(['auth:sanctum', 'admin-access'])->prefix('admin')->group(function () {
+    Route::get('/users/imis-staff', [UserController::class, 'imisStaff']);
     Route::apiResource('users', UserController::class);
     Route::post('/users/{user}/photo', [UserController::class, 'uploadPhoto']);
     Route::get('/imis-vacant-positions', [VacancyController::class, 'imisPositions']);

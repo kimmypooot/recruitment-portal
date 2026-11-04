@@ -43,6 +43,68 @@ class UserController extends Controller
     private const ALLOWED_ROLES = ['applicant', 'hrmpsb', 'admin'];
 
     /**
+     * IMIS is where staff and board members are managed: the people it gives an
+     * Admin or HRMPSB role here, matched to their portal account (by IMIS id,
+     * else by email) so the Users page shows who has signed in, who has not yet,
+     * and whose portal role has drifted from IMIS. Also lists the staff accounts
+     * that exist only here (not in IMIS), which are the ones to review.
+     */
+    public function imisStaff(\App\Services\ImisEmployeeRecords $records): JsonResponse
+    {
+        if (! $records->enabled()) {
+            return response()->json(['enabled' => false, 'data' => [], 'local_only' => []]);
+        }
+
+        try {
+            $staff = $records->staff();
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 502);
+        }
+
+        $linked = User::whereNotNull('imis_user_id')->get()->keyBy('imis_user_id');
+        $byEmail = User::whereIn('email', array_filter(array_column($staff, 'email')))->get()->keyBy(fn (User $u) => strtolower($u->email));
+
+        $rows = collect($staff)->map(function (array $person) use ($linked, $byEmail) {
+            $account = $linked->get($person['id']) ?? $byEmail->get(strtolower((string) ($person['email'] ?? '')));
+            $isLinked = $account !== null && $account->imis_user_id === $person['id'];
+
+            return [
+                'imis_id' => $person['id'],
+                'name' => trim(($person['lname'] ?? '').', '.($person['fname'] ?? '').' '.($person['mname'] ?? '')),
+                'email' => $person['email'] ?? null,
+                'position' => $person['position'] ?? null,
+                'office' => $person['office_name'] ?? null,
+                'role_code' => $person['role_code'],
+                'photo_url' => $person['photo_url'] ?? null,
+                'portal_user_id' => $account?->id,
+                // Signed in from IMIS at least once (linked), or only a same-email account so far.
+                'status' => $isLinked ? 'linked' : ($account ? 'unlinked_account' : 'not_signed_in'),
+                'last_login_at' => $isLinked ? $account->last_login_at : null,
+                'role_in_sync' => $account === null ? null : $account->role === $person['role_code'],
+            ];
+        })->values();
+
+        $inImis = $rows->pluck('portal_user_id')->filter()->all();
+
+        return response()->json([
+            'enabled' => true,
+            'data' => $rows,
+            // Admin / board accounts that IMIS does not know about (e.g. the old seeded ones).
+            'local_only' => User::whereIn('role', ['admin', 'hrmpsb'])
+                ->whereNotIn('id', $inImis)
+                ->pluck('id'),
+        ]);
+    }
+
+    /** IMIS rewrites a linked account's name, email and role on every sign-in, so edits here would not stick. */
+    private function managedInImis(User $user): ?JsonResponse
+    {
+        return $user->isImisManaged()
+            ? response()->json(['message' => 'This account is managed in IMIS. Change it there; it updates here the next time they sign in.'], 422)
+            : null;
+    }
+
+    /**
      * `admin-access` (see EnsureAdminAccess/User::canAccessAdminModule) admits
      * two different trust levels: a true admin, and an hrmpsb user with a
      * delegated secretariat/hr-chief designation. Both reach every method
@@ -101,6 +163,10 @@ class UserController extends Controller
 
     public function update(Request $request, User $user): JsonResponse
     {
+        if ($managed = $this->managedInImis($user)) {
+            return $managed;
+        }
+
         $data = $request->validate([
             'first_name' => 'sometimes|required|string|max:100',
             'last_name' => 'sometimes|required|string|max:100',
@@ -139,6 +205,10 @@ class UserController extends Controller
 
     public function destroy(Request $request, User $user): JsonResponse
     {
+        if ($managed = $this->managedInImis($user)) {
+            return $managed;
+        }
+
         if ($user->role === 'admin' && ! $this->canGrantAdminRole($request)) {
             return response()->json(['message' => 'Only an administrator can delete an admin account.'], 403);
         }
