@@ -31,7 +31,7 @@ npm run build    # Production build → public/build/
 php artisan migrate
 php artisan migrate:fresh --seed   # Wipe and reseed
 ```
-The seeder creates demo admins, demo applicants, competencies and email templates, but **no HRMPSB board** (no `hrmpsb` users, `hrmpsb_compositions` or `place_of_assignment_heads`). Board members are CSC employees who sign in from IMIS; an admin gives each a role under Admin → HRMPSB. Never run it on production (the demo accounts use `Password123`).
+The seeder creates demo admins, competencies and email templates, but **no applicants** (external applicants register themselves; CSC employees sign in from IMIS) and **no HRMPSB board** (no `hrmpsb` users, `hrmpsb_compositions` or `place_of_assignment_heads`). Board members are CSC employees who sign in from IMIS; an admin gives each a role under Admin → HRMPSB. Never run it on production (the demo accounts use `Password123`).
 
 ### Tests
 ```bash
