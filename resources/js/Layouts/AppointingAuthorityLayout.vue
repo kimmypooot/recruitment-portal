@@ -11,7 +11,7 @@
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-14">
           <div class="flex items-center gap-3">
-            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white p-1 shadow-sm ring-1 ring-white/20">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white keep-white p-1 shadow-sm ring-1 ring-white/20">
               <img src="/images/csc-logo.png" alt="CSC Logo" class="h-full w-full object-contain" />
             </span>
             <div class="leading-tight">

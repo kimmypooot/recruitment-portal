@@ -193,8 +193,10 @@
         v-else-if="vacancies.length > 0"
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         <VacancyCard
-          v-for="vacancy in vacancies"
+          v-for="(vacancy, vi) in vacancies"
           :key="vacancy.id"
+          :style="{ '--i': Math.min(vi, 8) }"
+          class="rise-in card-lift"
           :vacancy="vacancy"
           :show-detail-first="true" />
       </div>
@@ -236,15 +238,15 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center divide-y sm:divide-y-0 sm:divide-x divide-white/20">
           <div class="pb-6 sm:pb-0">
-            <p class="text-4xl font-bold text-white">{{ stats.published }}</p>
+            <p class="text-4xl font-bold text-white tabular-nums"><AnimatedNumber :value="Number(stats.published) || 0" /></p>
             <p class="text-white/75 text-sm mt-1 uppercase tracking-wide font-medium">Open Positions</p>
           </div>
           <div class="py-6 sm:py-0 sm:px-8">
-            <p class="text-4xl font-bold text-white">{{ stats.total_applications }}</p>
+            <p class="text-4xl font-bold text-white tabular-nums"><AnimatedNumber :value="Number(stats.total_applications) || 0" /></p>
             <p class="text-white/75 text-sm mt-1 uppercase tracking-wide font-medium">Applications This Year</p>
           </div>
           <div class="pt-6 sm:pt-0 sm:px-8">
-            <p class="text-4xl font-bold text-white">{{ stats.appointed }}</p>
+            <p class="text-4xl font-bold text-white tabular-nums"><AnimatedNumber :value="Number(stats.appointed) || 0" /></p>
             <p class="text-white/75 text-sm mt-1 uppercase tracking-wide font-medium">Appointments Made</p>
           </div>
         </div>
@@ -265,6 +267,7 @@ import PublicLayout from '@/Layouts/PublicLayout.vue'
 import VacancyCard from '@/Components/Vacancy/VacancyCard.vue'
 import DataPrivacyModal from '@/Components/DataPrivacyModal.vue'
 import Icon from '@/Components/UI/Icon.vue'
+import AnimatedNumber from '@/Components/UI/AnimatedNumber.vue'
 import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
 import Pagination from '@/Components/UI/Pagination.vue'
 import { formatDateLong, formatDate, daysRemaining } from '@/utils/dates'

@@ -39,7 +39,7 @@ const patternId = useId()
 
       <div class="relative px-12 py-16 xl:px-20">
         <Link href="/" class="inline-flex items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
-          <span class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 shadow-sm ring-1 ring-white/20">
+          <span class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white keep-white p-2 shadow-sm ring-1 ring-white/20">
             <img src="/images/csc-logo.png" alt="" class="h-full w-full object-contain" />
           </span>
           <span class="flex flex-col leading-none">
@@ -76,7 +76,7 @@ const patternId = useId()
 
       <div class="relative">
         <Link href="/" class="inline-flex items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
-          <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-white/20">
+          <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white keep-white p-1.5 shadow-sm ring-1 ring-white/20">
             <img src="/images/csc-logo.png" alt="" class="h-full w-full object-contain" />
           </span>
           <span class="flex flex-col leading-none">

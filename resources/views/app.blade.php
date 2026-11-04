@@ -36,6 +36,7 @@
     ];
     @endphp
     <script type="application/ld+json">{{ json_encode($ldJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</script>
+    <script src="/js/theme-init.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @inertiaHead
     <script src="/js/page-transition.js"></script>

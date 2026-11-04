@@ -18,7 +18,7 @@
           <!-- LOGO: Replace /images/csc-logo.png with your actual logo file.
                Place the file at: public/images/csc-logo.png -->
           <Link href="/" class="flex items-center gap-3 group">
-            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-white/20">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white keep-white p-1.5 shadow-sm ring-1 ring-white/20">
               <img src="/images/csc-logo.png" alt="CSC Logo"
                 class="h-full w-full object-contain"
                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
@@ -63,6 +63,7 @@
 
           <!-- Auth buttons + mobile hamburger -->
           <div class="flex items-center gap-2">
+            <ThemeToggle ghost />
             <Link href="/login"
               class="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-white/75 hover:text-white transition-colors">
               Sign In
@@ -141,7 +142,7 @@
           <div>
             <div class="flex items-center gap-2 mb-3">
               <!-- LOGO (footer): same file as navbar — public/images/csc-logo.png -->
-              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white p-1 shadow-sm ring-1 ring-white/20">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white keep-white p-1 shadow-sm ring-1 ring-white/20">
                 <img src="/images/csc-logo.png" alt="CSC Logo" class="h-full w-full object-contain"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
                 <svg class="w-4 h-4 text-primary hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -216,6 +217,7 @@
 import { ref, onMounted } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import Icon from '@/Components/UI/Icon.vue'
+import ThemeToggle from '@/Components/UI/ThemeToggle.vue'
 import api from '@/services/api'
 
 const mobileOpen = ref(false)

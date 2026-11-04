@@ -104,8 +104,8 @@
 
       <!-- Stat cards -->
       <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        <Link v-for="card in statCards" :key="card.label" :href="card.link"
-          class="group relative bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden">
+        <Link v-for="(card, ci) in statCards" :key="card.label" :href="card.link" :style="{ '--i': ci }"
+          class="rise-in group relative bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden">
           <div class="h-1.5 w-full bg-gradient-to-r" :class="card.accent"></div>
           <div class="p-5 flex items-start gap-4">
             <div :class="card.iconBg" class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-200">
@@ -115,7 +115,7 @@
             </div>
             <div class="min-w-0">
               <p class="text-xs text-gray-500 font-medium truncate">{{ card.label }}</p>
-              <p v-if="!loadingApps" class="text-2xl font-bold text-gray-900 mt-0.5 tabular-nums">{{ card.value }}</p>
+              <p v-if="!loadingApps" class="text-2xl font-bold text-gray-900 mt-0.5 tabular-nums"><AnimatedNumber :value="Number(card.value) || 0" /></p>
               <div v-else class="h-7 w-10 bg-gray-200 rounded animate-pulse mt-0.5"></div>
             </div>
           </div>
@@ -282,6 +282,7 @@ import VacancyCard from '@/Components/Vacancy/VacancyCard.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import ApplicantLayout from '@/Layouts/ApplicantLayout.vue'
 import Icon from '@/Components/UI/Icon.vue'
+import AnimatedNumber from '@/Components/UI/AnimatedNumber.vue'
 import SkeletonLoader from '@/Components/UI/SkeletonLoader.vue'
 import Pagination from '@/Components/UI/Pagination.vue'
 import { formatDate, formatDateLong, formatDateTime, formatDateRange, daysRemaining } from '@/utils/dates'

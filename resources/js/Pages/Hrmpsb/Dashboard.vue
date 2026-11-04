@@ -47,6 +47,19 @@
         </div>
       </div>
 
+      <!-- KPI strip -->
+      <div v-if="!loading && vacancies.length" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div v-for="(k, i) in kpis" :key="k.label" :style="{ '--i': i }"
+          class="rise-in card-lift bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div class="h-1" :class="k.bar"></div>
+          <div class="p-4">
+            <p class="text-xs text-gray-500 font-medium">{{ k.label }}</p>
+            <p class="text-2xl font-bold text-gray-900 mt-0.5 tabular-nums"><AnimatedNumber :value="k.value" /></p>
+            <p class="text-[11px] text-gray-400 mt-0.5">{{ k.sub }}</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Section header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
@@ -91,8 +104,8 @@
 
       <!-- Vacancy cards -->
       <div v-else class="space-y-3">
-        <div v-for="v in vacancies" :key="v.id"
-          class="bg-white rounded-xl border border-gray-200 shadow-sm">
+        <div v-for="(v, vi) in vacancies" :key="v.id" :style="{ '--i': Math.min(vi, 8) }"
+          class="rise-in bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-primary/30 transition-shadow">
 
           <div class="px-5 py-4">
             <!-- Header row -->
@@ -112,6 +125,17 @@
                       class="px-2 py-0.5 rounded-full text-[10px] font-medium capitalize">{{ v.status }}</span>
                   </div>
                   <p class="text-xs text-gray-500 mt-0.5 truncate">{{ v.place_of_assignment }} &middot; {{ v.plantilla_no ?? '—' }} &middot; Published {{ formatDate(v.published_at) }}</p>
+                </div>
+
+                <!-- Progress ring -->
+                <div v-if="stages[v.id]" class="flex-shrink-0 hidden sm:flex items-center gap-2" :title="progressPct(v.id) + '% of the pipeline complete'">
+                  <svg class="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="15" fill="none" stroke="#e5e7eb" stroke-width="3.5" />
+                    <circle cx="18" cy="18" r="15" fill="none" :stroke="progressPct(v.id) === 100 ? '#16a34a' : '#2a338f'" stroke-width="3.5"
+                      stroke-linecap="round" stroke-dasharray="94.25" :stroke-dashoffset="94.25 * (1 - progressPct(v.id) / 100)"
+                      style="transition: stroke-dashoffset 0.8s cubic-bezier(0.22,1,0.36,1)" />
+                  </svg>
+                  <span class="text-xs font-semibold text-gray-700 tabular-nums w-9">{{ progressPct(v.id) }}%</span>
                 </div>
 
                 <!-- Stage badge (desktop only) -->
@@ -207,6 +231,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import axios from 'axios'
 import HrmpsbLayout from '@/Layouts/HrmpsbLayout.vue'
+import AnimatedNumber from '@/Components/UI/AnimatedNumber.vue'
 
 /* ── State ───────────────────────────────────────────────────────────────── */
 const loading     = ref(true)
@@ -287,6 +312,21 @@ function lastCompletedIdx(vacancyId) {
   }
   return -1
 }
+
+function progressPct(vacancyId) {
+  return Math.round(((lastCompletedIdx(vacancyId) + 1) / steps.length) * 100)
+}
+
+const kpis = computed(() => {
+  const loaded = vacancies.value.filter(v => stages.value[v.id])
+  const done = loaded.filter(v => stages.value[v.id].appointing_authority_exists).length
+  return [
+    { label: 'Positions', value: vacancies.value.length, sub: `${vacancies.value.filter(v => v.status === 'published').length} published`, bar: 'bg-primary' },
+    { label: 'Needs Action', value: pendingActions.value, sub: 'awaiting board input', bar: 'bg-red-500' },
+    { label: 'In Progress', value: Math.max(loaded.length - done - pendingActions.value, 0), sub: 'moving through stages', bar: 'bg-amber-400' },
+    { label: 'Decided', value: done, sub: 'appointing authority done', bar: 'bg-green-500' },
+  ]
+})
 
 function phaseMeterClass(step, idx, vacancyId) {
   const last = lastCompletedIdx(vacancyId)

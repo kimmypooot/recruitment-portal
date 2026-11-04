@@ -2,7 +2,7 @@
   <div v-if="loading" class="h-40 bg-white rounded-2xl border border-gray-200 animate-pulse" />
 
   <div v-else-if="vacancy"
-    class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-gray-300">
+    class="rise-in bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-gray-300">
     <div class="h-1.5 w-full" style="background: linear-gradient(90deg, var(--color-primary) 0%, #2980b9 100%)" />
 
     <div class="px-6 py-5">
@@ -65,7 +65,20 @@
           </li>
         </ol>
         <!-- Real stepper once flags are known -->
-        <ol v-else class="flex items-start w-full">
+        <template v-else>
+        <!-- Overall progress -->
+        <div class="flex items-center gap-3 mb-4">
+          <div class="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden" role="progressbar"
+            :aria-valuenow="completedPct" aria-valuemin="0" aria-valuemax="100" aria-label="Recruitment pipeline progress">
+            <div class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-green-500"
+              :style="{ width: completedPct + '%', transition: 'width 0.9s cubic-bezier(0.22,1,0.36,1)' }"></div>
+          </div>
+          <span class="text-[11px] font-semibold text-gray-500 tabular-nums whitespace-nowrap">
+            {{ completedCount }} of {{ PIPELINE_STAGES.length }} stages done · {{ completedPct }}%
+          </span>
+        </div>
+        <div class="overflow-x-auto -mx-1 px-1 pb-1">
+        <ol class="flex items-start w-full min-w-[34rem]">
           <li v-for="(def, i) in PIPELINE_STAGES" :key="def.key"
             class="flex items-center"
             :class="i < PIPELINE_STAGES.length - 1 ? 'flex-1' : 'flex-none'">
@@ -74,11 +87,16 @@
               :class="isStageAccessible(i)
                 ? 'cursor-pointer hover:scale-110 active:scale-95'
                 : 'cursor-not-allowed opacity-50'"
-              :title="isStageAccessible(i) ? def.full : 'Not yet available — earlier stages must be completed first'">
+              :title="stepTitle(i, def)">
               <span
                 class="w-7 h-7 flex items-center justify-center rounded-full text-[11px] font-bold border-2 transition-all relative"
                 :class="stepClass(i)">
-                <template v-if="isStageAccessible(i)">{{ i + 1 }}</template>
+                <span v-if="i === currentStageIndex && !isDone(i)"
+                  class="absolute inset-0 rounded-full bg-indigo-400/40 animate-ping motion-reduce:hidden"></span>
+                <svg v-if="isDone(i)" class="w-3.5 h-3.5 relative" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                <template v-else-if="isStageAccessible(i)"><span class="relative">{{ i + 1 }}</span></template>
                 <svg v-else class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                 </svg>
@@ -91,10 +109,14 @@
                 </svg>
               </span>
             </div>
-            <span v-if="i < PIPELINE_STAGES.length - 1" class="flex-1 h-0.5 mx-1.5 mt-3.5"
-              :class="i < maxReachedIndex ? 'bg-indigo-300' : 'bg-gray-200'"></span>
+            <span v-if="i < PIPELINE_STAGES.length - 1" class="flex-1 h-0.5 mx-1.5 mt-3.5 bg-gray-200 rounded overflow-hidden">
+              <span class="block h-full bg-green-400"
+                :style="{ width: isDone(i) ? '100%' : '0%', transition: 'width 0.6s ease ' + (i * 80) + 'ms' }"></span>
+            </span>
           </li>
         </ol>
+        </div>
+        </template>
       </div>
 
       <slot />
@@ -196,8 +218,25 @@ const maxReachedIndex = computed(() => {
   return max
 })
 
+// A stage is done when the next stage's prerequisite flag is set (the last one uses its own data).
+const DONE_FLAGS = ['pre_assessment_exists', 'qs_locked', 'twe_exists', 'cbwe_locked',
+  'bei_locked', 'eopt_exists', 'background_check_locked', 'deliberation_exists']
+
+function isDone(i) {
+  return !!pipelineFlags.value?.[DONE_FLAGS[i]]
+}
+
+const completedCount = computed(() => PIPELINE_STAGES.filter((_, i) => isDone(i)).length)
+const completedPct = computed(() => Math.round((completedCount.value / PIPELINE_STAGES.length) * 100))
+
+function stepTitle(i, def) {
+  if (!isStageAccessible(i)) return 'Not yet available — earlier stages must be completed first'
+  return isDone(i) ? `${def.full} — completed` : def.full
+}
+
 function stepClass(i) {
   if (i === currentStageIndex.value) return 'bg-indigo-600 border-indigo-600 text-white'
+  if (isDone(i)) return 'bg-green-500 border-green-500 text-white'
   if (i <= maxReachedIndex.value) return 'bg-indigo-50 border-indigo-300 text-indigo-600'
   return 'bg-white border-gray-200 text-gray-400'
 }

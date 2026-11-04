@@ -20,17 +20,33 @@
       </div>
     </div>
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6">
-      <Link v-for="card in statCards" :key="card.label" :href="card.link"
-        class="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 flex items-center sm:items-start gap-3 sm:gap-4 shadow-sm hover:border-primary/30 hover:shadow-md transition-all cursor-pointer">
+      <Link v-for="(card, i) in statCards" :key="card.label" :href="card.link" :style="{ '--i': i }"
+        class="rise-in card-lift bg-white rounded-xl border border-gray-200 p-4 sm:p-5 flex items-center sm:items-start gap-3 sm:gap-4 shadow-sm hover:border-primary/30 hover:shadow-md cursor-pointer">
         <div :class="card.iconBg" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0">
           <Icon :name="card.icon" size="5" :class="card.iconColor" />
         </div>
         <div class="min-w-0">
           <p class="text-xs text-gray-500 font-medium">{{ card.label }}</p>
-          <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-0.5">{{ card.value }}</p>
+          <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-0.5"><AnimatedNumber :value="Number(card.value) || 0" /></p>
           <p v-if="card.sub" class="text-xs text-gray-400 mt-0.5">{{ card.sub }}</p>
         </div>
       </Link>
+    </div>
+
+    <!-- Charts -->
+    <div v-if="!loading && pipelineByVacancy.length" class="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-5 mb-6">
+      <div class="rise-in lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5" style="--i: 4">
+        <h2 class="text-sm font-semibold text-gray-900 mb-1">Applications by Status</h2>
+        <p class="text-xs text-gray-400 mb-3">{{ totalApplications }} across all vacancies</p>
+        <ChartCanvas type="doughnut" :data="statusChart" :options="donutOptions" :height="230"
+          aria-label="Doughnut chart of applications by status" />
+      </div>
+      <div class="rise-in lg:col-span-3 bg-white rounded-xl border border-gray-200 shadow-sm p-5" style="--i: 5">
+        <h2 class="text-sm font-semibold text-gray-900 mb-1">Busiest Vacancies</h2>
+        <p class="text-xs text-gray-400 mb-3">Top {{ vacancyChart.labels.length }} by number of applications</p>
+        <ChartCanvas type="bar" :data="vacancyChart" :options="barOptions" :height="230"
+          aria-label="Bar chart of applications per vacancy" />
+      </div>
     </div>
 
     <!-- Pipeline per vacancy -->
@@ -208,9 +224,13 @@ import api from '@/services/api'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import StatusBadge from '@/Components/UI/StatusBadge.vue'
 import Icon from '@/Components/UI/Icon.vue'
+import AnimatedNumber from '@/Components/UI/AnimatedNumber.vue'
+import ChartCanvas from '@/Components/UI/ChartCanvas.vue'
+import { useTheme } from '@/composables/useTheme'
 import { statusLabel, statusChipClass } from '@/config/statusConfig'
 import { formatDate, formatDateTime, timeAgo } from '@/utils/dates'
 
+const { isDark } = useTheme()
 const loading         = ref(true)
 const scheduleLoading = ref(true)
 const loadError       = ref(null)
@@ -275,6 +295,59 @@ const statCards = computed(() => [
     iconBg: 'bg-red-100', iconColor: 'text-red-700',
   },
 ])
+
+// ── Charts ────────────────────────────────────────────────────────────────────
+const STATUS_COLORS = {
+  submitted: '#eab308', under_review: '#a855f7', screened: '#0ea5e9', qualified: '#14b8a6',
+  disqualified: '#ef4444', exam_scheduled: '#f97316', shortlisted: '#6366f1', for_interview: '#8b5cf6',
+  interviewed: '#3b82f6', recommended: '#22c55e', appointed: '#16a34a', completed: '#22c55e',
+  withdrawn: '#6b7280', failed: '#dc2626', passed: '#10b981',
+}
+
+const statusTotals = computed(() => {
+  const totals = {}
+  for (const item of pipelineByVacancy.value) {
+    for (const [status, count] of Object.entries(item.statuses ?? {})) {
+      totals[status] = (totals[status] ?? 0) + Number(count)
+    }
+  }
+  return Object.entries(totals).sort((a, b) => b[1] - a[1])
+})
+
+const totalApplications = computed(() => statusTotals.value.reduce((s, [, n]) => s + n, 0))
+
+const statusChart = computed(() => ({
+  labels: statusTotals.value.map(([s]) => statusLabel(s)),
+  datasets: [{
+    data: statusTotals.value.map(([, n]) => n),
+    backgroundColor: statusTotals.value.map(([s]) => STATUS_COLORS[s] ?? '#9ca3af'),
+    borderWidth: 2, borderColor: isDark.value ? '#181e33' : '#fff', hoverOffset: 6,
+  }],
+}))
+
+const vacancyChart = computed(() => {
+  const top = [...pipelineByVacancy.value].sort((a, b) => b.total - a.total).slice(0, 6)
+  return {
+    labels: top.map(v => v.position_title.length > 22 ? v.position_title.slice(0, 21) + '…' : v.position_title),
+    datasets: [{
+      data: top.map(v => v.total),
+      backgroundColor: '#2a338f', hoverBackgroundColor: '#ec1c2d',
+      borderRadius: 6, maxBarThickness: 36,
+    }],
+  }
+})
+
+const donutOptions = {
+  cutout: '64%',
+  plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, font: { size: 11 } } } },
+}
+const barOptions = computed(() => ({
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: isDark.value ? '#2a3350' : '#f3f4f6' }, border: { display: false } },
+  },
+}))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function formatApplicantName(app) {

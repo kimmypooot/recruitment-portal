@@ -20,7 +20,7 @@
 
       <!-- Logo -->
       <div class="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-        <div class="w-9 h-9 rounded-xl bg-white flex items-center justify-center flex-shrink-0 p-1">
+        <div class="w-9 h-9 rounded-xl bg-white keep-white flex items-center justify-center flex-shrink-0 p-1">
           <img src="/images/csc-logo.png" alt="CSC Logo" class="h-full w-full object-contain"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
           <svg class="w-5 h-5 text-primary hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -89,6 +89,8 @@
         </div>
 
         <div class="flex items-center gap-2">
+          <SearchTrigger />
+          <ThemeToggle />
           <NotificationBell />
           <div class="relative" ref="dropdownRef">
             <button @click="dropdownOpen = !dropdownOpen"
@@ -158,7 +160,7 @@
 
       <!-- Page content -->
       <main id="main-content" class="flex-1 p-4 sm:p-6" tabindex="-1">
-        <div class="mx-auto w-full max-w-7xl">
+        <div class="mx-auto w-full max-w-7xl rise-in">
           <slot />
         </div>
       </main>
@@ -296,6 +298,8 @@ import { Link, router, usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import BaseModal from '@/Components/UI/BaseModal.vue'
 import Icon from '@/Components/UI/Icon.vue'
+import SearchTrigger from '@/Components/UI/SearchTrigger.vue'
+import ThemeToggle from '@/Components/UI/ThemeToggle.vue'
 import NotificationBell from '@/Components/UI/NotificationBell.vue'
 import AppFooter from '@/Components/UI/AppFooter.vue'
 import PasswordRequirements from '@/Components/UI/PasswordRequirements.vue'

@@ -6,6 +6,7 @@ import axios from 'axios'
 import ToastContainer from './Components/UI/ToastContainer.vue'
 import ConfirmDialog from './Components/UI/ConfirmDialog.vue'
 import ProgressBar from './Components/UI/ProgressBar.vue'
+import CommandPalette from './Components/UI/CommandPalette.vue'
 import { useToast } from '@/composables/useToast'
 import { useSessionExpiry } from '@/composables/useSessionExpiry'
 import { useIdleTimer } from '@/composables/useIdleTimer'
@@ -48,6 +49,7 @@ createInertiaApp({
         h(Transition, { name: 'fade', mode: 'out-in' }, () => h(App, props)),
         h(ToastContainer),
         h(ConfirmDialog),
+        h(CommandPalette),
       ],
     })
 
