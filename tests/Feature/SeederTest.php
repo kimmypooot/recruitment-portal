@@ -24,6 +24,15 @@ class SeederTest extends TestCase
         $this->assertSame(0, PlaceOfAssignmentHead::count());
     }
 
+    public function test_seeding_creates_no_applicants(): void
+    {
+        $this->seed();
+
+        // External applicants register themselves; employees come from IMIS.
+        $this->assertSame(0, User::where('role', 'applicant')->count());
+        $this->assertSame(0, \App\Models\ApplicantProfile::count());
+    }
+
     public function test_the_board_picker_can_list_every_hrmpsb_account_and_sees_which_are_from_imis(): void
     {
         $admin = User::factory()->admin()->create();
