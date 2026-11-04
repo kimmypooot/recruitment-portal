@@ -377,7 +377,11 @@ class ApplicationController extends Controller
             'trainings',
         ]);
 
-        return response()->json(ApplicantProfileResource::make($applicant));
+        // The signed reply belongs to the application, not the profile, so say whether it is there.
+        return response()->json([
+            ...ApplicantProfileResource::make($applicant)->resolve(),
+            'interest_reply_uploaded' => $application->documents()->where('document_type', 'interest_reply')->exists(),
+        ]);
     }
 
     public function serveApplicantDocument(Request $request, Application $application, string $type): StreamedResponse

@@ -17,6 +17,8 @@ class ApplicationResource extends JsonResource
             'vacancy_id' => $this->vacancy_id,
             'applicant_id' => $this->applicant_id,
             'status' => $this->status,
+            // An IMIS employee: also submits a signed reply to the notice of vacancy.
+            'is_internal' => (bool) $this->is_internal,
             'remarks' => $this->remarks,
             'submitted_at' => $this->submitted_at?->toISOString(),
             'reviewed_at' => $this->reviewed_at?->toISOString(),

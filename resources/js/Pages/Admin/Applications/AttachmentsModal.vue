@@ -101,7 +101,19 @@ const PATH_KEY = {
   ipcr: 'ipcr_path', coe: 'coe_path', tor: 'tor_path',
 }
 
-const docs = computed(() => DOCS.map(d => ({ ...d, path: props.profile?.[PATH_KEY[d.type]] ?? null })))
+// An internal applicant (an IMIS employee) also submits a signed reply to the notice of vacancy.
+// It belongs to the application rather than the profile, so the profile response says whether it is there.
+const REPLY_DOC = { type: 'interest_reply', label: 'Signed reply to the notice of vacancy', optional: false }
+
+const docs = computed(() => {
+  const list = DOCS.map(d => ({ ...d, path: props.profile?.[PATH_KEY[d.type]] ?? null }))
+
+  if (props.app?.is_internal) {
+    list.push({ ...REPLY_DOC, path: props.profile?.interest_reply_uploaded ? 'interest_reply' : null })
+  }
+
+  return list
+})
 
 const applicantName = computed(() => {
   if (!props.app) return ''

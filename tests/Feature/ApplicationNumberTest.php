@@ -153,6 +153,28 @@ class ApplicationNumberTest extends TestCase
         $this->actingAs($admin, 'sanctum')->get("/api/hrmpsb/applications/{$externalId}/documents/interest_reply")->assertNotFound();
     }
 
+    public function test_hr_attachments_show_and_serve_the_reply_for_employees_only(): void
+    {
+        Storage::fake('local');
+        $vacancy = $this->vacancy('Administrative Officer II', 'ADOF2-53-2005');
+        $internalId = $this->apply($this->applicant(['imis_user_id' => 9]), $vacancy, withReply: true)->assertCreated()->json('id');
+        $externalId = $this->apply($this->applicant(), $vacancy)->assertCreated()->json('id');
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin, 'sanctum')->getJson("/api/applications/{$internalId}/applicant-profile")
+            ->assertOk()->assertJsonPath('interest_reply_uploaded', true);
+        $this->actingAs($admin, 'sanctum')->getJson("/api/applications/{$externalId}/applicant-profile")
+            ->assertOk()->assertJsonPath('interest_reply_uploaded', false);
+
+        $this->actingAs($admin, 'sanctum')->get("/api/applications/{$internalId}/applicant-documents/interest_reply")->assertOk();
+        $this->actingAs($admin, 'sanctum')->get("/api/applications/{$internalId}/applicant-documents/interest_reply?download=1")
+            ->assertOk()->assertDownload();
+        $this->actingAs($admin, 'sanctum')->get("/api/applications/{$externalId}/applicant-documents/interest_reply")->assertNotFound();
+
+        $flags = collect($this->actingAs($admin, 'sanctum')->getJson('/api/applications')->assertOk()->json())->flatten(1);
+        $this->assertContains(true, $flags->pluck('is_internal')->all());
+    }
+
     public function test_an_external_applicant_needs_no_reply_and_a_reply_they_send_is_not_kept(): void
     {
         Storage::fake('local');
