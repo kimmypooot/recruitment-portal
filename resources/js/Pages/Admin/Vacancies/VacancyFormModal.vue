@@ -135,6 +135,9 @@
 
           <!-- Tab 2: Qualification Standards -->
           <div v-else-if="modalTab === 'qualifications'" class="p-6 space-y-4">
+            <p v-if="suggestion" class="text-xs rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 px-3 py-2">
+              Filled from the last vacancy posted for this position. Check it against the current Qualification Standards before saving.
+            </p>
             <p class="text-xs text-gray-400">
               Describe the minimum qualification standards required for this position per CSC guidelines.
             </p>
@@ -346,6 +349,20 @@ function setSource(next) {
     employment_type: next === 'manual' && imisEnabled.value ? 'contract_of_service' : 'plantilla',
     position_title: '', plantilla_no: '', salary_grade: '', monthly_salary: '', place_of_assignment: '',
   })
+  applySuggestion(null)
+}
+
+// Standards suggested from the last vacancy for the same title. A field is only filled while
+// it is empty or still holds the previous suggestion, so HR's own edits are never overwritten.
+const SUGGESTED_KEYS = ['position_level', 'education_req', 'experience_req', 'training_req', 'eligibility_req']
+const suggestion = ref(null)
+
+function applySuggestion(next) {
+  const prev = suggestion.value ?? {}
+  for (const key of SUGGESTED_KEYS) {
+    if (form[key] === '' || form[key] === (prev[key] ?? '')) form[key] = next?.[key] ?? ''
+  }
+  suggestion.value = next ?? null
 }
 
 function selectImis(id) {
@@ -355,6 +372,7 @@ function selectImis(id) {
     position_title: p.position_title, plantilla_no: p.item_number ?? '', salary_grade: p.salary_grade ?? '',
     monthly_salary: p.monthly_salary ?? '', place_of_assignment: p.place_of_assignment,
   } : { imis_plantilla_item_id: null, position_title: '', plantilla_no: '', salary_grade: '', monthly_salary: '', place_of_assignment: '' })
+  applySuggestion(p?.suggested ?? null)
 }
 
 const requirementFields = [

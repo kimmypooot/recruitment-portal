@@ -27,6 +27,9 @@ class ImisVacancyLinkTest extends TestCase
 
     private int $imisStatus = 200;
 
+    /** @var array<int, array<string, mixed>> extra IMIS items a test adds on top of the two defaults */
+    private array $extraImisItems = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -37,10 +40,10 @@ class ImisVacancyLinkTest extends TestCase
         ]);
 
         // Registered once; the status is read when the request is made.
-        Http::fake(['imis.test/api/v1/recruitment/vacant-positions' => fn () => Http::response(['data' => [
+        Http::fake(['imis.test/api/v1/recruitment/vacant-positions' => fn () => Http::response(['data' => [...[
             ['id' => 11, 'item_number' => 'OSEC-CSC8-1', 'position_title' => 'Administrative Officer IV', 'salary_grade' => 15, 'monthly_salary' => 41000.5, 'level' => 'second', 'office_code' => 'HRD', 'office_name' => 'Human Resource Division'],
             ['id' => 12, 'item_number' => 'OSEC-CSC8-2', 'position_title' => 'Clerk', 'salary_grade' => 4, 'monthly_salary' => 15000, 'level' => 'first', 'office_code' => 'NOPE', 'office_name' => 'Elsewhere'],
-        ]], $this->imisStatus)]);
+        ], ...$this->extraImisItems]], $this->imisStatus)]);
 
         Sanctum::actingAs(User::factory()->admin()->create());
     }
@@ -53,6 +56,64 @@ class ImisVacancyLinkTest extends TestCase
             'education_req' => 'Bachelor', 'experience_req' => '1 year', 'training_req' => '4 hours', 'eligibility_req' => 'CSE-PPT',
             'deadline_at' => now()->addDays(20)->toDateString(),
         ];
+    }
+
+    /** @return array<string, mixed> */
+    private function imisItem(int $id, string $title, string $office = 'HRD'): array
+    {
+        return ['id' => $id, 'item_number' => "OSEC-CSC8-{$id}", 'position_title' => $title, 'salary_grade' => 24, 'monthly_salary' => 90000, 'level' => 'third', 'office_code' => $office, 'office_name' => 'Office'];
+    }
+
+    public function test_director_positions_are_left_out_of_the_picker_but_chief_hr_specialist_stays(): void
+    {
+        $this->extraImisItems = [
+            $this->imisItem(21, 'Director II', 'LFO-I'),
+            $this->imisItem(22, 'Director III', 'ORD'),
+            $this->imisItem(23, 'Director IV', 'ORD'),
+            $this->imisItem(24, 'Chief Human Resource Specialist'),
+            $this->imisItem(25, 'Director I'),
+        ];
+
+        $titles = collect($this->getJson('/api/admin/imis-vacant-positions')->assertOk()->json('data'))->pluck('position_title')->all();
+
+        $this->assertEqualsCanonicalizing(['Administrative Officer IV', 'Chief Human Resource Specialist', 'Director I'], $titles);
+    }
+
+    public function test_a_vacancy_cannot_be_opened_on_a_director_item_even_with_a_crafted_request(): void
+    {
+        $this->extraImisItems = [$this->imisItem(21, 'Director II', 'LFO-I')];
+
+        $this->postJson('/api/vacancies', $this->qs(['imis_plantilla_item_id' => 21]))->assertStatus(422);
+        $this->assertDatabaseMissing('vacancies', ['imis_plantilla_item_id' => 21]);
+    }
+
+    public function test_a_director_vacancy_cannot_be_entered_by_hand_or_renamed_to_one(): void
+    {
+        foreach (['Director II', 'director  iv', 'Director III (Regional)'] as $title) {
+            $this->postJson('/api/vacancies', $this->qs([
+                'position_title' => $title, 'plantilla_no' => 'X-1', 'salary_grade' => 28, 'place_of_assignment' => 'CSC Field Office - Samar',
+            ]))->assertStatus(422)->assertJsonValidationErrors('position_title');
+        }
+
+        $this->postJson('/api/vacancies', $this->qs([
+            'position_title' => 'Chief Human Resource Specialist', 'plantilla_no' => 'X-2', 'salary_grade' => 24, 'place_of_assignment' => 'CSC Field Office - Samar',
+        ]))->assertCreated();
+
+        $vacancy = Vacancy::factory()->create(['position_title' => 'Administrative Officer IV']);
+        $this->putJson("/api/vacancies/{$vacancy->id}", ['position_title' => 'Director II'])->assertStatus(422);
+    }
+
+    public function test_the_picker_suggests_the_standards_of_the_latest_vacancy_for_the_same_title(): void
+    {
+        Vacancy::factory()->create(['position_title' => 'Administrative Officer IV', 'education_req' => 'OLD', 'experience_req' => 'OLD', 'training_req' => 'OLD', 'eligibility_req' => 'OLD', 'position_level' => 'Supervisory']);
+        Vacancy::factory()->create(['position_title' => 'administrative officer iv', 'education_req' => 'Bachelor', 'experience_req' => '2 years', 'training_req' => '8 hours', 'eligibility_req' => 'CSE-PPT', 'position_level' => 'Technical or Non-Supervisory']);
+        $this->extraImisItems = [$this->imisItem(24, 'Chief Human Resource Specialist')];
+
+        $data = collect($this->getJson('/api/admin/imis-vacant-positions')->assertOk()->json('data'))->keyBy('id');
+
+        $this->assertSame('Bachelor', $data[11]['suggested']['education_req']);
+        $this->assertSame('Technical or Non-Supervisory', $data[11]['suggested']['position_level']);
+        $this->assertNull($data[24]['suggested']);
     }
 
     public function test_the_picker_lists_imis_positions_with_a_recruiting_office_and_not_those_already_opened(): void

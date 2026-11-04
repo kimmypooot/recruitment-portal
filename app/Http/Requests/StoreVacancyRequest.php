@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Models\Vacancy;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -30,7 +31,7 @@ class StoreVacancyRequest extends FormRequest
                 Rule::unique('vacancies', 'imis_plantilla_item_id')->whereNull('deleted_at'),
             ],
             'employment_type' => ['nullable', Rule::in(Vacancy::EMPLOYMENT_TYPES)],
-            'position_title' => [$linked ? 'nullable' : 'required', 'string', 'max:255'],
+            'position_title' => [$linked ? 'nullable' : 'required', 'string', 'max:255', self::notCentralOffice()],
             'plantilla_no' => [$plantilla ? 'required' : 'nullable', 'string', 'max:100'],
             'salary_grade' => [$plantilla ? 'required' : 'nullable', 'integer', 'between:1,33'],
             'place_of_assignment' => [$linked ? 'nullable' : 'required', 'string', Rule::in(Vacancy::placesOfAssignment())],
@@ -43,6 +44,16 @@ class StoreVacancyRequest extends FormRequest
             'monthly_salary' => 'nullable|numeric|min:0',
             'is_anticipated_vacancy' => 'boolean',
         ];
+    }
+
+    /** Director II, III and IV are filled by the CSC Central Office. */
+    public static function notCentralOffice(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            if (Vacancy::isCentralOfficePosition(is_string($value) ? $value : null)) {
+                $fail('Director II, III and IV positions are handled by the CSC Central Office and cannot be posted here.');
+            }
+        };
     }
 
     public function messages(): array

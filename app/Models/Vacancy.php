@@ -60,6 +60,23 @@ class Vacancy extends Model
     /** Fields IMIS owns on a vacancy opened from one of its plantilla items. */
     public const IMIS_OWNED = ['position_title', 'plantilla_no', 'salary_grade', 'monthly_salary', 'place_of_assignment'];
 
+    /**
+     * Whether the CSC Central Office, not this office, fills the position
+     * (Director II, III, IV): such a vacancy is never opened here.
+     */
+    public static function isCentralOfficePosition(?string $title): bool
+    {
+        $title = trim((string) preg_replace('/\s+/', ' ', (string) $title));
+
+        foreach ((array) config('vacancies.central_office_positions', []) as $excluded) {
+            if ($title !== '' && preg_match('/^'.preg_quote((string) $excluded, '/').'\b/i', $title) === 1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function isLinkedToImis(): bool
     {
         return $this->imis_plantilla_item_id !== null;

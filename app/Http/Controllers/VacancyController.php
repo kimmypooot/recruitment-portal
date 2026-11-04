@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use App\Services\ImisPlantilla;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Throwable;
@@ -141,7 +142,7 @@ class VacancyController extends Controller
         $plantilla = $vacancy->employment_type !== 'contract_of_service';
 
         $data = $request->validate([
-            'position_title' => 'sometimes|required|string|max:255',
+            'position_title' => ['sometimes', 'required', 'string', 'max:255', StoreVacancyRequest::notCentralOffice()],
             'plantilla_no' => [$plantilla ? 'sometimes' : 'nullable', $plantilla ? 'required' : 'nullable', 'string', 'max:100'],
             'salary_grade' => [$plantilla ? 'sometimes' : 'nullable', $plantilla ? 'required' : 'nullable', 'integer', 'between:1,33'],
             'monthly_salary' => 'nullable|numeric|min:0',
@@ -238,10 +239,22 @@ class VacancyController extends Controller
 
         $taken = Vacancy::whereNotNull('imis_plantilla_item_id')->pluck('imis_plantilla_item_id')->all();
 
-        return response()->json([
-            'enabled' => true,
-            'data' => array_values(array_filter($positions, fn ($p) => $p['place_of_assignment'] !== null && ! in_array($p['id'], $taken, true))),
-        ]);
+        $available = array_values(array_filter($positions, fn ($p) => $p['place_of_assignment'] !== null && ! in_array($p['id'], $taken, true)));
+
+        // Qualification standards aren't kept in IMIS, so offer those of the latest
+        // vacancy posted for the same title; HR can still edit every field.
+        $latest = Vacancy::whereIn(DB::raw('LOWER(position_title)'), array_unique(array_map('mb_strtolower', array_column($available, 'position_title'))))
+            ->orderByDesc('id')
+            ->get(['position_title', 'position_level', 'education_req', 'experience_req', 'training_req', 'eligibility_req'])
+            ->unique(fn (Vacancy $v) => mb_strtolower($v->position_title));
+
+        foreach ($available as &$position) {
+            $previous = $latest->first(fn (Vacancy $v) => mb_strtolower($v->position_title) === mb_strtolower($position['position_title']));
+            $position['suggested'] = $previous ? $previous->only(['position_level', 'education_req', 'experience_req', 'training_req', 'eligibility_req']) : null;
+        }
+        unset($position);
+
+        return response()->json(['enabled' => true, 'data' => $available]);
     }
 
     /**

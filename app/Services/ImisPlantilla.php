@@ -38,14 +38,16 @@ class ImisPlantilla
             throw new RuntimeException('IMIS could not list its vacant positions (HTTP '.$response->status().').');
         }
 
-        return array_map(fn (array $item) => [
+        $items = array_filter($response->json('data'), fn (array $item) => ! Vacancy::isCentralOfficePosition($item['position_title'] ?? null));
+
+        return array_values(array_map(fn (array $item) => [
             'id' => $item['id'],
             'item_number' => $item['item_number'] ?? null,
             'position_title' => $item['position_title'],
             'salary_grade' => $item['salary_grade'] ?? null,
             'monthly_salary' => $item['monthly_salary'] ?? null,
             'place_of_assignment' => Vacancy::IMIS_OFFICES[$item['office_code'] ?? ''] ?? null,
-        ], $response->json('data'));
+        ], $items));
     }
 
     /**
